@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import React from "react";
 import type { Metadata } from "next";
 import { Tajawal, Inter } from "next/font/google";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
