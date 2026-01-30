@@ -1,6 +1,11 @@
 import { streamText, convertToModelMessages, tool } from "ai"
+import { createGroq } from "@ai-sdk/groq"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 export async function POST(req: Request) {
   const { messages } = await req.json()
@@ -9,7 +14,7 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const result = streamText({
-    model: "openai/gpt-4o-mini",
+    model: groq("llama-3.3-70b-versatile"),
     system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على:
 1. إضافة خطط وتذكيرات مهمة (مثل: مواعيد، أحداث، ذكريات مهمة)
 2. تنظيم ذكرياتهم وأحبائهم
