@@ -1,48 +1,28 @@
 "use client"
 
 import React from "react"
-import dynamic from "next/dynamic"
 import { useChat } from "@ai-sdk/react"
-import { DefaultChatTransport } from "ai"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Send, Bot, User, Loader2, Calendar, CheckCircle2, AlertCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useRef, useEffect, useState } from "react"
-
-function getUIMessageText(msg: { parts?: Array<{ type: string; text?: string }> }): string {
-  if (!msg.parts || !Array.isArray(msg.parts)) return ""
-  return msg.parts
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("")
-}
+import { useRef, useEffect } from "react"
 
 export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-  const [input, setInput] = useState("")
   
-  const { messages, status, sendMessage } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+  const { messages, input, setInput, handleSubmit, isLoading } = useChat({
+    api: "/api/chat",
   })
-
-  const isLoading = status === "streaming" || status === "submitted"
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [messages])
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || isLoading) return
-    sendMessage({ text: input })
-    setInput("")
-  }
 
   const suggestions = [
     "ذكرني بعيد ميلاد أمي يوم 15 مارس",
@@ -104,8 +84,8 @@ export function AIChat() {
 
           <AnimatePresence mode="popLayout">
             {messages.map((message) => {
-              const text = getUIMessageText(message)
-              const toolInvocations = message.parts?.filter(p => p.type === "tool-invocation") || []
+              const text = message.content
+              const toolInvocations = message.toolInvocations || []
               
               return (
                 <motion.div
@@ -135,14 +115,13 @@ export function AIChat() {
                     )}
                     
                     {/* Tool results */}
-                    {toolInvocations.map((tool: { type: string; toolInvocationId?: string; toolName?: string; state?: string; output?: { success?: boolean; message?: string; plans?: Array<{ id: string; title: string; plan_date: string; category: string }> } }) => {
-                      if (tool.type !== "tool-invocation") return null
-                      const result = tool.output
+                    {toolInvocations.map((tool) => {
+                      const result = tool.result as { success?: boolean; message?: string; plans?: Array<{ id: string; title: string; plan_date: string; category: string }> } | undefined
                       
-                      if (tool.state === "output-available" && result) {
+                      if (tool.state === "result" && result) {
                         return (
                           <motion.div
-                            key={tool.toolInvocationId}
+                            key={tool.toolCallId}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             className="mt-2 p-3 rounded-xl bg-muted/50 border border-border"
@@ -164,7 +143,7 @@ export function AIChat() {
                             
                             {result.plans && result.plans.length > 0 && (
                               <div className="space-y-2 mt-2">
-                                {result.plans.slice(0, 5).map((plan: { id: string; title: string; plan_date: string; category: string }) => (
+                                {result.plans.slice(0, 5).map((plan) => (
                                   <div key={plan.id} className="flex items-center justify-between p-2 rounded-lg bg-background">
                                     <span className="text-sm font-medium">{plan.title}</span>
                                     <span className="text-xs text-muted-foreground">{plan.plan_date}</span>
@@ -176,9 +155,9 @@ export function AIChat() {
                         )
                       }
                       
-                      if (tool.state === "input-streaming" || tool.state === "input-available") {
+                      if (tool.state === "call" || tool.state === "partial-call") {
                         return (
-                          <div key={tool.toolInvocationId} className="mt-2 flex items-center gap-2 text-muted-foreground">
+                          <div key={tool.toolCallId} className="mt-2 flex items-center gap-2 text-muted-foreground">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-xs">جاري المعالجة...</span>
                           </div>
