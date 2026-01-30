@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/groq": "3.0.19",
     "@ai-sdk/react": "3.0.62",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
