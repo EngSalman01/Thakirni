@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Send, Bot, User, Loader2, Calendar, CheckCircle2, AlertCircle } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 
 function getUIMessageText(msg: { parts?: Array<{ type: string; text?: string }> }): string {
   if (!msg.parts || !Array.isArray(msg.parts)) return ""
@@ -23,8 +23,9 @@ function getUIMessageText(msg: { parts?: Array<{ type: string; text?: string }> 
 export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [input, setInput] = useState("")
   
-  const { messages, input, setInput, status, sendMessage } = useChat({
+  const { messages, status, sendMessage } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
   })
 
