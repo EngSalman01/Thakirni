@@ -1,11 +1,7 @@
-import { streamText, convertToModelMessages, tool } from "ai"
-import { createGroq } from "@ai-sdk/groq"
+import { streamText, tool } from "ai"
+import { groq } from "@ai-sdk/groq"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
-
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-})
 
 export async function POST(req: Request) {
   const { messages } = await req.json()
@@ -32,15 +28,15 @@ You are Thakirni, an intelligent assistant helping users:
 
 When users ask to add a plan/reminder, use the create_plan tool.
 When users ask to view their plans, use the list_plans tool.`,
-    messages: await convertToModelMessages(messages),
+    messages,
     tools: {
       create_plan: tool({
         description: "Create a new plan or reminder for the user. Use this when they want to remember something.",
-        inputSchema: z.object({
+        parameters: z.object({
           title: z.string().describe("Title of the plan/reminder in the user's language"),
-          description: z.string().nullable().describe("Optional description or details"),
+          description: z.string().optional().describe("Optional description or details"),
           plan_date: z.string().describe("Date of the plan in ISO format (YYYY-MM-DD)"),
-          plan_time: z.string().nullable().describe("Time of the plan in HH:MM format, if specified"),
+          plan_time: z.string().optional().describe("Time of the plan in HH:MM format, if specified"),
           recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).describe("How often to repeat this reminder"),
           category: z.enum(["anniversary", "appointment", "memory", "other"]).describe("Category of the plan"),
         }),
@@ -72,8 +68,8 @@ When users ask to view their plans, use the list_plans tool.`,
       }),
       list_plans: tool({
         description: "List all plans and reminders for the user",
-        inputSchema: z.object({
-          category: z.enum(["all", "anniversary", "appointment", "memory", "other"]).nullable().describe("Filter by category"),
+        parameters: z.object({
+          category: z.enum(["all", "anniversary", "appointment", "memory", "other"]).optional().describe("Filter by category"),
           upcoming_only: z.boolean().describe("Show only upcoming plans"),
         }),
         execute: async ({ category, upcoming_only }) => {
@@ -112,5 +108,5 @@ When users ask to view their plans, use the list_plans tool.`,
     maxSteps: 5,
   })
 
-  return result.toUIMessageStreamResponse()
+  return result.toDataStreamResponse()
 }
