@@ -29,9 +29,9 @@ export function VaultSidebar() {
     <aside className="fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        {/* Full logo includes text, so we use it directly */}
+        {/* Full logo includes text, so we use it directly. Reduced from 140x50 to 100x35 */}
         <Link href="/" className="flex items-center gap-3">
-          <BrandLogo width={140} height={50} />
+          <BrandLogo width={100} height={35} />
         </Link>
       </div>
 
