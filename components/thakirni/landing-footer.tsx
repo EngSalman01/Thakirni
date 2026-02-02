@@ -12,7 +12,8 @@ export function LandingFooter() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center mb-4">
-              <BrandLogo width={160} height={50} />
+              {/* Reduced from 160x50 to 120x40 */}
+              <BrandLogo width={120} height={40} />
             </Link>
             <p className="text-foreground/60 max-w-sm mb-4">
               عقلك الثاني اللي يضبط يومك.. وثّق كل شي أول بأول، وريّح بالك من النسيان.
