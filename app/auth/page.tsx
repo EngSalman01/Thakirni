@@ -12,6 +12,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
+import { createClient } from "@/lib/supabase/client";
 
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,10 +25,23 @@ export default function AuthPage() {
     setIsLoading(true);
     setErrors({});
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-    // For demo, redirect to vault
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setErrors({ email: error.message });
+      setIsLoading(false);
+      return;
+    }
+
+    // Redirect to vault on success
     window.location.href = "/vault";
   };
 
@@ -37,8 +51,10 @@ export default function AuthPage() {
     setErrors({});
 
     const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
+    const name = formData.get("name") as string;
 
     if (password !== confirmPassword) {
       setErrors({
@@ -51,10 +67,25 @@ export default function AuthPage() {
       return;
     }
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+          avatar_url: "",
+        },
+      },
+    });
 
-    // For demo, redirect to vault
+    if (error) {
+      setErrors({ email: error.message });
+      setIsLoading(false);
+      return;
+    }
+
+    // Redirect to vault (or check email confirmation depending on settings)
     window.location.href = "/vault";
   };
 
