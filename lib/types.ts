@@ -17,6 +17,8 @@ export interface Plan {
   user_id: string;
   title: string;
   description?: string | null;
+  category?: 'task' | 'grocery' | 'meeting' | 'general';
+  location?: string | null;
   reminder_date?: string | null; // ISO date/time string
   is_recurring: boolean;
   recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly' | null;

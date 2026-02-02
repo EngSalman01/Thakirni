@@ -39,10 +39,14 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useMemories } from "@/hooks/use-memories";
+import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
 
 export default function VaultPage() {
-  const { memories, isLoading } = useMemories();
+  const { memories, isLoading: memoriesLoading } = useMemories();
+  const { stats, isLoading: plansLoading } = usePlans();
+  const isLoading = memoriesLoading || plansLoading;
+
   const [fridayReminder, setFridayReminder] = useState(true);
   const [isDragOver, setIsDragOver] = useState(false);
   const { t, isArabic } = useLanguage();
@@ -119,21 +123,21 @@ export default function VaultPage() {
             {
               labelAr: "تذكيرات اليوم",
               labelEn: "Today's Reminders",
-              value: 2,
+              value: stats.todayReminders,
               icon: Clock,
               color: "text-blue-500",
             },
             {
               labelAr: "الجدول الزمني",
               labelEn: "Schedule",
-              value: 8,
+              value: stats.upcomingMeetings + stats.pendingTasks,
               icon: Calendar,
               color: "text-green-500",
             },
             {
               labelAr: "رسائل صوتية",
               labelEn: "Voice Notes",
-              value: 3,
+              value: memories.filter((m) => m.type === "voice").length,
               icon: Mic,
               color: "text-amber-500",
             },
