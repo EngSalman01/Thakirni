@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "vector"; -- For AI search
 
 -- 1. PROFILES (Extends Supabase Auth)
-CREATE TABLE profiles (
+CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     full_name TEXT,
     avatar_url TEXT,
@@ -16,8 +16,7 @@ CREATE TABLE profiles (
 );
 
 -- 2. QUICK NOTES / MEMORIES
--- Storing text snippets, voice notes, photos related to tasks/meetings
-CREATE TABLE memories (
+CREATE TABLE IF NOT EXISTS memories (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     type TEXT CHECK (type IN ('photo', 'voice', 'text')) NOT NULL,
@@ -32,7 +31,7 @@ CREATE TABLE memories (
 );
 
 -- 3. PLANS (Tasks, Groceries, Meetings)
-CREATE TABLE plans (
+CREATE TABLE IF NOT EXISTS plans (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
@@ -49,14 +48,14 @@ CREATE TABLE plans (
 );
 
 -- 4. CHAT HISTORY (AI Assistant)
-CREATE TABLE chat_sessions (
+CREATE TABLE IF NOT EXISTS chat_sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     title TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     session_id UUID REFERENCES chat_sessions(id) ON DELETE CASCADE,
     user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
@@ -72,30 +71,37 @@ ALTER TABLE plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 
--- Profiles
+-- Profiles Policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
 CREATE POLICY "Public profiles are viewable by everyone" 
 ON profiles FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Users can insert their own profile" ON profiles;
 CREATE POLICY "Users can insert their own profile" 
-ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+ON profiles FOR INSERT WITH CHECK ((select auth.uid()) = id);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile" 
-ON profiles FOR UPDATE USING (auth.uid() = id);
+ON profiles FOR UPDATE USING ((select auth.uid()) = id);
 
--- Memories/Notes
+-- Memories/Notes Policies
+DROP POLICY IF EXISTS "Users can CRUD their own memories" ON memories;
 CREATE POLICY "Users can CRUD their own memories" 
-ON memories FOR ALL USING (auth.uid() = user_id);
+ON memories FOR ALL USING ((select auth.uid()) = user_id);
 
--- Plans/Tasks
+-- Plans/Tasks Policies
+DROP POLICY IF EXISTS "Users can CRUD their own plans" ON plans;
 CREATE POLICY "Users can CRUD their own plans" 
-ON plans FOR ALL USING (auth.uid() = user_id);
+ON plans FOR ALL USING ((select auth.uid()) = user_id);
 
--- Chat
+-- Chat Policies
+DROP POLICY IF EXISTS "Users can CRUD their own chat sessions" ON chat_sessions;
 CREATE POLICY "Users can CRUD their own chat sessions" 
-ON chat_sessions FOR ALL USING (auth.uid() = user_id);
+ON chat_sessions FOR ALL USING ((select auth.uid()) = user_id);
 
+DROP POLICY IF EXISTS "Users can CRUD their own chat messages" ON chat_messages;
 CREATE POLICY "Users can CRUD their own chat messages" 
-ON chat_messages FOR ALL USING (auth.uid() = user_id);
+ON chat_messages FOR ALL USING ((select auth.uid()) = user_id);
 
 -- User Signup Trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
@@ -107,6 +113,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
