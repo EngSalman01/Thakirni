@@ -4,6 +4,7 @@ import React from "react"
 import dynamic from "next/dynamic"
 import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -45,10 +46,10 @@ export function AIChat() {
   }
 
   const suggestions = [
-    "ذكرني بعيد ميلاد أمي يوم 15 مارس",
-    "أضف موعد طبيب يوم الخميس الساعة 3",
-    "اعرض لي خططي القادمة",
-    "أريد تذكير سنوي بذكرى زواجي",
+    "أضف اجتماع مع الفريق يوم الأحد",
+    "ذكرني بشراء حليب وخبز",
+    "عندي موعد طبيب غداً الساعة 4",
+    "اعرض لي مهام اليوم",
   ]
 
   return (
@@ -60,7 +61,7 @@ export function AIChat() {
         </div>
         <div>
           <h3 className="font-semibold text-foreground">مساعد ذكرني</h3>
-          <p className="text-xs text-muted-foreground">أضف خططك وسأذكرك بها</p>
+          <p className="text-xs text-muted-foreground">مساعدك لتنظيم مهامك ومواعيدك</p>
         </div>
       </div>
 
@@ -80,7 +81,7 @@ export function AIChat() {
                 مرحباً! كيف يمكنني مساعدتك؟
               </h4>
               <p className="text-sm text-muted-foreground mb-6">
-                أخبرني بما تريد تذكره وسأساعدك في تنظيمه
+                يمكنني مساعدتك في تنظيم مهامك، ومشترياتك، ومواعيدك
               </p>
               
               <div className="flex flex-wrap justify-center gap-2">
@@ -135,14 +136,14 @@ export function AIChat() {
                     )}
                     
                     {/* Tool results */}
-                    {toolInvocations.map((tool: { type: string; toolInvocationId?: string; toolName?: string; state?: string; output?: { success?: boolean; message?: string; plans?: Array<{ id: string; title: string; plan_date: string; category: string }> } }) => {
+                    {toolInvocations.map((tool) => {
                       if (tool.type !== "tool-invocation") return null
-                      const result = tool.output
+                      const result = tool.output as { success?: boolean; message?: string; plans?: Array<{ id: string; title: string; plan_date: string; category: string }> } | undefined
                       
                       if (tool.state === "output-available" && result) {
                         return (
                           <motion.div
-                            key={tool.toolInvocationId}
+                            key={tool.toolCallId}
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             className="mt-2 p-3 rounded-xl bg-muted/50 border border-border"
@@ -154,7 +155,7 @@ export function AIChat() {
                                 <AlertCircle className="w-4 h-4 text-red-500" />
                               )}
                               <span className="text-xs font-medium">
-                                {tool.toolName === "create_plan" ? "إضافة خطة" : "عرض الخطط"}
+                                {(tool as any).toolName === "create_plan" ? "إضافة خطة" : "عرض الخطط"}
                               </span>
                             </div>
                             
@@ -178,7 +179,7 @@ export function AIChat() {
                       
                       if (tool.state === "input-streaming" || tool.state === "input-available") {
                         return (
-                          <div key={tool.toolInvocationId} className="mt-2 flex items-center gap-2 text-muted-foreground">
+                          <div key={tool.toolCallId} className="mt-2 flex items-center gap-2 text-muted-foreground">
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-xs">جاري المعالجة...</span>
                           </div>
