@@ -11,12 +11,9 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
-import { createClient } from "@/lib/supabase/client";
 
 export default function AuthPage() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -27,23 +24,10 @@ export default function AuthPage() {
     setIsLoading(true);
     setErrors({});
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      setErrors({ email: error.message });
-      setIsLoading(false);
-      return;
-    }
-
-    // Redirect to vault on success
+    // For demo, redirect to vault
     window.location.href = "/vault";
   };
 
@@ -53,10 +37,8 @@ export default function AuthPage() {
     setErrors({});
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-    const name = formData.get("name") as string;
 
     if (password !== confirmPassword) {
       setErrors({
@@ -69,25 +51,10 @@ export default function AuthPage() {
       return;
     }
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: name,
-          avatar_url: "",
-        },
-      },
-    });
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    if (error) {
-      setErrors({ email: error.message });
-      setIsLoading(false);
-      return;
-    }
-
-    // Redirect to vault (or check email confirmation depending on settings)
+    // For demo, redirect to vault
     window.location.href = "/vault";
   };
 
