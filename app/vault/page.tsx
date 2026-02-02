@@ -214,7 +214,7 @@ export default function VaultPage() {
                         {memory.title}
                       </p>
                       <p className="text-xs text-white/70">
-                        {memory.hijriDate}
+                        {memory.hijri_date}
                       </p>
                     </div>
                   </motion.div>
