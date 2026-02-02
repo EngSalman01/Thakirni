@@ -72,7 +72,7 @@ export default function PricingPage() {
       ],
       ctaAr: "ابدأ مجاناً",
       ctaEn: "Start Free",
-      buttonVariant: "outline",
+      buttonVariant: "secondary",
       popular: false,
     },
     {
@@ -226,17 +226,18 @@ export default function PricingPage() {
                 <Card
                   className={cn(
                     "relative h-full flex flex-col transition-all duration-300 border overflow-hidden",
+                    // Increased opacity for better readability, removed backdrop blur from normal cards if needed
                     tier.popular
-                      ? "bg-background/60 backdrop-blur-md border-emerald-500 ring-1 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10"
+                      ? "bg-background/80 backdrop-blur-md border-emerald-500 ring-1 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10"
                       : "bg-card border-border hover:border-primary/50 hover:shadow-lg",
                   )}
                 >
                   {/* Under Development Overlay */}
                   {tier.underDevelopment && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px]">
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm">
                       {/* Red X */}
                       <div className="relative mb-6">
-                        <X className="w-48 h-48 text-red-500/80 stroke-[1.5]" />
+                        <X className="w-48 h-48 text-red-500/90 stroke-[1.5]" />
                       </div>
 
                       {/* Text */}
@@ -263,7 +264,14 @@ export default function PricingPage() {
                     </div>
                   )}
 
-                  <CardHeader className="pb-4 opacity-50 filter blur-[1px]">
+                  {/* Removed extra blur filter from header/content to fix "all blurry" issue, 
+                      relied on the overlay for the disabled look */}
+                  <CardHeader
+                    className={cn(
+                      "pb-4",
+                      tier.underDevelopment && "opacity-50",
+                    )}
+                  >
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <CardTitle className="text-2xl font-bold text-foreground mb-1">
@@ -304,8 +312,7 @@ export default function PricingPage() {
                   <div
                     className={cn(
                       "flex flex-col flex-1",
-                      tier.underDevelopment &&
-                        "opacity-40 filter blur-[1px] pointer-events-none",
+                      tier.underDevelopment && "opacity-50 pointer-events-none",
                     )}
                   >
                     <CardContent className="flex-1">
@@ -347,7 +354,7 @@ export default function PricingPage() {
                           tier.buttonVariant === "emerald"
                             ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             : tier.buttonVariant === "outline"
-                              ? "bg-transparent border border-input hover:bg-accent hover:text-accent-foreground"
+                              ? "bg-transparent border-2 border-muted-foreground/20 hover:border-foreground text-foreground hover:bg-accent"
                               : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
                         )}
                         disabled={tier.underDevelopment}
