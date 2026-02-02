@@ -17,7 +17,6 @@ import { LandingFooter } from "@/components/thakirni/landing-footer";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -42,7 +41,7 @@ const cardVariants: Variants = {
 };
 
 export default function PricingPage() {
-  const { t, isArabic } = useLanguage();
+  const { t } = useLanguage();
   const [isAnnual, setIsAnnual] = useState(false);
 
   const pricingTiers = [
@@ -83,7 +82,7 @@ export default function PricingPage() {
       targetAr: "للمحترفين والمستقلين",
       targetEn: "Professionals & Freelancers",
       price: "29",
-      priceAnnual: "290", // 29 * 12 = 348, saving ~17% by paying 290. Prompt says "290/year".
+      priceAnnual: "290",
       icon: User,
       features: [
         {
@@ -106,7 +105,7 @@ export default function PricingPage() {
       ],
       ctaAr: "اشترك الآن",
       ctaEn: "Subscribe Now",
-      buttonVariant: "emerald", // Custom logic below
+      buttonVariant: "emerald",
       popular: true,
     },
     {
@@ -151,11 +150,11 @@ export default function PricingPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-zinc-950">
+    <main className="min-h-screen bg-background">
       <LandingHeader />
 
       <section className="pt-32 pb-20 overflow-hidden relative">
-        {/* Background acccents */}
+        {/* Background accents - adjusted for visibility in both themes */}
         <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -167,10 +166,10 @@ export default function PricingPage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
               {t("خـطط مرنة تناسب طموحك", "Flexible Plans for Your Ambition")}
             </h1>
-            <p className="text-lg text-zinc-400 max-w-2xl mx-auto mb-8">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               {t(
                 "سواء كنت فرداً يريد تنظيم حياته أو شركة تبحث عن ذكاء جماعي، لدينا ما يناسبك.",
                 "Whether you're an individual organizing your life or a company seeking collective intelligence, we have you covered.",
@@ -182,7 +181,9 @@ export default function PricingPage() {
               <span
                 className={cn(
                   "text-sm transition-colors",
-                  !isAnnual ? "text-white font-medium" : "text-zinc-500",
+                  !isAnnual
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground",
                 )}
               >
                 {t("شهري", "Monthly")}
@@ -195,11 +196,13 @@ export default function PricingPage() {
               <span
                 className={cn(
                   "text-sm transition-colors",
-                  isAnnual ? "text-white font-medium" : "text-zinc-500",
+                  isAnnual
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground",
                 )}
               >
                 {t("سنوي", "Yearly")}
-                <span className="ms-2 text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full">
+                <span className="ms-2 text-xs bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
                   {t("وفر ٢٠٪", "Save 20%")}
                 </span>
               </span>
@@ -223,13 +226,13 @@ export default function PricingPage() {
                   className={cn(
                     "relative h-full flex flex-col transition-all duration-300 border",
                     tier.popular
-                      ? "bg-zinc-900/40 backdrop-blur-md border-emerald-500/50 shadow-2xl shadow-emerald-900/20"
-                      : "bg-zinc-900/20 border-zinc-800 hover:border-zinc-700",
+                      ? "bg-background/60 backdrop-blur-md border-emerald-500 ring-1 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10"
+                      : "bg-card border-border hover:border-primary/50 hover:shadow-lg",
                   )}
                 >
                   {tier.popular && (
                     <div className="absolute -top-4 inset-x-0 flex justify-center">
-                      <div className="bg-emerald-500 text-black px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg shadow-emerald-500/20">
+                      <div className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg shadow-emerald-500/10">
                         <Sparkles className="w-3.5 h-3.5" />
                         {t("الأكثر شعبية", "Most Popular")}
                       </div>
@@ -239,10 +242,10 @@ export default function PricingPage() {
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <CardTitle className="text-2xl font-bold text-white mb-1">
+                        <CardTitle className="text-2xl font-bold text-foreground mb-1">
                           {t(tier.nameAr, tier.nameEn)}
                         </CardTitle>
-                        <CardDescription className="text-zinc-400">
+                        <CardDescription className="text-muted-foreground">
                           {t(tier.targetAr, tier.targetEn)}
                         </CardDescription>
                       </div>
@@ -250,8 +253,8 @@ export default function PricingPage() {
                         className={cn(
                           "p-2 rounded-lg",
                           tier.popular
-                            ? "bg-emerald-500/10 text-emerald-500"
-                            : "bg-zinc-800 text-zinc-400",
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-500"
+                            : "bg-muted text-muted-foreground",
                         )}
                       >
                         <tier.icon className="w-6 h-6" />
@@ -259,13 +262,13 @@ export default function PricingPage() {
                     </div>
 
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-white">
+                      <span className="text-4xl font-bold text-foreground">
                         {isAnnual ? tier.priceAnnual : tier.price}
                       </span>
-                      <span className="text-emerald-500 text-xl font-bold">
+                      <span className="text-emerald-600 dark:text-emerald-500 text-xl font-bold">
                         {t("ر.س", "SAR")}
                       </span>
-                      <span className="text-zinc-500 text-sm ms-2">
+                      <span className="text-muted-foreground text-sm ms-2">
                         {tier.priceSuffixAr &&
                           t(tier.priceSuffixAr, tier.priceSuffixEn)}
                         / {isAnnual ? t("سنة", "year") : t("شهر", "month")}
@@ -274,7 +277,7 @@ export default function PricingPage() {
                   </CardHeader>
 
                   <CardContent className="flex-1">
-                    <div className="w-full h-px bg-zinc-800 mb-6" />
+                    <div className="w-full h-px bg-border mb-6" />
                     <ul className="space-y-4">
                       {tier.features.map((feature, featureIndex) => (
                         <li
@@ -283,19 +286,19 @@ export default function PricingPage() {
                         >
                           {feature.included ? (
                             <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                              <Check className="w-3 h-3 text-emerald-500" />
+                              <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-500" />
                             </div>
                           ) : (
                             <div className="mt-0.5 w-5 h-5 flex items-center justify-center flex-shrink-0">
-                              <X className="w-4 h-4 text-zinc-700" />
+                              <X className="w-4 h-4 text-muted-foreground/50" />
                             </div>
                           )}
                           <span
                             className={cn(
                               "text-sm",
                               feature.included
-                                ? "text-zinc-300"
-                                : "text-zinc-600",
+                                ? "text-foreground/90"
+                                : "text-muted-foreground/70",
                             )}
                           >
                             {t(feature.ar, feature.en)}
@@ -310,10 +313,10 @@ export default function PricingPage() {
                       className={cn(
                         "w-full h-12 text-base font-medium rounded-xl transition-all duration-300",
                         tier.buttonVariant === "emerald"
-                          ? "bg-emerald-500 hover:bg-emerald-400 text-black hover:shadow-lg hover:shadow-emerald-500/20"
+                          ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                           : tier.buttonVariant === "outline"
-                            ? "bg-transparent border border-zinc-700 text-white hover:bg-zinc-800 hover:border-zinc-600"
-                            : "bg-zinc-800 text-white hover:bg-zinc-700",
+                            ? "bg-transparent border border-input hover:bg-accent hover:text-accent-foreground"
+                            : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
                       )}
                     >
                       {t(tier.ctaAr, tier.ctaEn)}
@@ -329,7 +332,7 @@ export default function PricingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="mt-20 border-t border-zinc-800 pt-10"
+            className="mt-20 border-t border-border pt-10"
           >
             <div className="grid md:grid-cols-4 gap-6 text-center">
               {[
@@ -356,9 +359,9 @@ export default function PricingPage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex flex-col items-center gap-2 text-zinc-500"
+                  className="flex flex-col items-center gap-2 text-muted-foreground"
                 >
-                  <item.icon className="w-5 h-5 mb-1 text-emerald-500/50" />
+                  <item.icon className="w-5 h-5 mb-1 text-emerald-500/70" />
                   <span className="text-sm">
                     {t(item.labelAr, item.labelEn)}
                   </span>
