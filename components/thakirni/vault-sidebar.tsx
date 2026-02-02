@@ -70,9 +70,16 @@ export function VaultSidebar() {
   }, []);
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    window.location.href = "/auth";
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      // Use window.location to force a full refresh and clear any client-side state
+      window.location.href = "/auth";
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Fallback redirect even if signOut fails
+      window.location.href = "/auth";
+    }
   };
 
   return (
