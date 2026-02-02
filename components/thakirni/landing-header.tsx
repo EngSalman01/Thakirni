@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
+import { BrandLogo } from "@/components/thakirni/brand-logo"
 
 export function LandingHeader() {
   return (
@@ -18,11 +19,11 @@ export function LandingHeader() {
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">ذ</span>
+            <BrandLogo width={48} height={48} />
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-foreground leading-none">ذكرني</span>
+              <span className="text-xs text-muted-foreground font-english" dir="ltr">Thakirni</span>
             </div>
-            <span className="text-xl font-bold text-foreground">ذكرني</span>
-            <span className="text-xs text-muted-foreground font-english hidden sm:inline" dir="ltr">Thakirni</span>
           </Link>
 
           {/* Navigation */}
