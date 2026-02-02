@@ -17,13 +17,9 @@ export function LandingHeader() {
     >
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <BrandLogo width={48} height={48} />
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-foreground leading-none">ذكرني</span>
-              <span className="text-xs text-muted-foreground font-english" dir="ltr">Thakirni</span>
-            </div>
+          {/* Logo - Using Full Variant (includes text) */}
+          <Link href="/" className="flex items-center">
+            <BrandLogo width={160} height={50} variant="full" />
           </Link>
 
           {/* Navigation */}
