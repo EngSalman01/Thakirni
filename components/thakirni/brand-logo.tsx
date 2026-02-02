@@ -2,30 +2,19 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { useTheme } from "next-themes"
 import { cn } from "@/lib/utils"
 
 interface BrandLogoProps {
   className?: string
   width?: number
   height?: number
+  // Variant prop is kept for backward compatibility but ignored or mapped to same file
   variant?: "full" | "icon"
 }
 
-export function BrandLogo({ className, width = 40, height = 40, variant = "icon" }: BrandLogoProps) {
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Maps variants to the files provided by the user
-  // variant="full" -> Logo with letters
-  // variant="icon" -> Logo without letters (icon)
-  const src = variant === "full" 
-    ? "/images/logo-full.png"
-    : "/images/logo-icon.png"
+export function BrandLogo({ className, width = 120, height = 40 }: BrandLogoProps) {
+  // Using the single logo file provided by user (logo-full.png)
+  const src = "/images/logo-full.png"
 
   return (
     <div className={cn("relative", className)}>
@@ -34,7 +23,7 @@ export function BrandLogo({ className, width = 40, height = 40, variant = "icon"
         alt="Thakirni Logo" 
         width={width} 
         height={height} 
-        className="object-contain" // Ensures image fits within dimensions without distortion
+        className="object-contain"
         priority
       />
     </div>

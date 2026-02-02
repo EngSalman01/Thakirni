@@ -11,9 +11,8 @@ export function LandingFooter() {
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <BrandLogo width={48} height={48} />
-              <span className="text-xl font-bold text-foreground">ذكرني</span>
+            <Link href="/" className="flex items-center mb-4">
+              <BrandLogo width={160} height={50} />
             </Link>
             <p className="text-foreground/60 max-w-sm mb-4">
               عقلك الثاني اللي يضبط يومك.. وثّق كل شي أول بأول، وريّح بالك من النسيان.
