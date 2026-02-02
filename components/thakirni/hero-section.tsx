@@ -58,8 +58,8 @@ export function HeroSection() {
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8 py-6 rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
               >
-                ابدأ الأرشفة
-                <span className="font-english ms-2 text-sm opacity-80">Start Your Vault</span>
+                ابدأ تجربتك المجانية
+                <span className="font-english ms-2 text-sm opacity-80">Start Organizing</span>
               </Button>
             </Link>
             

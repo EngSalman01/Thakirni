@@ -10,7 +10,7 @@ export function LegacyQRCard() {
       <CardHeader className="pb-4">
         <CardTitle className="text-lg text-card-foreground flex items-center gap-2">
           <QrCode className="w-5 h-5 text-gold" />
-          رمز QR للذكرى
+          بطاقة تواصل ذكية
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center">
@@ -38,7 +38,7 @@ export function LegacyQRCard() {
         </div>
 
         <p className="text-sm text-card-foreground/70 text-center mb-4">
-          امسح الرمز للوصول إلى صفحة الذكرى
+          امسح الرمز لإضافتي لجهات الاتصال
         </p>
 
         <div className="flex gap-2 w-full">

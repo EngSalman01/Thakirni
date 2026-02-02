@@ -1,34 +1,34 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Heart, MessageCircle, Bell } from "lucide-react"
+import { MessageSquareText, Mic, CalendarClock } from "lucide-react"
 
 const features = [
   {
-    icon: Heart,
-    titleAr: "صدقة جارية",
-    titleEn: "Sadaqah Jariyah",
-    descriptionAr: "تكامل مع منصات إحسان وشفاء للتبرع المستمر",
-    descriptionEn: "Integration with Ehsan/Shefa platforms",
+    icon: MessageSquareText,
+    titleAr: "تكامل واتساب",
+    titleEn: "WhatsApp Integration",
+    descriptionAr: "أرسل ملاحظاتك الصوتية والنصية مباشرة لواتساب ذكرني ليتم حفظها.",
+    descriptionEn: "Send voice/text notes directly to Thakirni on WhatsApp.",
   },
   {
-    icon: MessageCircle,
-    titleAr: "رسائل واتساب",
-    titleEn: "WhatsApp Messages",
-    descriptionAr: "أرسل تذكيرات ورسائل تلقائية عبر واتساب",
-    descriptionEn: "Automated reminders via WhatsApp",
+    icon: Mic,
+    titleAr: "تحويل الصوت لنص",
+    titleEn: "Voice to Text",
+    descriptionAr: "حوّل اجتماعاتك وملاحظاتك الصوتية إلى نصوص ومهام منظمة تلقائياً.",
+    descriptionEn: "Convert meetings and voice notes into structured text & tasks.",
   },
   {
-    icon: Bell,
-    titleAr: "تذكيرات ذكية",
-    titleEn: "Smart Reminders",
-    descriptionAr: "تذكيرات بالمناسبات والمواعيد المهمة بالذكاء الاصطناعي",
-    descriptionEn: "AI-powered event & date reminders",
+    icon: CalendarClock,
+    titleAr: "إدارة الاجتماعات",
+    titleEn: "Meeting Management",
+    descriptionAr: "لخّص اجتماعاتك واستخرج منها المهام والتذكيرات المهمة بذكاء.",
+    descriptionEn: "Summarize meetings and extract action items intelligently.",
   },
 ]
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -38,7 +38,7 @@ const containerVariants = {
   },
 }
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
@@ -72,7 +72,7 @@ export function FeaturesSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-foreground/60 max-w-2xl mx-auto"
           >
-            نقدم لك أدوات مبتكرة لحفظ وتخليد ذكرى أحبائك
+            نقدم لك أدوات مبتكرة لتنظيم يومك وتنشيط ذاكرتك
           </motion.p>
         </div>
 
