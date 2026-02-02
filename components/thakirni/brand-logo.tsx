@@ -9,10 +9,10 @@ interface BrandLogoProps {
   className?: string
   width?: number
   height?: number
-  showText?: boolean
+  variant?: "full" | "icon"
 }
 
-export function BrandLogo({ className, width = 40, height = 40 }: BrandLogoProps) {
+export function BrandLogo({ className, width = 40, height = 40, variant = "icon" }: BrandLogoProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -20,12 +20,12 @@ export function BrandLogo({ className, width = 40, height = 40 }: BrandLogoProps
     setMounted(true)
   }, [])
 
-  // Default to logo-dark (for light background) if not mounted or theme is light
-  const src = !mounted 
-    ? "/images/logo-dark.png" 
-    : resolvedTheme === "dark" 
-      ? "/images/logo-light.png" 
-      : "/images/logo-dark.png"
+  // Maps variants to the files provided by the user
+  // variant="full" -> Logo with letters
+  // variant="icon" -> Logo without letters (icon)
+  const src = variant === "full" 
+    ? "/images/logo-full.png"
+    : "/images/logo-icon.png"
 
   return (
     <div className={cn("relative", className)}>
@@ -34,7 +34,7 @@ export function BrandLogo({ className, width = 40, height = 40 }: BrandLogoProps
         alt="Thakirni Logo" 
         width={width} 
         height={height} 
-        className="object-contain" // object-contain ensures the whole logo is visible
+        className="object-contain" // Ensures image fits within dimensions without distortion
         priority
       />
     </div>
