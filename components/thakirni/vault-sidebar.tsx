@@ -18,9 +18,6 @@ const navItems = [
   { href: "/vault", icon: Home, labelAr: "الرئيسية", labelEn: "Home" },
   { href: "/vault", icon: MessageSquare, labelAr: "المساعد الذكي", labelEn: "AI Assistant" },
   { href: "/vault/plans", icon: Calendar, labelAr: "خططي", labelEn: "My Plans" },
-  { href: "/vault/tributes", icon: Heart, labelAr: "ذكرياتي", labelEn: "My Tributes" },
-  { href: "/vault/family-tree", icon: GitBranch, labelAr: "شجرة العائلة", labelEn: "Family Tree" },
-  { href: "/vault/sadaqah", icon: Link2, labelAr: "روابط الصدقة", labelEn: "Sadaqah Links" },
   { href: "/vault/settings", icon: Settings, labelAr: "الإعدادات", labelEn: "Settings" },
 ]
 
