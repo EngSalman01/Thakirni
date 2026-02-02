@@ -7,7 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  ArrowLeft,
+  Smartphone,
+} from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
@@ -326,6 +334,24 @@ export default function AuthPage() {
                     </div>
 
                     <div className="space-y-2 text-start">
+                      <Label htmlFor="signup-phone">
+                        {t("رقم الجوال", "Phone Number")}
+                      </Label>
+                      <div className="relative">
+                        <Smartphone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="signup-phone"
+                          name="phone"
+                          type="tel"
+                          placeholder="050 000 0000"
+                          className="ps-10"
+                          dir="ltr"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signup-email">
                         {t("البريد الإلكتروني", "Email Address")}
                       </Label>
@@ -419,7 +445,7 @@ export default function AuthPage() {
 
                   <Button
                     variant="outline"
-                    className="w-full gap-2 bg-transparent"
+                    className="w-full gap-2 border-2 hover:bg-muted"
                     type="button"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
