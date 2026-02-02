@@ -7,19 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-  ArrowLeft,
-  Smartphone,
-} from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { useUser } from "@/components/user-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 
 export default function AuthPage() {
@@ -27,27 +18,16 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { t, isArabic } = useLanguage();
-  const { login } = useUser();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
-
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Login with dummy data for sign in
-    login({
-      name: "User",
-      email: email,
-      phone: "",
-      plan: "Individual",
-    });
-
+    // For demo, redirect to vault
     window.location.href = "/vault";
   };
 
@@ -59,9 +39,6 @@ export default function AuthPage() {
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const phone = formData.get("phone") as string;
 
     if (password !== confirmPassword) {
       setErrors({
@@ -77,14 +54,7 @@ export default function AuthPage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Save user data
-    login({
-      name,
-      email,
-      phone,
-      plan: "Individual",
-    });
-
+    // For demo, redirect to vault
     window.location.href = "/vault";
   };
 
@@ -356,24 +326,6 @@ export default function AuthPage() {
                     </div>
 
                     <div className="space-y-2 text-start">
-                      <Label htmlFor="signup-phone">
-                        {t("رقم الجوال", "Phone Number")}
-                      </Label>
-                      <div className="relative">
-                        <Smartphone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="signup-phone"
-                          name="phone"
-                          type="tel"
-                          placeholder="050 000 0000"
-                          className="ps-10"
-                          dir="ltr"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-start">
                       <Label htmlFor="signup-email">
                         {t("البريد الإلكتروني", "Email Address")}
                       </Label>
@@ -467,7 +419,7 @@ export default function AuthPage() {
 
                   <Button
                     variant="outline"
-                    className="w-full gap-2 border-2 hover:bg-muted"
+                    className="w-full gap-2 bg-transparent"
                     type="button"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">

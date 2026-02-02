@@ -288,7 +288,7 @@ export default function VaultPage() {
                     "Drag files here or click to select",
                   )}
                 </p>
-                <Button variant="secondary" size="sm" className="w-full">
+                <Button variant="outline" size="sm" className="bg-transparent">
                   {t("اختر ملفات", "Select Files")}
                 </Button>
               </div>
