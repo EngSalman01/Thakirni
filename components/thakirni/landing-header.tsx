@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LanguageToggle } from "@/components/language-toggle"
-import { BrandLogo } from "@/components/thakirni/brand-logo"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { BrandLogo } from "@/components/thakirni/brand-logo";
 
 export function LandingHeader() {
   return (
@@ -24,14 +24,24 @@ export function LandingHeader() {
           </Link>
 
           {/* Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+          {/* Navigation */}
+          <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+            <Link
+              href="#features"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               المميزات
             </Link>
-            <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="/pricing"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               الأسعار
             </Link>
-            <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href="#contact"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               تواصل معنا
             </Link>
           </div>
@@ -41,7 +51,10 @@ export function LandingHeader() {
             <LanguageToggle />
             <ThemeToggle />
             <Link href="/auth">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+              >
                 تسجيل الدخول
               </Button>
             </Link>
@@ -54,5 +67,5 @@ export function LandingHeader() {
         </nav>
       </div>
     </motion.header>
-  )
+  );
 }
