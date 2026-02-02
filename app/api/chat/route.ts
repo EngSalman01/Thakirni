@@ -1,33 +1,113 @@
-import { streamText, convertToModelMessages, tool } from "ai"
+import { streamText, tool } from "ai"
+import { google } from "@ai-sdk/google"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
 
+// Polyfill for convertToCoreMessages if missing from SDK
+// This converts UI messages (from useChat) to Core messages (for streamText)
+function convertToCoreMessages(messages: any[]) {
+  const coreMessages: any[] = [];
+
+  for (const message of messages) {
+    if (message.role === 'user') {
+      coreMessages.push({
+        role: 'user',
+        content: message.content,
+      });
+    } else if (message.role === 'assistant') {
+      const content = [];
+      if (message.content) {
+        content.push({ type: 'text', text: message.content });
+      }
+      
+      // Handle tool calls
+      if (message.toolInvocations) {
+        for (const toolInvocation of message.toolInvocations) {
+           // In Core API, the assistant message contains the call
+           // We include it if it's in 'call' state or 'result' state (history)
+           content.push({ 
+             type: 'tool-call', 
+             toolCallId: toolInvocation.toolCallId,
+             toolName: toolInvocation.toolName,
+             args: toolInvocation.args
+           });
+        }
+      }
+      
+      coreMessages.push({
+        role: 'assistant',
+        content: content,
+      });
+      
+      // Handle tool results as separate messages following the assistant message
+      const toolResults = [];
+      if (message.toolInvocations) {
+        for (const toolInvocation of message.toolInvocations) {
+           if ('result' in toolInvocation) {
+             toolResults.push({
+               type: 'tool-result',
+               toolCallId: toolInvocation.toolCallId,
+               toolName: toolInvocation.toolName,
+               result: toolInvocation.result
+             });
+           }
+        }
+      }
+      
+      if (toolResults.length > 0) {
+        coreMessages.push({
+          role: 'tool',
+          content: toolResults
+        });
+      }
+      
+    } else if (message.role === 'tool') {
+       // If UI sent 'tool' role explicitly (rare in useChat default but possible)
+       coreMessages.push({
+         role: 'tool',
+         content: message.content
+       })
+    } else if (message.role === 'system') {
+      coreMessages.push({
+        role: 'system',
+        content: message.content
+      })
+    }
+  }
+  return coreMessages;
+}
+
 export async function POST(req: Request) {
+  console.log("Chat API called")
   const { messages } = await req.json()
+  console.log("Received messages count:", messages?.length)
+
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
+  console.log("User authenticated:", !!user)
+
 
   const result = streamText({
-    model: "openai/gpt-4o-mini",
-    system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على:
-1. إضافة خطط وتذكيرات مهمة (مثل: مواعيد، أحداث، ذكريات مهمة)
-2. تنظيم ذكرياتهم وأحبائهم
-3. إعداد تذكيرات دورية (يومية، أسبوعية، شهرية، سنوية)
+    model: google("gemini-3-flash-preview"),
+    system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
+1. تنظيم المهام (Tasks)
+2. قائمة البقالة (Groceries)
+3. الاجتماعات والمواعيد (Meetings)
 
-عندما يطلب المستخدم إضافة خطة أو تذكير، استخدم أداة create_plan.
-عندما يطلب المستخدم عرض خططه، استخدم أداة list_plans.
+عندما يطلب المستخدم إضافة مهمة أو غرض أو موعد، استخدم أداة create_plan.
+عندما يطلب المستخدم عرض مهامه، استخدم أداة list_plans.
 
-تحدث بالعربية بشكل ودود ومحترم. استخدم الإنجليزية إذا تحدث المستخدم بها.
+تحدث بالعربية بشكل عملي ومختصر.
 
-You are Thakirni, an intelligent assistant helping users:
-1. Add important plans and reminders (appointments, events, anniversaries)
-2. Organize their memories and loved ones
-3. Set up recurring reminders (daily, weekly, monthly, yearly)
+You are Thakirni, an intelligent assistant helping users with Short-Term Memory management:
+1. Task Management
+2. Grocery Lists
+3. Meetings & Appointments
 
-When users ask to add a plan/reminder, use the create_plan tool.
-When users ask to view their plans, use the list_plans tool.`,
-    messages: await convertToModelMessages(messages),
+When users ask to add a task, grocery item, or meeting, use the create_plan tool.
+When users ask to view their items, use the list_plans tool.`,
+    messages: convertToCoreMessages(messages),
     tools: {
       create_plan: tool({
         description: "Create a new plan or reminder for the user. Use this when they want to remember something.",
@@ -37,7 +117,7 @@ When users ask to view their plans, use the list_plans tool.`,
           plan_date: z.string().describe("Date of the plan in ISO format (YYYY-MM-DD)"),
           plan_time: z.string().nullable().describe("Time of the plan in HH:MM format, if specified"),
           recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).describe("How often to repeat this reminder"),
-          category: z.enum(["anniversary", "appointment", "memory", "other"]).describe("Category of the plan"),
+          category: z.enum(["task", "grocery", "meeting", "other"]).describe("Category of the plan"),
         }),
         execute: async ({ title, description, plan_date, plan_time, recurrence, category }) => {
           if (!user) {
@@ -68,7 +148,7 @@ When users ask to view their plans, use the list_plans tool.`,
       list_plans: tool({
         description: "List all plans and reminders for the user",
         inputSchema: z.object({
-          category: z.enum(["all", "anniversary", "appointment", "memory", "other"]).nullable().describe("Filter by category"),
+          category: z.enum(["all", "task", "grocery", "meeting", "other"]).nullable().describe("Filter by category"),
           upcoming_only: z.boolean().describe("Show only upcoming plans"),
         }),
         execute: async ({ category, upcoming_only }) => {
@@ -103,9 +183,8 @@ When users ask to view their plans, use the list_plans tool.`,
           }
         },
       }),
-    },
-    maxSteps: 5,
+    }
   })
 
-  return result.toUIMessageStreamResponse()
+  return result.toTextStreamResponse()
 }
