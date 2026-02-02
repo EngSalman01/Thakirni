@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { useUser } from "@/components/user-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 
 export default function AuthPage() {
@@ -26,16 +27,27 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { t, isArabic } = useLanguage();
+  const { login } = useUser();
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
 
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // For demo, redirect to vault
+    // Login with dummy data for sign in
+    login({
+      name: "User",
+      email: email,
+      phone: "",
+      plan: "Individual",
+    });
+
     window.location.href = "/vault";
   };
 
@@ -47,6 +59,9 @@ export default function AuthPage() {
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
 
     if (password !== confirmPassword) {
       setErrors({
@@ -62,7 +77,14 @@ export default function AuthPage() {
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // For demo, redirect to vault
+    // Save user data
+    login({
+      name,
+      email,
+      phone,
+      plan: "Individual",
+    });
+
     window.location.href = "/vault";
   };
 
