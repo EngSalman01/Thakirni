@@ -17,10 +17,10 @@ export function LandingFooter() {
               <span className="text-xl font-bold text-foreground">ذكرني</span>
             </Link>
             <p className="text-foreground/60 max-w-sm mb-4">
-              المنصة الأولى في المملكة العربية السعودية لحفظ وتخليد ذكرى أحبائنا الراحلين
+              عقلك الثاني اللي يضبط يومك.. وثّق كل شي أول بأول، وريّح بالك من النسيان.
             </p>
             <p className="font-english text-sm text-foreground/40" dir="ltr">
-              The first digital legacy vault in Saudi Arabia
+              Your second brain that sorts your day.. Document everything as it happens, and rest your mind from forgetting.
             </p>
           </div>
 
