@@ -6,8 +6,11 @@ import { motion } from "framer-motion";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
+import { useLanguage } from "@/components/language-provider";
 
 export function LandingHeader() {
+  const { t } = useLanguage();
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -29,19 +32,19 @@ export function LandingHeader() {
               href="#features"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              المميزات
+              {t("المميزات", "Features")}
             </Link>
             <Link
               href="/pricing"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              الأسعار
+              {t("الأسعار", "Pricing")}
             </Link>
             <Link
               href="#contact"
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              تواصل معنا
+              {t("تواصل معنا", "Contact")}
             </Link>
           </div>
 
@@ -54,12 +57,12 @@ export function LandingHeader() {
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
               >
-                تسجيل الدخول
+                {t("تسجيل الدخول", "Login")}
               </Button>
             </Link>
             <Link href="/auth">
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                ابدأ الآن
+                {t("ابدأ الآن", "Start Now")}
               </Button>
             </Link>
           </div>
