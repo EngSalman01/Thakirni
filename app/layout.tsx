@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Tajawal, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LanguageProvider } from "@/components/language-provider";
 import "./globals.css";
 
 const tajawal = Tajawal({
@@ -51,15 +52,17 @@ export default function RootLayout({
       <body
         className={`${tajawal.variable} ${inter.variable} font-sans antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </LanguageProvider>
         {/* Vercel Analytics */}
         <Analytics />
       </body>
