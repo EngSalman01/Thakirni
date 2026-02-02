@@ -11,10 +11,12 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AuthPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
