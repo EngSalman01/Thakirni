@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Calendar
 } from "lucide-react"
+import { BrandLogo } from "@/components/thakirni/brand-logo"
 
 const navItems = [
   { href: "/vault", icon: Home, labelAr: "الرئيسية", labelEn: "Home" },
@@ -29,9 +30,7 @@ export function VaultSidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xl">ذ</span>
-          </div>
+          <BrandLogo width={48} height={48} />
           <div>
             <span className="text-lg font-bold text-card-foreground block">ذكرني</span>
             <span className="text-xs text-muted-foreground">مساعدك الذكي</span>
