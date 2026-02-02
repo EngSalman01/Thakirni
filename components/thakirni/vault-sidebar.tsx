@@ -42,6 +42,7 @@ const navItems = [
 export function VaultSidebar() {
   const pathname = usePathname();
   const { isArabic, t } = useLanguage();
+  const { user, logout } = useUser();
 
   return (
     <aside className="fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex flex-col">
@@ -89,18 +90,23 @@ export function VaultSidebar() {
 
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-            <span className="text-primary font-bold">م</span>
+            <span className="text-primary font-bold">
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </span>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-card-foreground">
-              محمد أحمد
+          <div className="flex-1 overflow-hidden">
+            <p className="text-sm font-medium text-card-foreground truncate">
+              {user?.name || t("ضيف", "Guest")}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {t("الخطة المميزة", "Premium Plan")}
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.email || ""}
             </p>
           </div>
         </div>
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors mt-2">
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors mt-2"
+        >
           <LogOut className="w-5 h-5" />
           <span>{t("تسجيل الخروج", "Logout")}</span>
         </button>
