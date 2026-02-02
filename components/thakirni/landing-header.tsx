@@ -19,8 +19,8 @@ export function LandingHeader() {
         <nav className="flex items-center justify-between h-16">
           {/* Logo - Using Full Variant (includes text) */}
           <Link href="/" className="flex items-center">
-            {/* Reduced size from 160x50 to 110x35 */}
-            <BrandLogo width={110} height={35} variant="full" />
+            {/* Reduced size to 90x28 for better fit in h-16 header */}
+            <BrandLogo width={90} height={28} variant="full" />
           </Link>
 
           {/* Navigation */}
