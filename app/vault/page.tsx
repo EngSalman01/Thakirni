@@ -112,28 +112,28 @@ export default function VaultPage() {
             {
               labelAr: "ذكرياتي",
               labelEn: "Memories",
-              value: memories.length.toString(),
+              value: memories.length,
               icon: ImageIcon,
               color: "text-primary",
             },
             {
               labelAr: "تذكيرات اليوم",
               labelEn: "Today's Reminders",
-              value: "٢",
+              value: 2,
               icon: Clock,
               color: "text-blue-500",
             },
             {
               labelAr: "الجدول الزمني",
               labelEn: "Schedule",
-              value: "٨",
+              value: 8,
               icon: Calendar,
               color: "text-green-500",
             },
             {
               labelAr: "رسائل صوتية",
               labelEn: "Voice Notes",
-              value: "٣",
+              value: 3,
               icon: Mic,
               color: "text-amber-500",
             },
@@ -150,7 +150,8 @@ export default function VaultPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">
-                    {stat.value}
+                    {/* Format number based on current language */}
+                    {isArabic ? stat.value.toLocaleString("ar-EG") : stat.value}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t(stat.labelAr, stat.labelEn)}
@@ -236,8 +237,8 @@ export default function VaultPage() {
                 {t("تذكيرات الجمعة", "Friday Reminders")}
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div>
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg gap-4">
+                  <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">
                       {t("رسالة جمعة مباركة", "Jumma Mubarak Message")}
                     </p>

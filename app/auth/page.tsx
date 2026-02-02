@@ -11,6 +11,7 @@ import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { BrandLogo } from "@/components/thakirni/brand-logo";
 
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -58,10 +59,6 @@ export default function AuthPage() {
   };
 
   return (
-    // Note: The dir={isArabic ? "rtl" : "ltr"} is handled by RootLayout/LanguageProvider on html,
-    // but individual sections might need overrides or flex direction adjustments if they were hardcoded.
-    // However, tailwind classes like 'start-' and 'end-' auto-flip with dir="rtl"/"ltr".
-    // We already removed hardcoded dir="rtl" from parent div.
     <div className="min-h-screen flex">
       {/* Left Column - Decorative */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950">
@@ -73,17 +70,19 @@ export default function AuthPage() {
         <div className="absolute bottom-20 end-20 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center p-12 text-center">
+        <div className="relative z-10 flex flex-col justify-center items-center h-full w-full p-12 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            className="flex flex-col items-center"
           >
             {/* Logo */}
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-8">
-              <span className="text-primary-foreground font-bold text-4xl">
-                ذ
-              </span>
+            <div className="mb-8">
+              {/* Using icon variant for the sidebar-like decorative area, but larger */}
+              <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-sm border border-white/10">
+                <BrandLogo width={80} height={80} variant="icon" />
+              </div>
             </div>
 
             <h2 className="text-4xl font-bold text-white mb-4">
@@ -118,7 +117,7 @@ export default function AuthPage() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 text-white/60 text-sm"
+                  className="flex items-center justify-center gap-2 text-white/60 text-sm"
                 >
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   <span>{t(item.ar, item.en)}</span>
@@ -149,14 +148,12 @@ export default function AuthPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full max-w-md"
+            className="w-full max-w-md flex flex-col items-center"
           >
-            {/* Mobile Logo */}
-            <div className="lg:hidden text-center mb-8">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center mx-auto mb-4">
-                <span className="text-primary-foreground font-bold text-2xl">
-                  ذ
-                </span>
+            {/* Mobile Logo for small screens */}
+            <div className="lg:hidden text-center mb-8 flex flex-col items-center">
+              <div className="mb-4">
+                <BrandLogo width={60} height={60} variant="icon" />
               </div>
               <h1 className="text-2xl font-bold text-foreground">
                 {t("ذكرني", "Thakirni")}
@@ -175,7 +172,7 @@ export default function AuthPage() {
 
               <AnimatePresence mode="wait">
                 {/* Sign In Form */}
-                <TabsContent value="signin" className="space-y-6">
+                <TabsContent value="signin" className="space-y-6 w-full">
                   <div className="text-center mb-6">
                     <h2 className="text-2xl font-bold text-foreground">
                       {t("مرحباً بعودتك", "Welcome Back")}
@@ -188,8 +185,8 @@ export default function AuthPage() {
                     </p>
                   </div>
 
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div className="space-y-2">
+                  <form onSubmit={handleSignIn} className="space-y-4 w-full">
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signin-email">
                         {t("البريد الإلكتروني", "Email Address")}
                       </Label>
@@ -207,7 +204,7 @@ export default function AuthPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signin-password">
                         {t("كلمة المرور", "Password")}
                       </Label>
@@ -297,7 +294,7 @@ export default function AuthPage() {
                 </TabsContent>
 
                 {/* Sign Up Form */}
-                <TabsContent value="signup" className="space-y-6">
+                <TabsContent value="signup" className="space-y-6 w-full">
                   <div className="text-center mb-6">
                     <h2 className="text-2xl font-bold text-foreground">
                       {t("إنشاء حساب جديد", "Create an account")}
@@ -310,8 +307,8 @@ export default function AuthPage() {
                     </p>
                   </div>
 
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="space-y-2">
+                  <form onSubmit={handleSignUp} className="space-y-4 w-full">
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signup-name">
                         {t("الاسم الكامل", "Full Name")}
                       </Label>
@@ -328,7 +325,7 @@ export default function AuthPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signup-email">
                         {t("البريد الإلكتروني", "Email Address")}
                       </Label>
@@ -346,7 +343,7 @@ export default function AuthPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signup-password">
                         {t("كلمة المرور", "Password")}
                       </Label>
@@ -375,7 +372,7 @@ export default function AuthPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-start">
                       <Label htmlFor="signup-confirm">
                         {t("تأكيد كلمة المرور", "Confirm Password")}
                       </Label>
