@@ -146,6 +146,7 @@ export default function PricingPage() {
       ctaEn: "Contact Sales",
       buttonVariant: "secondary",
       popular: false,
+      underDevelopment: true,
     },
   ];
 
@@ -154,7 +155,7 @@ export default function PricingPage() {
       <LandingHeader />
 
       <section className="pt-32 pb-20 overflow-hidden relative">
-        {/* Background accents - adjusted for visibility in both themes */}
+        {/* Background accents */}
         <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
 
@@ -224,12 +225,35 @@ export default function PricingPage() {
               >
                 <Card
                   className={cn(
-                    "relative h-full flex flex-col transition-all duration-300 border",
+                    "relative h-full flex flex-col transition-all duration-300 border overflow-hidden",
                     tier.popular
                       ? "bg-background/60 backdrop-blur-md border-emerald-500 ring-1 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10"
                       : "bg-card border-border hover:border-primary/50 hover:shadow-lg",
                   )}
                 >
+                  {/* Under Development Overlay */}
+                  {tier.underDevelopment && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px]">
+                      {/* Red X */}
+                      <div className="relative mb-6">
+                        <X className="w-48 h-48 text-red-500/80 stroke-[1.5]" />
+                      </div>
+
+                      {/* Text */}
+                      <div className="text-center px-4">
+                        <h3 className="text-2xl font-bold text-foreground mb-1">
+                          {t("قيد التطوير", "Under Development")}
+                        </h3>
+                        <p
+                          className="text-muted-foreground font-english"
+                          dir="ltr"
+                        >
+                          Coming Soon
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   {tier.popular && (
                     <div className="absolute -top-4 inset-x-0 flex justify-center">
                       <div className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg shadow-emerald-500/10">
@@ -239,7 +263,7 @@ export default function PricingPage() {
                     </div>
                   )}
 
-                  <CardHeader className="pb-4">
+                  <CardHeader className="pb-4 opacity-50 filter blur-[1px]">
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <CardTitle className="text-2xl font-bold text-foreground mb-1">
@@ -276,52 +300,62 @@ export default function PricingPage() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="flex-1">
-                    <div className="w-full h-px bg-border mb-6" />
-                    <ul className="space-y-4">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li
-                          key={featureIndex}
-                          className="flex items-start gap-3"
-                        >
-                          {feature.included ? (
-                            <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                              <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-500" />
-                            </div>
-                          ) : (
-                            <div className="mt-0.5 w-5 h-5 flex items-center justify-center flex-shrink-0">
-                              <X className="w-4 h-4 text-muted-foreground/50" />
-                            </div>
-                          )}
-                          <span
-                            className={cn(
-                              "text-sm",
-                              feature.included
-                                ? "text-foreground/90"
-                                : "text-muted-foreground/70",
-                            )}
+                  {/* Content (Features + Button) */}
+                  <div
+                    className={cn(
+                      "flex flex-col flex-1",
+                      tier.underDevelopment &&
+                        "opacity-40 filter blur-[1px] pointer-events-none",
+                    )}
+                  >
+                    <CardContent className="flex-1">
+                      <div className="w-full h-px bg-border mb-6" />
+                      <ul className="space-y-4">
+                        {tier.features.map((feature, featureIndex) => (
+                          <li
+                            key={featureIndex}
+                            className="flex items-start gap-3"
                           >
-                            {t(feature.ar, feature.en)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
+                            {feature.included ? (
+                              <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-500" />
+                              </div>
+                            ) : (
+                              <div className="mt-0.5 w-5 h-5 flex items-center justify-center flex-shrink-0">
+                                <X className="w-4 h-4 text-muted-foreground/50" />
+                              </div>
+                            )}
+                            <span
+                              className={cn(
+                                "text-sm",
+                                feature.included
+                                  ? "text-foreground/90"
+                                  : "text-muted-foreground/70",
+                              )}
+                            >
+                              {t(feature.ar, feature.en)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
 
-                  <CardFooter className="pt-6">
-                    <Button
-                      className={cn(
-                        "w-full h-12 text-base font-medium rounded-xl transition-all duration-300",
-                        tier.buttonVariant === "emerald"
-                          ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                          : tier.buttonVariant === "outline"
-                            ? "bg-transparent border border-input hover:bg-accent hover:text-accent-foreground"
-                            : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                      )}
-                    >
-                      {t(tier.ctaAr, tier.ctaEn)}
-                    </Button>
-                  </CardFooter>
+                    <CardFooter className="pt-6">
+                      <Button
+                        className={cn(
+                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300",
+                          tier.buttonVariant === "emerald"
+                            ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                            : tier.buttonVariant === "outline"
+                              ? "bg-transparent border border-input hover:bg-accent hover:text-accent-foreground"
+                              : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                        )}
+                        disabled={tier.underDevelopment}
+                      >
+                        {t(tier.ctaAr, tier.ctaEn)}
+                      </Button>
+                    </CardFooter>
+                  </div>
                 </Card>
               </motion.div>
             ))}
