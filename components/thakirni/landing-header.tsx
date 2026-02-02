@@ -24,7 +24,6 @@ export function LandingHeader() {
           </Link>
 
           {/* Navigation */}
-          {/* Navigation */}
           <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             <Link
               href="#features"
