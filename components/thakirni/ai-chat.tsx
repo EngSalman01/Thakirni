@@ -132,9 +132,8 @@ export function AIChat() {
           <AnimatePresence mode="popLayout">
             {messages.map((message) => {
               const text = getUIMessageText(message);
-              const toolInvocations =
-                message.parts?.filter((p) => p.type === "tool-invocation") ||
-                [];
+              // Use the SDK-provided toolInvocations array
+              const toolInvocations = message.toolInvocations || [];
 
               return (
                 <motion.div
@@ -175,21 +174,23 @@ export function AIChat() {
 
                     {/* Tool results */}
                     {toolInvocations.map((tool) => {
-                      if (tool.type !== "tool-invocation") return null;
-                      const result = tool.output as
-                        | {
-                            success?: boolean;
-                            message?: string;
-                            plans?: Array<{
-                              id: string;
-                              title: string;
-                              plan_date: string;
-                              category: string;
-                            }>;
-                          }
-                        | undefined;
+                      // tool is now ToolInvocation directly
 
-                      if (tool.state === "output-available" && result) {
+                      // Handle Completed State (state: 'result')
+                      if (tool.state === "result") {
+                        const result = tool.result as
+                          | {
+                              success?: boolean;
+                              message?: string;
+                              plans?: Array<{
+                                id: string;
+                                title: string;
+                                plan_date: string;
+                                category: string;
+                              }>;
+                            }
+                          | undefined;
+
                         return (
                           <motion.div
                             key={tool.toolCallId}
@@ -198,25 +199,25 @@ export function AIChat() {
                             className="mt-2 p-3 rounded-xl bg-muted/50 border border-border"
                           >
                             <div className="flex items-center gap-2 mb-2">
-                              {result.success ? (
+                              {result?.success ? (
                                 <CheckCircle2 className="w-4 h-4 text-green-500" />
                               ) : (
                                 <AlertCircle className="w-4 h-4 text-red-500" />
                               )}
                               <span className="text-xs font-medium">
-                                {(tool as any).toolName === "create_plan"
+                                {tool.toolName === "create_plan"
                                   ? t("إضافة خطة", "Add Plan")
                                   : t("عرض الخطط", "View Plans")}
                               </span>
                             </div>
 
-                            {result.message && (
+                            {result?.message && (
                               <p className="text-sm text-muted-foreground">
                                 {result.message}
                               </p>
                             )}
 
-                            {result.plans && result.plans.length > 0 && (
+                            {result?.plans && result.plans.length > 0 && (
                               <div className="space-y-2 mt-2">
                                 {result.plans
                                   .slice(0, 5)
@@ -246,6 +247,7 @@ export function AIChat() {
                         );
                       }
 
+                      // Handle Loading/Calling States
                       if (
                         tool.state === "partial-call" ||
                         tool.state === "call"
