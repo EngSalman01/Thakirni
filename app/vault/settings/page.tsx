@@ -65,10 +65,12 @@ export default function SettingsPage() {
           .eq("id", user.id)
           .single();
         setProfile(
-          {
-            ...data,
-            email: user.email,
-          } || { email: user.email },
+          data
+            ? {
+                ...data,
+                email: user.email,
+              }
+            : { email: user.email },
         );
       }
     };
@@ -587,36 +589,6 @@ export default function SettingsPage() {
                   {/* LEGACY TAB */}
                   {activeTab === "legacy" && (
                     <div className="space-y-6">
-                      <Card className="bg-card border-border">
-                        <CardHeader>
-                          <CardTitle>
-                            {t("جهة اتصال الطوارئ (التركة)", "Legacy Contact")}
-                          </CardTitle>
-                          <CardDescription>
-                            {t(
-                              "شخص نثق به لتسليمه بياناتك في حالة الوفاة لا قدر الله",
-                              "Someone trusted to receive your data in case of death",
-                            )}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>
-                              {t(
-                                "البريد الإلكتروني للوريث",
-                                "Trusted Contact Email",
-                              )}
-                            </Label>
-                            <Input placeholder="ali@family.com" />
-                          </div>
-                        </CardContent>
-                        <CardFooter>
-                          <Button variant="outline">
-                            {t("إرسال دعوة", "Send Invitation")}
-                          </Button>
-                        </CardFooter>
-                      </Card>
-
                       <Card className="bg-card border-border">
                         <CardHeader>
                           <CardTitle>
