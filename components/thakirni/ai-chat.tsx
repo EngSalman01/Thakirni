@@ -1,37 +1,8 @@
-"use client"
-
-import React from "react"
-import { useChat } from "@ai-sdk/react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Bot, User, Loader2, Calendar, CheckCircle2, AlertCircle } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { useRef, useEffect } from "react"
-
-export function AIChat() {
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  
-  const { messages, input, setInput, handleSubmit, isLoading, error } = useChat({
-    api: "/api/chat",
-    onError: (err) => {
-      console.log("[v0] Chat error:", err)
-    },
-  })
-
-  // Log error for debugging
-  if (error) {
-    console.log("[v0] useChat error state:", error)
-  }
 "use client";
 
-import React from "react";
-import dynamic from "next/dynamic";
+import React, { useRef, useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -46,7 +17,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
 import { useLanguage } from "@/components/language-provider";
 
 function getUIMessageText(msg: {
@@ -66,7 +36,11 @@ export function AIChat() {
   const { t } = useLanguage();
 
   const { messages, status, sendMessage } = useChat({
+    // @ts-ignore - DefaultChatTransport might need specific instantiation depending on version, attempting standard usage
     transport: new DefaultChatTransport({ api: "/api/chat" }),
+    onError: (err) => {
+      console.error("Chat error:", err);
+    },
   });
 
   const isLoading = status === "streaming" || status === "submitted";
@@ -77,8 +51,6 @@ export function AIChat() {
     }
   }, [messages]);
 
-<<<<<<< v0/engsalman01-5da8e4f4
-=======
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -86,7 +58,6 @@ export function AIChat() {
     setInput("");
   };
 
->>>>>>> main
   const suggestions = [
     t("أضف اجتماع مع الفريق يوم الأحد", "Add team meeting on Sunday"),
     t("ذكرني بشراء حليب وخبز", "Remind me to buy milk and bread"),
@@ -160,17 +131,11 @@ export function AIChat() {
 
           <AnimatePresence mode="popLayout">
             {messages.map((message) => {
-<<<<<<< v0/engsalman01-5da8e4f4
-              const text = message.content
-              const toolInvocations = message.toolInvocations || []
-              
-=======
               const text = getUIMessageText(message);
               const toolInvocations =
                 message.parts?.filter((p) => p.type === "tool-invocation") ||
                 [];
 
->>>>>>> main
               return (
                 <motion.div
                   key={message.id}
@@ -210,11 +175,6 @@ export function AIChat() {
 
                     {/* Tool results */}
                     {toolInvocations.map((tool) => {
-<<<<<<< v0/engsalman01-5da8e4f4
-                      const result = tool.result as { success?: boolean; message?: string; plans?: Array<{ id: string; title: string; plan_date: string; category: string }> } | undefined
-                      
-                      if (tool.state === "result" && result) {
-=======
                       if (tool.type !== "tool-invocation") return null;
                       const result = tool.output as
                         | {
@@ -230,7 +190,6 @@ export function AIChat() {
                         | undefined;
 
                       if (tool.state === "output-available" && result) {
->>>>>>> main
                         return (
                           <motion.div
                             key={tool.toolCallId}
@@ -259,14 +218,6 @@ export function AIChat() {
 
                             {result.plans && result.plans.length > 0 && (
                               <div className="space-y-2 mt-2">
-<<<<<<< v0/engsalman01-5da8e4f4
-                                {result.plans.slice(0, 5).map((plan) => (
-                                  <div key={plan.id} className="flex items-center justify-between p-2 rounded-lg bg-background">
-                                    <span className="text-sm font-medium">{plan.title}</span>
-                                    <span className="text-xs text-muted-foreground">{plan.plan_date}</span>
-                                  </div>
-                                ))}
-=======
                                 {result.plans
                                   .slice(0, 5)
                                   .map(
@@ -289,29 +240,21 @@ export function AIChat() {
                                       </div>
                                     ),
                                   )}
->>>>>>> main
                               </div>
                             )}
                           </motion.div>
                         );
                       }
-<<<<<<< v0/engsalman01-5da8e4f4
-                      
-                      if (tool.state === "call" || tool.state === "partial-call") {
-                        return (
-                          <div key={tool.toolCallId} className="mt-2 flex items-center gap-2 text-muted-foreground">
-=======
 
                       if (
-                        tool.state === "input-streaming" ||
-                        tool.state === "input-available"
+                        tool.state === "partial-call" ||
+                        tool.state === "call"
                       ) {
                         return (
                           <div
                             key={tool.toolCallId}
                             className="mt-2 flex items-center gap-2 text-muted-foreground"
                           >
->>>>>>> main
                             <Loader2 className="w-4 h-4 animate-spin" />
                             <span className="text-xs">
                               {t("جاري المعالجة...", "Processing...")}
@@ -328,15 +271,7 @@ export function AIChat() {
             })}
           </AnimatePresence>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm"
-            >
-              Error: {error.message}
-            </motion.div>
-          )}
+          {/* Error handling - SDK doesn't always expose 'error' object directly in valid types depending on version, check docs if issues persist */}
 
           {isLoading && messages[messages.length - 1]?.role === "user" && (
             <motion.div

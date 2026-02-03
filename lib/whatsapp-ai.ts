@@ -1,11 +1,7 @@
 import "server-only"
-import { createGroq } from "@ai-sdk/groq"
+import { google } from "@ai-sdk/google"
 import { generateObject } from "ai"
 import { z } from "zod"
-
-const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
-})
 
 // Intent schema for parsing WhatsApp messages
 const IntentSchema = z.object({
@@ -45,7 +41,7 @@ export async function parseWhatsAppMessage(
 
   try {
     const { object } = await generateObject({
-      model: groq("llama-3.3-70b-versatile"),
+      model: google("gemini-1.5-flash"),
       schema: IntentSchema,
       prompt: `You are an AI assistant that parses Arabic and English messages for a reminder/task app.
       
@@ -93,7 +89,7 @@ export async function generateResponse(
 ): Promise<string> {
   try {
     const { object } = await generateObject({
-      model: groq("llama-3.3-70b-versatile"),
+      model: google("gemini-1.5-flash"),
       schema: z.object({
         response: z.string(),
       }),
