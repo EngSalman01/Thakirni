@@ -1,69 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import type { Memory } from "@/lib/types"
-
-// Mock data - will be replaced with Supabase query later
-const mockMemories: Memory[] = [
-  {
-    id: "1",
-    type: "photo",
-    hijriDate: "١٥ رجب ١٤٤٥",
-    gregorianDate: "2024-01-27",
-    contentUrl: "/images/memory-1.jpg",
-    title: "أول يوم في المدرسة",
-    description: "ذكرى جميلة من أيام الطفولة",
-    tags: ["طفولة", "مدرسة"],
-    createdAt: "2024-01-27T10:00:00Z",
-    updatedAt: "2024-01-27T10:00:00Z",
-    userId: "user-1"
-  },
-  {
-    id: "2",
-    type: "voice",
-    hijriDate: "٢٠ شعبان ١٤٤٥",
-    gregorianDate: "2024-03-01",
-    contentUrl: "/audio/memory-2.mp3",
-    title: "رسالة صوتية من الجد",
-    description: "كلمات حكمة من جدي رحمه الله",
-    tags: ["عائلة", "حكمة"],
-    createdAt: "2024-03-01T14:30:00Z",
-    updatedAt: "2024-03-01T14:30:00Z",
-    userId: "user-1"
-  },
-  {
-    id: "3",
-    type: "text",
-    hijriDate: "٥ رمضان ١٤٤٥",
-    gregorianDate: "2024-03-15",
-    contentUrl: "",
-    title: "دعاء الوالدة",
-    description: "اللهم ارحمها واغفر لها وأسكنها الفردوس الأعلى",
-    tags: ["دعاء", "أم"],
-    createdAt: "2024-03-15T18:00:00Z",
-    updatedAt: "2024-03-15T18:00:00Z",
-    userId: "user-1"
-  },
-  {
-    id: "4",
-    type: "photo",
-    hijriDate: "١ شوال ١٤٤٥",
-    gregorianDate: "2024-04-10",
-    contentUrl: "/images/memory-4.jpg",
-    title: "عيد الفطر مع العائلة",
-    description: "تجمع العائلة في العيد",
-    tags: ["عيد", "عائلة"],
-    createdAt: "2024-04-10T08:00:00Z",
-    updatedAt: "2024-04-10T08:00:00Z",
-    userId: "user-1"
-  }
-]
+import { createClient } from "@/lib/supabase/client"
 
 interface UseMemoriesReturn {
   memories: Memory[]
   isLoading: boolean
   error: Error | null
-  addMemory: (memory: Omit<Memory, "id" | "createdAt" | "updatedAt">) => Promise<void>
+  addMemory: (memory: Omit<Memory, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>
   deleteMemory: (id: string) => Promise<void>
   refetch: () => Promise<void>
 }
@@ -72,57 +17,85 @@ export function useMemories(): UseMemoriesReturn {
   const [memories, setMemories] = useState<Memory[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  
+  const supabase = createClient()
 
-  const fetchMemories = async () => {
+  const fetchMemories = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800))
+      const { data: { user } } = await supabase.auth.getUser()
       
-      // TODO: Replace with Supabase query
-      // const { data, error } = await supabase
-      //   .from('memories')
-      //   .select('*')
-      //   .order('created_at', { ascending: false })
+      if (!user) {
+        setMemories([])
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('memories')
+        .select('*')
+        .eq('user_id', user.id) // Security: Ensure we only fetch own memories (RLS handles this too, but good practice)
+        .order('created_at', { ascending: false })
       
-      setMemories(mockMemories)
+      if (error) throw error
+      
+      setMemories(data as Memory[] || [])
     } catch (err) {
+      console.error("Error fetching memories:", err)
       setError(err instanceof Error ? err : new Error("Failed to fetch memories"))
     } finally {
       setIsLoading(false)
     }
-  }
+  }, []) // Empty dependency array as supabase client is stable
 
-  const addMemory = async (memory: Omit<Memory, "id" | "createdAt" | "updatedAt">) => {
+  const addMemory = async (memory: Omit<Memory, "id" | "created_at" | "updated_at" | "user_id">) => {
     try {
-      // TODO: Replace with Supabase insert
-      const newMemory: Memory = {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error("User not authenticated")
+
+      const newMemory = {
         ...memory,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        user_id: user.id,
+        // Let Supabase handle ID and timestamps via defaults if possible, 
+        // but our types might expect them returned. 
+        // Best to let DB generate them and return the row.
       }
       
-      setMemories(prev => [newMemory, ...prev])
+      const { data, error } = await supabase
+        .from('memories')
+        .insert(newMemory)
+        .select()
+        .single()
+
+      if (error) throw error
+      
+      setMemories(prev => [data as Memory, ...prev])
     } catch (err) {
+      console.error("Error adding memory:", err)
       throw err instanceof Error ? err : new Error("Failed to add memory")
     }
   }
 
   const deleteMemory = async (id: string) => {
     try {
-      // TODO: Replace with Supabase delete
+      const { error } = await supabase
+        .from('memories')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
       setMemories(prev => prev.filter(m => m.id !== id))
     } catch (err) {
+       console.error("Error deleting memory:", err)
       throw err instanceof Error ? err : new Error("Failed to delete memory")
     }
   }
 
   useEffect(() => {
     fetchMemories()
-  }, [])
+  }, [fetchMemories])
 
   return {
     memories,

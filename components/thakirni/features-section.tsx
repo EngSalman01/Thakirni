@@ -1,34 +1,45 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Heart, MessageCircle, Bell } from "lucide-react"
+import { motion, Variants } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MessageSquareText, Mic, CalendarClock } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 
 const features = [
   {
-    icon: Heart,
-    titleAr: "صدقة جارية",
-    titleEn: "Sadaqah Jariyah",
-    descriptionAr: "تكامل مع منصات إحسان وشفاء للتبرع المستمر",
-    descriptionEn: "Integration with Ehsan/Shefa platforms",
+    icon: MessageSquareText,
+    titleAr: "تكامل واتساب",
+    titleEn: "WhatsApp Integration",
+    descriptionAr:
+      "أرسل ملاحظاتك الصوتية والنصية مباشرة لواتساب ذكرني ليتم حفظها.",
+    descriptionEn: "Send voice/text notes directly to Thakirni on WhatsApp.",
   },
   {
-    icon: MessageCircle,
-    titleAr: "رسائل واتساب",
-    titleEn: "WhatsApp Messages",
-    descriptionAr: "أرسل تذكيرات ورسائل تلقائية عبر واتساب",
-    descriptionEn: "Automated reminders via WhatsApp",
+    icon: Mic,
+    titleAr: "تحويل الصوت لنص",
+    titleEn: "Voice to Text",
+    descriptionAr:
+      "حوّل اجتماعاتك وملاحظاتك الصوتية إلى نصوص ومهام منظمة تلقائياً.",
+    descriptionEn:
+      "Convert meetings and voice notes into structured text & tasks.",
   },
   {
-    icon: Bell,
-    titleAr: "تذكيرات ذكية",
-    titleEn: "Smart Reminders",
-    descriptionAr: "تذكيرات بالمناسبات والمواعيد المهمة بالذكاء الاصطناعي",
-    descriptionEn: "AI-powered event & date reminders",
+    icon: CalendarClock,
+    titleAr: "إدارة الاجتماعات",
+    titleEn: "Meeting Management",
+    descriptionAr:
+      "لخّص اجتماعاتك واستخرج منها المهام والتذكيرات المهمة بذكاء.",
+    descriptionEn: "Summarize meetings and extract action items intelligently.",
   },
-]
+];
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -36,9 +47,9 @@ const containerVariants = {
       staggerChildren: 0.2,
     },
   },
-}
+};
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
@@ -48,9 +59,11 @@ const cardVariants = {
       ease: "easeOut",
     },
   },
-}
+};
 
 export function FeaturesSection() {
+  const { isArabic, t } = useLanguage();
+
   return (
     <section className="py-24 relative">
       <div className="container mx-auto px-4">
@@ -63,7 +76,7 @@ export function FeaturesSection() {
             transition={{ duration: 0.6 }}
             className="text-3xl md:text-4xl font-bold text-foreground mb-4"
           >
-            مميزات فريدة
+            {t("مميزات فريدة", "Unique Features")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -72,7 +85,10 @@ export function FeaturesSection() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-foreground/60 max-w-2xl mx-auto"
           >
-            نقدم لك أدوات مبتكرة لحفظ وتخليد ذكرى أحبائك
+            {t(
+              "نقدم لك أدوات مبتكرة لتنظيم يومك وتنشيط ذاكرتك",
+              "We offer innovative tools to organize your day and activate your memory",
+            )}
           </motion.p>
         </div>
 
@@ -92,16 +108,12 @@ export function FeaturesSection() {
                     <feature.icon className="w-7 h-7 text-gold" />
                   </div>
                   <CardTitle className="text-xl text-card-foreground">
-                    {feature.titleAr}
+                    {isArabic ? feature.titleAr : feature.titleEn}
                   </CardTitle>
-                  <CardDescription className="font-english text-sm text-card-foreground/60" dir="ltr">
-                    {feature.titleEn}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-card-foreground/70 mb-2">{feature.descriptionAr}</p>
-                  <p className="font-english text-sm text-card-foreground/50" dir="ltr">
-                    {feature.descriptionEn}
+                  <p className="text-card-foreground/70 mb-2">
+                    {isArabic ? feature.descriptionAr : feature.descriptionEn}
                   </p>
                 </CardContent>
               </Card>
@@ -110,5 +122,5 @@ export function FeaturesSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
