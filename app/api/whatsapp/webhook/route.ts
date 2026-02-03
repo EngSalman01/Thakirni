@@ -9,11 +9,8 @@ import {
 } from "@/lib/whatsapp"
 import { parseWhatsAppMessage, generateResponse } from "@/lib/whatsapp-ai"
 
-// Create admin supabase client for webhook (no user context)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Create admin supabase client inside handler
+
 
 // GET: Webhook verification for Meta
 export async function GET(req: NextRequest) {
@@ -33,6 +30,11 @@ export async function GET(req: NextRequest) {
 
 // POST: Handle incoming messages
 export async function POST(req: NextRequest) {
+  // Create admin supabase client for webhook (no user context)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   try {
     const body = await req.json()
     const message = parseWebhookPayload(body)
