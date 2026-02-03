@@ -13,12 +13,16 @@ import {
 const CRON_SECRET = process.env.CRON_SECRET
 
 // Create admin supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Create admin supabase client inside handler to avoid build-time errors
+// const supabase = createClient(...) moved to GET
+
 
 export async function GET(req: NextRequest) {
+  // Create admin supabase client
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
   // Verify cron secret if set
   if (CRON_SECRET && req.headers.get("authorization") !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
