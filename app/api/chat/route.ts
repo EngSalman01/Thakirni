@@ -24,7 +24,6 @@ function convertToCoreMessages(messages: any[]) {
       if (message.toolInvocations) {
         for (const toolInvocation of message.toolInvocations) {
            // In Core API, the assistant message contains the call
-           // We include it if it's in 'call' state or 'result' state (history)
            content.push({ 
              type: 'tool-call', 
              toolCallId: toolInvocation.toolCallId,
@@ -87,9 +86,9 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   console.log("User authenticated:", !!user)
 
-
   const result = streamText({
     model: google("gemini-1.5-flash"),
+    maxSteps: 5,
     system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
 1. تنظيم المهام (Tasks)
 2. قائمة البقالة (Groceries)
@@ -186,5 +185,6 @@ When users ask to view their items, use the list_plans tool.`,
     }
   })
 
-  return result.toTextStreamResponse()
+  // ✅ FIXED: Using toDataStreamResponse() for multi-step tool calls
+  return result.toDataStreamResponse()
 }
