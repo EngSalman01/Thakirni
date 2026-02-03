@@ -2,7 +2,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -19,25 +18,16 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
 
-function getUIMessageText(msg: {
-  parts?: Array<{ type: string; text?: string }>;
-}): string {
-  if (!msg.parts || !Array.isArray(msg.parts)) return "";
-  return msg.parts
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("");
-}
-
 export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const [input, setInput] = useState("");
+  const [localInput, setLocalInput] = useState(""); // Renamed to avoid conflict
   const { t } = useLanguage();
 
-  const { messages, status, sendMessage } = useChat({
-    // @ts-ignore - DefaultChatTransport might need specific instantiation depending on version, attempting standard usage
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
+  // ✅ FIXED: simplified useChat configuration
+  const { messages, status, append, stop } = useChat({
+    api: "/api/chat",
+    maxSteps: 5, // <--- CRITICAL: Must match your backend for tools to work!
     onError: (err) => {
       console.error("Chat error:", err);
     },
@@ -45,17 +35,32 @@ export function AIChat() {
 
   const isLoading = status === "streaming" || status === "submitted";
 
+  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
-    sendMessage({ text: input });
-    setInput("");
+    if (!localInput.trim() || isLoading) return;
+
+    // ✅ FIXED: Use 'append' instead of 'sendMessage'
+    const value = localInput;
+    setLocalInput(""); // Clear immediately
+    await append({
+      role: "user",
+      content: value,
+    });
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setLocalInput("");
+    append({
+        role: "user",
+        content: suggestion
+    });
   };
 
   const suggestions = [
@@ -63,7 +68,7 @@ export function AIChat() {
     t("ذكرني بشراء حليب وخبز", "Remind me to buy milk and bread"),
     t(
       "عندي موعد طبيب غداً الساعة 4",
-      "I have a doctor's appointment tomorrow at 4",
+      "I have a doctor's appointment tomorrow at 4"
     ),
     t("اعرض لي مهام اليوم", "Show me today's tasks"),
   ];
@@ -82,7 +87,7 @@ export function AIChat() {
           <p className="text-xs text-muted-foreground">
             {t(
               "مساعدك لتنظيم مهامك ومواعيدك",
-              "Your assistant for organizing tasks and appointments",
+              "Your assistant for organizing tasks and appointments"
             )}
           </p>
         </div>
@@ -106,7 +111,7 @@ export function AIChat() {
               <p className="text-sm text-muted-foreground mb-6">
                 {t(
                   "يمكنني مساعدتك في تنظيم مهامك، ومشترياتك، ومواعيدك",
-                  "I can help you organize tasks, groceries, and appointments",
+                  "I can help you organize tasks, groceries, and appointments"
                 )}
               </p>
 
@@ -117,10 +122,7 @@ export function AIChat() {
                     variant="outline"
                     size="sm"
                     className="text-xs bg-transparent"
-                    onClick={() => {
-                      setInput(suggestion);
-                      inputRef.current?.focus();
-                    }}
+                    onClick={() => handleSuggestionClick(suggestion)}
                   >
                     {suggestion}
                   </Button>
@@ -131,8 +133,8 @@ export function AIChat() {
 
           <AnimatePresence mode="popLayout">
             {messages.map((message) => {
-              const text = getUIMessageText(message);
-              // Use the SDK-provided toolInvocations array
+              // ✅ FIXED: Just use message.content directly. 
+              // The SDK handles text parsing automatically now.
               const toolInvocations = message.toolInvocations || [];
 
               return (
@@ -141,7 +143,9 @@ export function AIChat() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                  className={`flex gap-3 ${
+                    message.role === "user" ? "flex-row-reverse" : ""
+                  }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -158,9 +162,11 @@ export function AIChat() {
                   </div>
 
                   <div
-                    className={`flex-1 max-w-[80%] ${message.role === "user" ? "text-left" : ""}`}
+                    className={`flex-1 max-w-[80%] ${
+                      message.role === "user" ? "text-left" : ""
+                    }`}
                   >
-                    {text && (
+                    {message.content && (
                       <div
                         className={`rounded-2xl px-4 py-2 ${
                           message.role === "user"
@@ -168,28 +174,16 @@ export function AIChat() {
                             : "bg-muted text-foreground"
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap">{text}</p>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {message.content}
+                        </p>
                       </div>
                     )}
 
                     {/* Tool results */}
                     {toolInvocations.map((tool) => {
-                      // tool is now ToolInvocation directly
-
-                      // Handle Completed State (state: 'result')
                       if (tool.state === "result") {
-                        const result = tool.result as
-                          | {
-                              success?: boolean;
-                              message?: string;
-                              plans?: Array<{
-                                id: string;
-                                title: string;
-                                plan_date: string;
-                                category: string;
-                              }>;
-                            }
-                          | undefined;
+                        const result = tool.result as any;
 
                         return (
                           <motion.div
@@ -221,37 +215,27 @@ export function AIChat() {
                               <div className="space-y-2 mt-2">
                                 {result.plans
                                   .slice(0, 5)
-                                  .map(
-                                    (plan: {
-                                      id: string;
-                                      title: string;
-                                      plan_date: string;
-                                      category: string;
-                                    }) => (
-                                      <div
-                                        key={plan.id}
-                                        className="flex items-center justify-between p-2 rounded-lg bg-background"
-                                      >
-                                        <span className="text-sm font-medium">
-                                          {plan.title}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                          {plan.plan_date}
-                                        </span>
-                                      </div>
-                                    ),
-                                  )}
+                                  .map((plan: any) => (
+                                    <div
+                                      key={plan.id}
+                                      className="flex items-center justify-between p-2 rounded-lg bg-background"
+                                    >
+                                      <span className="text-sm font-medium">
+                                        {plan.title}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {plan.plan_date}
+                                      </span>
+                                    </div>
+                                  ))}
                               </div>
                             )}
                           </motion.div>
                         );
                       }
 
-                      // Handle Loading/Calling States
-                      if (
-                        tool.state === "partial-call" ||
-                        tool.state === "call"
-                      ) {
+                      // Loading State
+                      if (tool.state === "partial-call" || tool.state === "call") {
                         return (
                           <div
                             key={tool.toolCallId}
@@ -264,7 +248,6 @@ export function AIChat() {
                           </div>
                         );
                       }
-
                       return null;
                     })}
                   </div>
@@ -272,8 +255,6 @@ export function AIChat() {
               );
             })}
           </AnimatePresence>
-
-          {/* Error handling - SDK doesn't always expose 'error' object directly in valid types depending on version, check docs if issues persist */}
 
           {isLoading && messages[messages.length - 1]?.role === "user" && (
             <motion.div
@@ -300,8 +281,8 @@ export function AIChat() {
         <div className="flex gap-2">
           <Input
             ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            value={localInput}
+            onChange={(e) => setLocalInput(e.target.value)}
             placeholder={t("اكتب رسالتك هنا...", "Type your message here...")}
             className="flex-1 bg-background"
             disabled={isLoading}
@@ -309,7 +290,7 @@ export function AIChat() {
           <Button
             type="submit"
             size="icon"
-            disabled={!input.trim() || isLoading}
+            disabled={!localInput.trim() || isLoading}
             className="bg-primary hover:bg-primary/90"
           >
             {isLoading ? (
