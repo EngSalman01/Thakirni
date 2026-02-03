@@ -1,7 +1,11 @@
 import { streamText, tool } from "ai"
-import { groq } from "@ai-sdk/groq"
+import { createGroq } from "@ai-sdk/groq"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 export async function POST(req: Request) {
   const { messages } = await req.json()
