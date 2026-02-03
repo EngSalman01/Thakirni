@@ -2,7 +2,7 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
@@ -51,22 +51,10 @@ export default function VaultPage() {
   const [fridayReminder, setFridayReminder] = useState(true);
   const [isDragOver, setIsDragOver] = useState(false);
   const { t, isArabic } = useLanguage();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback(() => {
-    setIsDragOver(false);
-  }, []);
-
-  const handleDrop = useCallback(
-    async (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
-
-      const files = Array.from(e.dataTransfer.files);
+  const processFiles = useCallback(
+    async (files: File[]) => {
       if (files.length === 0) return;
 
       toast.info(
@@ -78,7 +66,6 @@ export default function VaultPage() {
 
       for (const file of files) {
         try {
-          // Simple Hijri date formatter
           const hijriDate = new Intl.DateTimeFormat("en-u-ca-islamic", {
             day: "numeric",
             month: "long",
@@ -90,7 +77,6 @@ export default function VaultPage() {
 
           if (file.type.startsWith("image/")) {
             type = "photo";
-            // Convert to Base64 for immediate preview (limit to 1MB for safety)
             if (file.size < 1024 * 1024) {
               contentUrl = await new Promise((resolve) => {
                 const reader = new FileReader();
@@ -98,10 +84,10 @@ export default function VaultPage() {
                 reader.readAsDataURL(file);
               });
             } else {
-              contentUrl = "https://placehold.co/600x400?text=Large+Image"; // Placeholder for large images
+              contentUrl = "https://placehold.co/600x400?text=Large+Image";
             }
           } else {
-            contentUrl = ""; // No content URL for generic files yet
+            contentUrl = "";
           }
 
           await useMemories().addMemory({
@@ -125,6 +111,35 @@ export default function VaultPage() {
     [t],
   );
 
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      const files = Array.from(e.dataTransfer.files);
+      await processFiles(files);
+    },
+    [processFiles],
+  );
+
+  const handleFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files) {
+        const files = Array.from(e.target.files);
+        await processFiles(files);
+      }
+    },
+    [processFiles],
+  );
+
   const handleFridayToggle = (checked: boolean) => {
     setFridayReminder(checked);
     if (checked) {
@@ -136,6 +151,16 @@ export default function VaultPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        multiple
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleFileSelect}
+        accept="image/*,audio/*,.pdf,.doc,.docx"
+      />
+
       {/* Sidebar */}
       <VaultSidebar />
 
@@ -320,7 +345,11 @@ export default function VaultPage() {
                 <ImageIcon className="w-5 h-5 text-primary" />
                 {t("ذكرياتي الأخيرة", "Recent Memories")}
               </h2>
-              <Button size="sm" className="gap-2">
+              <Button
+                size="sm"
+                className="gap-2"
+                onClick={() => fileInputRef.current?.click()}
+              >
                 <Plus className="w-4 h-4" />
                 {t("ذكرى جديدة", "New Memory")}
               </Button>
@@ -457,7 +486,12 @@ export default function VaultPage() {
                     "Drag files here or click to select",
                   )}
                 </p>
-                <Button variant="outline" size="sm" className="bg-transparent">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="bg-transparent"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   {t("اختر ملفات", "Select Files")}
                 </Button>
               </div>
