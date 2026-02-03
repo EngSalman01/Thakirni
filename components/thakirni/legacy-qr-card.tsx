@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { QrCode, Download, Share2 } from "lucide-react"
+import { BrandLogo } from "@/components/thakirni/brand-logo"
 
 export function LegacyQRCard() {
   return (
@@ -10,7 +11,7 @@ export function LegacyQRCard() {
       <CardHeader className="pb-4">
         <CardTitle className="text-lg text-card-foreground flex items-center gap-2">
           <QrCode className="w-5 h-5 text-gold" />
-          رمز QR للذكرى
+          بطاقة تواصل ذكية
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col items-center">
@@ -30,15 +31,15 @@ export function LegacyQRCard() {
             </div>
             {/* Center logo */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-10 h-10 rounded-lg bg-gold flex items-center justify-center">
-                <span className="text-white font-bold text-lg">ذ</span>
+              <div className="w-10 h-10 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-sm">
+                <BrandLogo width={32} height={32} />
               </div>
             </div>
           </div>
         </div>
 
         <p className="text-sm text-card-foreground/70 text-center mb-4">
-          امسح الرمز للوصول إلى صفحة الذكرى
+          امسح الرمز لإضافتي لجهات الاتصال
         </p>
 
         <div className="flex gap-2 w-full">

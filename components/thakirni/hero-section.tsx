@@ -1,20 +1,23 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Sparkles, Shield, Lock, Server } from "lucide-react"
-import Link from "next/link"
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Shield, Lock, Server } from "lucide-react";
+import Link from "next/link";
+import { useLanguage } from "@/components/language-provider";
 
 export function HeroSection() {
+  const { t, isArabic } = useLanguage();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center islamic-pattern overflow-hidden pt-20">
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
-      
+
       {/* Decorative elements */}
       <div className="absolute top-20 start-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 end-10 w-96 h-96 bg-emerald-800/20 rounded-full blur-3xl" />
-      
+
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -30,20 +33,28 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 bg-card/50 backdrop-blur-md border border-border px-4 py-2 rounded-full mb-8"
           >
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-foreground/80">ذاكرتك الثانية الرقمية</span>
+            <span className="text-sm text-foreground/80">
+              {t("ذاكرتك الثانية الرقمية", "Your Second Digital Brain")}
+            </span>
           </motion.div>
 
-          {/* Main headline - Arabic */}
+          {/* Main headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-foreground leading-tight text-balance">
-            لست مصمماً لتتذكر كل شيء..
+            {t(
+              "لست مصمماً لتتذكر كل شيء..",
+              "You are not designed to remember everything..",
+            )}
             <span className="block bg-gradient-to-l from-primary to-primary/80 bg-clip-text text-transparent mt-2 tracking-tighter leading-[2]">
-              {"'ذكرني' تتكفل بذلك"}
+              {t("'ذكرني' تتكفل بذلك", "'Thakirni' handles it for you")}
             </span>
           </h1>
 
-          {/* Arabic subtext */}
+          {/* Subtext */}
           <p className="text-base md:text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
-            ذاكرتك الثانية لحفظ كل اللحظات. آمنة، خاصة، وصُممت من أجلك.
+            {t(
+              "ذاكرتك الثانية لحفظ كل اللحظات. آمنة، خاصة، وصُممت من أجلك.",
+              "Your second brain to preserve every moment. Secure, private, and designed for you.",
+            )}
           </p>
 
           {/* CTA Button */}
@@ -58,18 +69,20 @@ export function HeroSection() {
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8 py-6 rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
               >
-                ابدأ الأرشفة
-                <span className="font-english ms-2 text-sm opacity-80">Start Your Vault</span>
+                {t("ابدأ تجربتك المجانية", "Start Your Free Trial")}
+                <span className="font-english ms-2 text-sm opacity-80">
+                  {t("Start Organizing", "")}
+                </span>
               </Button>
             </Link>
-            
+
             <Link href="#features">
               <Button
                 variant="outline"
                 size="lg"
                 className="border-border text-foreground hover:bg-muted px-8 py-6 rounded-xl bg-transparent"
               >
-                اكتشف المزيد
+                {t("اكتشف المزيد", "Discover More")}
               </Button>
             </Link>
           </motion.div>
@@ -82,18 +95,27 @@ export function HeroSection() {
             className="mt-16 flex flex-wrap justify-center gap-6"
           >
             {[
-              { icon: Server, labelAr: "بياناتك في السعودية", labelEn: "Saudi Hosted Data" },
-              { icon: Lock, labelAr: "تشفير كامل", labelEn: "End-to-End Encryption" },
+              {
+                icon: Server,
+                labelAr: "بياناتك في السعودية",
+                labelEn: "Saudi Hosted Data",
+              },
+              {
+                icon: Lock,
+                labelAr: "تشفير كامل",
+                labelEn: "End-to-End Encryption",
+              },
               { icon: Shield, labelAr: "خاصة ١٠٠٪", labelEn: "100% Private" },
             ].map((badge, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="flex items-center gap-3 bg-card/50 backdrop-blur-sm border border-border rounded-xl px-4 py-3"
               >
                 <badge.icon className="w-5 h-5 text-primary" />
                 <div className="text-start">
-                  <div className="text-sm font-medium text-foreground">{badge.labelAr}</div>
-                  <div className="text-xs text-muted-foreground font-english" dir="ltr">{badge.labelEn}</div>
+                  <div className="text-sm font-medium text-foreground">
+                    {t(badge.labelAr, badge.labelEn)}
+                  </div>
                 </div>
               </div>
             ))}
@@ -104,5 +126,5 @@ export function HeroSection() {
       {/* Bottom gradient fade */}
       <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
-  )
+  );
 }

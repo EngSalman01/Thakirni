@@ -1,86 +1,24 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Check, X, Sparkles } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { LandingHeader } from "@/components/thakirni/landing-header"
-import { LandingFooter } from "@/components/thakirni/landing-footer"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { motion, Variants } from "framer-motion";
+import { Check, X, Sparkles, Building2, User, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { LandingHeader } from "@/components/thakirni/landing-header";
+import { LandingFooter } from "@/components/thakirni/landing-footer";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
+import { Switch } from "@/components/ui/switch";
 
-const pricingTiers = [
-  {
-    name: "مجاني",
-    nameEn: "Free",
-    price: "٠",
-    priceEn: "0",
-    period: "ر.س / شهرياً",
-    periodEn: "SAR / month",
-    description: "للبدء في حفظ ذكرياتك الأولى",
-    descriptionEn: "Start preserving your first memories",
-    features: [
-      { text: "٥ خطط / تذكيرات", textEn: "5 plans / reminders", included: true },
-      { text: "المساعد الذكي محدود", textEn: "Limited AI assistant", included: true },
-      { text: "تذكيرات بريد إلكتروني", textEn: "Email reminders", included: true },
-      { text: "تذكيرات SMS", textEn: "SMS reminders", included: false },
-      { text: "تذكيرات واتساب", textEn: "WhatsApp reminders", included: false },
-      { text: "شجرة العائلة", textEn: "Family tree", included: false },
-      { text: "روابط الصدقة", textEn: "Charity links", included: false },
-      { text: "QR للشواهد", textEn: "QR gravestones", included: false },
-    ],
-    cta: "ابدأ مجاناً",
-    ctaEn: "Start Free",
-    popular: false,
-  },
-  {
-    name: "المميز",
-    nameEn: "Premium",
-    price: "٤٩",
-    priceEn: "49",
-    period: "ر.س / شهرياً",
-    periodEn: "SAR / month",
-    description: "للعائلات التي تريد حفظ ذكرياتها",
-    descriptionEn: "For families who want to preserve memories",
-    features: [
-      { text: "خطط غير محدودة", textEn: "Unlimited plans", included: true },
-      { text: "المساعد الذكي الكامل", textEn: "Full AI assistant", included: true },
-      { text: "تذكيرات بريد إلكتروني", textEn: "Email reminders", included: true },
-      { text: "تذكيرات SMS", textEn: "SMS reminders", included: true },
-      { text: "تذكيرات واتساب", textEn: "WhatsApp reminders", included: true },
-      { text: "شجرة العائلة (١٠ أفراد)", textEn: "Family tree (10 members)", included: true },
-      { text: "روابط الصدقة", textEn: "Charity links", included: true },
-      { text: "QR للشواهد (٢)", textEn: "QR gravestones (2)", included: true },
-    ],
-    cta: "اشترك الآن",
-    ctaEn: "Subscribe Now",
-    popular: true,
-  },
-  {
-    name: "العائلي",
-    nameEn: "Family",
-    price: "٩٩",
-    priceEn: "99",
-    period: "ر.س / شهرياً",
-    periodEn: "SAR / month",
-    description: "للعائلات الكبيرة مع ميزات متقدمة",
-    descriptionEn: "For large families with advanced features",
-    features: [
-      { text: "كل ميزات المميز", textEn: "All Premium features", included: true },
-      { text: "أفراد عائلة غير محدودين", textEn: "Unlimited family members", included: true },
-      { text: "كبسولات الزمن", textEn: "Time capsules", included: true },
-      { text: "تكامل إحسان/شفاء", textEn: "Ehsan/Shefa integration", included: true },
-      { text: "QR للشواهد (١٠)", textEn: "QR gravestones (10)", included: true },
-      { text: "تقارير وإحصائيات", textEn: "Reports & analytics", included: true },
-      { text: "دعم أولوية", textEn: "Priority support", included: true },
-      { text: "تخصيص كامل", textEn: "Full customization", included: true },
-    ],
-    cta: "اشترك الآن",
-    ctaEn: "Subscribe Now",
-    popular: false,
-  },
-]
-
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -88,9 +26,9 @@ const containerVariants = {
       staggerChildren: 0.15,
     },
   },
-}
+};
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
@@ -100,31 +38,176 @@ const cardVariants = {
       ease: "easeOut",
     },
   },
-}
+};
 
 export default function PricingPage() {
+  const { t } = useLanguage();
+  const [isAnnual, setIsAnnual] = useState(false);
+
+  const pricingTiers = [
+    {
+      id: "free",
+      nameAr: "الباقة المجانية",
+      nameEn: "Free",
+      targetAr: "للطلاب والمستخدمين الخفيفين",
+      targetEn: "Students & Light Users",
+      price: "0",
+      priceAnnual: "0",
+      icon: Zap,
+      features: [
+        { ar: "٥٠ رسالة / شهرياً", en: "50 Messages/month", included: true },
+        {
+          ar: "استخدام بوت الواتساب",
+          en: "WhatsApp Bot Access",
+          included: true,
+        },
+        {
+          ar: "احتفاظ بالذاكرة ٧ أيام",
+          en: "7-day history retention",
+          included: true,
+        },
+        { ar: "مستخدم واحد", en: "Single User", included: true },
+        { ar: "تحليل الذكاء الاصطناعي", en: "AI Analysis", included: false },
+        { ar: "مزامنة التقويم", en: "Calendar Sync", included: false },
+      ],
+      ctaAr: "ابدأ مجاناً",
+      ctaEn: "Start Free",
+      buttonVariant: "secondary",
+      popular: false,
+    },
+    {
+      id: "individual",
+      nameAr: "باقة الأفراد",
+      nameEn: "Individual",
+      targetAr: "للمحترفين والمستقلين",
+      targetEn: "Professionals & Freelancers",
+      price: "29",
+      priceAnnual: "290",
+      icon: User,
+      features: [
+        {
+          ar: "رسائل وملاحظات صوتية غير محدودة",
+          en: "Unlimited Messages & Voice Notes",
+          included: true,
+        },
+        {
+          ar: 'تحليل "الدماغ الثاني" بالذكاء الاصطناعي',
+          en: '"Second Brain" AI Analysis',
+          included: true,
+        },
+        {
+          ar: "مزامنة التقويم والمهام",
+          en: "Calendar & Task Sync",
+          included: true,
+        },
+        { ar: "بحث كامل في الذاكرة", en: "Full Memory Search", included: true },
+        { ar: "دعم فني عبر البريد", en: "Email Support", included: true },
+      ],
+      ctaAr: "اشترك الآن",
+      ctaEn: "Subscribe Now",
+      buttonVariant: "emerald",
+      popular: true,
+    },
+    {
+      id: "companies",
+      nameAr: "باقة الشركات",
+      nameEn: "Companies",
+      targetAr: "للشركات والفرق الناشئة",
+      targetEn: "Teams & Startups",
+      price: "99",
+      priceAnnual: "990",
+      priceSuffixAr: "/ مستخدم",
+      priceSuffixEn: "/ user",
+      icon: Building2,
+      features: [
+        {
+          ar: "كل مميزات الأفراد",
+          en: "Everything in Individual",
+          included: true,
+        },
+        {
+          ar: "لوحة تحكم لإدارة الفريق",
+          en: "Admin Dashboard for Team Management",
+          included: true,
+        },
+        {
+          ar: "قاعدة معرفة مشتركة (دماغ الشركة)",
+          en: "Shared Knowledge Base (Company Brain)",
+          included: true,
+        },
+        {
+          ar: "دعم ذو أولوية واتفاقية مستوى خدمة",
+          en: "Priority Support & SLA",
+          included: true,
+        },
+        { ar: "دخول عبر API", en: "API Access", included: true },
+      ],
+      ctaAr: "تواصل مع المبيعات",
+      ctaEn: "Contact Sales",
+      buttonVariant: "secondary",
+      popular: false,
+      underDevelopment: true,
+    },
+  ];
+
   return (
     <main className="min-h-screen bg-background">
       <LandingHeader />
-      
-      <section className="pt-32 pb-20">
-        <div className="container mx-auto px-4">
+
+      <section className="pt-32 pb-20 overflow-hidden relative">
+        {/* Background accents */}
+        <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="container mx-auto px-4 relative z-10">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-              خطط تناسب الجميع
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              {t("خـطط مرنة تناسب طموحك", "Flexible Plans for Your Ambition")}
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-2">
-              اختر الخطة المناسبة لك ولعائلتك
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              {t(
+                "سواء كنت فرداً يريد تنظيم حياته أو شركة تبحث عن ذكاء جماعي، لدينا ما يناسبك.",
+                "Whether you're an individual organizing your life or a company seeking collective intelligence, we have you covered.",
+              )}
             </p>
-            <p className="font-english text-sm text-muted-foreground/70" dir="ltr">
-              Choose the plan that fits you and your family
-            </p>
+
+            {/* Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span
+                className={cn(
+                  "text-sm transition-colors",
+                  !isAnnual
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground",
+                )}
+              >
+                {t("شهري", "Monthly")}
+              </span>
+              <Switch
+                checked={isAnnual}
+                onCheckedChange={setIsAnnual}
+                className="data-[state=checked]:bg-emerald-500"
+              />
+              <span
+                className={cn(
+                  "text-sm transition-colors",
+                  isAnnual
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground",
+                )}
+              >
+                {t("سنوي", "Yearly")}
+                <span className="ms-2 text-xs bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                  {t("وفر ٢٠٪", "Save 20%")}
+                </span>
+              </span>
+            </div>
           </motion.div>
 
           {/* Pricing Cards */}
@@ -132,99 +215,199 @@ export default function PricingPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto"
+            className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto items-start"
           >
             {pricingTiers.map((tier, index) => (
-              <motion.div key={index} variants={cardVariants}>
-                <Card className={cn(
-                  "relative h-full flex flex-col transition-all duration-300",
-                  tier.popular 
-                    ? "border-primary shadow-xl shadow-primary/10 scale-105" 
-                    : "border-border hover:border-primary/50 hover:shadow-lg"
-                )}>
-                  {tier.popular && (
-                    <div className="absolute -top-4 inset-x-0 flex justify-center">
-                      <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                        <Sparkles className="w-4 h-4" />
-                        الأكثر شعبية
+              <motion.div
+                key={index}
+                variants={cardVariants}
+                className="h-full"
+              >
+                <Card
+                  className={cn(
+                    "relative h-full flex flex-col transition-all duration-300 border overflow-hidden",
+                    // Increased opacity for better readability, removed backdrop blur from normal cards if needed
+                    tier.popular
+                      ? "bg-background/80 backdrop-blur-md border-emerald-500 ring-1 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10"
+                      : "bg-card border-border hover:border-primary/50 hover:shadow-lg",
+                  )}
+                >
+                  {/* Under Development Overlay */}
+                  {tier.underDevelopment && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm">
+                      {/* Red X */}
+                      <div className="relative mb-6">
+                        <X className="w-48 h-48 text-red-500/90 stroke-[1.5]" />
+                      </div>
+
+                      {/* Text */}
+                      <div className="text-center px-4">
+                        <h3 className="text-2xl font-bold text-foreground mb-1">
+                          {t("قيد التطوير", "Under Development")}
+                        </h3>
+                        <p
+                          className="text-muted-foreground font-english"
+                          dir="ltr"
+                        >
+                          Coming Soon
+                        </p>
                       </div>
                     </div>
                   )}
-                  
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-2xl font-bold text-foreground">
-                      {tier.name}
-                    </CardTitle>
-                    <CardDescription className="font-english text-sm" dir="ltr">
-                      {tier.nameEn}
-                    </CardDescription>
-                    <div className="mt-4">
-                      <span className="text-4xl font-bold text-foreground">{tier.price}</span>
-                      <span className="text-muted-foreground text-sm me-1">{tier.period}</span>
+
+                  {tier.popular && (
+                    <div className="absolute -top-4 inset-x-0 flex justify-center">
+                      <div className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg shadow-emerald-500/10">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        {t("الأكثر شعبية", "Most Popular")}
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">{tier.description}</p>
+                  )}
+
+                  {/* Removed extra blur filter from header/content to fix "all blurry" issue, 
+                      relied on the overlay for the disabled look */}
+                  <CardHeader
+                    className={cn(
+                      "pb-4",
+                      tier.underDevelopment && "opacity-50",
+                    )}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <CardTitle className="text-2xl font-bold text-foreground mb-1">
+                          {t(tier.nameAr, tier.nameEn)}
+                        </CardTitle>
+                        <CardDescription className="text-muted-foreground">
+                          {t(tier.targetAr, tier.targetEn)}
+                        </CardDescription>
+                      </div>
+                      <div
+                        className={cn(
+                          "p-2 rounded-lg",
+                          tier.popular
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-500"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        <tier.icon className="w-6 h-6" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl font-bold text-foreground">
+                        {isAnnual ? tier.priceAnnual : tier.price}
+                      </span>
+                      <span className="text-emerald-600 dark:text-emerald-500 text-xl font-bold">
+                        {t("ر.س", "SAR")}
+                      </span>
+                      <span className="text-muted-foreground text-sm ms-2">
+                        {tier.priceSuffixAr &&
+                          t(tier.priceSuffixAr, tier.priceSuffixEn)}
+                        / {isAnnual ? t("سنة", "year") : t("شهر", "month")}
+                      </span>
+                    </div>
                   </CardHeader>
 
-                  <CardContent className="flex-1">
-                    <ul className="space-y-3">
-                      {tier.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-start gap-3">
-                          {feature.included ? (
-                            <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                          ) : (
-                            <X className="w-5 h-5 text-muted-foreground/40 flex-shrink-0 mt-0.5" />
-                          )}
-                          <div>
-                            <span className={cn(
-                              "text-sm",
-                              feature.included ? "text-foreground" : "text-muted-foreground/60"
-                            )}>
-                              {feature.text}
+                  {/* Content (Features + Button) */}
+                  <div
+                    className={cn(
+                      "flex flex-col flex-1",
+                      tier.underDevelopment && "opacity-50 pointer-events-none",
+                    )}
+                  >
+                    <CardContent className="flex-1">
+                      <div className="w-full h-px bg-border mb-6" />
+                      <ul className="space-y-4">
+                        {tier.features.map((feature, featureIndex) => (
+                          <li
+                            key={featureIndex}
+                            className="flex items-start gap-3"
+                          >
+                            {feature.included ? (
+                              <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-500" />
+                              </div>
+                            ) : (
+                              <div className="mt-0.5 w-5 h-5 flex items-center justify-center flex-shrink-0">
+                                <X className="w-4 h-4 text-muted-foreground/50" />
+                              </div>
+                            )}
+                            <span
+                              className={cn(
+                                "text-sm",
+                                feature.included
+                                  ? "text-foreground/90"
+                                  : "text-muted-foreground/70",
+                              )}
+                            >
+                              {t(feature.ar, feature.en)}
                             </span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
 
-                  <CardFooter>
-                    <Button 
-                      className={cn(
-                        "w-full",
-                        tier.popular 
-                          ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
-                          : "bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-                      )}
-                      size="lg"
-                    >
-                      {tier.cta}
-                    </Button>
-                  </CardFooter>
+                    <CardFooter className="pt-6">
+                      <Button
+                        className={cn(
+                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300",
+                          tier.buttonVariant === "emerald"
+                            ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                            : tier.buttonVariant === "outline"
+                              ? "bg-transparent border-2 border-muted-foreground/20 hover:border-foreground text-foreground hover:bg-accent"
+                              : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                        )}
+                        disabled={tier.underDevelopment}
+                      >
+                        {t(tier.ctaAr, tier.ctaEn)}
+                      </Button>
+                    </CardFooter>
+                  </div>
                 </Card>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* FAQ Link */}
+          {/* FAQ / Trust */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="text-center mt-16"
+            className="mt-20 border-t border-border pt-10"
           >
-            <p className="text-muted-foreground mb-4">
-              هل لديك أسئلة؟ تواصل معنا أو اقرأ{" "}
-              <a href="#faq" className="text-primary hover:underline">
-                الأسئلة الشائعة
-              </a>
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-              <span>إلغاء في أي وقت</span>
-              <span>{"•"}</span>
-              <span>دعم على مدار الساعة</span>
-              <span>{"•"}</span>
-              <span>ضمان استرداد ٣٠ يوم</span>
+            <div className="grid md:grid-cols-4 gap-6 text-center">
+              {[
+                {
+                  labelAr: "ضمان استرداد ٣٠ يوم",
+                  labelEn: "30-Day Money Back",
+                  icon: Sparkles,
+                },
+                {
+                  labelAr: "دعم فني على مدار الساعة",
+                  labelEn: "24/7 Support",
+                  icon: User,
+                },
+                {
+                  labelAr: "إلغاء في أي وقت",
+                  labelEn: "Cancel Anytime",
+                  icon: X,
+                },
+                {
+                  labelAr: "بياناتك آمنة ومحفوظة",
+                  labelEn: "Secure Data",
+                  icon: Check,
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-2 text-muted-foreground"
+                >
+                  <item.icon className="w-5 h-5 mb-1 text-emerald-500/70" />
+                  <span className="text-sm">
+                    {t(item.labelAr, item.labelEn)}
+                  </span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>
@@ -232,5 +415,5 @@ export default function PricingPage() {
 
       <LandingFooter />
     </main>
-  )
+  );
 }
