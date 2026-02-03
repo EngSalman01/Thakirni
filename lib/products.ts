@@ -115,3 +115,21 @@ export function formatPrice(cents: number, locale: string = 'en-US'): string {
     currency: 'USD',
   }).format(cents / 100)
 }
+
+// Simple product interface for Stripe checkout
+export interface Product {
+  id: string
+  name: string
+  description: string
+  priceInCents: number
+  features: string[]
+}
+
+// PRODUCTS array for Stripe checkout compatibility
+export const PRODUCTS: Product[] = SUBSCRIPTION_PLANS.map(plan => ({
+  id: plan.id,
+  name: plan.nameAr,
+  description: plan.descriptionAr,
+  priceInCents: plan.priceInCents,
+  features: plan.featuresAr,
+}))
