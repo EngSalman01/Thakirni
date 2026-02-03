@@ -1,5 +1,37 @@
 "use client";
 
+import React from "react"
+import dynamic from "next/dynamic"
+import { useState, useCallback, useRef } from "react"
+import { motion } from "framer-motion"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+
+// Dynamic import to prevent SSR issues with AI SDK
+const AIChat = dynamic(() => import("@/components/thakirni/ai-chat").then(mod => ({ default: mod.AIChat })), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[600px] bg-card rounded-xl border border-border flex items-center justify-center">
+      <div className="text-muted-foreground">جاري تحميل المحادثة...</div>
+    </div>
+  )
+})
+import { Switch } from "@/components/ui/switch"
+import { Skeleton } from "@/components/ui/skeleton"
+import { 
+  Bell, Calendar, Clock, Plus, Upload, 
+  ImageIcon, Mic, FileText, MessageSquare
+} from "lucide-react"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
+import { useMemories } from "@/hooks/use-memories"
+
+export default function VaultPage() {
+  const { memories, isLoading, addMemory } = useMemories()
+  const [fridayReminder, setFridayReminder] = useState(true)
+  const [isDragOver, setIsDragOver] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 import React from "react";
 import dynamic from "next/dynamic";
 import { useState, useCallback, useRef } from "react";
@@ -140,6 +172,14 @@ export default function VaultPage() {
     [processFiles],
   );
 
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragOver(false)
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) {
+      handleFiles(files)
+    }
+  }, [])
   const handleFridayToggle = (checked: boolean) => {
     setFridayReminder(checked);
     if (checked) {
@@ -149,7 +189,50 @@ export default function VaultPage() {
     }
   };
 
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length > 0) {
+      handleFiles(files)
+    }
+  }, [])
+
+  const handleFiles = (files: File[]) => {
+    files.forEach(file => {
+      const type = file.type.startsWith("image/") ? "photo" 
+        : file.type.startsWith("audio/") ? "voice" 
+        : "text"
+      
+      addMemory({
+        title: file.name,
+        type,
+        gregorianDate: new Date().toISOString().split("T")[0],
+        hijriDate: "١٤٤٦/٧/٣٠",
+        contentUrl: "",
+        userId: "user-1",
+      })
+    })
+    toast.success(`تم رفع ${files.length} ملف بنجاح`)
+  }
+
+  const handleAddNewMemory = () => {
+    addMemory({
+      title: "ذكرى جديدة",
+      type: "photo",
+      gregorianDate: new Date().toISOString().split("T")[0],
+      hijriDate: "١٤٤٦/٧/٣٠",
+      contentUrl: "",
+      userId: "user-1",
+    })
+    toast.success("تم إضافة ذكرى جديدة")
+  }
+
+  const handleFridayReminderChange = (checked: boolean) => {
+    setFridayReminder(checked)
+    toast.success(checked ? "تم تفعيل تذكيرات الجمعة" : "تم إيقاف تذكيرات الجمعة")
+  }
+
   return (
+    <div className="min-h-screen bg-background">
     <div className="min-h-screen bg-background text-foreground">
       {/* Hidden File Input */}
       <input
@@ -345,6 +428,7 @@ export default function VaultPage() {
                 <ImageIcon className="w-5 h-5 text-primary" />
                 {t("ذكرياتي الأخيرة", "Recent Memories")}
               </h2>
+              <Button size="sm" className="gap-2" onClick={handleAddNewMemory}>
               <Button
                 size="sm"
                 className="gap-2"
@@ -447,6 +531,9 @@ export default function VaultPage() {
                       )}
                     </p>
                   </div>
+                  <Switch 
+                    checked={fridayReminder} 
+                    onCheckedChange={handleFridayReminderChange}
                   <Switch
                     checked={fridayReminder}
                     onCheckedChange={handleFridayToggle}
@@ -486,6 +573,21 @@ export default function VaultPage() {
                     "Drag files here or click to select",
                   )}
                 </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,audio/*,video/*,.pdf,.doc,.docx"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-transparent"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  اختر ملفات
                 <Button
                   variant="outline"
                   size="sm"
