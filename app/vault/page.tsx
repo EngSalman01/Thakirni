@@ -6,6 +6,7 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Dynamic import to prevent SSR issues with AI SDK
 const AIChat = dynamic(
@@ -60,12 +61,78 @@ export default function VaultPage() {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    // Handle file drop
-    Array.from(e.dataTransfer.files);
-  }, []);
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length === 0) return;
+
+      toast.info(
+        t(
+          `جاري رفع ${files.length} ملفات...`,
+          `Uploading ${files.length} files...`,
+        ),
+      );
+
+      for (const file of files) {
+        try {
+          // Simple Hijri date formatter
+          const hijriDate = new Intl.DateTimeFormat("en-u-ca-islamic", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }).format(new Date());
+
+          let contentUrl = "";
+          let type: "photo" | "text" = "text";
+
+          if (file.type.startsWith("image/")) {
+            type = "photo";
+            // Convert to Base64 for immediate preview (limit to 1MB for safety)
+            if (file.size < 1024 * 1024) {
+              contentUrl = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(file);
+              });
+            } else {
+              contentUrl = "https://placehold.co/600x400?text=Large+Image"; // Placeholder for large images
+            }
+          } else {
+            contentUrl = ""; // No content URL for generic files yet
+          }
+
+          await useMemories().addMemory({
+            title: file.name,
+            description: t(
+              "تم الرفع عبر الرفع السريع",
+              "Uploaded via Quick Upload",
+            ),
+            type: type,
+            hijri_date: hijriDate,
+            gregorian_date: new Date().toISOString().split("T")[0],
+            content_url: contentUrl,
+            tags: ["quick-upload", "dashboard"],
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      toast.success(t("تم الرفع بنجاح", "Upload successful"));
+    },
+    [t],
+  );
+
+  const handleFridayToggle = (checked: boolean) => {
+    setFridayReminder(checked);
+    if (checked) {
+      toast.success(t("تم تفعيل تذكيرات الجمعة", "Friday reminders enabled"));
+    } else {
+      toast.info(t("تم تعطيل تذكيرات الجمعة", "Friday reminders disabled"));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -353,7 +420,7 @@ export default function VaultPage() {
                   </div>
                   <Switch
                     checked={fridayReminder}
-                    onCheckedChange={setFridayReminder}
+                    onCheckedChange={handleFridayToggle}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">

@@ -89,7 +89,7 @@ export async function POST(req: Request) {
 
 
   const result = streamText({
-    model: google("gemini-3-flash-preview"),
+    model: google("gemini-1.5-flash"),
     system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
 1. تنظيم المهام (Tasks)
 2. قائمة البقالة (Groceries)
