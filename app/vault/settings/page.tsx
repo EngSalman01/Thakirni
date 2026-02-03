@@ -347,34 +347,7 @@ export default function SettingsPage() {
                                 {t("مساعد ذكي أساسي", "Basic AI Assistant")}
                               </li>
                             </ul>
-                            <Button
-                              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                              disabled={loading}
-                              onClick={async () => {
-                                try {
-                                  setLoading(true);
-                                  const response = await fetch(
-                                    "/api/stripe/checkout",
-                                    { method: "POST" },
-                                  );
-                                  if (!response.ok)
-                                    throw new Error(
-                                      "Network response was not ok",
-                                    );
-                                  const data = await response.json();
-                                  window.location.href = data.url;
-                                } catch (error) {
-                                  console.error(error);
-                                  toast.error(
-                                    t("حدث خطأ ما", "Something went wrong"),
-                                  );
-                                  setLoading(false);
-                                }
-                              }}
-                            >
-                              {loading ? (
-                                <span className="animate-spin mr-2">⏳</span>
-                              ) : null}
+                            <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold">
                               {t("الترقية إلى برو", "Upgrade to Pro")}
                             </Button>
                           </CardContent>
