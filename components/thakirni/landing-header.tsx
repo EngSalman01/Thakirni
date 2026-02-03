@@ -1,12 +1,16 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LanguageToggle } from "@/components/language-toggle"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { BrandLogo } from "@/components/thakirni/brand-logo";
+import { useLanguage } from "@/components/language-provider";
 
 export function LandingHeader() {
+  const { t } = useLanguage();
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -16,25 +20,31 @@ export function LandingHeader() {
     >
       <div className="container mx-auto px-4">
         <nav className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">ذ</span>
-            </div>
-            <span className="text-xl font-bold text-foreground">ذكرني</span>
-            <span className="text-xs text-muted-foreground font-english hidden sm:inline" dir="ltr">Thakirni</span>
+          {/* Logo - Using Full Variant (includes text) */}
+          <Link href="/" className="flex items-center">
+            {/* Reduced size to 60x20 for better fit in h-16 header */}
+            <BrandLogo width={60} height={20} variant="icon" />
           </Link>
 
           {/* Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              المميزات
+          <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+            <Link
+              href="#features"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("المميزات", "Features")}
             </Link>
-            <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              الأسعار
+            <Link
+              href="/pricing"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("الأسعار", "Pricing")}
             </Link>
-            <Link href="#contact" className="text-muted-foreground hover:text-foreground transition-colors">
-              تواصل معنا
+            <Link
+              href="#contact"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t("تواصل معنا", "Contact")}
             </Link>
           </div>
 
@@ -43,18 +53,21 @@ export function LandingHeader() {
             <LanguageToggle />
             <ThemeToggle />
             <Link href="/auth">
-              <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-                تسجيل الدخول
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                {t("تسجيل الدخول", "Login")}
               </Button>
             </Link>
             <Link href="/auth">
               <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                ابدأ الآن
+                {t("ابدأ الآن", "Start Now")}
               </Button>
             </Link>
           </div>
         </nav>
       </div>
     </motion.header>
-  )
+  );
 }
