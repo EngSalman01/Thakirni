@@ -14,9 +14,17 @@ export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   
-  const { messages, input, setInput, handleSubmit, isLoading } = useChat({
+  const { messages, input, setInput, handleSubmit, isLoading, error } = useChat({
     api: "/api/chat",
+    onError: (err) => {
+      console.log("[v0] Chat error:", err)
+    },
   })
+
+  // Log error for debugging
+  if (error) {
+    console.log("[v0] useChat error state:", error)
+  }
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -171,6 +179,16 @@ export function AIChat() {
               )
             })}
           </AnimatePresence>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm"
+            >
+              Error: {error.message}
+            </motion.div>
+          )}
 
           {isLoading && messages[messages.length - 1]?.role === "user" && (
             <motion.div
