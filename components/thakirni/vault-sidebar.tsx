@@ -92,7 +92,8 @@ export function VaultSidebar() {
   return (
     <aside className="fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex flex-col">
       {/* Logo */}
-      <div className="p-6 border-b border-border">
+      {/* Logo */}
+      <div className="p-6 border-b border-border flex justify-center">
         <Link href="/" className="flex items-center gap-3">
           <BrandLogo width={100} height={35} />
         </Link>
@@ -199,14 +200,6 @@ export function VaultSidebar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <button
-          onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors mt-2"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>{t("تسجيل الخروج", "Logout")}</span>
-        </button>
       </div>
     </aside>
   );
