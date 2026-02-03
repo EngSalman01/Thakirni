@@ -44,7 +44,7 @@ import { useLanguage } from "@/components/language-provider";
 
 export default function VaultPage() {
   const { memories, isLoading: memoriesLoading } = useMemories();
-  const { stats, isLoading: plansLoading } = usePlans();
+  const { stats, isLoading: plansLoading, nextUp, addPlan } = usePlans();
   const isLoading = memoriesLoading || plansLoading;
 
   const [fridayReminder, setFridayReminder] = useState(true);
@@ -105,66 +105,139 @@ export default function VaultPage() {
           </div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Quick Add Bar */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+          className="mb-8"
         >
-          {[
-            {
-              labelAr: "ذكرياتي",
-              labelEn: "Memories",
-              value: memories.length,
-              icon: ImageIcon,
-              color: "text-primary",
-            },
-            {
-              labelAr: "تذكيرات اليوم",
-              labelEn: "Today's Reminders",
-              value: stats.todayReminders,
-              icon: Clock,
-              color: "text-blue-500",
-            },
-            {
-              labelAr: "الجدول الزمني",
-              labelEn: "Schedule",
-              value: stats.upcomingMeetings + stats.pendingTasks,
-              icon: Calendar,
-              color: "text-green-500",
-            },
-            {
-              labelAr: "رسائل صوتية",
-              labelEn: "Voice Notes",
-              value: memories.filter((m) => m.type === "voice").length,
-              icon: Mic,
-              color: "text-amber-500",
-            },
-          ].map((stat, i) => (
-            <div
-              key={i}
-              className="bg-card rounded-xl p-4 border border-border hover:border-primary/50 transition-colors cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-10 h-10 rounded-lg bg-muted flex items-center justify-center ${stat.color}`}
-                >
-                  <stat.icon className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {/* Format number based on current language */}
-                    {isArabic ? stat.value.toLocaleString("ar-EG") : stat.value}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {t(stat.labelAr, stat.labelEn)}
-                  </p>
-                </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const input = form.elements.namedItem(
+                "planTitle",
+              ) as HTMLInputElement;
+              if (!input || !input.value.trim()) return;
+
+              // Basic smart categorization
+              const val = input.value.toLowerCase();
+              let category: "task" | "meeting" | "grocery" = "task";
+              if (
+                val.includes("meeting") ||
+                val.includes("mo3ad") ||
+                val.includes("موع") ||
+                val.includes("قاب")
+              )
+                category = "meeting";
+              if (
+                val.includes("buy") ||
+                val.includes("shary") ||
+                val.includes("شرا") ||
+                val.includes("جب")
+              )
+                category = "grocery";
+
+              addPlan({
+                title: input.value,
+                category,
+                status: "pending",
+                is_recurring: false,
+                priority: "medium",
+                reminder_date: new Date().toISOString(),
+              });
+              input.value = "";
+            }}
+            className="flex gap-2 p-1 bg-card border border-border rounded-2xl shadow-sm focus-within:ring-2 ring-primary/20 transition-all"
+          >
+            <input
+              name="planTitle"
+              className="flex-1 bg-transparent px-4 border-none outline-none text-foreground placeholder-muted-foreground"
+              placeholder={t(
+                "ما الذي تريد تذكره؟ (مثلاً: اجتماع غداً، شراء حليب...)",
+                "What do you want to remember? (e.g. Meeting tomorrow, Buy milk...)",
+              )}
+            />
+            <Button type="submit" size="sm" className="rounded-xl px-6">
+              {t("إضافة", "Add")}
+            </Button>
+          </form>
+        </motion.div>
+
+        {/* Stats & Agenda */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {/* Stat Cards */}
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{memories.length}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("ذكرياتي", "Memories")}
+                </p>
               </div>
             </div>
-          ))}
-        </motion.div>
+          </div>
+
+          <div className="bg-card rounded-xl p-4 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.todayReminders}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("تذكيرات اليوم", "Today's Reminders")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Agenda Card (Spans 2 columns if space allows, or modify grid) */}
+          <div className="md:col-span-2 bg-card rounded-xl p-4 border border-border relative overflow-hidden">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-green-500" />
+                {t("القادم", "Next Up")}
+              </h3>
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                {nextUp.length}
+              </span>
+            </div>
+
+            {nextUp.length > 0 ? (
+              <div className="space-y-2">
+                {nextUp.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full ${plan.category === "meeting" ? "bg-blue-500" : "bg-amber-500"}`}
+                      />
+                      <span className="truncate">{plan.title}</span>
+                    </div>
+                    <span className="text-[10px] opacity-70 whitespace-nowrap">
+                      {plan.reminder_date
+                        ? new Date(plan.reminder_date).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Today"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
+                {t("لا توجد مواعيد قادمة", "No upcoming plans")}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -200,26 +273,51 @@ export default function VaultPage() {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.1 }}
-                    className="relative group aspect-square rounded-lg bg-muted overflow-hidden cursor-pointer"
+                    className="relative group aspect-square rounded-lg bg-muted overflow-hidden flex flex-col"
                   >
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    {/* Media Content */}
+                    <div className="flex-1 relative">
                       {memory.type === "photo" && (
-                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                        <img
+                          src={memory.content_url}
+                          alt={memory.title || ""}
+                          className="w-full h-full object-cover"
+                        />
                       )}
+                      {/* Audio Player Replacement */}
                       {memory.type === "voice" && (
-                        <Mic className="w-8 h-8 text-muted-foreground" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-900/20 p-2">
+                          <Mic className="w-8 h-8 text-white mb-2" />
+                          <audio
+                            controls
+                            src={memory.content_url}
+                            className="w-full h-8 max-w-[140px] opacity-70 hover:opacity-100 transition-opacity"
+                          />
+                        </div>
                       )}
                       {memory.type === "text" && (
-                        <FileText className="w-8 h-8 text-muted-foreground" />
+                        <div className="absolute inset-0 p-4 flex items-center justify-center text-center bg-primary/5">
+                          <p className="text-xs line-clamp-4 font-medium">
+                            {memory.description || memory.title}
+                          </p>
+                        </div>
                       )}
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-xs text-white truncate">
-                        {memory.title}
-                      </p>
-                      <p className="text-xs text-white/70">
-                        {memory.hijri_date}
-                      </p>
+
+                      {/* Fallback Icon if no image/custom view */}
+                      {!memory.content_url && memory.type !== "text" && (
+                        <div className="flex items-center justify-center w-full h-full">
+                          <FileText className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+
+                      <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
+                        <p className="text-xs text-white truncate font-medium">
+                          {memory.title}
+                        </p>
+                        <p className="text-[10px] text-white/70">
+                          {memory.hijri_date}
+                        </p>
+                      </div>
                     </div>
                   </motion.div>
                 ))}

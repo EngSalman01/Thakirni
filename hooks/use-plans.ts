@@ -19,6 +19,7 @@ interface UsePlansReturn {
     todayReminders: number
     upcomingMeetings: number
   }
+  nextUp: Plan[]
 }
 
 export function usePlans(): UsePlansReturn {
@@ -133,6 +134,18 @@ export function usePlans(): UsePlansReturn {
     }).length
   }
 
+  // Get next 3 upcoming items (tasks or meetings)
+  const nextUp = plans
+    .filter(p => p.status === 'pending' && (p.category === 'task' || p.category === 'meeting'))
+    .sort((a, b) => {
+      // Sort by date if available, otherwise push to end
+      if (a.reminder_date && b.reminder_date) return a.reminder_date.localeCompare(b.reminder_date)
+      if (a.reminder_date) return -1
+      if (b.reminder_date) return 1
+      return 0
+    })
+    .slice(0, 3)
+
   return {
     plans,
     isLoading,
@@ -141,6 +154,7 @@ export function usePlans(): UsePlansReturn {
     updatePlanStatus,
     deletePlan,
     refetch: fetchPlans,
-    stats
+    stats,
+    nextUp
   }
 }

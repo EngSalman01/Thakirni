@@ -41,6 +41,15 @@ const navItems = [
   },
 ];
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 export function VaultSidebar() {
   const pathname = usePathname();
   const { isArabic, t } = useLanguage();
@@ -73,11 +82,9 @@ export function VaultSidebar() {
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
-      // Use window.location to force a full refresh and clear any client-side state
       window.location.href = "/auth";
     } catch (error) {
       console.error("Error signing out:", error);
-      // Fallback redirect even if signOut fails
       window.location.href = "/auth";
     }
   };
@@ -86,7 +93,6 @@ export function VaultSidebar() {
     <aside className="fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        {/* Full logo includes text, so we use it directly. Reduced from 140x50 to 100x35 */}
         <Link href="/" className="flex items-center gap-3">
           <BrandLogo width={100} height={35} />
         </Link>
@@ -126,39 +132,74 @@ export function VaultSidebar() {
           <LanguageToggle />
         </div>
 
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt="User"
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-primary font-bold">
-                {profile?.full_name?.charAt(0).toUpperCase() || "U"}
-              </span>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            {loading ? (
-              <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-            ) : (
-              <>
-                <p className="text-sm font-medium text-card-foreground truncate">
-                  {profile?.full_name || t("مستخدم", "User")}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {profile?.plan_tier === "COMPANY"
-                    ? t("باقة الشركات", "Company Plan")
-                    : profile?.plan_tier === "INDIVIDUAL"
-                      ? t("باقة الأفراد", "Individual Plan")
-                      : t("الباقة المجانية", "Free Plan")}
-                </p>
-              </>
-            )}
-          </div>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 rounded-xl transition-colors">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="User"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="text-primary font-bold">
+                    {profile?.full_name?.charAt(0).toUpperCase() || "U"}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 text-start">
+                {loading ? (
+                  <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                ) : (
+                  <>
+                    <p className="text-sm font-medium text-card-foreground truncate">
+                      {profile?.full_name || t("مستخدم", "User")}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {profile?.plan_tier === "COMPANY"
+                        ? t("باقة الشركات", "Company Plan")
+                        : profile?.plan_tier === "INDIVIDUAL"
+                          ? t("باقة الأفراد", "Individual Plan")
+                          : t("الباقة المجانية", "Free Plan")}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>{t("حسابي", "My Account")}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link
+                href="/vault/settings"
+                className="flex items-center cursor-pointer"
+              >
+                <Settings className="w-4 h-4 me-2" />
+                {t("الإعدادات", "Settings")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link
+                href="/vault/plans"
+                className="flex items-center cursor-pointer"
+              >
+                <Calendar className="w-4 h-4 me-2" />
+                {t("خططي", "My Plans")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleSignOut}
+              className="text-destructive focus:text-destructive cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 me-2" />
+              {t("تسجيل الخروج", "Logout")}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors mt-2"
