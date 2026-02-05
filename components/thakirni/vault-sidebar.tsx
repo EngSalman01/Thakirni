@@ -4,20 +4,41 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Heart,
-  GitBranch,
-  Link2,
   Settings,
   Home,
   LogOut,
   MessageSquare,
   Calendar,
+  Menu,
 } from "lucide-react";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
-import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+// Context to allow child pages to render the mobile trigger
+const SidebarContext = createContext<{
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}>({ open: false, setOpen: () => {} });
+
+export function useSidebar() {
+  return useContext(SidebarContext);
+}
 
 const navItems = [
   { href: "/vault", icon: Home, labelAr: "الرئيسية", labelEn: "Home" },
@@ -26,6 +47,7 @@ const navItems = [
     icon: MessageSquare,
     labelAr: "المساعد الذكي",
     labelEn: "AI Assistant",
+    hash: "#ai-chat",
   },
   {
     href: "/vault/plans",
@@ -41,16 +63,7 @@ const navItems = [
   },
 ];
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-
-export function VaultSidebar() {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { isArabic, t } = useLanguage();
   const [profile, setProfile] = useState<any>(null);
@@ -90,11 +103,10 @@ export function VaultSidebar() {
   };
 
   return (
-    <aside className="fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex flex-col">
-      {/* Logo */}
+    <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="p-6 border-b border-border flex justify-center">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3" onClick={onNavigate}>
           <BrandLogo width={100} height={35} />
         </Link>
       </div>
@@ -102,17 +114,21 @@ export function VaultSidebar() {
       {/* Navigation */}
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
+          {navItems.map((item, idx) => {
+            const isActive =
+              item.hash
+                ? pathname === "/vault"
+                : pathname === item.href;
             return (
-              <li key={item.href}>
+              <li key={`${item.href}-${idx}`}>
                 <Link
-                  href={item.href}
+                  href={item.hash ? `${item.href}${item.hash}` : item.href}
+                  onClick={onNavigate}
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-                    isActive
+                    isActive && !item.hash
                       ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <item.icon className="w-5 h-5" />
@@ -127,12 +143,7 @@ export function VaultSidebar() {
       </nav>
 
       {/* User section */}
-      <div className="p-4 border-t border-border space-y-4">
-        {/* Language Toggle for Vault */}
-        <div className="px-4">
-          <LanguageToggle />
-        </div>
-
+      <div className="p-4 border-t border-border space-y-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <div className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/50 rounded-xl transition-colors">
@@ -176,6 +187,7 @@ export function VaultSidebar() {
               <Link
                 href="/vault/settings"
                 className="flex items-center cursor-pointer"
+                onClick={onNavigate}
               >
                 <Settings className="w-4 h-4 me-2" />
                 {t("الإعدادات", "Settings")}
@@ -185,6 +197,7 @@ export function VaultSidebar() {
               <Link
                 href="/vault/plans"
                 className="flex items-center cursor-pointer"
+                onClick={onNavigate}
               >
                 <Calendar className="w-4 h-4 me-2" />
                 {t("خططي", "My Plans")}
@@ -201,6 +214,45 @@ export function VaultSidebar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </aside>
+    </div>
+  );
+}
+
+export function VaultSidebar() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <SidebarContext.Provider value={{ open, setOpen }}>
+      {/* Desktop sidebar - hidden on mobile */}
+      <aside className="hidden lg:flex fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex-col z-40">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile sheet sidebar */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="right" className="w-72 p-0 bg-card">
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+          <SidebarContent onNavigate={() => setOpen(false)} />
+        </SheetContent>
+      </Sheet>
+    </SidebarContext.Provider>
+  );
+}
+
+/** Floating mobile menu button - place in vault pages */
+export function MobileMenuButton() {
+  const { setOpen } = useSidebar();
+  const { t } = useLanguage();
+
+  return (
+    <Button
+      variant="outline"
+      size="icon"
+      className="lg:hidden bg-card border-border shadow-sm"
+      onClick={() => setOpen(true)}
+      aria-label={t("فتح القائمة", "Open menu")}
+    >
+      <Menu className="w-5 h-5" />
+    </Button>
   );
 }
