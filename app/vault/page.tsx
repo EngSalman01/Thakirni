@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
+import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
@@ -34,8 +34,8 @@ const AIChat = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[600px] bg-card rounded-xl border border-border flex items-center justify-center">
-        <div className="text-muted-foreground">جاري تحميل المحادثة...</div>
+      <div className="h-[500px] bg-card rounded-xl border border-border flex items-center justify-center">
+        <div className="text-muted-foreground">Loading chat...</div>
       </div>
     ),
   },
@@ -166,27 +166,32 @@ export default function VaultPage() {
       {/* Sidebar */}
       <VaultSidebar />
 
-      {/* Main content */}
-      <main className="me-64 p-8">
+      {/* Main content - responsive margin */}
+      <main className="lg:me-64 p-4 md:p-6 lg:p-8 transition-all duration-300">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-between mb-6 md:mb-8"
         >
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {t("مرحباً بك في ذكرني", "Welcome to Thakirni")}
-            </h1>
-            <p className="text-muted-foreground">
-              {t(
-                "ذاكرتك الثانية لحفظ كل اللحظات",
-                "Your second brain to preserve every moment",
-              )}
-            </p>
+          <div className="flex items-center gap-3">
+            <MobileMenuButton />
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+                {t("مرحباً بك في ذكرني", "Welcome to Thakirni")}
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground">
+                {t(
+                  "ذاكرتك الثانية لحفظ كل اللحظات",
+                  "Your second brain to preserve every moment",
+                )}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
+          <div className="flex items-center gap-1 md:gap-2">
+            <span className="hidden sm:inline-flex">
+              <LanguageToggle />
+            </span>
             <ThemeToggle />
             <Button
               variant="outline"
@@ -203,7 +208,7 @@ export default function VaultPage() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 md:mb-8"
         >
           <form
             onSubmit={(e) => {
@@ -214,7 +219,6 @@ export default function VaultPage() {
               ) as HTMLInputElement;
               if (!input || !input.value.trim()) return;
 
-              // Basic smart categorization
               const val = input.value.toLowerCase();
               let category: "task" | "meeting" | "grocery" = "task";
               if (
@@ -243,57 +247,57 @@ export default function VaultPage() {
               input.value = "";
               toast.success(t("تمت الإضافة", "Added"));
             }}
-            className="flex gap-2 p-1 bg-card border border-border rounded-2xl shadow-sm focus-within:ring-2 ring-primary/20 transition-all"
+            className="flex gap-2 p-1.5 bg-card border border-border rounded-2xl shadow-sm focus-within:ring-2 ring-primary/20 transition-all"
           >
             <input
               name="planTitle"
-              className="flex-1 bg-transparent px-4 border-none outline-none text-foreground placeholder-muted-foreground"
+              className="flex-1 bg-transparent px-3 md:px-4 border-none outline-none text-foreground placeholder-muted-foreground text-sm md:text-base min-w-0"
               placeholder={t(
-                "ما الذي تريد تذكره؟ (مثلاً: اجتماع غداً، شراء حليب...)",
-                "What do you want to remember? (e.g. Meeting tomorrow, Buy milk...)",
+                "ما الذي تريد تذكره؟",
+                "What do you want to remember?",
               )}
             />
-            <Button type="submit" size="sm" className="rounded-xl px-6">
+            <Button type="submit" size="sm" className="rounded-xl px-4 md:px-6 shrink-0">
               {t("إضافة", "Add")}
             </Button>
           </form>
         </motion.div>
 
         {/* Stats & Agenda */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
           {/* Stat Cards */}
-          <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="bg-card rounded-xl p-3 md:p-4 border border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <ImageIcon className="w-5 h-5" />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                <ImageIcon className="w-4 h-4 md:w-5 md:h-5" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{memories.length}</p>
-                <p className="text-xs text-muted-foreground">
+              <div className="min-w-0">
+                <p className="text-xl md:text-2xl font-bold">{memories.length}</p>
+                <p className="text-[11px] md:text-xs text-muted-foreground truncate">
                   {t("ذكرياتي", "Memories")}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-card rounded-xl p-4 border border-border">
+          <div className="bg-card rounded-xl p-3 md:p-4 border border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
-                <Clock className="w-5 h-5" />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                <Clock className="w-4 h-4 md:w-5 md:h-5" />
               </div>
-              <div>
-                <p className="text-2xl font-bold">{stats.todayReminders}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("تذكيرات اليوم", "Today's Reminders")}
+              <div className="min-w-0">
+                <p className="text-xl md:text-2xl font-bold">{stats.todayReminders}</p>
+                <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                  {t("تذكيرات اليوم", "Today")}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Agenda Card */}
-          <div className="md:col-span-2 bg-card rounded-xl p-4 border border-border relative overflow-hidden">
+          <div className="col-span-2 bg-card rounded-xl p-3 md:p-4 border border-border relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold flex items-center gap-2">
+              <h3 className="font-semibold flex items-center gap-2 text-sm md:text-base">
                 <Calendar className="w-4 h-4 text-green-500" />
                 {t("القادم", "Next Up")}
               </h3>
@@ -303,19 +307,19 @@ export default function VaultPage() {
             </div>
 
             {nextUp.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-1.5 md:space-y-2">
                 {nextUp.map((plan) => (
                   <div
                     key={plan.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm"
+                    className="flex items-center justify-between p-1.5 md:p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm"
                   >
                     <div className="flex items-center gap-2 truncate">
                       <div
-                        className={`w-1.5 h-1.5 rounded-full ${plan.category === "meeting" ? "bg-blue-500" : "bg-amber-500"}`}
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${plan.category === "meeting" ? "bg-blue-500" : "bg-amber-500"}`}
                       />
-                      <span className="truncate">{plan.title}</span>
+                      <span className="truncate text-xs md:text-sm">{plan.title}</span>
                     </div>
-                    <span className="text-[10px] opacity-70 whitespace-nowrap">
+                    <span className="text-[10px] opacity-70 whitespace-nowrap ms-2">
                       {plan.reminder_date
                         ? new Date(plan.reminder_date).toLocaleTimeString([], {
                             hour: "2-digit",
@@ -327,7 +331,7 @@ export default function VaultPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
+              <div className="flex items-center justify-center h-16 md:h-20 text-xs text-muted-foreground">
                 {t("لا توجد مواعيد قادمة", "No upcoming plans")}
               </div>
             )}
@@ -335,33 +339,50 @@ export default function VaultPage() {
         </div>
 
         {/* Bento Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           {/* Main Content - Memory Stream */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-2 bg-card rounded-xl border border-border p-6"
+            className="lg:col-span-2 bg-card rounded-xl border border-border p-4 md:p-6"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
                 <ImageIcon className="w-5 h-5 text-primary" />
                 {t("ذكرياتي الأخيرة", "Recent Memories")}
               </h2>
-              <Button size="sm" className="gap-2" onClick={handleAddNewMemory}>
+              <Button size="sm" className="gap-1.5 md:gap-2" onClick={handleAddNewMemory}>
                 <Plus className="w-4 h-4" />
-                {t("ذكرى جديدة", "New Memory")}
+                <span className="hidden sm:inline">{t("ذكرى جديدة", "New Memory")}</span>
+                <span className="sm:hidden">{t("جديد", "New")}</span>
               </Button>
             </div>
 
             {isLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <Skeleton key={i} className="aspect-square rounded-lg" />
                 ))}
               </div>
+            ) : memories.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                  <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
+                </div>
+                <h3 className="text-base font-medium text-foreground mb-1">
+                  {t("لا توجد ذكريات بعد", "No memories yet")}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {t("ابدأ بإضافة أول ذكرى لك", "Start by adding your first memory")}
+                </p>
+                <Button variant="outline" size="sm" onClick={handleAddNewMemory} className="bg-transparent">
+                  <Plus className="w-4 h-4 me-2" />
+                  {t("أضف ذكرى", "Add Memory")}
+                </Button>
+              </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
                 {memories.slice(0, 6).map((memory, i) => (
                   <motion.div
                     key={memory.id}
@@ -370,9 +391,8 @@ export default function VaultPage() {
                     transition={{ delay: i * 0.1 }}
                     className="relative group aspect-square rounded-lg bg-muted overflow-hidden flex flex-col"
                   >
-                    {/* Media Content */}
                     <div className="flex-1 relative">
-                      {memory.type === "photo" && (
+                      {memory.type === "photo" && memory.content_url && (
                         <img
                           src={memory.content_url}
                           alt={memory.title || ""}
@@ -381,7 +401,7 @@ export default function VaultPage() {
                       )}
                       {memory.type === "voice" && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-900/20 p-2">
-                          <Mic className="w-8 h-8 text-white mb-2" />
+                          <Mic className="w-8 h-8 text-foreground/70 mb-2" />
                           <audio
                             controls
                             src={memory.content_url}
@@ -390,7 +410,7 @@ export default function VaultPage() {
                         </div>
                       )}
                       {memory.type === "text" && (
-                        <div className="absolute inset-0 p-4 flex items-center justify-center text-center bg-primary/5">
+                        <div className="absolute inset-0 p-3 md:p-4 flex items-center justify-center text-center bg-primary/5">
                           <p className="text-xs line-clamp-4 font-medium">
                             {memory.description || memory.title}
                           </p>
@@ -419,21 +439,21 @@ export default function VaultPage() {
           </motion.div>
 
           {/* Side Cards */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Friday Reminders */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="bg-card rounded-xl border border-border p-6"
+              className="bg-card rounded-xl border border-border p-4 md:p-6"
             >
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+              <h3 className="text-base md:text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <MessageSquare className="w-5 h-5 text-primary" />
                 {t("تذكيرات الجمعة", "Friday Reminders")}
               </h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg gap-4">
-                  <div className="flex-1">
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg gap-3">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">
                       {t("رسالة جمعة مباركة", "Jumma Mubarak Message")}
                     </p>
@@ -463,7 +483,7 @@ export default function VaultPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className={`bg-card rounded-xl border-2 border-dashed p-6 transition-colors ${
+              className={`bg-card rounded-xl border-2 border-dashed p-4 md:p-6 transition-colors ${
                 isDragOver ? "border-primary bg-primary/5" : "border-border"
               }`}
               onDragOver={handleDragOver}
@@ -498,6 +518,7 @@ export default function VaultPage() {
 
         {/* AI Chat */}
         <motion.div
+          id="ai-chat"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}

@@ -1,42 +1,111 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Settings,
   User,
   Bell,
   Shield,
-  CreditCard,
   Globe,
-  Moon,
   Smartphone,
   Mail,
   Lock,
   LogOut,
   Crown,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { WhatsAppConnect } from "@/components/thakirni/whatsapp-connect";
+import { useLanguage } from "@/components/language-provider";
+import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
+  const [profile, setProfile] = useState<any>(null);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
-    sms: false,
     friday: true,
   });
+
   const [whatsappNumber, setWhatsappNumber] = useState<string | undefined>();
   const [whatsappVerified, setWhatsappVerified] = useState(false);
+
+  // Fetch real user data
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        setEmail(user.email || "");
+
+        const { data } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (data) {
+          setProfile(data);
+          setName(data.full_name || "");
+          setPhone(data.phone || "");
+        } else {
+          setName(user.user_metadata?.full_name || user.email?.split("@")[0] || "");
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchProfile();
+  }, []);
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: name,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      toast.success(t("تم حفظ التغييرات", "Changes saved"));
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      toast.error(t("حدث خطأ أثناء الحفظ", "Error saving changes"));
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleWhatsAppConnect = async (phoneNumber: string) => {
     const res = await fetch("/api/whatsapp/connect", {
@@ -69,81 +138,135 @@ export default function SettingsPage() {
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
-    toast.success("تم تحديث الإعدادات");
+    toast.success(t("تم تحديث الإعدادات", "Settings updated"));
+  };
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = "/auth";
   };
 
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="me-64 p-8">
+      <main className="lg:me-64 p-4 md:p-6 lg:p-8 transition-all duration-300">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-between mb-6 md:mb-8"
         >
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">الإعدادات</h1>
-            <p className="text-muted-foreground">إدارة حسابك وتفضيلاتك</p>
+          <div className="flex items-center gap-3">
+            <MobileMenuButton />
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+                {t("الإعدادات", "Settings")}
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground">
+                {t("إدارة حسابك وتفضيلاتك", "Manage your account and preferences")}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
+          <div className="flex items-center gap-1 md:gap-2">
+            <span className="hidden sm:inline-flex">
+              <LanguageToggle />
+            </span>
             <ThemeToggle />
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 max-w-5xl">
           {/* Profile Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-6">
                 <User className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">
-                  الملف الشخصي
+                  {t("الملف الشخصي", "Profile")}
                 </h2>
               </div>
 
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-primary text-2xl font-bold">م</span>
+              {loading ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 mb-6">
+                    <Skeleton className="w-16 h-16 rounded-full" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground">محمد أحمد</p>
-                  <p className="text-sm text-muted-foreground">
-                    mohammed@example.com
-                  </p>
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      {profile?.avatar_url ? (
+                        <img
+                          src={profile.avatar_url}
+                          alt="Avatar"
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-primary text-xl md:text-2xl font-bold">
+                          {name?.charAt(0).toUpperCase() || "U"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-foreground truncate">{name || t("مستخدم", "User")}</p>
+                      <p className="text-sm text-muted-foreground truncate">{email}</p>
+                    </div>
+                  </div>
 
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">الاسم</Label>
-                  <Input id="name" defaultValue="محمد أحمد" className="mt-1" />
-                </div>
-                <div>
-                  <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    defaultValue="mohammed@example.com"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">رقم الهاتف</Label>
-                  <Input
-                    id="phone"
-                    defaultValue="+966 50 123 4567"
-                    className="mt-1"
-                  />
-                </div>
-                <Button className="w-full">حفظ التغييرات</Button>
-              </div>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="name">{t("الاسم", "Name")}</Label>
+                      <Input
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">{t("البريد الإلكتروني", "Email")}</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        disabled
+                        className="mt-1 opacity-60"
+                        dir="ltr"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t(
+                          "لا يمكن تغيير البريد الإلكتروني من هنا",
+                          "Email cannot be changed here"
+                        )}
+                      </p>
+                    </div>
+                    <Button
+                      className="w-full"
+                      onClick={handleSaveProfile}
+                      disabled={saving}
+                    >
+                      {saving ? (
+                        <Loader2 className="w-4 h-4 animate-spin me-2" />
+                      ) : null}
+                      {t("حفظ التغييرات", "Save Changes")}
+                    </Button>
+                  </div>
+                </>
+              )}
             </Card>
           </motion.div>
 
@@ -153,24 +276,24 @@ export default function SettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Bell className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">
-                  الإشعارات
+                  {t("الإشعارات", "Notifications")}
                 </h2>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <Mail className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-foreground">
-                        إشعارات البريد
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground text-sm">
+                        {t("إشعارات البريد", "Email Notifications")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        استلام التذكيرات عبر البريد
+                        {t("استلام التذكيرات عبر البريد", "Receive reminders via email")}
                       </p>
                     </div>
                   </div>
@@ -180,15 +303,15 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <Smartphone className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-foreground">
-                        إشعارات الهاتف
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Smartphone className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground text-sm">
+                        {t("إشعارات الهاتف", "Push Notifications")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        إشعارات فورية على الهاتف
+                        {t("إشعارات فورية على الهاتف", "Instant push notifications")}
                       </p>
                     </div>
                   </div>
@@ -198,15 +321,15 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-3">
-                    <Moon className="w-5 h-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium text-foreground">
-                        تذكيرات الجمعة
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Crown className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground text-sm">
+                        {t("تذكيرات الجمعة", "Friday Reminders")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        رسائل جمعة مباركة أسبوعية
+                        {t("رسائل جمعة مباركة أسبوعية", "Weekly Jumma Mubarak messages")}
                       </p>
                     </div>
                   </div>
@@ -226,11 +349,11 @@ export default function SettingsPage() {
             transition={{ delay: 0.3 }}
             className="lg:col-span-2"
           >
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Crown className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">
-                  الاشتراك
+                  {t("الاشتراك", "Subscription")}
                 </h2>
               </div>
 
@@ -238,22 +361,22 @@ export default function SettingsPage() {
                 {/* Free Plan */}
                 <Card className="p-4 border-2 border-border">
                   <h3 className="text-lg font-bold text-foreground text-center">
-                    الباقة المجانية
+                    {t("الباقة المجانية", "Free Plan")}
                   </h3>
                   <p className="text-center text-2xl font-bold text-primary my-2">
-                    مجاني
+                    {t("مجاني", "Free")}
                   </p>
                   <p className="text-sm text-muted-foreground text-center mb-4">
-                    للاستخدام الشخصي
+                    {t("للاستخدام الشخصي", "For personal use")}
                   </p>
                   <ul className="text-sm space-y-2 mb-4">
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      ذاكرة محدودة
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                      {t("ذاكرة محدودة", "Limited memory")}
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      مساعد ذكي أساسي
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                      {t("مساعد ذكي أساسي", "Basic AI assistant")}
                     </li>
                   </ul>
                   <Button
@@ -261,41 +384,43 @@ export default function SettingsPage() {
                     variant="outline"
                     disabled
                   >
-                    الخطة الحالية
+                    {t("الخطة الحالية", "Current Plan")}
                   </Button>
                 </Card>
 
                 {/* Pro Plan */}
                 <Card className="p-4 border-2 border-primary relative overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-bl-xl font-bold">
-                    الأكثر شيوعاً
+                  <div className="absolute top-0 end-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-es-xl font-bold">
+                    {t("الأكثر شيوعاً", "Most Popular")}
                   </div>
                   <h3 className="text-lg font-bold text-foreground text-center">
-                    برو
+                    {t("برو", "Pro")}
                   </h3>
                   <p className="text-center text-2xl font-bold text-primary my-2">
-                    ٣٠ ريال
-                    <span className="text-sm text-muted-foreground">/شهر</span>
+                    {t("٣٠ ريال", "30 SAR")}
+                    <span className="text-sm text-muted-foreground">
+                      {t("/شهر", "/month")}
+                    </span>
                   </p>
                   <p className="text-sm text-muted-foreground text-center mb-4">
-                    للمستخدمين النشطين
+                    {t("للمستخدمين النشطين", "For active users")}
                   </p>
                   <ul className="text-sm space-y-2 mb-4">
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      ذاكرة غير محدودة
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                      {t("ذاكرة غير محدودة", "Unlimited memory")}
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      أولوية في الدعم
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                      {t("أولوية في الدعم", "Priority support")}
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                      تحليل متقدم
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                      {t("تحليل متقدم", "Advanced analytics")}
                     </li>
                   </ul>
                   <Button className="w-full" variant="default" disabled>
-                    قريباً
+                    {t("قريباً", "Coming Soon")}
                   </Button>
                 </Card>
               </div>
@@ -308,28 +433,29 @@ export default function SettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">
-                  الأمان
+                  {t("الأمان", "Security")}
                 </h2>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-3 bg-transparent"
                 >
                   <Lock className="w-4 h-4" />
-                  تغيير كلمة المرور
+                  {t("تغيير كلمة المرور", "Change Password")}
                 </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-3 bg-transparent text-destructive hover:text-destructive"
+                  onClick={handleSignOut}
                 >
                   <LogOut className="w-4 h-4" />
-                  تسجيل الخروج من جميع الأجهزة
+                  {t("تسجيل الخروج من جميع الأجهزة", "Sign Out From All Devices")}
                 </Button>
               </div>
             </Card>
@@ -356,29 +482,33 @@ export default function SettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Card className="p-6">
+            <Card className="p-4 md:p-6">
               <div className="flex items-center gap-3 mb-6">
                 <Globe className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-foreground">
-                  اللغة والمظهر
+                  {t("اللغة والمظهر", "Language & Theme")}
                 </h2>
               </div>
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium text-foreground">اللغة</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground text-sm">
+                      {t("اللغة", "Language")}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      اختر لغة التطبيق
+                      {t("اختر لغة التطبيق", "Choose app language")}
                     </p>
                   </div>
                   <LanguageToggle />
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium text-foreground">المظهر</p>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-foreground text-sm">
+                      {t("المظهر", "Theme")}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      الوضع الليلي أو النهاري
+                      {t("الوضع الليلي أو النهاري", "Dark or light mode")}
                     </p>
                   </div>
                   <ThemeToggle />
