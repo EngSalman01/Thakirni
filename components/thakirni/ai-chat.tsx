@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect, useState } from "react";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
+import { useChat } from "ai/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -19,31 +18,26 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
 
-/** Extract text from UIMessage parts */
-function getMessageText(
-  parts: Array<{ type: string; text?: string; [key: string]: any }>
-): string {
-  if (!parts || !Array.isArray(parts)) return "";
-  return parts
-    .filter((p): p is { type: "text"; text: string } => p.type === "text")
-    .map((p) => p.text)
-    .join("");
-}
-
 export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [input, setInput] = useState("");
   const { t } = useLanguage();
 
-  const { messages, sendMessage, status, error } = useChat({
-    transport: new DefaultChatTransport({ api: "/api/chat" }),
-    onError: (err) => {
-      console.log("[v0] Chat error:", err.message);
-    },
-  });
+  const { messages, input, setInput, handleSubmit, isLoading, error } =
+    useChat({
+      api: "/api/chat",
+      onError: (err) => {
+        console.log("[v0] Chat error:", err.message);
+      },
+    });
 
-  console.log("[v0] Chat status:", status, "messages:", messages.length, "error:", error?.message);
-  const isLoading = status === "streaming" || status === "submitted";
+  console.log(
+    "[v0] Chat status - messages:",
+    messages.length,
+    "loading:",
+    isLoading,
+    "error:",
+    error?.message
+  );
 
   // Auto-scroll
   useEffect(() => {
@@ -52,18 +46,18 @@ export function AIChat() {
     }
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const value = input;
-    setInput("");
-    sendMessage({ text: value });
-  };
-
   const handleSuggestionClick = (suggestion: string) => {
-    setInput("");
-    sendMessage({ text: suggestion });
+    setInput(suggestion);
+    // Submit programmatically
+    const fakeEvent = {
+      preventDefault: () => {},
+    } as React.FormEvent;
+    setTimeout(() => {
+      const form = document.querySelector(
+        "[data-chat-form]"
+      ) as HTMLFormElement;
+      if (form) form.requestSubmit();
+    }, 50);
   };
 
   const suggestions = [
@@ -99,7 +93,7 @@ export function AIChat() {
       {/* Messages */}
       <ScrollArea ref={scrollRef} className="flex-1 p-3 md:p-4">
         <div className="space-y-4">
-          {messages.length === 0 && (
+          {messages.length === 0 && !isLoading && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -139,12 +133,8 @@ export function AIChat() {
 
           <AnimatePresence mode="popLayout">
             {messages.map((message) => {
-              const textContent = getMessageText(message.parts);
-              const toolParts = message.parts.filter(
-                (p) =>
-                  p.type.startsWith("tool-") ||
-                  p.type === "tool-invocation"
-              );
+              // Check for tool invocations
+              const toolInvocations = message.toolInvocations;
 
               return (
                 <motion.div
@@ -175,7 +165,7 @@ export function AIChat() {
                       message.role === "user" ? "text-left" : ""
                     }`}
                   >
-                    {textContent && (
+                    {message.content && (
                       <div
                         className={`rounded-2xl px-3 py-2 md:px-4 md:py-2 ${
                           message.role === "user"
@@ -184,98 +174,80 @@ export function AIChat() {
                         }`}
                       >
                         <p className="text-sm whitespace-pre-wrap">
-                          {textContent}
+                          {message.content}
                         </p>
                       </div>
                     )}
 
-                    {/* Render tool parts */}
-                    {message.parts.map((part, idx) => {
-                      // Handle tool invocations from parts
-                      if (
-                        part.type === "tool-invocation" ||
-                        part.type.startsWith("tool-")
-                      ) {
-                        const toolPart = part as any;
+                    {/* Render tool invocations */}
+                    {toolInvocations?.map((invocation: any, idx: number) => {
+                      if (invocation.state === "call" || invocation.state === "partial-call") {
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 text-muted-foreground"
+                          >
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-xs">
+                              {t("جاري المعالجة...", "Processing...")}
+                            </span>
+                          </div>
+                        );
+                      }
 
-                        // Loading state for tools
-                        if (
-                          toolPart.state === "input-streaming" ||
-                          toolPart.state === "input-available" ||
-                          toolPart.state === "call" ||
-                          toolPart.state === "partial-call"
-                        ) {
-                          return (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-2 text-muted-foreground"
-                            >
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                              <span className="text-xs">
-                                {t("جاري المعالجة...", "Processing...")}
+                      if (invocation.state === "result") {
+                        const result = invocation.result;
+                        if (!result) return null;
+
+                        return (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="p-3 rounded-xl bg-muted/50 border border-border"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              {result?.success ? (
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <AlertCircle className="w-4 h-4 text-red-500" />
+                              )}
+                              <span className="text-xs font-medium">
+                                {invocation.toolName === "create_plan"
+                                  ? t("إضافة خطة", "Add Plan")
+                                  : t("عرض الخطط", "View Plans")}
                               </span>
                             </div>
-                          );
-                        }
 
-                        // Result state
-                        if (
-                          toolPart.state === "output-available" ||
-                          toolPart.state === "result"
-                        ) {
-                          const result = toolPart.output || toolPart.result;
-                          if (!result) return null;
+                            {result?.message && (
+                              <p className="text-sm text-muted-foreground">
+                                {result.message}
+                              </p>
+                            )}
 
-                          return (
-                            <motion.div
-                              key={idx}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="p-3 rounded-xl bg-muted/50 border border-border"
-                            >
-                              <div className="flex items-center gap-2 mb-2">
-                                {result?.success ? (
-                                  <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                ) : (
-                                  <AlertCircle className="w-4 h-4 text-red-500" />
-                                )}
-                                <span className="text-xs font-medium">
-                                  {toolPart.toolName === "create_plan"
-                                    ? t("إضافة خطة", "Add Plan")
-                                    : t("عرض الخطط", "View Plans")}
-                                </span>
+                            {result?.plans && result.plans.length > 0 && (
+                              <div className="space-y-2 mt-2">
+                                {result.plans
+                                  .slice(0, 5)
+                                  .map((plan: any) => (
+                                    <div
+                                      key={plan.id}
+                                      className="flex items-center justify-between p-2 rounded-lg bg-background"
+                                    >
+                                      <span className="text-sm font-medium">
+                                        {plan.title}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {plan.plan_date}
+                                      </span>
+                                    </div>
+                                  ))}
                               </div>
-
-                              {result?.message && (
-                                <p className="text-sm text-muted-foreground">
-                                  {result.message}
-                                </p>
-                              )}
-
-                              {result?.plans &&
-                                result.plans.length > 0 && (
-                                  <div className="space-y-2 mt-2">
-                                    {result.plans
-                                      .slice(0, 5)
-                                      .map((plan: any) => (
-                                        <div
-                                          key={plan.id}
-                                          className="flex items-center justify-between p-2 rounded-lg bg-background"
-                                        >
-                                          <span className="text-sm font-medium">
-                                            {plan.title}
-                                          </span>
-                                          <span className="text-xs text-muted-foreground">
-                                            {plan.plan_date}
-                                          </span>
-                                        </div>
-                                      ))}
-                                  </div>
-                                )}
-                            </motion.div>
-                          );
-                        }
+                            )}
+                          </motion.div>
+                        );
                       }
+
                       return null;
                     })}
                   </div>
@@ -298,11 +270,20 @@ export function AIChat() {
               </div>
             </motion.div>
           )}
+
+          {error && (
+            <div className="text-center py-2">
+              <p className="text-xs text-red-500">
+                {t("حدث خطأ. حاول مرة أخرى.", "An error occurred. Please try again.")}
+              </p>
+            </div>
+          )}
         </div>
       </ScrollArea>
 
       {/* Input */}
       <form
+        data-chat-form
         onSubmit={handleSubmit}
         className="p-3 md:p-4 border-t border-border bg-muted/30"
       >

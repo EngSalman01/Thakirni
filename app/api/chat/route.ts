@@ -1,10 +1,5 @@
-import {
-  streamText,
-  tool,
-  convertToModelMessages,
-  UIMessage,
-  stepCountIs,
-} from "ai"
+import { streamText, tool } from "ai"
+import { google } from "@ai-sdk/google"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
 
@@ -12,9 +7,8 @@ export const maxDuration = 30
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const messages: UIMessage[] = body.messages ?? []
-    console.log("[v0] Chat API called with", messages.length, "messages")
+    const { messages } = await req.json()
+    console.log("[v0] Chat API called with", messages?.length, "messages")
 
     const supabase = await createClient()
     const {
@@ -22,11 +16,8 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser()
     console.log("[v0] User:", user?.id ?? "not authenticated")
 
-    const convertedMessages = await convertToModelMessages(messages)
-    console.log("[v0] Converted messages:", convertedMessages.length)
-
     const result = streamText({
-      model: "google/gemini-1.5-flash",
+      model: google("gemini-1.5-flash"),
       system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
 1. تنظيم المهام (Tasks)
 2. قائمة البقالة (Groceries)  
@@ -45,21 +36,15 @@ You are Thakirni, an intelligent assistant helping users with Short-Term Memory 
 When users ask to add a task, grocery item, or meeting, use the create_plan tool.
 When users ask to view their items, use the list_plans tool.
 Respond in the same language the user uses.`,
-      messages: convertedMessages,
+      messages,
       tools: {
         create_plan: tool({
           description: "Create a new plan or reminder for the user",
-          inputSchema: z.object({
+          parameters: z.object({
             title: z.string().describe("Title of the plan/reminder"),
-            description: z
-              .string()
-              .nullable()
-              .describe("Optional description"),
+            description: z.string().optional().describe("Optional description"),
             plan_date: z.string().describe("Date in YYYY-MM-DD format"),
-            plan_time: z
-              .string()
-              .nullable()
-              .describe("Time in HH:MM format"),
+            plan_time: z.string().optional().describe("Time in HH:MM format"),
             recurrence: z
               .enum(["none", "daily", "weekly", "monthly", "yearly"])
               .describe("Recurrence pattern"),
@@ -78,8 +63,7 @@ Respond in the same language the user uses.`,
             if (!user) {
               return {
                 success: false,
-                message:
-                  "يجب تسجيل الدخول أولاً / Please login first",
+                message: "يجب تسجيل الدخول أولاً / Please login first",
               }
             }
 
@@ -110,17 +94,10 @@ Respond in the same language the user uses.`,
         }),
         list_plans: tool({
           description: "List all plans and reminders for the user",
-          inputSchema: z.object({
+          parameters: z.object({
             category: z
-              .enum([
-                "all",
-                "task",
-                "grocery",
-                "meeting",
-                "appointment",
-                "other",
-              ])
-              .nullable()
+              .enum(["all", "task", "grocery", "meeting", "appointment", "other"])
+              .optional()
               .describe("Category to filter by"),
             upcoming_only: z
               .boolean()
@@ -130,8 +107,7 @@ Respond in the same language the user uses.`,
             if (!user) {
               return {
                 success: false,
-                message:
-                  "يجب تسجيل الدخول أولاً / Please login first",
+                message: "يجب تسجيل الدخول أولاً / Please login first",
                 plans: [],
               }
             }
@@ -167,12 +143,12 @@ Respond in the same language the user uses.`,
           },
         }),
       },
-      stopWhen: stepCountIs(5),
+      maxSteps: 5,
     })
 
-    return result.toUIMessageStreamResponse()
+    return result.toDataStreamResponse()
   } catch (error) {
-    console.error("Chat API error:", error)
+    console.error("[v0] Chat API error:", error)
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
