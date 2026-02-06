@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
+import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
 
@@ -89,18 +89,21 @@ export default function PlansPage() {
       <VaultSidebar />
 
       <main className="lg:me-64 p-4 lg:p-8 transition-all duration-300">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent">
-              {t("خططي ومكالماتي", "My Plans & Tasks")}
-            </h1>
-            <p className="text-muted-foreground">
-              {t(
-                "نظم يومك، وتابع مهامك، ولا تنسى مقاضيك",
-                "Organize your day, track tasks, and never forget groceries",
-              )}
-            </p>
+          <div className="flex items-start gap-3">
+            <MobileMenuButton />
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent text-balance">
+                {t("خططي ومكالماتي", "My Plans & Tasks")}
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground">
+                {t(
+                  "نظم يومك، وتابع مهامك، ولا تنسى مقاضيك",
+                  "Organize your day, track tasks, and never forget groceries",
+                )}
+              </p>
+            </div>
           </div>
 
           {/* Input Area */}
