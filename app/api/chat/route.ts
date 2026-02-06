@@ -1,9 +1,13 @@
 import { streamText, tool } from "ai"
-import { google } from "@ai-sdk/google"
+import { createGroq } from "@ai-sdk/groq"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
 
 export const maxDuration = 30
+
+const groq = createGroq({
+  apiKey: process.env.GROQ_API_KEY,
+})
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +21,7 @@ export async function POST(req: Request) {
     console.log("[v0] User:", user?.id ?? "not authenticated")
 
     const result = streamText({
-      model: google("gemini-1.5-flash"),
+      model: groq("llama-3.3-70b-versatile"),
       system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
 1. تنظيم المهام (Tasks)
 2. قائمة البقالة (Groceries)  
@@ -82,6 +86,7 @@ Respond in the same language the user uses.`,
               .single()
 
             if (error) {
+              console.log("[v0] Create plan error:", error.message)
               return { success: false, message: error.message }
             }
 
@@ -96,7 +101,14 @@ Respond in the same language the user uses.`,
           description: "List all plans and reminders for the user",
           parameters: z.object({
             category: z
-              .enum(["all", "task", "grocery", "meeting", "appointment", "other"])
+              .enum([
+                "all",
+                "task",
+                "grocery",
+                "meeting",
+                "appointment",
+                "other",
+              ])
               .optional()
               .describe("Category to filter by"),
             upcoming_only: z
@@ -132,6 +144,7 @@ Respond in the same language the user uses.`,
             const { data, error } = await query
 
             if (error) {
+              console.log("[v0] List plans error:", error.message)
               return { success: false, message: error.message, plans: [] }
             }
 
@@ -146,12 +159,16 @@ Respond in the same language the user uses.`,
       maxSteps: 5,
     })
 
+    console.log("[v0] Stream created successfully")
     return result.toDataStreamResponse()
-  } catch (error) {
-    console.error("[v0] Chat API error:", error)
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    })
+  } catch (error: any) {
+    console.error("[v0] Chat API error:", error?.message || error)
+    return new Response(
+      JSON.stringify({ error: error?.message || "Internal server error" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    )
   }
 }
