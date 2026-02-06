@@ -12,15 +12,21 @@ export const maxDuration = 30
 
 export async function POST(req: Request) {
   try {
-    const { messages }: { messages: UIMessage[] } = await req.json()
+    const body = await req.json()
+    const messages: UIMessage[] = body.messages ?? []
+    console.log("[v0] Chat API called with", messages.length, "messages")
 
     const supabase = await createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
+    console.log("[v0] User:", user?.id ?? "not authenticated")
+
+    const convertedMessages = await convertToModelMessages(messages)
+    console.log("[v0] Converted messages:", convertedMessages.length)
 
     const result = streamText({
-      model: "openai/gpt-4o-mini",
+      model: "google/gemini-1.5-flash",
       system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
 1. تنظيم المهام (Tasks)
 2. قائمة البقالة (Groceries)  
@@ -39,7 +45,7 @@ You are Thakirni, an intelligent assistant helping users with Short-Term Memory 
 When users ask to add a task, grocery item, or meeting, use the create_plan tool.
 When users ask to view their items, use the list_plans tool.
 Respond in the same language the user uses.`,
-      messages: await convertToModelMessages(messages),
+      messages: convertedMessages,
       tools: {
         create_plan: tool({
           description: "Create a new plan or reminder for the user",
