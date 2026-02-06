@@ -35,10 +35,14 @@ export function AIChat() {
   const [input, setInput] = useState("");
   const { t } = useLanguage();
 
-  const { messages, sendMessage, status } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/chat" }),
+    onError: (err) => {
+      console.log("[v0] Chat error:", err.message);
+    },
   });
 
+  console.log("[v0] Chat status:", status, "messages:", messages.length, "error:", error?.message);
   const isLoading = status === "streaming" || status === "submitted";
 
   // Auto-scroll
