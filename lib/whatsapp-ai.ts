@@ -1,6 +1,5 @@
 import "server-only"
-import { google } from "@ai-sdk/google"
-import { generateObject } from "ai"
+import { generateText, Output } from "ai"
 import { z } from "zod"
 
 // Intent schema for parsing WhatsApp messages
@@ -18,13 +17,13 @@ const IntentSchema = z.object({
     "greeting",
     "unknown",
   ]),
-  title: z.string().optional().describe("The title or name of the reminder/task/item"),
-  description: z.string().optional().describe("Additional details"),
-  datetime: z.string().optional().describe("ISO datetime string if time is mentioned"),
-  recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).optional(),
-  priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
-  quantity: z.number().optional().describe("Quantity for grocery items"),
-  location: z.string().optional().describe("Location for meetings"),
+  title: z.string().nullable().describe("The title or name of the reminder/task/item"),
+  description: z.string().nullable().describe("Additional details"),
+  datetime: z.string().nullable().describe("ISO datetime string if time is mentioned"),
+  recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).nullable(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).nullable(),
+  quantity: z.number().nullable().describe("Quantity for grocery items"),
+  location: z.string().nullable().describe("Location for meetings"),
   confidence: z.number().min(0).max(1).describe("Confidence score"),
 })
 
@@ -40,9 +39,9 @@ export async function parseWhatsAppMessage(
   const currentTimeStr = now.toLocaleTimeString("ar-SA", { timeZone: userTimezone, hour12: true })
 
   try {
-    const { object } = await generateObject({
-      model: google("gemini-1.5-flash"),
-      schema: IntentSchema,
+    const result = await generateText({
+      model: "google/gemini-2.0-flash",
+      output: Output.object({ schema: IntentSchema }),
       prompt: `You are an AI assistant that parses Arabic and English messages for a reminder/task app.
       
 Current date: ${currentDateStr}
@@ -71,11 +70,32 @@ Rules:
 - If you can't determine the intent confidently, use "unknown"`,
     })
 
-    return object
+    if (result.output) {
+      return result.output
+    }
+
+    return {
+      intent: "unknown",
+      title: null,
+      description: null,
+      datetime: null,
+      recurrence: null,
+      priority: null,
+      quantity: null,
+      location: null,
+      confidence: 0,
+    }
   } catch (error) {
     console.error("[WhatsApp AI] Parse error:", error)
     return {
       intent: "unknown",
+      title: null,
+      description: null,
+      datetime: null,
+      recurrence: null,
+      priority: null,
+      quantity: null,
+      location: null,
       confidence: 0,
     }
   }
@@ -87,12 +107,14 @@ export async function generateResponse(
   details: Record<string, any>,
   language: "ar" | "en" = "ar"
 ): Promise<string> {
+  const ResponseSchema = z.object({
+    response: z.string(),
+  })
+
   try {
-    const { object } = await generateObject({
-      model: google("gemini-1.5-flash"),
-      schema: z.object({
-        response: z.string(),
-      }),
+    const result = await generateText({
+      model: "google/gemini-2.0-flash",
+      output: Output.object({ schema: ResponseSchema }),
       prompt: `Generate a brief, friendly ${language === "ar" ? "Arabic" : "English"} response for:
       
 Action: ${action}
@@ -101,24 +123,28 @@ Details: ${JSON.stringify(details)}
 Keep it short (1-2 sentences max). Use appropriate emojis. Be helpful and conversational.`,
     })
 
-    return object.response
+    if (result.output) {
+      return result.output.response
+    }
+
+    throw new Error("No output")
   } catch {
     // Fallback responses
     const fallbacks: Record<string, Record<string, string>> = {
       ar: {
-        create_reminder: "✅ تم إنشاء التذكير!",
-        create_task: "✅ تمت إضافة المهمة!",
-        add_grocery_item: "✅ تمت الإضافة للقائمة!",
-        check_grocery_item: "☑ تم!",
-        create_meeting: "✅ تم حفظ الاجتماع!",
+        create_reminder: "تم إنشاء التذكير!",
+        create_task: "تمت إضافة المهمة!",
+        add_grocery_item: "تمت الإضافة للقائمة!",
+        check_grocery_item: "تم!",
+        create_meeting: "تم حفظ الاجتماع!",
         default: "تم!",
       },
       en: {
-        create_reminder: "✅ Reminder created!",
-        create_task: "✅ Task added!",
-        add_grocery_item: "✅ Added to list!",
-        check_grocery_item: "☑ Done!",
-        create_meeting: "✅ Meeting saved!",
+        create_reminder: "Reminder created!",
+        create_task: "Task added!",
+        add_grocery_item: "Added to list!",
+        check_grocery_item: "Done!",
+        create_meeting: "Meeting saved!",
         default: "Done!",
       },
     }
