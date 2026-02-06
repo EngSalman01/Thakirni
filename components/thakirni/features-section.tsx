@@ -8,17 +8,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MessageSquareText, Mic, CalendarClock } from "lucide-react";
+import { BrainCircuit, Mic, CalendarClock } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 
 const features = [
   {
-    icon: MessageSquareText,
-    titleAr: "تكامل واتساب",
-    titleEn: "WhatsApp Integration",
+    icon: BrainCircuit,
+    titleAr: "مساعد ذكي",
+    titleEn: "AI Assistant",
     descriptionAr:
-      "أرسل ملاحظاتك الصوتية والنصية مباشرة لواتساب ذكرني ليتم حفظها.",
-    descriptionEn: "Send voice/text notes directly to Thakirni on WhatsApp.",
+      "مساعدك الذكي يفهم طلباتك ويساعدك في تنظيم ذكرياتك ومهامك تلقائياً.",
+    descriptionEn: "Your AI assistant understands your requests and helps organize memories and tasks automatically.",
   },
   {
     icon: Mic,
