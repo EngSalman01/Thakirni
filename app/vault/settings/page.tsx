@@ -22,9 +22,9 @@ import {
   CheckCircle2,
   Loader2,
 } from "lucide-react";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
-import { WhatsAppConnect } from "@/components/thakirni/whatsapp-connect";
 import { useLanguage } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -43,9 +43,6 @@ export default function SettingsPage() {
     push: true,
     friday: true,
   });
-
-  const [whatsappNumber, setWhatsappNumber] = useState<string | undefined>();
-  const [whatsappVerified, setWhatsappVerified] = useState(false);
 
   // Fetch real user data
   useEffect(() => {
@@ -105,35 +102,6 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleWhatsAppConnect = async (phoneNumber: string) => {
-    const res = await fetch("/api/whatsapp/connect", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phoneNumber }),
-    });
-    if (!res.ok) throw new Error("Failed to connect");
-    setWhatsappNumber(phoneNumber);
-  };
-
-  const handleWhatsAppVerify = async (code: string) => {
-    const res = await fetch("/api/whatsapp/connect", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
-    if (res.ok) {
-      setWhatsappVerified(true);
-      return true;
-    }
-    return false;
-  };
-
-  const handleWhatsAppDisconnect = async () => {
-    await fetch("/api/whatsapp/connect", { method: "DELETE" });
-    setWhatsappNumber(undefined);
-    setWhatsappVerified(false);
   };
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
@@ -459,21 +427,6 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </Card>
-          </motion.div>
-
-          {/* WhatsApp Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <WhatsAppConnect
-              currentNumber={whatsappNumber}
-              isVerified={whatsappVerified}
-              onConnect={handleWhatsAppConnect}
-              onVerify={handleWhatsAppVerify}
-              onDisconnect={handleWhatsAppDisconnect}
-            />
           </motion.div>
 
           {/* Language & Theme Section */}

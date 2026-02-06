@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shield, Users, Clock, Brain, Smartphone, Globe } from "lucide-react";
+import { Shield, Users, Clock, Brain, Bell, Globe } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 
 const stats = [
@@ -37,11 +37,11 @@ const stats = [
 
 const capabilities = [
   {
-    icon: Smartphone,
-    titleAr: "تكامل واتساب",
-    titleEn: "WhatsApp Integration",
-    descAr: "أرسل رسالة واتساب وسنحفظها كذكرى أو مهمة تلقائياً",
-    descEn: "Send a WhatsApp message and we'll save it as a memory or task automatically",
+    icon: Bell,
+    titleAr: "تذكيرات ذكية",
+    titleEn: "Smart Reminders",
+    descAr: "تذكيرات تلقائية لمهامك واجتماعاتك حتى لا تنسى أي شيء مهم",
+    descEn: "Automatic reminders for your tasks and meetings so you never miss anything important",
   },
   {
     icon: Brain,

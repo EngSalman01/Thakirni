@@ -57,8 +57,8 @@ export default function PricingPage() {
       features: [
         { ar: "٥٠ رسالة / شهرياً", en: "50 Messages/month", included: true },
         {
-          ar: "استخدام بوت الواتساب",
-          en: "WhatsApp Bot Access",
+          ar: "مساعد ذكي أساسي",
+          en: "Basic AI Assistant",
           included: true,
         },
         {
