@@ -80,12 +80,13 @@ export default function CalendarPage() {
                   },
                 }}
                 components={{
-                  DayContent: (props) => {
-                    const dayStr = format(props.date, "yyyy-MM-dd");
+                  // @ts-ignore
+                  DayContent: ({ date, ...props }: any) => {
+                    const dayStr = format(date, "yyyy-MM-dd");
                     const hasPlan = datesWithPlans.has(dayStr);
                     return (
                       <div className="relative w-full h-full flex items-center justify-center">
-                        {props.date.getDate()}
+                        {date.getDate()}
                         {hasPlan && (
                           <div className="absolute bottom-1 w-1 h-1 bg-primary rounded-full" />
                         )}
