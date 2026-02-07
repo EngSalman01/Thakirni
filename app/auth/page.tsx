@@ -106,11 +106,6 @@ export default function AuthPage() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
-        scopes: "https://www.googleapis.com/auth/calendar.readonly",
         redirectTo: `${location.origin}/auth/callback`,
       },
     });
