@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DataExport } from "@/components/settings/data-export";
-import { DeleteAccount } from "@/components/settings/delete-account";
 import { motion } from "framer-motion";
 import {
   VaultSidebar,
@@ -96,7 +94,6 @@ export default function SettingsPage() {
         .from("profiles")
         .update({
           full_name: name,
-          phone: phone,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -238,20 +235,6 @@ export default function SettingsPage() {
                           "Email cannot be changed here",
                         )}
                       </p>
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">
-                        {t("رقم الهاتف", "Phone Number")}
-                      </Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+966 5X XXX XXXX"
-                        className="mt-1"
-                        dir="ltr"
-                      />
                     </div>
                     <Button
                       className="w-full"
@@ -457,24 +440,6 @@ export default function SettingsPage() {
                   <Lock className="w-4 h-4" />
                   {t("تغيير كلمة المرور", "Change Password")}
                 </Button>
-
-                <div className="pt-2 border-t border-border mt-2 space-y-3">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <DataExport />
-                    <DeleteAccount />
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-border mt-2">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start gap-3 bg-transparent"
-                  >
-                    <Globe className="w-4 h-4" />
-                    {t("ربط تقويم جوجل", "Sync Google Calendar")}
-                  </Button>
-                </div>
-
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-3 bg-transparent text-destructive hover:text-destructive"

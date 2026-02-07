@@ -57,8 +57,10 @@ export default function PlansPage() {
       await addPlan({
         title: newPlanTitle,
         category: category,
-        start_datetime: new Date().toISOString(), // Default to now
-        is_all_day: false,
+        status: "pending",
+        is_recurring: false,
+        priority: "medium",
+        reminder_date: new Date().toISOString(), // Default to today for sorting
       });
       setNewPlanTitle("");
     } catch (err) {
@@ -229,41 +231,22 @@ export default function PlansPage() {
                           >
                             {plan.title}
                           </span>
-                          {plan.category && (
-                            <span
-                              className="inline-flex px-2 py-0.5 rounded-full text-[10px] items-center gap-1 opacity-90"
-                              style={{
-                                backgroundColor: plan.color_code
-                                  ? `${plan.color_code}20`
-                                  : undefined,
-                                color: plan.color_code,
-                              }}
-                            >
-                              {getCategoryIcon(plan.category)}
-                              <span className="uppercase">
-                                {t(plan.category, plan.category.toUpperCase())}
-                              </span>
+                          <span className="inline-flex px-2 py-0.5 rounded-full bg-muted text-[10px] items-center gap-1">
+                            {getCategoryIcon(plan.category || "task")}
+                            <span className="uppercase opacity-70">
+                              {t(
+                                plan.category || "task",
+                                (plan.category || "task").toUpperCase(),
+                              )}
                             </span>
-                          )}
+                          </span>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {plan.start_datetime && (
-                            <div className="flex items-center gap-1.5">
-                              <Calendar className="w-3.5 h-3.5" />
-                              <span>
-                                {formatDate(plan.start_datetime)}
-                                {!plan.is_all_day &&
-                                  !plan.is_recurring &&
-                                  ` • ${new Date(plan.start_datetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
-                              </span>
-                            </div>
-                          )}
-                          {plan.location && (
-                            <div className="flex items-center gap-1.5 max-w-[150px] truncate">
-                              <span>📍 {plan.location}</span>
-                            </div>
-                          )}
-                        </div>
+                        {plan.reminder_date && (
+                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{formatDate(plan.reminder_date)}</span>
+                          </div>
+                        )}
                         {plan.description && (
                           <p className="text-sm text-muted-foreground line-clamp-1">
                             {plan.description}
