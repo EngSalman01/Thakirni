@@ -24,12 +24,7 @@ export function DailySummary() {
     );
 
     if (todaysPlans.length === 0) {
-      setSummary(
-        t(
-          "لا توجد مهام مجدولة لليوم. استمتع بوقتك!",
-          "No tasks scheduled for today. Enjoy your day!",
-        ),
-      );
+      setSummary(t("ليس لديك أي شيء اليوم.", "You have nothing today."));
       return;
     }
 

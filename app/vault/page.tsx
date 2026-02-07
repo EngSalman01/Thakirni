@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
@@ -50,7 +50,6 @@ export default function VaultPage() {
   const { stats, isLoading: plansLoading, nextUp, addPlan } = usePlans();
   const isLoading = memoriesLoading || plansLoading;
 
-  const [fridayReminder, setFridayReminder] = useState(true);
   const [isDragOver, setIsDragOver] = useState(false);
   const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -142,8 +141,19 @@ export default function VaultPage() {
     [processFiles],
   );
 
+  // Persist Friday Reminder
+  const [fridayReminder, setFridayReminder] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("fridayNotification");
+    if (saved !== null) {
+      setFridayReminder(saved === "true");
+    }
+  }, []);
+
   const handleFridayToggle = (checked: boolean) => {
     setFridayReminder(checked);
+    localStorage.setItem("fridayNotification", String(checked));
     if (checked) {
       toast.success(t("تم تفعيل تذكيرات الجمعة", "Friday reminders enabled"));
     } else {
