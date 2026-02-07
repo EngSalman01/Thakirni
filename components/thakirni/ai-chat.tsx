@@ -14,13 +14,16 @@ import {
   Calendar,
   CheckCircle2,
   AlertCircle,
+  Mic,
+  Square,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
 
 export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { t } = useLanguage();
+  const [isListening, setIsListening] = useState(false);
+  const { t, isArabic } = useLanguage();
 
   const { messages, input, setInput, handleSubmit, isLoading, error } = useChat(
     {
@@ -59,6 +62,52 @@ export function AIChat() {
       ) as HTMLFormElement;
       if (form) form.requestSubmit();
     }, 50);
+  };
+
+  const startListening = () => {
+    // Check for browser support (Standard or Webkit)
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+
+      // PER USER REQUEST:
+      // "Recognizes Arabic and English like if I'm in English mode I can speak Arabic"
+      // Strategy: Default to Arabic (ar-SA) as it's the primary language of the app.
+      // Most engines handles English words within Arabic context reasonably well,
+      // but 'en-US' will fail completely for Arabic.
+      // Improve: In the future, we could add a long-press menu to switch languages.
+      recognition.lang = "ar-SA";
+
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => setIsListening(true);
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput((prev: string) =>
+          prev ? prev + " " + transcript : transcript,
+        );
+      };
+
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = (event: any) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } else {
+      alert(
+        t(
+          "متصفحك لا يدعم الإملاء الصوتي",
+          "Your browser does not support voice input. Try Chrome or Edge.",
+        ),
+      );
+    }
   };
 
   const suggestions = [
@@ -313,6 +362,24 @@ export function AIChat() {
             className="flex-1 bg-background text-sm"
             disabled={isLoading}
           />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={startListening}
+            className={
+              isListening
+                ? "bg-red-500 animate-pulse text-white hover:bg-red-600 hover:text-white border-red-500"
+                : "text-muted-foreground"
+            }
+            title={t("تحدث", "Speak")}
+          >
+            {isListening ? (
+              <Square className="w-4 h-4 fill-current" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+          </Button>
           <Button
             type="submit"
             size="icon"
