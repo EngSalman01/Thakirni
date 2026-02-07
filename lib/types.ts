@@ -1,15 +1,10 @@
 export interface Memory {
   id: string;
-  type: 'photo' | 'voice' | 'text';
-  hijri_date: string;
-  gregorian_date: string;
-  content_url: string;
-  title?: string | null;
-  description?: string | null;
-  tags?: string[] | null;
-  created_at: string; // ISO timestamp
-  updated_at: string; // ISO timestamp
   user_id: string;
+  content: string;
+  tags?: string[] | null;
+  is_favorite: boolean;
+  created_at: string; // ISO timestamp
 }
 
 export interface Plan {
@@ -17,15 +12,26 @@ export interface Plan {
   user_id: string;
   title: string;
   description?: string | null;
-  category?: 'task' | 'grocery' | 'meeting' | 'general';
+  
+  // Timing
+  start_datetime: string; // ISO timestamp
+  end_datetime?: string | null;
+  is_all_day: boolean;
+  
+  // Context
   location?: string | null;
-  reminder_date?: string | null; // ISO date/time string
-  is_recurring: boolean;
-  recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly' | null;
+  participants?: string[] | null;
+  
+  // Metadata
+  category?: 'task' | 'meeting' | 'grocery' | 'work' | 'personal' | 'other';
+  recurrence_rule?: string | null;
+  color_code?: string | null;
+  reminder_minutes?: number | null;
+  notification_sent: boolean;
+  
   status: 'pending' | 'completed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high';
   created_at: string;
-  updated_at: string;
+  updated_at?: string; // Optional if not in DB select
 }
 
 export interface Profile {
