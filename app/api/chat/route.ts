@@ -1,4 +1,4 @@
-import { streamText, tool } from "ai"
+import { streamText, tool, convertToCoreMessages } from "ai"
 import { createGroq } from "@ai-sdk/groq"
 import { z } from "zod"
 import { createClient } from "@/lib/supabase/server"
@@ -20,67 +20,92 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser()
     console.log("[v0] User:", user?.id ?? "not authenticated")
 
+    // 1. Setup Time Context (Saudi Arabia)
+    // This helps the AI understand "Tomorrow" or "Tonight" relative to KSA.
+    const now = new Date()
+    const options = { timeZone: "Asia/Riyadh", hour12: false }
+    const currentDate = now.toLocaleDateString("en-CA", { ...options }) // YYYY-MM-DD
+    const currentTime = now.toLocaleTimeString("en-GB", { ...options }) // HH:MM
+    const currentDayName = now.toLocaleDateString("en-US", { weekday: "long" })
+
     const result = streamText({
       model: groq("llama-3.3-70b-versatile"),
-      system: `أنت مساعد ذكي اسمه "ذكرني" متخصص في مساعدة المستخدمين على إدارة ذاكرتهم قصيرة المدى:
-1. تنظيم المهام (Tasks)
-2. قائمة البقالة (Groceries)  
-3. الاجتماعات والمواعيد (Meetings)
+      
+      // 2. CRITICAL: Increase Max Steps
+      // Allows the AI to: Ask Question -> User Answers -> AI Saves (Loop)
+      maxSteps: 10,
+      
+      // Convert messages to standard format to prevent errors
+      messages: convertToCoreMessages(messages),
 
-عندما يطلب المستخدم إضافة مهمة أو غرض أو موعد، استخدم أداة create_plan.
-عندما يطلب المستخدم عرض مهامه، استخدم أداة list_plans.
-
-تحدث بالعربية إذا تحدث المستخدم بالعربية، وبالإنجليزية إذا تحدث بالإنجليزية.
-
-You are Thakirni, an intelligent assistant helping users with Short-Term Memory management:
-1. Task Management
-2. Grocery Lists
-3. Meetings & Appointments
-
-When users ask to add a task, grocery item, or meeting, use the create_plan tool.
-When users ask to view their items, use the list_plans tool.
-Respond in the same language the user uses.`,
-      messages,
+      // 3. THE SMART BRAIN (System Prompt)
+      system: `You are Thakirni (ذكرني), a smart and proactive Assistant.
+    
+    🕒 CURRENT CONTEXT (KSA Time):
+    - Date: ${currentDate} (${currentDayName})
+    - Time: ${currentTime}
+    
+    🛑 THE "STOP & ASK" PROTOCOL:
+    Before calling 'create_plan', you MUST classify the request:
+    
+    TYPE A: "Fuzzy Tasks" (e.g., "Buy milk", "Fix the door")
+    -> ACTION: You can save these immediately with just a date (default to Today). Time is optional.
+    
+    TYPE B: "Hard Events" (e.g., "Meeting", "Dentist", "Flight", "Interview")
+    -> ACTION: You CANNOT save these without a TIME and LOCATION.
+       1. If the user didn't say the time, ASK: "What time is the meeting?"
+       2. If the user didn't say the location, ASK: "Where is it?" (or "Is it online?")
+       3. ONLY when you have the answers, call the 'create_plan' tool.
+    
+    🧠 INTELLIGENT DEFAULTS:
+    - If user says "At 5", look at current time. If 5 AM is passed, assume 17:00 (5 PM).
+    - If start time is given but no end time, assume duration is 1 hour.
+    
+    🗣 LANGUAGE:
+    - Reply in the same language as the user (Arabic/English).
+    `,
       tools: {
         create_plan: tool({
-          description: "Create a new plan or reminder for the user",
+          description: "Schedule a calendar event, task, or meeting.",
           parameters: z.object({
-            title: z.string().describe("Title of the plan/reminder"),
-            description: z.string().optional().describe("Optional description"),
-            plan_date: z.string().describe("Date in YYYY-MM-DD format"),
-            plan_time: z.string().optional().describe("Time in HH:MM format"),
-            recurrence: z
-              .enum(["none", "daily", "weekly", "monthly", "yearly"])
-              .describe("Recurrence pattern"),
-            category: z
-              .enum(["task", "grocery", "meeting", "appointment", "other"])
-              .describe("Category of the plan"),
+            title: z.string().describe("Title of the event"),
+            description: z.string().optional().describe("Details/Agenda"),
+            
+            // Date & Time
+            plan_date: z.string().describe(`Date (YYYY-MM-DD). Default to ${currentDate}.`),
+            plan_time: z.string().optional().describe("Start time (HH:MM:SS). REQUIRED for meetings."),
+            end_time: z.string().optional().describe("End time (HH:MM:SS). Default +1 hour if missing."),
+            is_all_day: z.boolean().optional().describe("True for birthdays/holidays."),
+            
+            // Location & People
+            location: z.string().optional().describe("Physical location or 'Online'."),
+            attendees: z.array(z.string()).optional().describe("List of people names."),
+            
+            // Metadata
+            category: z.enum(['task', 'meeting', 'grocery', 'work', 'personal', 'other'])
+              .describe("Auto-categorize based on context."),
+            priority: z.enum(['low', 'medium', 'high']).optional().describe("Importance level."),
+            recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).optional().describe("Recurrence pattern"),
           }),
-          execute: async ({
-            title,
-            description,
-            plan_date,
-            plan_time,
-            recurrence,
-            category,
-          }) => {
-            if (!user) {
-              return {
-                success: false,
-                message: "يجب تسجيل الدخول أولاً / Please login first",
-              }
-            }
-
+          execute: async (input) => {
+            if (!user) return { success: false, message: "يجب تسجيل الدخول أولاً" }
+            
             const { data, error } = await supabase
               .from("plans")
               .insert({
                 user_id: user.id,
-                title,
-                description,
-                plan_date,
-                plan_time,
-                recurrence,
-                category,
+                title: input.title,
+                description: input.description,
+                plan_date: input.plan_date,
+                plan_time: input.plan_time,
+                end_time: input.end_time,
+                location: input.location,
+                attendees: input.attendees,
+                category: input.category || 'task',
+                priority: input.priority || 'medium',
+                recurrence: input.recurrence || 'none',
+                is_all_day: input.is_all_day || false,
+                status: 'pending'
               })
               .select()
               .single()
@@ -92,37 +117,47 @@ Respond in the same language the user uses.`,
 
             return {
               success: true,
-              message: `تم إضافة "${title}" بنجاح! / "${title}" added successfully!`,
+              message: `Scheduled "${input.title}" on ${input.plan_date} ${input.plan_time ? 'at ' + input.plan_time : ''}.`,
               plan: data,
             }
           },
         }),
-        list_plans: tool({
-          description: "List all plans and reminders for the user",
+
+        save_memory: tool({
+          description: "Save a note, idea, or info with NO specific time (Second Brain).",
           parameters: z.object({
-            category: z
-              .enum([
-                "all",
-                "task",
-                "grocery",
-                "meeting",
-                "appointment",
-                "other",
-              ])
-              .optional()
-              .describe("Category to filter by"),
-            upcoming_only: z
-              .boolean()
-              .describe("Whether to show only upcoming plans"),
+            content: z.string().describe("The text content"),
+            tags: z.array(z.string()).describe("Tags for filtering"),
           }),
-          execute: async ({ category, upcoming_only }) => {
-            if (!user) {
-              return {
-                success: false,
-                message: "يجب تسجيل الدخول أولاً / Please login first",
-                plans: [],
-              }
+          execute: async ({ content, tags }) => {
+            if (!user) return { success: false, message: "يجب تسجيل الدخول أولاً" }
+
+            const { data, error } = await supabase
+              .from("memories")
+              .insert({
+                user_id: user.id,
+                content,
+                tags
+              })
+              .select()
+              .single()
+
+            if (error) {
+                console.log("[v0] Save memory error:", error.message)
+                return { success: false, message: error.message }
             }
+            return { success: true, message: "Memory saved!", memory: data }
+          },
+        }),
+
+        list_plans: tool({
+          description: "Show upcoming schedule or tasks.",
+          parameters: z.object({
+            date_filter: z.enum(["today", "tomorrow", "upcoming", "all"]),
+            category: z.string().optional(),
+          }),
+          execute: async ({ date_filter, category }) => {
+            if (!user) return { success: false, message: "Login required", plans: [] }
 
             let query = supabase
               .from("plans")
@@ -131,15 +166,16 @@ Respond in the same language the user uses.`,
               .order("plan_date", { ascending: true })
 
             if (category && category !== "all") {
-              query = query.eq("category", category)
+                query = query.eq("category", category)
             }
 
-            if (upcoming_only) {
-              query = query.gte(
-                "plan_date",
-                new Date().toISOString().split("T")[0]
-              )
+            if (date_filter === "today") query = query.eq("plan_date", currentDate)
+            if (date_filter === "tomorrow") {
+               const tmrw = new Date(now)
+               tmrw.setDate(tmrw.getDate() + 1)
+               query = query.eq("plan_date", tmrw.toISOString().split('T')[0])
             }
+            if (date_filter === "upcoming") query = query.gte("plan_date", currentDate)
 
             const { data, error } = await query
 
@@ -156,7 +192,6 @@ Respond in the same language the user uses.`,
           },
         }),
       },
-      maxSteps: 5,
     })
 
     console.log("[v0] Stream created successfully")
