@@ -16,13 +16,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export function DeleteAccount() {
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
   const router = useRouter();
-  const { toast } = useToast();
 
   const handleDelete = async () => {
     setLoading(true);
@@ -46,15 +45,12 @@ export function DeleteAccount() {
 
       await supabase.auth.signOut();
       router.push("/");
-      toast({
-        title: "Account Deleted",
+      toast.success("Account Deleted", {
         description: "Your account and data have been permanently removed.",
       });
     } catch (error: any) {
       console.error("Delete failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
+      toast.error("Error", {
         description: "Could not delete account. Please try again.",
       });
     } finally {
