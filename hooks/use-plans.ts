@@ -8,7 +8,7 @@ interface UsePlansReturn {
   plans: Plan[]
   isLoading: boolean
   error: Error | null
-  addPlan: (plan: Omit<Plan, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>
+  addPlan: (plan: Omit<Plan, "id" | "created_at" | "updated_at" | "user_id" | "notification_sent" | "status">) => Promise<void>
   updatePlanStatus: (id: string, status: Plan["status"]) => Promise<void>
   deletePlan: (id: string) => Promise<void>
   refetch: () => Promise<void>
@@ -45,7 +45,7 @@ export function usePlans(): UsePlansReturn {
         .from('plans')
         .select('*')
         .eq('user_id', user.id)
-        .order('reminder_date', { ascending: true })
+        .order('start_datetime', { ascending: true })
       
       if (error) throw error
       
@@ -58,7 +58,7 @@ export function usePlans(): UsePlansReturn {
     }
   }, [])
 
-  const addPlan = async (plan: Omit<Plan, "id" | "created_at" | "updated_at" | "user_id">) => {
+  const addPlan = async (plan: Omit<Plan, "id" | "created_at" | "updated_at" | "user_id" | "notification_sent" | "status">) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("User not authenticated")
@@ -66,6 +66,8 @@ export function usePlans(): UsePlansReturn {
       const newPlan = {
         ...plan,
         user_id: user.id,
+        notification_sent: false,
+        status: 'pending' as const
       }
       
       const { data, error } = await supabase
@@ -120,7 +122,6 @@ export function usePlans(): UsePlansReturn {
   }, [fetchPlans])
 
   // Calculate stats
-  // Note: We might need to handle dates more carefully depending on timezone
   const today = new Date().toISOString().split('T')[0]
   
   const stats = {
@@ -128,9 +129,8 @@ export function usePlans(): UsePlansReturn {
     pendingGroceries: plans.filter(p => p.category === 'grocery' && p.status === 'pending').length,
     upcomingMeetings: plans.filter(p => p.category === 'meeting' && p.status === 'pending').length,
     todayReminders: plans.filter(p => {
-        if (!p.reminder_date) return false
-        // Simple string comparison for now, assuming ISO dates
-        return p.reminder_date.startsWith(today)
+        if (!p.start_datetime) return false
+        return p.start_datetime.startsWith(today)
     }).length
   }
 
@@ -139,9 +139,9 @@ export function usePlans(): UsePlansReturn {
     .filter(p => p.status === 'pending' && (p.category === 'task' || p.category === 'meeting'))
     .sort((a, b) => {
       // Sort by date if available, otherwise push to end
-      if (a.reminder_date && b.reminder_date) return a.reminder_date.localeCompare(b.reminder_date)
-      if (a.reminder_date) return -1
-      if (b.reminder_date) return 1
+      if (a.start_datetime && b.start_datetime) return a.start_datetime.localeCompare(b.start_datetime)
+      if (a.start_datetime) return -1
+      if (b.start_datetime) return 1
       return 0
     })
     .slice(0, 3)

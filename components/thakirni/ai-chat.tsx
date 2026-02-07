@@ -246,14 +246,43 @@ export function AIChat() {
                                     .map((plan: any) => (
                                       <div
                                         key={plan.id}
-                                        className="flex items-center justify-between p-2 rounded-lg bg-background"
+                                        className="flex flex-col p-2 rounded-lg bg-background border border-border/50"
                                       >
-                                        <span className="text-sm font-medium">
-                                          {plan.title}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground">
-                                          {plan.plan_date}
-                                        </span>
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-sm font-medium">
+                                            {plan.title}
+                                          </span>
+                                          {plan.category && (
+                                            <span
+                                              className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary"
+                                              style={{
+                                                backgroundColor:
+                                                  plan.color_code + "20",
+                                                color: plan.color_code,
+                                              }}
+                                            >
+                                              {plan.category}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                                          <span>
+                                            {plan.start_datetime
+                                              ? new Date(
+                                                  plan.start_datetime,
+                                                ).toLocaleDateString()
+                                              : ""}
+                                            {plan.start_datetime &&
+                                            !plan.is_all_day
+                                              ? ` • ${new Date(plan.start_datetime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                                              : ""}
+                                          </span>
+                                          {plan.location && (
+                                            <span className="truncate max-w-[120px]">
+                                              📍 {plan.location}
+                                            </span>
+                                          )}
+                                        </div>
                                       </div>
                                     ))}
                                 </div>
