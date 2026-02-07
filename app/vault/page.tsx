@@ -27,6 +27,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useMemories } from "@/hooks/use-memories";
 import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
+import { DailySummary } from "@/components/thakirni/daily-summary";
 
 // Dynamic import to prevent SSR issues with AI SDK
 const AIChat = dynamic(
@@ -269,6 +270,11 @@ export default function VaultPage() {
             </Button>
           </form>
         </motion.div>
+
+        {/* Morning Briefing Widget */}
+        <div className="mb-6 md:mb-8">
+          <DailySummary />
+        </div>
 
         {/* Stats & Agenda */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
