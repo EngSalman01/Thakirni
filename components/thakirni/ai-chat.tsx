@@ -22,13 +22,14 @@ export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { t } = useLanguage();
 
-  const { messages, input, setInput, handleSubmit, isLoading, error } =
-    useChat({
+  const { messages, input, setInput, handleSubmit, isLoading, error } = useChat(
+    {
       api: "/api/chat",
       onError: (err) => {
         console.log("[v0] Chat error:", err.message);
       },
-    });
+    },
+  );
 
   console.log(
     "[v0] Chat status - messages:",
@@ -36,7 +37,7 @@ export function AIChat() {
     "loading:",
     isLoading,
     "error:",
-    error?.message
+    error?.message,
   );
 
   // Auto-scroll
@@ -54,7 +55,7 @@ export function AIChat() {
     } as React.FormEvent;
     setTimeout(() => {
       const form = document.querySelector(
-        "[data-chat-form]"
+        "[data-chat-form]",
       ) as HTMLFormElement;
       if (form) form.requestSubmit();
     }, 50);
@@ -65,7 +66,7 @@ export function AIChat() {
     t("ذكرني بشراء حليب وخبز", "Remind me to buy milk and bread"),
     t(
       "عندي موعد طبيب غداً الساعة 4",
-      "I have a doctor's appointment tomorrow at 4"
+      "I have a doctor's appointment tomorrow at 4",
     ),
     t("اعرض لي مهام اليوم", "Show me today's tasks"),
   ];
@@ -73,7 +74,7 @@ export function AIChat() {
   return (
     <Card className="flex flex-col h-[500px] md:h-[600px] bg-card border-border overflow-hidden">
       {/* Header */}
-      <div className="flex items-center gap-3 p-3 md:p-4 border-b border-border bg-muted/30">
+      <div className="flex items-center gap-3 p-3 md:p-4 border-b border-border bg-muted/30 shrink-0">
         <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
           <Bot className="w-4 h-4 md:w-5 md:h-5 text-primary" />
         </div>
@@ -84,14 +85,14 @@ export function AIChat() {
           <p className="text-xs text-muted-foreground truncate">
             {t(
               "مساعدك لتنظيم مهامك ومواعيدك",
-              "Your assistant for organizing tasks and appointments"
+              "Your assistant for organizing tasks and appointments",
             )}
           </p>
         </div>
       </div>
 
       {/* Messages */}
-      <ScrollArea ref={scrollRef} className="flex-1 p-3 md:p-4">
+      <ScrollArea ref={scrollRef} className="flex-1 min-h-0 p-3 md:p-4">
         <div className="space-y-4">
           {messages.length === 0 && !isLoading && (
             <motion.div
@@ -103,15 +104,12 @@ export function AIChat() {
                 <Calendar className="w-7 h-7 md:w-8 md:h-8 text-primary" />
               </div>
               <h4 className="text-base md:text-lg font-semibold text-foreground mb-2">
-                {t(
-                  "مرحباً! كيف يمكنني مساعدتك؟",
-                  "Hello! How can I help you?"
-                )}
+                {t("مرحباً! كيف يمكنني مساعدتك؟", "Hello! How can I help you?")}
               </h4>
               <p className="text-xs md:text-sm text-muted-foreground mb-6">
                 {t(
                   "يمكنني مساعدتك في تنظيم مهامك، ومشترياتك، ومواعيدك",
-                  "I can help you organize tasks, groceries, and appointments"
+                  "I can help you organize tasks, groceries, and appointments",
                 )}
               </p>
 
@@ -181,7 +179,10 @@ export function AIChat() {
 
                     {/* Render tool invocations */}
                     {toolInvocations?.map((invocation: any, idx: number) => {
-                      if (invocation.state === "call" || invocation.state === "partial-call") {
+                      if (
+                        invocation.state === "call" ||
+                        invocation.state === "partial-call"
+                      ) {
                         return (
                           <div
                             key={idx}
@@ -227,21 +228,19 @@ export function AIChat() {
 
                             {result?.plans && result.plans.length > 0 && (
                               <div className="space-y-2 mt-2">
-                                {result.plans
-                                  .slice(0, 5)
-                                  .map((plan: any) => (
-                                    <div
-                                      key={plan.id}
-                                      className="flex items-center justify-between p-2 rounded-lg bg-background"
-                                    >
-                                      <span className="text-sm font-medium">
-                                        {plan.title}
-                                      </span>
-                                      <span className="text-xs text-muted-foreground">
-                                        {plan.plan_date}
-                                      </span>
-                                    </div>
-                                  ))}
+                                {result.plans.slice(0, 5).map((plan: any) => (
+                                  <div
+                                    key={plan.id}
+                                    className="flex items-center justify-between p-2 rounded-lg bg-background"
+                                  >
+                                    <span className="text-sm font-medium">
+                                      {plan.title}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {plan.plan_date}
+                                    </span>
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </motion.div>
@@ -274,7 +273,10 @@ export function AIChat() {
           {error && (
             <div className="text-center py-2">
               <p className="text-xs text-red-500">
-                {t("حدث خطأ. حاول مرة أخرى.", "An error occurred. Please try again.")}
+                {t(
+                  "حدث خطأ. حاول مرة أخرى.",
+                  "An error occurred. Please try again.",
+                )}
               </p>
             </div>
           )}
@@ -285,16 +287,13 @@ export function AIChat() {
       <form
         data-chat-form
         onSubmit={handleSubmit}
-        className="p-3 md:p-4 border-t border-border bg-muted/30"
+        className="p-3 md:p-4 border-t border-border bg-muted/30 shrink-0"
       >
         <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={t(
-              "اكتب رسالتك هنا...",
-              "Type your message here..."
-            )}
+            placeholder={t("اكتب رسالتك هنا...", "Type your message here...")}
             className="flex-1 bg-background text-sm"
             disabled={isLoading}
           />
