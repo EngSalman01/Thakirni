@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DataExport } from "@/components/settings/data-export";
+import { DeleteAccount } from "@/components/settings/delete-account";
 import { motion } from "framer-motion";
-import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
+import {
+  VaultSidebar,
+  MobileMenuButton,
+} from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,7 +71,9 @@ export default function SettingsPage() {
           setName(data.full_name || "");
           setPhone(data.phone || "");
         } else {
-          setName(user.user_metadata?.full_name || user.email?.split("@")[0] || "");
+          setName(
+            user.user_metadata?.full_name || user.email?.split("@")[0] || "",
+          );
         }
       }
       setLoading(false);
@@ -89,6 +96,7 @@ export default function SettingsPage() {
         .from("profiles")
         .update({
           full_name: name,
+          phone: phone,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -133,7 +141,10 @@ export default function SettingsPage() {
                 {t("الإعدادات", "Settings")}
               </h1>
               <p className="text-sm md:text-base text-muted-foreground">
-                {t("إدارة حسابك وتفضيلاتك", "Manage your account and preferences")}
+                {t(
+                  "إدارة حسابك وتفضيلاتك",
+                  "Manage your account and preferences",
+                )}
               </p>
             </div>
           </div>
@@ -190,8 +201,12 @@ export default function SettingsPage() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-semibold text-foreground truncate">{name || t("مستخدم", "User")}</p>
-                      <p className="text-sm text-muted-foreground truncate">{email}</p>
+                      <p className="font-semibold text-foreground truncate">
+                        {name || t("مستخدم", "User")}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {email}
+                      </p>
                     </div>
                   </div>
 
@@ -206,7 +221,9 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="email">{t("البريد الإلكتروني", "Email")}</Label>
+                      <Label htmlFor="email">
+                        {t("البريد الإلكتروني", "Email")}
+                      </Label>
                       <Input
                         id="email"
                         type="email"
@@ -218,9 +235,23 @@ export default function SettingsPage() {
                       <p className="text-xs text-muted-foreground mt-1">
                         {t(
                           "لا يمكن تغيير البريد الإلكتروني من هنا",
-                          "Email cannot be changed here"
+                          "Email cannot be changed here",
                         )}
                       </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">
+                        {t("رقم الهاتف", "Phone Number")}
+                      </Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+966 5X XXX XXXX"
+                        className="mt-1"
+                        dir="ltr"
+                      />
                     </div>
                     <Button
                       className="w-full"
@@ -261,7 +292,10 @@ export default function SettingsPage() {
                         {t("إشعارات البريد", "Email Notifications")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("استلام التذكيرات عبر البريد", "Receive reminders via email")}
+                        {t(
+                          "استلام التذكيرات عبر البريد",
+                          "Receive reminders via email",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -279,7 +313,10 @@ export default function SettingsPage() {
                         {t("إشعارات الهاتف", "Push Notifications")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("إشعارات فورية على الهاتف", "Instant push notifications")}
+                        {t(
+                          "إشعارات فورية على الهاتف",
+                          "Instant push notifications",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -297,7 +334,10 @@ export default function SettingsPage() {
                         {t("تذكيرات الجمعة", "Friday Reminders")}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {t("رسائل جمعة مباركة أسبوعية", "Weekly Jumma Mubarak messages")}
+                        {t(
+                          "رسائل جمعة مباركة أسبوعية",
+                          "Weekly Jumma Mubarak messages",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -417,13 +457,34 @@ export default function SettingsPage() {
                   <Lock className="w-4 h-4" />
                   {t("تغيير كلمة المرور", "Change Password")}
                 </Button>
+
+                <div className="pt-2 border-t border-border mt-2 space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <DataExport />
+                    <DeleteAccount />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-border mt-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start gap-3 bg-transparent"
+                  >
+                    <Globe className="w-4 h-4" />
+                    {t("ربط تقويم جوجل", "Sync Google Calendar")}
+                  </Button>
+                </div>
+
                 <Button
                   variant="outline"
                   className="w-full justify-start gap-3 bg-transparent text-destructive hover:text-destructive"
                   onClick={handleSignOut}
                 >
                   <LogOut className="w-4 h-4" />
-                  {t("تسجيل الخروج من جميع الأجهزة", "Sign Out From All Devices")}
+                  {t(
+                    "تسجيل الخروج من جميع الأجهزة",
+                    "Sign Out From All Devices",
+                  )}
                 </Button>
               </div>
             </Card>
