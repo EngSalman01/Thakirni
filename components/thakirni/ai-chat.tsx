@@ -91,197 +91,213 @@ export function AIChat() {
         </div>
       </div>
 
-      {/* Messages */}
-      <ScrollArea ref={scrollRef} className="flex-1 min-h-0 p-3 md:p-4">
-        <div className="space-y-4">
-          {messages.length === 0 && !isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-6 md:py-8"
-            >
-              <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-7 h-7 md:w-8 md:h-8 text-primary" />
-              </div>
-              <h4 className="text-base md:text-lg font-semibold text-foreground mb-2">
-                {t("مرحباً! كيف يمكنني مساعدتك؟", "Hello! How can I help you?")}
-              </h4>
-              <p className="text-xs md:text-sm text-muted-foreground mb-6">
-                {t(
-                  "يمكنني مساعدتك في تنظيم مهامك، ومشترياتك، ومواعيدك",
-                  "I can help you organize tasks, groceries, and appointments",
-                )}
-              </p>
+      {/* Messages Wrapper - MUST use overflow-hidden to force scroll */}
+      <div className="flex-1 min-h-0 overflow-hidden relative">
+        <ScrollArea ref={scrollRef} className="h-full w-full p-3 md:p-4">
+          <div className="space-y-4 pb-4">
+            {messages.length === 0 && !isLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-6 md:py-8"
+              >
+                <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Calendar className="w-7 h-7 md:w-8 md:h-8 text-primary" />
+                </div>
+                <h4 className="text-base md:text-lg font-semibold text-foreground mb-2">
+                  {t(
+                    "مرحباً! كيف يمكنني مساعدتك؟",
+                    "Hello! How can I help you?",
+                  )}
+                </h4>
+                <p className="text-xs md:text-sm text-muted-foreground mb-6">
+                  {t(
+                    "يمكنني مساعدتك في تنظيم مهامك، ومشترياتك، ومواعيدك",
+                    "I can help you organize tasks, groceries, and appointments",
+                  )}
+                </p>
 
-              <div className="flex flex-wrap justify-center gap-2">
-                {suggestions.map((suggestion, i) => (
-                  <Button
-                    key={i}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs bg-transparent"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </motion.div>
-          )}
+                <div className="flex flex-wrap justify-center gap-2">
+                  {suggestions.map((suggestion, i) => (
+                    <Button
+                      key={i}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs bg-transparent"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </Button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-          <AnimatePresence mode="popLayout">
-            {messages.map((message) => {
-              // Check for tool invocations
-              const toolInvocations = message.toolInvocations;
+            <AnimatePresence mode="popLayout">
+              {messages.map((message) => {
+                // Check for tool invocations
+                const toolInvocations = message.toolInvocations;
 
-              return (
-                <motion.div
-                  key={message.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className={`flex gap-3 ${
-                    message.role === "user" ? "flex-row-reverse" : ""
-                  }`}
-                >
-                  <div
-                    className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
+                return (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className={`flex gap-3 ${
+                      message.role === "user" ? "flex-row-reverse" : ""
                     }`}
                   >
-                    {message.role === "user" ? (
-                      <User className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    ) : (
-                      <Bot className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    )}
-                  </div>
+                    <div
+                      className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {message.role === "user" ? (
+                        <User className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      ) : (
+                        <Bot className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                      )}
+                    </div>
 
-                  <div
-                    className={`flex-1 max-w-[85%] md:max-w-[80%] space-y-2 ${
-                      message.role === "user" ? "text-left" : ""
-                    }`}
-                  >
-                    {message.content && (
-                      <div
-                        className={`rounded-2xl px-3 py-2 md:px-4 md:py-2 ${
-                          message.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted text-foreground"
-                        }`}
-                      >
-                        <p className="text-sm whitespace-pre-wrap">
-                          {message.content}
-                        </p>
-                      </div>
-                    )}
+                    <div
+                      className={`flex-1 max-w-[85%] md:max-w-[80%] space-y-2 ${
+                        message.role === "user" ? "text-left" : ""
+                      }`}
+                    >
+                      {message.content && (
+                        <div
+                          className={`rounded-2xl px-3 py-2 md:px-4 md:py-2 ${
+                            message.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-foreground"
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        </div>
+                      )}
 
-                    {/* Render tool invocations */}
-                    {toolInvocations?.map((invocation: any, idx: number) => {
-                      if (
-                        invocation.state === "call" ||
-                        invocation.state === "partial-call"
-                      ) {
-                        return (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2 text-muted-foreground"
-                          >
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-xs">
-                              {t("جاري المعالجة...", "Processing...")}
-                            </span>
-                          </div>
-                        );
-                      }
-
-                      if (invocation.state === "result") {
-                        const result = invocation.result;
-                        if (!result) return null;
-
-                        return (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="p-3 rounded-xl bg-muted/50 border border-border"
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                              {result?.success ? (
-                                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <AlertCircle className="w-4 h-4 text-red-500" />
-                              )}
-                              <span className="text-xs font-medium">
-                                {invocation.toolName === "create_plan"
-                                  ? t("إضافة خطة", "Add Plan")
-                                  : t("عرض الخطط", "View Plans")}
+                      {/* Render tool invocations */}
+                      {toolInvocations?.map((invocation: any, idx: number) => {
+                        if (
+                          invocation.state === "call" ||
+                          invocation.state === "partial-call"
+                        ) {
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 text-muted-foreground"
+                            >
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span className="text-xs">
+                                {t("جاري المعالجة...", "Processing...")}
                               </span>
                             </div>
+                          );
+                        }
 
-                            {result?.message && (
-                              <p className="text-sm text-muted-foreground">
-                                {result.message}
-                              </p>
-                            )}
+                        if (invocation.state === "result") {
+                          const result = invocation.result;
+                          if (!result) return null;
 
-                            {result?.plans && result.plans.length > 0 && (
-                              <div className="space-y-2 mt-2">
-                                {result.plans.slice(0, 5).map((plan: any) => (
-                                  <div
-                                    key={plan.id}
-                                    className="flex items-center justify-between p-2 rounded-lg bg-background"
-                                  >
-                                    <span className="text-sm font-medium">
-                                      {plan.title}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">
-                                      {plan.plan_date}
-                                    </span>
-                                  </div>
-                                ))}
+                          // Deduplication Logic
+                          const uniquePlans = result?.plans
+                            ? Array.from(
+                                new Map(
+                                  result.plans.map((p: any) => [p.id, p]),
+                                ).values(),
+                              )
+                            : [];
+
+                          return (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="p-3 rounded-xl bg-muted/50 border border-border"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                {result?.success ? (
+                                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="w-4 h-4 text-red-500" />
+                                )}
+                                <span className="text-xs font-medium">
+                                  {invocation.toolName === "create_plan"
+                                    ? t("إضافة خطة", "Add Plan")
+                                    : t("عرض الخطط", "View Plans")}
+                                </span>
                               </div>
-                            )}
-                          </motion.div>
-                        );
-                      }
 
-                      return null;
-                    })}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                              {result?.message && (
+                                <p className="text-sm text-muted-foreground">
+                                  {result.message}
+                                </p>
+                              )}
 
-          {isLoading && messages[messages.length - 1]?.role === "user" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex gap-3"
-            >
-              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-muted flex items-center justify-center">
-                <Bot className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
+                              {uniquePlans.length > 0 && (
+                                <div className="space-y-2 mt-2">
+                                  {(uniquePlans as any[])
+                                    .slice(0, 5)
+                                    .map((plan: any) => (
+                                      <div
+                                        key={plan.id}
+                                        className="flex items-center justify-between p-2 rounded-lg bg-background"
+                                      >
+                                        <span className="text-sm font-medium">
+                                          {plan.title}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                          {plan.plan_date}
+                                        </span>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                            </motion.div>
+                          );
+                        }
+
+                        return null;
+                      })}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+
+            {isLoading && messages[messages.length - 1]?.role === "user" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex gap-3"
+              >
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-muted flex items-center justify-center">
+                  <Bot className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
+                </div>
+                <div className="bg-muted rounded-2xl px-4 py-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                </div>
+              </motion.div>
+            )}
+
+            {error && (
+              <div className="text-center py-2">
+                <p className="text-xs text-red-500">
+                  {t(
+                    "حدث خطأ. حاول مرة أخرى.",
+                    "An error occurred. Please try again.",
+                  )}
+                </p>
               </div>
-              <div className="bg-muted rounded-2xl px-4 py-2">
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              </div>
-            </motion.div>
-          )}
-
-          {error && (
-            <div className="text-center py-2">
-              <p className="text-xs text-red-500">
-                {t(
-                  "حدث خطأ. حاول مرة أخرى.",
-                  "An error occurred. Please try again.",
-                )}
-              </p>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
 
       {/* Input */}
       <form
