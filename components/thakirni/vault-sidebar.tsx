@@ -10,17 +10,14 @@ import {
   MessageSquare,
   Calendar,
   Menu,
+  ListTodo,
 } from "lucide-react";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { useLanguage } from "@/components/language-provider";
 import { useState, useEffect, createContext, useContext } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,9 +48,15 @@ const navItems = [
   },
   {
     href: "/vault/plans",
-    icon: Calendar,
+    icon: ListTodo,
     labelAr: "خططي",
     labelEn: "My Plans",
+  },
+  {
+    href: "/vault/calendar",
+    icon: Calendar,
+    labelAr: "التقويم",
+    labelEn: "Calendar",
   },
   {
     href: "/vault/settings",
@@ -115,10 +118,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           {navItems.map((item, idx) => {
-            const isActive =
-              item.hash
-                ? pathname === "/vault"
-                : pathname === item.href;
+            const isActive = item.hash
+              ? pathname === "/vault"
+              : pathname === item.href;
             return (
               <li key={`${item.href}-${idx}`}>
                 <Link
@@ -128,7 +130,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                     isActive && !item.hash
                       ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <item.icon className="w-5 h-5" />
