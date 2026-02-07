@@ -59,7 +59,6 @@ export default function PlansPage() {
         category: category,
         start_datetime: new Date().toISOString(), // Default to now
         is_all_day: false,
-        notification_sent: false,
       });
       setNewPlanTitle("");
     } catch (err) {
