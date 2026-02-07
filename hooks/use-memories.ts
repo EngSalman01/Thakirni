@@ -8,7 +8,7 @@ interface UseMemoriesReturn {
   memories: Memory[]
   isLoading: boolean
   error: Error | null
-  addMemory: (memory: Omit<Memory, "id" | "created_at" | "user_id" | "is_favorite">) => Promise<void>
+  addMemory: (memory: Omit<Memory, "id" | "created_at" | "updated_at" | "user_id">) => Promise<void>
   deleteMemory: (id: string) => Promise<void>
   refetch: () => Promise<void>
 }
@@ -49,16 +49,17 @@ export function useMemories(): UseMemoriesReturn {
     }
   }, []) // Empty dependency array as supabase client is stable
 
-  const addMemory = async (memory: Omit<Memory, "id" | "created_at" | "user_id" | "is_favorite">) => {
+  const addMemory = async (memory: Omit<Memory, "id" | "created_at" | "updated_at" | "user_id">) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("User not authenticated")
 
-      // @ts-ignore
       const newMemory = {
         ...memory,
         user_id: user.id,
-        is_favorite: false,
+        // Let Supabase handle ID and timestamps via defaults if possible, 
+        // but our types might expect them returned. 
+        // Best to let DB generate them and return the row.
       }
       
       const { data, error } = await supabase

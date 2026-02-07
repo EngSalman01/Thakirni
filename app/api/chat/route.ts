@@ -71,21 +71,21 @@ export async function POST(req: Request) {
             title: z.string().describe("Title of the event"),
             description: z.string().optional().describe("Details/Agenda"),
             
-            // Timing (Google Calendar Style)
-            start_datetime: z.string().describe(`ISO 8601 Timestamp (e.g., ${now.toISOString()}). REQUIRED.`),
-            end_datetime: z.string().optional().describe("ISO 8601 Timestamp. Default +1 hour if missing."),
+            // Date & Time
+            plan_date: z.string().describe(`Date (YYYY-MM-DD). Default to ${currentDate}.`),
+            plan_time: z.string().optional().describe("Start time (HH:MM:SS). REQUIRED for meetings."),
+            end_time: z.string().optional().describe("End time (HH:MM:SS). Default +1 hour if missing."),
             is_all_day: z.boolean().optional().describe("True for birthdays/holidays."),
             
             // Location & People
             location: z.string().optional().describe("Physical location or 'Online'."),
-            attendees: z.array(z.string()).optional().describe("List of emails/names."),
+            attendees: z.array(z.string()).optional().describe("List of people names."),
             
             // Metadata
             category: z.enum(['task', 'meeting', 'grocery', 'work', 'personal', 'other'])
               .describe("Auto-categorize based on context."),
-            recurrence_rule: z.string().optional().describe("RRULE string for recurring events (e.g., 'FREQ=WEEKLY')."),
-            color_code: z.string().optional().describe("Hex color code based on priority/category."),
-            reminder_minutes: z.number().optional().describe("Minutes before event to remind."),
+            priority: z.enum(['low', 'medium', 'high']).optional().describe("Importance level."),
+            recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).optional().describe("Recurrence pattern"),
           }),
           execute: async (input) => {
             if (!user) return { success: false, message: "يجب تسجيل الدخول أولاً" }
@@ -96,15 +96,15 @@ export async function POST(req: Request) {
                 user_id: user.id,
                 title: input.title,
                 description: input.description,
-                start_datetime: input.start_datetime,
-                end_datetime: input.end_datetime,
-                is_all_day: input.is_all_day || false,
+                plan_date: input.plan_date,
+                plan_time: input.plan_time,
+                end_time: input.end_time,
                 location: input.location,
-                participants: input.attendees,
+                attendees: input.attendees,
                 category: input.category || 'task',
-                recurrence_rule: input.recurrence_rule,
-                color_code: input.color_code || '#3B82F6',
-                reminder_minutes: input.reminder_minutes,
+                priority: input.priority || 'medium',
+                recurrence: input.recurrence || 'none',
+                is_all_day: input.is_all_day || false,
                 status: 'pending'
               })
               .select()
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
 
             return {
               success: true,
-              message: `Scheduled "${input.title}" at ${new Date(input.start_datetime).toLocaleString()}.`,
+              message: `Scheduled "${input.title}" on ${input.plan_date} ${input.plan_time ? 'at ' + input.plan_time : ''}.`,
               plan: data,
             }
           },
@@ -163,25 +163,19 @@ export async function POST(req: Request) {
               .from("plans")
               .select("*")
               .eq("user_id", user.id)
-              .order("start_datetime", { ascending: true })
+              .order("plan_date", { ascending: true })
 
             if (category && category !== "all") {
                 query = query.eq("category", category)
             }
 
-            if (date_filter === "today") {
-                const todayStart = new Date(now).toISOString().split('T')[0]
-                query = query.gte("start_datetime", `${todayStart}T00:00:00`)
-                           .lte("start_datetime", `${todayStart}T23:59:59`)
-            }
+            if (date_filter === "today") query = query.eq("plan_date", currentDate)
             if (date_filter === "tomorrow") {
                const tmrw = new Date(now)
                tmrw.setDate(tmrw.getDate() + 1)
-               const tmrwStart = tmrw.toISOString().split('T')[0]
-               query = query.gte("start_datetime", `${tmrwStart}T00:00:00`)
-                          .lte("start_datetime", `${tmrwStart}T23:59:59`)
+               query = query.eq("plan_date", tmrw.toISOString().split('T')[0])
             }
-            if (date_filter === "upcoming") query = query.gte("start_datetime", now.toISOString())
+            if (date_filter === "upcoming") query = query.gte("plan_date", currentDate)
 
             const { data, error } = await query
 
