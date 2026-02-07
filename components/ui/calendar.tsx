@@ -33,11 +33,11 @@ function Calendar({
         nav_button_next: "absolute right-1",
         table: "w-full border-collapse space-y-1",
 
-        // 🔴 FIX 1: V9 Layout Fixes (Use !flex to force horizontal)
-        head_row: "!flex w-full",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-        row: "!flex w-full mt-2",
+        // V9 uses 'weekdays' and 'week' instead of 'head_row' and 'row'
+        weekdays: "grid grid-cols-7",
+        weekday:
+          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem] text-center",
+        week: "grid grid-cols-7 mt-2",
 
         // Cell & Day
         cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
@@ -46,25 +46,28 @@ function Calendar({
           "h-9 w-9 p-0 font-normal aria-selected:opacity-100",
         ),
 
-        // 🔴 FIX 2: V9 Class Name Changes (Removed 'day_' prefix)
-        // In V9, 'day_selected' -> 'selected', 'day_today' -> 'today', etc.
-        range_end: "day-range-end",
+        // V9 Class Names (removed 'day_' prefix)
         selected:
           "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         today: "bg-accent text-accent-foreground",
         outside:
           "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
         disabled: "text-muted-foreground opacity-50",
+        range_start: "day-range-start",
+        range_end: "day-range-end",
         range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         hidden: "invisible",
 
         ...classNames,
       }}
-      // 🔴 FIX 3: V9 Component Changes (IconLeft/Right -> IconPrevious/Next)
       components={{
-        IconPrevious: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconNext: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+        IconPrevious: ({ className, ...props }) => (
+          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
+        ),
+        IconNext: ({ className, ...props }) => (
+          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
+        ),
       }}
       {...props}
     />
