@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Check } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(true)
+  const [isAnnual, setIsAnnual] = useState(true);
 
   const pricingPlans = [
     {
@@ -59,7 +59,7 @@ export function PricingSection() {
       buttonClass:
         "bg-secondary shadow-[0px_1px_1px_-0.5px_rgba(16,24,40,0.20)] text-secondary-foreground text-shadow-[0px_1px_1px_rgba(16,24,40,0.08)] hover:bg-secondary/90",
     },
-  ]
+  ];
 
   return (
     <section className="w-full px-5 overflow-hidden flex flex-col justify-start items-center my-0 py-8 md:py-14">
@@ -69,8 +69,9 @@ export function PricingSection() {
             Pricing built for every developer
           </h2>
           <p className="self-stretch text-center text-muted-foreground text-sm font-medium leading-tight">
-            Choose a plan that fits your coding workflow, from individuals starting out to <br /> growing professionals
-            and large organizations.
+            Choose a plan that fits your coding workflow, from individuals
+            starting out to <br /> growing professionals and large
+            organizations.
           </p>
         </div>
         <div className="pt-4">
@@ -103,7 +104,14 @@ export function PricingSection() {
           <div
             key={plan.name}
             className={`flex-1 p-4 overflow-hidden rounded-xl flex flex-col justify-start items-start gap-6 ${plan.popular ? "bg-primary shadow-[0px_4px_8px_-2px_rgba(0,0,0,0.10)]" : "bg-gradient-to-b from-gray-50/5 to-gray-50/0"}`}
-            style={plan.popular ? {} : { outline: "1px solid hsl(var(--border))", outlineOffset: "-1px" }}
+            style={
+              plan.popular
+                ? {}
+                : {
+                    outline: "1px solid hsl(var(--border))",
+                    outlineOffset: "-1px",
+                  }
+            }
           >
             <div className="self-stretch flex flex-col justify-start items-start gap-6">
               <div className="self-stretch flex flex-col justify-start items-start gap-8">
@@ -124,7 +132,9 @@ export function PricingSection() {
                     <div
                       className={`relative h-10 flex items-center text-3xl font-medium leading-10 ${plan.popular ? "text-primary-foreground" : "text-zinc-50"}`}
                     >
-                      <span className="invisible">{isAnnual ? plan.annualPrice : plan.monthlyPrice}</span>
+                      <span className="invisible">
+                        {isAnnual ? plan.annualPrice : plan.monthlyPrice}
+                      </span>
                       <span
                         className="absolute inset-0 flex items-center transition-all duration-500"
                         style={{
@@ -177,11 +187,16 @@ export function PricingSection() {
               <div
                 className={`self-stretch text-sm font-medium leading-tight ${plan.popular ? "text-primary-foreground/70" : "text-muted-foreground"}`}
               >
-                {plan.name === "Free" ? "Get Started today:" : "Everything in Free +"}
+                {plan.name === "Free"
+                  ? "Get Started today:"
+                  : "Everything in Free +"}
               </div>
               <div className="self-stretch flex flex-col justify-start items-start gap-3">
                 {plan.features.map((feature) => (
-                  <div key={feature} className="self-stretch flex justify-start items-center gap-2">
+                  <div
+                    key={feature}
+                    className="self-stretch flex justify-start items-center gap-2"
+                  >
                     <div className="w-4 h-4 flex items-center justify-center">
                       <Check
                         className={`w-full h-full ${plan.popular ? "text-primary-foreground" : "text-muted-foreground"}`}
@@ -201,5 +216,5 @@ export function PricingSection() {
         ))}
       </div>
     </section>
-  )
+  );
 }
