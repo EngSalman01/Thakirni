@@ -12,6 +12,9 @@ import {
   Menu,
   ListTodo,
   ChevronDown,
+  Building2,
+  Plus,
+  Check,
 } from "lucide-react";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { useLanguage } from "@/components/language-provider";
@@ -35,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "@supabase/supabase-js";
+import type { Team } from "@/lib/types";
 
 // Types
 interface Profile {
@@ -55,12 +59,16 @@ interface NavItem {
 interface SidebarContextType {
   open: boolean;
   setOpen: (open: boolean) => void;
+  workspace: string;
+  setWorkspace: (workspace: string) => void;
 }
 
 // Context
 const SidebarContext = createContext<SidebarContextType>({
   open: false,
   setOpen: () => {},
+  workspace: "personal",
+  setWorkspace: () => {},
 });
 
 export function useSidebar() {
@@ -102,6 +110,134 @@ const navItems: NavItem[] = [
 ];
 
 // Sub-components
+const WorkspaceSwitcher = ({ onNavigate }: { onNavigate?: () => void }) => {
+  const { t } = useLanguage();
+  const { workspace, setWorkspace } = useSidebar();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from("team_members")
+          .select(
+            `
+            team_id,
+            team:teams(*)
+          `,
+          )
+          .eq("user_id", user.id);
+
+        if (data) {
+          const teamData = data
+            .map((item: any) => item.team)
+            .filter(
+              (team): team is Team => team !== null && typeof team === "object",
+            );
+          setTeams(teamData);
+        }
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeams();
+  }, []);
+
+  const currentWorkspace =
+    workspace === "personal"
+      ? { name: t("الخزنة الشخصية", "Personal Vault"), icon: Home }
+      : teams.find((t) => t.id === workspace)
+        ? { name: teams.find((t) => t.id === workspace)!.name, icon: Building2 }
+        : { name: t("الخزنة الشخصية", "Personal Vault"), icon: Home };
+
+  return (
+    <div className="p-4 border-b border-border">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/50 rounded-lg transition-colors"
+            aria-label={t("تبديل مساحة العمل", "Switch workspace")}
+          >
+            <currentWorkspace.icon className="w-5 h-5 text-muted-foreground" />
+            <span className="flex-1 text-start font-medium text-sm truncate">
+              {currentWorkspace.name}
+            </span>
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel>
+            {t("مساحات العمل", "Workspaces")}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
+          {/* Personal Vault */}
+          <DropdownMenuItem
+            onClick={() => {
+              setWorkspace("personal");
+              onNavigate?.();
+            }}
+            className="cursor-pointer"
+          >
+            <Home className="w-4 h-4 me-2" />
+            {t("الخزنة الشخصية", "Personal Vault")}
+            {workspace === "personal" && (
+              <Check className="w-4 h-4 ms-auto text-emerald-600" />
+            )}
+          </DropdownMenuItem>
+
+          {/* Teams */}
+          {teams.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              {teams.map((team) => (
+                <DropdownMenuItem
+                  key={team.id}
+                  onClick={() => {
+                    setWorkspace(team.id);
+                    onNavigate?.();
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Building2 className="w-4 h-4 me-2" />
+                  <span className="truncate">{team.name}</span>
+                  {workspace === team.id && (
+                    <Check className="w-4 h-4 ms-auto text-emerald-600" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </>
+          )}
+
+          {/* Create Team */}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link
+              href="/vault/settings/teams/new"
+              className="cursor-pointer text-emerald-600 dark:text-emerald-500"
+              onClick={onNavigate}
+            >
+              <Plus className="w-4 h-4 me-2" />
+              {t("إنشاء فريق جديد", "Create New Team")}
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
+
 const LogoSection = ({ onNavigate }: { onNavigate?: () => void }) => (
   <div className="p-6 border-b border-border flex justify-center">
     <Link
@@ -363,6 +499,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex flex-col h-full">
       <LogoSection onNavigate={onNavigate} />
+      <WorkspaceSwitcher onNavigate={onNavigate} />
       <NavigationList onNavigate={onNavigate} />
       <UserSection onNavigate={onNavigate} />
     </div>
@@ -371,8 +508,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function VaultSidebar() {
   const [open, setOpen] = useState(false);
+  const [workspace, setWorkspace] = useState<string>("personal");
 
-  const contextValue = useMemo(() => ({ open, setOpen }), [open]);
+  const contextValue = useMemo(
+    () => ({ open, setOpen, workspace, setWorkspace }),
+    [open, workspace],
+  );
 
   return (
     <SidebarContext.Provider value={contextValue}>
