@@ -20,7 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, UserPlus, Mail, Shield, User, Eye } from "lucide-react";
+import {
+  Loader2,
+  UserPlus,
+  Mail,
+  Shield,
+  User,
+  Eye,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface InviteMemberDialogProps {
@@ -74,21 +82,21 @@ export function InviteMemberDialog({
       label: "Viewer",
       description: "Can only view team content",
       icon: Eye,
-      color: "text-slate-600 dark:text-slate-400",
+      gradient: "from-slate-400 to-slate-500",
     },
     {
       value: "member",
       label: "Member",
       description: "Can create and edit tasks",
       icon: User,
-      color: "text-cyan-600 dark:text-cyan-400",
+      gradient: "from-sky-500 to-sky-600",
     },
     {
       value: "admin",
       label: "Admin",
       description: "Can manage team and members",
       icon: Shield,
-      color: "text-violet-600 dark:text-violet-400",
+      gradient: "from-indigo-500 to-purple-500",
     },
   ];
 
@@ -96,43 +104,50 @@ export function InviteMemberDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[500px] border-border/50">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
-              <UserPlus className="w-5 h-5 text-white" />
+          <DialogTitle className="flex items-center gap-3 text-xl">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <UserPlus className="w-6 h-6 text-white" />
             </div>
-            Invite Team Member
+            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Invite Team Member
+            </span>
           </DialogTitle>
-          <DialogDescription>
-            Send an invitation to collaborate on this team. They'll get access
-            based on their assigned role.
+          <DialogDescription className="pt-2">
+            Send an invitation to collaborate. They'll get access based on their
+            assigned role.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-5 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email" className="text-sm font-medium">
+          <div className="grid gap-6 py-4">
+            <div className="grid gap-3">
+              <Label
+                htmlFor="email"
+                className="text-sm font-medium flex items-center gap-2"
+              >
+                <Mail className="w-4 h-4 text-indigo-500" />
                 Email Address
               </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="colleague@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  className="pl-10"
-                />
-              </div>
+              <Input
+                id="email"
+                type="email"
+                placeholder="colleague@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                required
+                className="h-11 border-border/50 focus:border-indigo-500"
+              />
             </div>
 
             <div className="grid gap-3">
-              <Label htmlFor="role" className="text-sm font-medium">
+              <Label
+                htmlFor="role"
+                className="text-sm font-medium flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4 text-purple-500" />
                 Role & Permissions
               </Label>
               <Select
@@ -140,14 +155,14 @@ export function InviteMemberDialog({
                 onValueChange={(value: any) => setRole(value)}
                 disabled={isLoading}
               >
-                <SelectTrigger id="role" className="h-11">
+                <SelectTrigger id="role" className="h-11 border-border/50">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {roleOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       <div className="flex items-center gap-2">
-                        <option.icon className={`w-4 h-4 ${option.color}`} />
+                        <option.icon className="w-4 h-4" />
                         <span className="font-medium">{option.label}</span>
                       </div>
                     </SelectItem>
@@ -156,12 +171,18 @@ export function InviteMemberDialog({
               </Select>
 
               {selectedRole && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border">
-                  <selectedRole.icon
-                    className={`w-4 h-4 mt-0.5 ${selectedRole.color}`}
-                  />
-                  <div>
-                    <p className="text-sm font-medium">{selectedRole.label}</p>
+                <div
+                  className={`flex items-start gap-3 p-4 rounded-xl bg-gradient-to-r ${selectedRole.gradient} bg-opacity-10 border border-${selectedRole.value === "admin" ? "indigo" : selectedRole.value === "member" ? "sky" : "slate"}-200 dark:border-${selectedRole.value === "admin" ? "indigo" : selectedRole.value === "member" ? "sky" : "slate"}-900`}
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg bg-gradient-to-br ${selectedRole.gradient} flex items-center justify-center shadow-md`}
+                  >
+                    <selectedRole.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold mb-0.5">
+                      {selectedRole.label}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {selectedRole.description}
                     </p>
@@ -183,7 +204,7 @@ export function InviteMemberDialog({
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
+              className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/20"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Invitation
