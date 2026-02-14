@@ -113,16 +113,11 @@ FOR ALL USING (
 );
 
 -- Add policy for team members to insert themselves (when invited)
+-- CRITICAL: Keep this simple to avoid infinite recursion when creating first member!
 DROP POLICY IF EXISTS "Users can join teams when invited" ON team_members;
 CREATE POLICY "Users can join teams when invited" ON team_members
 FOR INSERT WITH CHECK (
-    user_id = auth.uid() OR
-    EXISTS (
-        SELECT 1 FROM team_members tm
-        WHERE tm.team_id = team_members.team_id 
-        AND tm.user_id = auth.uid() 
-        AND tm.role IN ('owner', 'admin')
-    )
+    user_id = auth.uid()  -- Users can only insert themselves
 );
 
 -- Add policies for teams table
