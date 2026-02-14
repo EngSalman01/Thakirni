@@ -3,23 +3,19 @@ import { cookies } from 'next/headers'
 
 /**
  * Server-side Supabase client factory.
- * - Uses server-only env vars: SUPABASE_URL and SUPABASE_SERVICE_KEY (or SUPABASE_ANON_KEY)
- * - Do NOT use NEXT_PUBLIC_* here for secret keys.
+ * - Uses anon key (NEXT_PUBLIC_SUPABASE_ANON_KEY) with user cookies for authentication
+ * - This allows server actions to authenticate as the logged-in user
+ * - RLS policies will be enforced based on the authenticated user
  *
- * Ensure in Vercel you set:
- * - SUPABASE_URL = https://<project-ref>.supabase.co
- * - SUPABASE_SERVICE_KEY = sb_secret_...
- *
- * If you only need non-privileged read operations as the logged-in user,
- * you may instead pass the publishable key (NEXT_PUBLIC_SUPABASE_KEY), but keep
- * service keys server-only.
+ * For admin operations that need to bypass RLS, create a separate client
+ * using the service role key.
  */
 export async function createClient() {
   const cookieStore = await cookies()
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY!, // server-only secret
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, // Use anon key for user authentication
     {
       cookies: {
         getAll() {
@@ -39,3 +35,4 @@ export async function createClient() {
     },
   )
 }
+
