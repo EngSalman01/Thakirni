@@ -469,7 +469,7 @@ export default function TeamSettingsPage({
                             />
                             <h3 className="font-semibold text-sm group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                               {project.name}
-                            </h3>
+                            </p>
                           </div>
                           {project.description && (
                             <p className="text-xs text-muted-foreground line-clamp-2">
