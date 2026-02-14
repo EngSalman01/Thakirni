@@ -4,103 +4,103 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Thakirni Light Theme */
-  --background: hsl(40 33% 97%);
-  --foreground: hsl(164 50% 10%);
+  /* Modern Light Theme - Clean & Minimal */
+  --background: hsl(210 20% 98%);
+  --foreground: hsl(222 47% 11%);
 
   /* Surface colors */
-  --muted: hsl(40 20% 94%);
-  --muted-foreground: hsl(164 20% 40%);
+  --muted: hsl(210 20% 96%);
+  --muted-foreground: hsl(215 16% 47%);
 
   /* Cards */
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(164 50% 10%);
+  --card-foreground: hsl(222 47% 11%);
 
   --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(164 50% 10%);
+  --popover-foreground: hsl(222 47% 11%);
 
-  /* Gold accent */
-  --primary: hsl(43 96% 46%);
+  /* Primary - Blue */
+  --primary: hsl(217 91% 60%);
   --primary-foreground: hsl(0 0% 100%);
 
-  /* Secondary - emerald */
-  --secondary: hsl(164 60% 20%);
-  --secondary-foreground: hsl(40 33% 96%);
+  /* Secondary - Orange */
+  --secondary: hsl(25 95% 53%);
+  --secondary-foreground: hsl(0 0% 100%);
 
-  /* Accent - gold tones */
-  --accent: hsl(40 20% 92%);
-  --accent-foreground: hsl(164 50% 10%);
+  /* Accent - Teal */
+  --accent: hsl(173 80% 40%);
+  --accent-foreground: hsl(0 0% 100%);
 
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 100%);
 
-  --border: hsl(40 20% 88%);
-  --input: hsl(40 20% 88%);
-  --ring: hsl(43 96% 46%);
+  --border: hsl(214 32% 91%);
+  --input: hsl(214 32% 91%);
+  --ring: hsl(217 91% 60%);
 
   --radius: 0.75rem;
 
-  /* Custom Thakirni colors */
-  --gold: hsl(43 96% 46%);
-  --gold-light: hsl(43 90% 55%);
-  --emerald-deep: hsl(164 88% 10%);
-  --sand: hsl(40 33% 96%);
+  /* Custom colors */
+  --blue: hsl(217 91% 60%);
+  --blue-light: hsl(217 91% 70%);
+  --orange: hsl(25 95% 53%);
+  --teal: hsl(173 80% 40%);
 
   /* Chart colors */
-  --chart-1: hsl(43 96% 46%);
-  --chart-2: hsl(164 60% 20%);
-  --chart-3: hsl(40 33% 96%);
-  --chart-4: hsl(164 88% 10%);
-  --chart-5: hsl(43 90% 55%);
+  --chart-1: hsl(217 91% 60%);
+  --chart-2: hsl(25 95% 53%);
+  --chart-3: hsl(173 80% 40%);
+  --chart-4: hsl(271 81% 56%);
+  --chart-5: hsl(339 90% 51%);
 }
 
 .dark {
-  /* Thakirni Dark Theme - Deep Islamic Green */
-  --background: hsl(164 88% 5%);
-  --foreground: hsl(40 33% 96%);
+  /* Modern Dark Theme - Slate & Blue */
+  --background: hsl(222 47% 11%);
+  --foreground: hsl(210 40% 98%);
 
   /* Surface colors */
-  --muted: hsl(164 70% 8%);
-  --muted-foreground: hsl(40 10% 70%);
+  --muted: hsl(217 33% 17%);
+  --muted-foreground: hsl(215 20% 65%);
 
   /* Cards */
-  --card: hsl(164 60% 8%);
-  --card-foreground: hsl(40 33% 96%);
+  --card: hsl(222 47% 14%);
+  --card-foreground: hsl(210 40% 98%);
 
-  --popover: hsl(164 60% 8%);
-  --popover-foreground: hsl(40 33% 96%);
+  --popover: hsl(222 47% 14%);
+  --popover-foreground: hsl(210 40% 98%);
 
-  /* Gold accent */
-  --primary: hsl(43 96% 56%);
-  --primary-foreground: hsl(164 88% 5%);
+  /* Primary - Electric Blue */
+  --primary: hsl(217 91% 60%);
+  --primary-foreground: hsl(222 47% 11%);
 
-  /* Secondary */
-  --secondary: hsl(164 60% 12%);
-  --secondary-foreground: hsl(40 33% 96%);
+  /* Secondary - Coral Orange */
+  --secondary: hsl(25 95% 53%);
+  --secondary-foreground: hsl(222 47% 11%);
 
-  /* Accent */
-  --accent: hsl(164 50% 12%);
-  --accent-foreground: hsl(40 33% 96%);
+  /* Accent - Bright Teal */
+  --accent: hsl(173 80% 40%);
+  --accent-foreground: hsl(222 47% 11%);
 
-  --destructive: hsl(0 62% 50%);
+  --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 100%);
 
-  --border: hsl(164 40% 15%);
-  --input: hsl(164 40% 15%);
-  --ring: hsl(43 96% 56%);
+  --border: hsl(217 33% 21%);
+  --input: hsl(217 33% 21%);
+  --ring: hsl(217 91% 60%);
 
-  /* Custom Thakirni colors */
-  --gold: hsl(43 96% 56%);
-  --gold-light: hsl(43 90% 65%);
-  --emerald-deep: hsl(164 88% 5%);
-  --sand: hsl(40 33% 96%);
+  /* Custom colors */
+  --blue: hsl(217 91% 60%);
+  --blue-light: hsl(217 91% 70%);
+  --orange: hsl(25 95% 53%);
+  --teal: hsl(173 80% 40%);
 
   /* Chart colors */
-  --chart-1: hsl(43 96% 56%);
-  --chart-2: hsl(164 60% 12%);
-  --chart-3: hsl(40 33% 96%);
-  --chart-4: hsl(164 88% 5%);
-  --chart-5: hsl(43 90% 65%);
+  --chart-1: hsl(217 91% 60%);
+  --chart-2: hsl(25 95% 53%);
+  --chart-3: hsl(173 80% 40%);
+  --chart-4: hsl(271 81% 56%);
+  --chart-5: hsl(339 90% 51%);
 }
 
 @theme inline {
@@ -132,11 +132,11 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Custom Thakirni colors */
-  --color-gold: var(--gold);
-  --color-gold-light: var(--gold-light);
-  --color-emerald-deep: var(--emerald-deep);
-  --color-sand: var(--sand);
+  /* Custom colors */
+  --color-blue: var(--blue);
+  --color-blue-light: var(--blue-light);
+  --color-orange: var(--orange);
+  --color-teal: var(--teal);
 
   /* Chart colors */
   --color-chart-1: var(--chart-1);
@@ -207,11 +207,6 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Islamic geometric pattern background */
-.islamic-pattern {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23065f46' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Glass effect */
