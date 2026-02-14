@@ -26,13 +26,15 @@ import {
   Users,
   Crown,
   Shield,
-  User,
+  User as UserIcon,
   Eye,
   AlertCircle,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
   FolderKanban,
   Loader2,
+  ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -64,7 +66,6 @@ export default function TeamSettingsPage({
           return;
         }
 
-        // Fetch team details
         const teamResult = await getTeamDetails(params.id);
         if (teamResult.error || !teamResult.data) {
           router.push("/vault");
@@ -74,11 +75,9 @@ export default function TeamSettingsPage({
         setTeam(teamResult.data);
         setUserRole(teamResult.userRole || "");
 
-        // Fetch members
         const membersResult = await getTeamMembers(params.id);
         setMembers(membersResult.data || []);
 
-        // Fetch projects
         const projectsResult = await getTeamProjects(params.id);
         setProjects(projectsResult.data || []);
       } catch (error) {
@@ -101,7 +100,6 @@ export default function TeamSettingsPage({
         toast.error(result.error);
       } else {
         toast.success("Member removed successfully");
-        // Refresh members
         const membersResult = await getTeamMembers(params.id);
         setMembers(membersResult.data || []);
       }
@@ -112,8 +110,11 @@ export default function TeamSettingsPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-cyan-500/5 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+          <p className="text-sm text-muted-foreground">Loading team...</p>
+        </div>
       </div>
     );
   }
@@ -121,93 +122,122 @@ export default function TeamSettingsPage({
   if (!team) return null;
 
   const getRoleBadge = (role: string) => {
-    const variants: Record<string, string> = {
-      owner: "bg-yellow-500/10 text-yellow-600",
-      admin: "bg-blue-500/10 text-blue-600",
-      member: "bg-gray-500/10 text-gray-600",
-      viewer: "bg-gray-500/10 text-gray-600",
+    const config: Record<string, { bg: string; text: string; icon: any }> = {
+      owner: {
+        bg: "bg-gradient-to-r from-amber-500/10 to-orange-500/10",
+        text: "text-amber-600 dark:text-amber-500",
+        icon: Crown,
+      },
+      admin: {
+        bg: "bg-gradient-to-r from-violet-500/10 to-purple-500/10",
+        text: "text-violet-600 dark:text-violet-500",
+        icon: Shield,
+      },
+      member: {
+        bg: "bg-cyan-500/10",
+        text: "text-cyan-600 dark:text-cyan-500",
+        icon: UserIcon,
+      },
+      viewer: {
+        bg: "bg-slate-500/10",
+        text: "text-slate-600 dark:text-slate-500",
+        icon: Eye,
+      },
     };
 
+    const { bg, text, icon: Icon } = config[role] || config.member;
+
     return (
-      <Badge className={variants[role] || ""}>
+      <Badge
+        className={`${bg} ${text} border-0 flex items-center gap-1.5 px-2.5 py-1`}
+      >
+        <Icon className="w-3.5 h-3.5" />
         {role.charAt(0).toUpperCase() + role.slice(1)}
       </Badge>
     );
   };
 
-  const getSubscriptionStatusBadge = () => {
+  const getSubscriptionBadge = () => {
     if (team.subscription_status === "active") {
       return (
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-500">
-          <CheckCircle className="w-5 h-5" />
-          <span className="font-medium">Active</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 w-fit">
+          <CheckCircle2 className="w-4 h-4" />
+          <span className="text-sm font-medium">Active</span>
         </div>
       );
     }
 
     if (team.subscription_status === "trial") {
       return (
-        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500">
-          <AlertCircle className="w-5 h-5" />
-          <span className="font-medium">Trial</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-500 w-fit">
+          <Sparkles className="w-4 h-4" />
+          <span className="text-sm font-medium">Trial</span>
         </div>
       );
     }
 
     return (
-      <div className="flex items-center gap-2 text-red-600 dark:text-red-500">
-        <XCircle className="w-5 h-5" />
-        <span className="font-medium">Inactive</span>
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-500 w-fit">
+        <XCircle className="w-4 h-4" />
+        <span className="text-sm font-medium">Inactive</span>
       </div>
     );
   };
 
   const getTierDisplay = () => {
     const tierLabels: Record<string, string> = {
-      starter: "Starter (Up to 5 users)",
-      pro: "Pro (Unlimited users)",
+      starter: "Starter",
+      pro: "Professional",
       enterprise: "Enterprise",
     };
     return tierLabels[team.tier] || team.tier;
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-cyan-500/5">
+      <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Building2 className="w-8 h-8 text-emerald-600" />
+          <div className="space-y-1">
+            <Button variant="ghost" size="sm" asChild className="mb-2 -ml-2">
+              <Link href="/vault" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Vault
+              </Link>
+            </Button>
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center shrink-0">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
               {team.name}
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Team Settings & Management
+            <p className="text-muted-foreground">
+              Team settings and member management
             </p>
           </div>
-
-          <Button variant="outline" asChild>
-            <Link href="/vault">Back to Vault</Link>
-          </Button>
         </div>
 
-        {/* Subscription Warning */}
+        {/* Subscription Alert */}
         {team.subscription_status !== "active" && userRole === "owner" && (
-          <Card className="border-red-500/50 bg-red-500/5">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <AlertCircle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
-                <div className="flex-1">
+          <Card className="border-red-200 dark:border-red-900 bg-gradient-to-r from-red-500/5 to-orange-500/5">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-foreground mb-1">
-                    Subscription Inactive
+                    Subscription Required
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Your team subscription is currently inactive. Team members
-                    cannot access team features until you renew your
-                    subscription.
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Your team's subscription is inactive. Renew to restore
+                    access for all members.
                   </p>
-                  <Button className="bg-red-600 hover:bg-red-500 text-white">
-                    Renew Subscription
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500"
+                  >
+                    Renew Now
                   </Button>
                 </div>
               </div>
@@ -215,206 +245,237 @@ export default function TeamSettingsPage({
           </Card>
         )}
 
-        {/* Team Overview */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Team Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Information</CardTitle>
-              <CardDescription>Basic details about this team</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Team Name
-                </label>
-                <p className="text-lg font-semibold">{team.name}</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Team URL
-                </label>
-                <p className="text-sm font-mono bg-muted px-3 py-2 rounded">
-                  thakirni.com/team/{team.slug}
-                </p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Created
-                </label>
-                <p className="text-sm">
-                  {new Date(team.created_at).toLocaleDateString()}
-                </p>
+        {/* Quick Stats */}
+        <div className="grid sm:grid-cols-3 gap-4">
+          <Card className="border-cyan-200/50 dark:border-cyan-900/50 bg-gradient-to-br from-cyan-500/5 to-transparent">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-cyan-500/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-cyan-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{members.length}</p>
+                  <p className="text-xs text-muted-foreground">Team Members</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Subscription Info */}
-          <Card>
+          <Card className="border-violet-200/50 dark:border-violet-900/50 bg-gradient-to-br from-violet-500/5 to-transparent">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                  <FolderKanban className="w-5 h-5 text-violet-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{projects.length}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Active Projects
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-emerald-200/50 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-500/5 to-transparent">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{getTierDisplay()}</p>
+                  <p className="text-xs text-muted-foreground">Current Plan</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Team Info */}
+          <Card className="lg:col-span-1">
             <CardHeader>
-              <CardTitle>Subscription</CardTitle>
-              <CardDescription>Billing and plan details</CardDescription>
+              <CardTitle className="text-lg">Team Details</CardTitle>
+              <CardDescription>Basic information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Team Name
+                </label>
+                <p className="text-sm font-medium mt-1">{team.name}</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Team Slug
+                </label>
+                <p className="text-sm font-mono bg-muted px-2 py-1 rounded mt-1">
+                  {team.slug}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Status
                 </label>
-                <div className="mt-1">{getSubscriptionStatusBadge()}</div>
+                <div className="mt-1">{getSubscriptionBadge()}</div>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Plan
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Created
                 </label>
-                <p className="text-lg font-semibold">{getTierDisplay()}</p>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">
-                  Members
-                </label>
-                <p className="text-sm">
-                  {members.length} /{" "}
-                  {team.tier === "starter" ? "5" : "Unlimited"}
+                <p className="text-sm mt-1">
+                  {new Date(team.created_at).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
                 </p>
               </div>
 
               {userRole === "owner" && (
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full mt-4">
                   Manage Billing
                 </Button>
               )}
             </CardContent>
           </Card>
-        </div>
 
-        {/* Team Members */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Team Members ({members.length})
-                </CardTitle>
-                <CardDescription>
-                  Manage who has access to this team
-                </CardDescription>
-              </div>
-
-              {(userRole === "owner" || userRole === "admin") &&
-                team.subscription_status === "active" && (
-                  <Button onClick={() => setInviteDialogOpen(true)}>
-                    Invite Member
-                  </Button>
-                )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {members.map((member: any) => (
-                <div
-                  key={member.id}
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={member.profile?.avatar_url} />
-                      <AvatarFallback>
-                        {member.profile?.full_name?.[0] || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold">
-                          {member.profile?.full_name || "Unknown User"}
-                        </p>
-                        {member.user_id === team.owner_id && (
-                          <Crown className="w-4 h-4 text-yellow-600" />
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Joined {new Date(member.joined_at).toLocaleDateString()}
-                      </p>
-                    </div>
+          {/* Members & Projects */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Team Members */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Team Members</CardTitle>
+                    <CardDescription>
+                      {members.length} of{" "}
+                      {team.tier === "starter" ? "5" : "unlimited"} members
+                    </CardDescription>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    {getRoleBadge(member.role)}
-
-                    {userRole === "owner" && member.role !== "owner" && (
+                  {(userRole === "owner" || userRole === "admin") &&
+                    team.subscription_status === "active" && (
                       <Button
-                        variant="ghost"
                         size="sm"
-                        onClick={() => handleRemoveMember(member.user_id)}
+                        onClick={() => setInviteDialogOpen(true)}
+                        className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
                       >
-                        Remove
+                        <Users className="w-4 h-4 mr-2" />
+                        Invite
                       </Button>
                     )}
-                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {members.map((member: any) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-border/50 hover:border-cyan-500/30 hover:bg-cyan-500/5 transition-all group"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="w-9 h-9 border-2 border-background shadow-sm">
+                          <AvatarImage src={member.profile?.avatar_url} />
+                          <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-violet-500 text-white text-sm">
+                            {member.profile?.full_name?.[0] || "U"}
+                          </AvatarFallback>
+                        </Avatar>
 
-        {/* Projects */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <FolderKanban className="w-5 h-5" />
-                  Projects ({projects.length})
-                </CardTitle>
-                <CardDescription>
-                  Organize your team's tasks into projects
-                </CardDescription>
-              </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-sm truncate">
+                            {member.profile?.full_name || "Unknown User"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(member.joined_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
 
-              {(userRole === "owner" || userRole === "admin") && (
-                <Button onClick={() => setCreateProjectDialogOpen(true)}>
-                  Create Project
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {projects.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {projects.map((project: any) => (
-                  <Link
-                    key={project.id}
-                    href={`/vault/projects/${project.id}`}
-                    className="block p-4 border border-border rounded-lg hover:shadow-md transition-shadow"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div
-                        className="w-4 h-4 rounded"
-                        style={{ backgroundColor: project.color }}
-                      />
-                      <h3 className="font-semibold">{project.name}</h3>
+                      <div className="flex items-center gap-2">
+                        {getRoleBadge(member.role)}
+
+                        {userRole === "owner" && member.role !== "owner" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveMember(member.user_id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-500 hover:bg-red-500/10"
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    {project.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {project.description}
-                      </p>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                <FolderKanban className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No projects yet. Create one to get started!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Projects */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">Projects</CardTitle>
+                    <CardDescription>
+                      Organize work into projects
+                    </CardDescription>
+                  </div>
+
+                  {(userRole === "owner" || userRole === "admin") && (
+                    <Button
+                      size="sm"
+                      onClick={() => setCreateProjectDialogOpen(true)}
+                      variant="outline"
+                    >
+                      <FolderKanban className="w-4 h-4 mr-2" />
+                      New Project
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {projects.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {projects.map((project: any) => (
+                      <Link
+                        key={project.id}
+                        href={`/vault/projects/${project.id}`}
+                        className="block p-3 border border-border/50 rounded-lg hover:border-violet-500/50 hover:shadow-md hover:shadow-violet-500/10 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: project.color }}
+                          />
+                          <h3 className="font-semibold text-sm group-hover:text-violet-600 transition-colors">
+                            {project.name}
+                          </h3>
+                        </div>
+                        {project.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {project.description}
+                          </p>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FolderKanban className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">No projects yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       {/* Dialogs */}
