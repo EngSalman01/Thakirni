@@ -40,7 +40,8 @@ export async function createTeam(name: string, slug: string) {
 
     if (teamError) {
       console.error("Error creating team:", teamError);
-      return { error: "Failed to create team" };
+      console.error("Team data attempted:", { name, slug, owner_id: user.id });
+      return { error: `Failed to create team: ${teamError.message}` };
     }
 
     // Add creator as owner in team_members
@@ -54,9 +55,10 @@ export async function createTeam(name: string, slug: string) {
 
     if (memberError) {
       console.error("Error adding team owner:", memberError);
+      console.error("Member data attempted:", { team_id: team.id, user_id: user.id, role: "owner" });
       // Rollback team creation
       await supabase.from("teams").delete().eq("id", team.id);
-      return { error: "Failed to set up team ownership" };
+      return { error: `Failed to set up team ownership: ${memberError.message}` };
     }
 
     revalidatePath("/vault/settings/teams");
