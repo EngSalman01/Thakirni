@@ -59,6 +59,7 @@ DON'T DO THIS:
 ❌ Create another plan when they tell you the time
 ❌ Create multiple plans during one conversation
 ❌ Call create_plan before you have complete information
+❌ Call list_plans multiple times in the same response
 
 🎯 REQUIRED INFORMATION CHECKLIST:
 
@@ -94,12 +95,14 @@ Step 3: User says "Online"
 → You think: Now I have everything (title=meeting, date=tomorrow, time=9AM, location=Online)
 → You respond: "Perfect! I've scheduled your meeting tomorrow at 9 AM online."
 → **NOW call create_plan ONCE with all the information**
+→ **DO NOT call list_plans after creating - just confirm what you created!**
 
 🗣 RESPONSE STYLE:
 - Be friendly and conversational
 - Ask ONE question at a time
 - Acknowledge what the user told you before asking for more
 - Detect and respond in the user's language (Arabic/English)
+- After creating a plan, DON'T call list_plans - just confirm the creation
 
 🧠 TIME INTELLIGENCE:
 - "tomorrow" = ${new Date(Date.now() + 86400000).toISOString().split('T')[0]}
@@ -108,7 +111,7 @@ Step 3: User says "Online"
 - If user says "at 5" and it's past 5 AM, assume 17:00 (5 PM)
 - If start time given but no end time, assume 1 hour duration
 
-REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then create the plan ONCE.`,
+REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then create the plan ONCE. Don't verify by calling list_plans right after!`,
       tools: {
         create_plan: tool({
           description: "Schedule a calendar event, task, or meeting.",
@@ -135,6 +138,9 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
           execute: async (input) => {
             if (!user) return { success: false, message: "يجب تسجيل الدخول أولاً" }
             
+            console.log("[v0] Creating plan:", JSON.stringify(input, null, 2))
+            console.log("[v0] User ID:", user.id)
+            
             const { data, error } = await supabase
               .from("plans")
               .insert({
@@ -156,10 +162,11 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
               .single()
 
             if (error) {
-              console.log("[v0] Create plan error:", error.message)
+              console.error("[v0] Create plan error:", error)
               return { success: false, message: error.message }
             }
 
+            console.log("[v0] Plan created successfully:", data)
             return {
               success: true,
               message: `Scheduled "${input.title}" on ${input.plan_date} ${input.plan_time ? 'at ' + input.plan_time : ''}.`,
@@ -196,13 +203,15 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
         }),
 
         list_plans: tool({
-          description: "Show upcoming schedule or tasks.",
+          description: "Show upcoming schedule or tasks. Use ONLY when user explicitly asks to see their plans.",
           parameters: z.object({
             date_filter: z.enum(["today", "tomorrow", "upcoming", "all"]),
             category: z.string().optional(),
           }),
           execute: async ({ date_filter, category }) => {
             if (!user) return { success: false, message: "Login required", plans: [] }
+
+            console.log("[v0] Listing plans - Filter:", date_filter, "Category:", category, "User:", user.id)
 
             let query = supabase
               .from("plans")
@@ -218,15 +227,22 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
             if (date_filter === "tomorrow") {
                const tmrw = new Date(now)
                tmrw.setDate(tmrw.getDate() + 1)
-               query = query.eq("plan_date", tmrw.toISOString().split('T')[0])
+               const tomorrowDate = tmrw.toISOString().split('T')[0]
+               console.log("[v0] Tomorrow date:", tomorrowDate)
+               query = query.eq("plan_date", tomorrowDate)
             }
             if (date_filter === "upcoming") query = query.gte("plan_date", currentDate)
 
             const { data, error } = await query
 
             if (error) {
-              console.log("[v0] List plans error:", error.message)
+              console.error("[v0] List plans error:", error)
               return { success: false, message: error.message, plans: [] }
+            }
+
+            console.log("[v0] Plans found:", data?.length || 0)
+            if (data && data.length > 0) {
+              console.log("[v0] First plan:", data[0])
             }
 
             return {
