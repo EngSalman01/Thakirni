@@ -114,10 +114,12 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Column - Decorative */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-emerald-950 via-emerald-900 to-emerald-950">
-        <div className="absolute inset-0 islamic-pattern opacity-30" />
-        <div className="absolute top-20 start-20 w-64 h-64 bg-primary/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 end-20 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl" />
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent" />
+        </div>
+        <div className="absolute top-20 start-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 end-20 w-96 h-96 bg-teal-600/20 rounded-full blur-3xl" />
 
         <div className="relative z-10 flex flex-col justify-center items-center h-full w-full p-12 text-center">
           <motion.div
