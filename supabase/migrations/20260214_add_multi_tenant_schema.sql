@@ -101,9 +101,21 @@ FOR SELECT USING (
     )
 );
 
+-- SEPARATE UPDATE/DELETE from INSERT to avoid infinite recursion!
 DROP POLICY IF EXISTS "Team admins can manage members" ON team_members;
 CREATE POLICY "Team admins can manage members" ON team_members
-FOR ALL USING (
+FOR UPDATE USING (
+    EXISTS (
+        SELECT 1 FROM team_members tm
+        WHERE tm.team_id = team_members.team_id 
+        AND tm.user_id = auth.uid() 
+        AND tm.role IN ('owner', 'admin')
+    )
+);
+
+DROP POLICY IF EXISTS "Team admins can delete members" ON team_members;
+CREATE POLICY "Team admins can delete members" ON team_members
+FOR DELETE USING (
     EXISTS (
         SELECT 1 FROM team_members tm
         WHERE tm.team_id = team_members.team_id 
