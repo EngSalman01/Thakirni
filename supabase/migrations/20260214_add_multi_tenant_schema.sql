@@ -126,17 +126,20 @@ FOR INSERT WITH CHECK (
 );
 
 -- Add policies for teams table
+DROP POLICY IF EXISTS "Team owners can update teams" ON teams;
 CREATE POLICY "Team owners can update teams" ON teams
 FOR UPDATE USING (
     owner_id = auth.uid()
 );
 
+DROP POLICY IF EXISTS "Anyone can create teams" ON teams;
 CREATE POLICY "Anyone can create teams" ON teams
 FOR INSERT WITH CHECK (
     owner_id = auth.uid()
 );
 
 -- Add policies for projects table
+DROP POLICY IF EXISTS "Team members can create projects" ON projects;
 CREATE POLICY "Team members can create projects" ON projects
 FOR INSERT WITH CHECK (
     EXISTS (
@@ -146,6 +149,7 @@ FOR INSERT WITH CHECK (
     )
 );
 
+DROP POLICY IF EXISTS "Team admins can modify projects" ON projects;
 CREATE POLICY "Team admins can modify projects" ON projects
 FOR ALL USING (
     EXISTS (
