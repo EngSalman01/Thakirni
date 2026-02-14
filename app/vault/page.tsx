@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   VaultSidebar,
   MobileMenuButton,
@@ -19,14 +19,13 @@ import {
   Upload,
   ImageIcon,
   FileText,
-  Cat,
   CheckSquare,
   ShoppingBag,
-  Users,
+  Zap,
   TrendingUp,
+  Target,
   Sparkles,
   ArrowRight,
-  Zap,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -34,6 +33,7 @@ import { useMemories } from "@/hooks/use-memories";
 import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
 import { DailySummary } from "@/components/thakirni/daily-summary";
+import Link from "next/link";
 
 const AIChat = dynamic(
   () =>
@@ -43,11 +43,11 @@ const AIChat = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[500px] bg-gradient-to-br from-card to-card/50 rounded-2xl border border-border flex items-center justify-center backdrop-blur-sm">
-        <div className="text-muted-foreground flex items-center gap-2">
-          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-          <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse [animation-delay:0.2s]" />
-          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse [animation-delay:0.4s]" />
+      <div className="h-[500px] bg-card rounded-2xl border border-border flex items-center justify-center">
+        <div className="flex gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+          <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+          <div className="w-2 h-2 bg-teal-500 rounded-full animate-bounce [animation-delay:0.4s]" />
         </div>
       </div>
     ),
@@ -188,25 +188,25 @@ export default function VaultPage() {
     {
       title: t("مهمة جديدة", "New Task"),
       icon: CheckSquare,
-      gradient: "from-indigo-500 to-indigo-600",
+      bg: "from-blue-500 to-blue-600",
       action: "/vault/plans",
     },
     {
       title: t("اجتماع", "Meeting"),
       icon: Calendar,
-      gradient: "from-sky-500 to-sky-600",
+      bg: "from-orange-500 to-orange-600",
       action: "/vault/calendar",
     },
     {
       title: t("مقضى", "Grocery"),
       icon: ShoppingBag,
-      gradient: "from-rose-500 to-rose-600",
+      bg: "from-teal-500 to-teal-600",
       action: "/vault/plans",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-indigo-500/5">
+    <div className="min-h-screen bg-background">
       <input
         type="file"
         multiple
@@ -219,20 +219,20 @@ export default function VaultPage() {
       <VaultSidebar />
 
       <main className="lg:me-64 p-4 md:p-8 transition-all duration-300">
-        {/* Hero Section */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <MobileMenuButton />
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                   {getGreeting()}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                <p className="text-sm text-muted-foreground mt-1.5 flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   {new Date().toLocaleDateString("en-US", {
                     weekday: "long",
@@ -250,25 +250,26 @@ export default function VaultPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="relative border-indigo-200 dark:border-indigo-900"
+                className="relative"
+                onClick={() => toast.info("Notifications feature coming soon!")}
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute -top-1 -end-1 w-2.5 h-2.5 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full animate-pulse" />
+                <span className="absolute -top-1 -end-1 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse" />
               </Button>
             </div>
           </div>
         </motion.div>
 
-        {/* Quick Stats Bar */}
+        {/* Quick Stats */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          <div className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/10 rounded-2xl p-4 border border-indigo-200 dark:border-indigo-900/50">
+          <div className="bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-2xl p-5 border border-blue-500/20">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+              <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                 <CheckSquare className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -280,9 +281,9 @@ export default function VaultPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-rose-500/10 to-rose-600/10 rounded-2xl p-4 border border-rose-200 dark:border-rose-900/50">
+          <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/10 rounded-2xl p-5 border border-orange-500/20">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+              <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
                 <ImageIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -294,13 +295,13 @@ export default function VaultPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 rounded-2xl p-4 border border-purple-200 dark:border-purple-900/50">
+          <div className="bg-gradient-to-br from-teal-500/10 to-teal-600/10 rounded-2xl p-5 border border-teal-500/20">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+              <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-2xl font-bold">24</p>
+                <p className="text-2xl font-bold">85%</p>
                 <p className="text-xs text-muted-foreground">
                   {t("معدل الإنجاز", "Completion")}
                 </p>
@@ -308,15 +309,15 @@ export default function VaultPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-sky-500/10 to-sky-600/10 rounded-2xl p-4 border border-sky-200 dark:border-sky-900/50">
+          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 rounded-2xl p-5 border border-purple-500/20">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+              <div className="w-12 h-12 rounded-xl bg-purple-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold">12</p>
                 <p className="text-xs text-muted-foreground">
-                  {t("نشاط", "Streak")}
+                  {t("نشاط", "Day Streak")}
                 </p>
               </div>
             </div>
@@ -331,26 +332,30 @@ export default function VaultPage() {
           className="mb-8"
         >
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
+            <Sparkles className="w-5 h-5 text-blue-500" />
             {t("إجراءات سريعة", "Quick Actions")}
           </h2>
           <div className="grid grid-cols-3 gap-4">
             {quickActions.map((action, i) => (
-              <motion.a
+              <motion.div
                 key={i}
-                href={action.action}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
-                whileHover={{ scale: 1.05, y: -5 }}
-                className={`group relative bg-gradient-to-br ${action.gradient} rounded-2xl p-6 text-white overflow-hidden shadow-lg hover:shadow-2xl transition-all`}
+                whileHover={{ scale: 1.03, y: -4 }}
+                className="group cursor-pointer"
               >
-                <div className="relative z-10">
-                  <action.icon className="w-8 h-8 mb-3" />
-                  <p className="font-semibold text-sm">{action.title}</p>
-                </div>
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500" />
-              </motion.a>
+                <Link
+                  href={action.action}
+                  className={`relative block bg-gradient-to-br ${action.bg} rounded-2xl p-6 text-white overflow-hidden shadow-lg hover:shadow-2xl transition-all`}
+                >
+                  <div className="relative z-10">
+                    <action.icon className="w-8 h-8 mb-3" />
+                    <p className="font-semibold text-sm">{action.title}</p>
+                  </div>
+                  <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-500" />
+                </Link>
+              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -364,34 +369,34 @@ export default function VaultPage() {
             transition={{ delay: 0.4 }}
             className="lg:col-span-2 bg-card rounded-2xl border border-border p-6"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Clock className="w-5 h-5 text-indigo-500" />
+                <Target className="w-5 h-5 text-blue-500" />
                 {t("القادم", "Next Up")}
               </h2>
-              <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium">
+              <span className="text-xs px-3 py-1.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium border border-blue-500/20">
                 {nextUp.length} {t("مهام", "tasks")}
               </span>
             </div>
 
             {nextUp.length > 0 ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {nextUp.slice(0, 5).map((plan, i) => (
                   <motion.div
                     key={plan.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + i * 0.05 }}
-                    className="flex items-center justify-between p-3 rounded-xl border border-border hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-500/5 transition-all group cursor-pointer"
+                    className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div
                         className={`w-2 h-2 rounded-full ${
                           plan.category === "meeting"
-                            ? "bg-sky-500"
+                            ? "bg-orange-500"
                             : plan.category === "grocery"
-                              ? "bg-rose-500"
-                              : "bg-indigo-500"
+                              ? "bg-teal-500"
+                              : "bg-blue-500"
                         }`}
                       />
                       <p className="text-sm font-medium truncate">
@@ -404,8 +409,8 @@ export default function VaultPage() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center mb-4">
-                  <CheckSquare className="w-8 h-8 text-indigo-500" />
+                <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 border border-blue-500/20">
+                  <CheckSquare className="w-8 h-8 text-blue-500" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   {t("لا توجد مهام قادمة", "No upcoming tasks")}
@@ -431,15 +436,15 @@ export default function VaultPage() {
           transition={{ delay: 0.5 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <ImageIcon className="w-5 h-5 text-rose-500" />
+              <ImageIcon className="w-5 h-5 text-orange-500" />
               {t("ذكريات حديثة", "Recent Memories")}
             </h2>
             <Button
               size="sm"
               onClick={handleAddNewMemory}
-              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
+              className="bg-orange-500 hover:bg-orange-600"
             >
               <Plus className="w-4 h-4 mr-2" />
               {t("جديد", "New")}
@@ -454,8 +459,8 @@ export default function VaultPage() {
             </div>
           ) : memories.length === 0 ? (
             <div className="bg-card rounded-2xl border-2 border-dashed border-border p-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4">
-                <ImageIcon className="w-8 h-8 text-rose-500" />
+              <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
+                <ImageIcon className="w-8 h-8 text-orange-500" />
               </div>
               <h3 className="font-semibold mb-1">
                 {t("لا توجد ذكريات", "No memories yet")}
@@ -466,7 +471,7 @@ export default function VaultPage() {
               <Button
                 size="sm"
                 onClick={handleAddNewMemory}
-                className="bg-gradient-to-r from-rose-500 to-pink-500"
+                className="bg-orange-500 hover:bg-orange-600"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 {t("إضافة ذكرى", "Add Memory")}
@@ -481,7 +486,7 @@ export default function VaultPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.6 + i * 0.1 }}
                   whileHover={{ scale: 1.05, y: -5 }}
-                  className="group relative aspect-square rounded-2xl bg-gradient-to-br from-muted to-muted/50 overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all"
+                  className="group relative aspect-square rounded-2xl bg-muted overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all border border-border"
                 >
                   {memory.type === "photo" && memory.content_url && (
                     <img
@@ -491,7 +496,7 @@ export default function VaultPage() {
                     />
                   )}
                   {memory.type === "text" && (
-                    <div className="absolute inset-0 p-4 flex items-center justify-center text-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+                    <div className="absolute inset-0 p-4 flex items-center justify-center text-center bg-gradient-to-br from-blue-500/10 to-teal-500/10">
                       <p className="text-sm line-clamp-4 font-medium">
                         {memory.description || memory.title}
                       </p>
