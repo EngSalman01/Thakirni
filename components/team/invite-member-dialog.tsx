@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus, Mail, Shield, User, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 interface InviteMemberDialogProps {
@@ -49,8 +49,6 @@ export function InviteMemberDialog({
     setIsLoading(true);
 
     try {
-      // Note: For now, using email as userId
-      // In a real app, you'd look up the user by email first
       const result = await inviteMember(teamId, email, role);
 
       if (result.error) {
@@ -60,7 +58,6 @@ export function InviteMemberDialog({
         setEmail("");
         setRole("member");
         onOpenChange(false);
-        // Refresh the page to show new member
         window.location.reload();
       }
     } catch (error) {
@@ -71,62 +68,110 @@ export function InviteMemberDialog({
     }
   };
 
+  const roleOptions = [
+    {
+      value: "viewer",
+      label: "Viewer",
+      description: "Can only view team content",
+      icon: Eye,
+      color: "text-slate-600 dark:text-slate-400",
+    },
+    {
+      value: "member",
+      label: "Member",
+      description: "Can create and edit tasks",
+      icon: User,
+      color: "text-cyan-600 dark:text-cyan-400",
+    },
+    {
+      value: "admin",
+      label: "Admin",
+      description: "Can manage team and members",
+      icon: Shield,
+      color: "text-violet-600 dark:text-violet-400",
+    },
+  ];
+
+  const selectedRole = roleOptions.find((r) => r.value === role);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5" />
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center">
+              <UserPlus className="w-5 h-5 text-white" />
+            </div>
             Invite Team Member
           </DialogTitle>
           <DialogDescription>
-            Send an invitation to join your team. They'll receive access based
-            on the role you assign.
+            Send an invitation to collaborate on this team. They'll get access
+            based on their assigned role.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-5 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="colleague@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                required
-              />
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email Address
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="colleague@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  required
+                  className="pl-10"
+                />
+              </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="role">Role</Label>
+            <div className="grid gap-3">
+              <Label htmlFor="role" className="text-sm font-medium">
+                Role & Permissions
+              </Label>
               <Select
                 value={role}
                 onValueChange={(value: any) => setRole(value)}
                 disabled={isLoading}
               >
-                <SelectTrigger id="role">
+                <SelectTrigger id="role" className="h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="viewer">Viewer - Can only view</SelectItem>
-                  <SelectItem value="member">
-                    Member - Can edit tasks
-                  </SelectItem>
-                  <SelectItem value="admin">Admin - Can manage team</SelectItem>
+                  {roleOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        <option.icon className={`w-4 h-4 ${option.color}`} />
+                        <span className="font-medium">{option.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                {role === "admin" && "Can manage members and projects"}
-                {role === "member" && "Can create and edit tasks"}
-                {role === "viewer" && "Read-only access to team content"}
-              </p>
+
+              {selectedRole && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/50 border border-border">
+                  <selectedRole.icon
+                    className={`w-4 h-4 mt-0.5 ${selectedRole.color}`}
+                  />
+                  <div>
+                    <p className="text-sm font-medium">{selectedRole.label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedRole.description}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:gap-0">
             <Button
               type="button"
               variant="outline"
@@ -135,7 +180,11 @@ export function InviteMemberDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500"
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Invitation
             </Button>
