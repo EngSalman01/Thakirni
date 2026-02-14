@@ -1,7 +1,16 @@
-import { redirect, notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getTeamDetails, getTeamMembers } from "@/app/actions/teams";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import {
+  getTeamDetails,
+  getTeamMembers,
+  removeMember,
+} from "@/app/actions/teams";
 import { getTeamProjects } from "@/app/actions/projects";
+import { InviteMemberDialog } from "@/components/team/invite-member-dialog";
+import { CreateProjectDialog } from "@/components/team/create-project-dialog";
 import {
   Card,
   CardContent,
@@ -23,57 +32,93 @@ import {
   CheckCircle,
   XCircle,
   FolderKanban,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
-export default async function TeamSettingsPage({
+export default function TeamSettingsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const supabase = await createClient();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [team, setTeam] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string>("");
+  const [members, setMembers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [createProjectDialogOpen, setCreateProjectDialogOpen] = useState(false);
 
-  // Check authentication
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/auth");
-  }
+        if (!user) {
+          router.push("/auth");
+          return;
+        }
 
-  // Fetch team details
-  const teamResult = await getTeamDetails(params.id);
-  if (teamResult.error || !teamResult.data) {
-    notFound();
-  }
+        // Fetch team details
+        const teamResult = await getTeamDetails(params.id);
+        if (teamResult.error || !teamResult.data) {
+          router.push("/vault");
+          return;
+        }
 
-  const team = teamResult.data;
-  const userRole = teamResult.userRole;
+        setTeam(teamResult.data);
+        setUserRole(teamResult.userRole || "");
 
-  // Fetch team members
-  const membersResult = await getTeamMembers(params.id);
-  const members = membersResult.data || [];
+        // Fetch members
+        const membersResult = await getTeamMembers(params.id);
+        setMembers(membersResult.data || []);
 
-  // Fetch projects
-  const projectsResult = await getTeamProjects(params.id);
-  const projects = projectsResult.data || [];
+        // Fetch projects
+        const projectsResult = await getTeamProjects(params.id);
+        setProjects(projectsResult.data || []);
+      } catch (error) {
+        console.error("Error fetching team data:", error);
+        toast.error("Failed to load team data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Helper functions
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "owner":
-        return <Crown className="w-4 h-4 text-yellow-600" />;
-      case "admin":
-        return <Shield className="w-4 h-4 text-blue-600" />;
-      case "member":
-        return <User className="w-4 h-4 text-muted-foreground" />;
-      case "viewer":
-        return <Eye className="w-4 h-4 text-muted-foreground" />;
-      default:
-        return null;
+    fetchData();
+  }, [params.id, router]);
+
+  const handleRemoveMember = async (userId: string) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+
+    try {
+      const result = await removeMember(params.id, userId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Member removed successfully");
+        // Refresh members
+        const membersResult = await getTeamMembers(params.id);
+        setMembers(membersResult.data || []);
+      }
+    } catch (error) {
+      toast.error("Failed to remove member");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!team) return null;
 
   const getRoleBadge = (role: string) => {
     const variants: Record<string, string> = {
@@ -262,7 +307,9 @@ export default async function TeamSettingsPage({
 
               {(userRole === "owner" || userRole === "admin") &&
                 team.subscription_status === "active" && (
-                  <Button>Invite Member</Button>
+                  <Button onClick={() => setInviteDialogOpen(true)}>
+                    Invite Member
+                  </Button>
                 )}
             </div>
           </CardHeader>
@@ -300,7 +347,11 @@ export default async function TeamSettingsPage({
                     {getRoleBadge(member.role)}
 
                     {userRole === "owner" && member.role !== "owner" && (
-                      <Button variant="ghost" size="sm">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveMember(member.user_id)}
+                      >
                         Remove
                       </Button>
                     )}
@@ -326,7 +377,9 @@ export default async function TeamSettingsPage({
               </div>
 
               {(userRole === "owner" || userRole === "admin") && (
-                <Button>Create Project</Button>
+                <Button onClick={() => setCreateProjectDialogOpen(true)}>
+                  Create Project
+                </Button>
               )}
             </div>
           </CardHeader>
@@ -363,6 +416,19 @@ export default async function TeamSettingsPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialogs */}
+      <InviteMemberDialog
+        open={inviteDialogOpen}
+        onOpenChange={setInviteDialogOpen}
+        teamId={params.id}
+      />
+
+      <CreateProjectDialog
+        open={createProjectDialogOpen}
+        onOpenChange={setCreateProjectDialogOpen}
+        teamId={params.id}
+      />
     </div>
   );
 }
