@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getTeamDetails, getTeamMembers, removeMember } from "@/app/actions/teams";
+import {
+  getTeamDetails,
+  getTeamMembers,
+  removeMember,
+} from "@/app/actions/teams";
 import { getTeamProjects } from "@/app/actions/projects";
 import { InviteMemberDialog } from "@/components/team/invite-member-dialog";
 import { CreateProjectDialog } from "@/components/team/create-project-dialog";
@@ -55,7 +59,9 @@ export default function TeamSettingsPage({
     const fetchData = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
         if (!user) {
           router.push("/auth");
@@ -122,17 +128,42 @@ export default function TeamSettingsPage({
   if (!team) return null;
 
   const getRoleBadge = (role: string) => {
-    const config: Record<string, { bg: string; text: string; icon: any; border: string }> = {
-      owner: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-500", icon: Crown, border: "border-amber-500/20" },
-      admin: { bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-500", icon: Shield, border: "border-blue-500/20" },
-      member: { bg: "bg-teal-500/10", text: "text-teal-600 dark:text-teal-500", icon: UserIcon, border: "border-teal-500/20" },
-      viewer: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", icon: Eye, border: "border-slate-500/20" },
+    const config: Record<
+      string,
+      { bg: string; text: string; icon: any; border: string }
+    > = {
+      owner: {
+        bg: "bg-amber-500/10",
+        text: "text-amber-600 dark:text-amber-500",
+        icon: Crown,
+        border: "border-amber-500/20",
+      },
+      admin: {
+        bg: "bg-blue-500/10",
+        text: "text-blue-600 dark:text-blue-500",
+        icon: Shield,
+        border: "border-blue-500/20",
+      },
+      member: {
+        bg: "bg-teal-500/10",
+        text: "text-teal-600 dark:text-teal-500",
+        icon: UserIcon,
+        border: "border-teal-500/20",
+      },
+      viewer: {
+        bg: "bg-slate-500/10",
+        text: "text-slate-600 dark:text-slate-400",
+        icon: Eye,
+        border: "border-slate-500/20",
+      },
     };
 
     const { bg, text, icon: Icon, border } = config[role] || config.member;
 
     return (
-      <Badge className={`${bg} ${text} ${border} border flex items-center gap-1.5 px-3 py-1`}>
+      <Badge
+        className={`${bg} ${text} ${border} border flex items-center gap-1.5 px-3 py-1`}
+      >
         <Icon className="w-3.5 h-3.5" />
         {role.charAt(0).toUpperCase() + role.slice(1)}
       </Badge>
@@ -221,9 +252,13 @@ export default function TeamSettingsPage({
                       Subscription Required
                     </h3>
                     <p className="text-sm text-muted-foreground mb-3">
-                      Your team's subscription is inactive. Renew to restore access for all members.
-                    </h3>
-                    <Button size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20">
+                      Your team's subscription is inactive. Renew to restore
+                      access for all members.
+                    </p>
+                    <Button
+                      size="sm"
+                      className="bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20"
+                    >
                       Renew Now
                     </Button>
                   </div>
@@ -262,7 +297,9 @@ export default function TeamSettingsPage({
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{projects.length}</p>
-                  <p className="text-xs text-muted-foreground">Active Projects</p>
+                  <p className="text-xs text-muted-foreground">
+                    Active Projects
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -363,13 +400,18 @@ export default function TeamSettingsPage({
                         Team Members
                       </CardTitle>
                       <CardDescription>
-                        {members.length} of {team.tier === "starter" ? "5" : "unlimited"} members
+                        {members.length} of{" "}
+                        {team.tier === "starter" ? "5" : "unlimited"} members
                       </CardDescription>
                     </div>
 
                     {(userRole === "owner" || userRole === "admin") &&
                       team.subscription_status === "active" && (
-                        <Button size="sm" onClick={() => setInviteDialogOpen(true)} className="bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20">
+                        <Button
+                          size="sm"
+                          onClick={() => setInviteDialogOpen(true)}
+                          className="bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20"
+                        >
                           <Users className="w-4 h-4 mr-2" />
                           Invite
                         </Button>
@@ -438,11 +480,17 @@ export default function TeamSettingsPage({
                         <FolderKanban className="w-5 h-5 text-orange-500" />
                         Projects
                       </CardTitle>
-                      <CardDescription>Organize work into projects</CardDescription>
+                      <CardDescription>
+                        Organize work into projects
+                      </CardDescription>
                     </div>
 
                     {(userRole === "owner" || userRole === "admin") && (
-                      <Button size="sm" onClick={() => setCreateProjectDialogOpen(true)} className="bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20">
+                      <Button
+                        size="sm"
+                        onClick={() => setCreateProjectDialogOpen(true)}
+                        className="bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20"
+                      >
                         <FolderKanban className="w-4 h-4 mr-2" />
                         New Project
                       </Button>
@@ -469,7 +517,7 @@ export default function TeamSettingsPage({
                             />
                             <h3 className="font-semibold text-sm group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                               {project.name}
-                            </p>
+                            </h3>
                           </div>
                           {project.description && (
                             <p className="text-xs text-muted-foreground line-clamp-2">
