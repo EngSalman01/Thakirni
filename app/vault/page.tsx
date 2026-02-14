@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   VaultSidebar,
   MobileMenuButton,
@@ -18,9 +18,15 @@ import {
   Plus,
   Upload,
   ImageIcon,
-  Mic,
   FileText,
-  MessageSquare,
+  Cat,
+  CheckSquare,
+  ShoppingBag,
+  Users,
+  TrendingUp,
+  Sparkles,
+  ArrowRight,
+  Zap,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -29,7 +35,6 @@ import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
 import { DailySummary } from "@/components/thakirni/daily-summary";
 
-// Dynamic import to prevent SSR issues with AI SDK
 const AIChat = dynamic(
   () =>
     import("@/components/thakirni/ai-chat").then((mod) => ({
@@ -38,8 +43,12 @@ const AIChat = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[500px] bg-card rounded-xl border border-border flex items-center justify-center">
-        <div className="text-muted-foreground">Loading chat...</div>
+      <div className="h-[500px] bg-gradient-to-br from-card to-card/50 rounded-2xl border border-border flex items-center justify-center backdrop-blur-sm">
+        <div className="text-muted-foreground flex items-center gap-2">
+          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
+          <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse [animation-delay:0.2s]" />
+          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse [animation-delay:0.4s]" />
+        </div>
       </div>
     ),
   },
@@ -53,6 +62,17 @@ export default function VaultPage() {
   const [isDragOver, setIsDragOver] = useState(false);
   const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentHour, setCurrentHour] = useState(new Date().getHours());
+
+  useEffect(() => {
+    setCurrentHour(new Date().getHours());
+  }, []);
+
+  const getGreeting = () => {
+    if (currentHour < 12) return t("صباح الخير", "Good morning");
+    if (currentHour < 18) return t("مساء الخير", "Good afternoon");
+    return t("مساء الخير", "Good evening");
+  };
 
   const processFiles = useCallback(
     async (files: File[]) => {
@@ -141,7 +161,6 @@ export default function VaultPage() {
     [processFiles],
   );
 
-  // Persist Friday Reminder
   const [fridayReminder, setFridayReminder] = useState(true);
 
   useEffect(() => {
@@ -165,9 +184,29 @@ export default function VaultPage() {
     fileInputRef.current?.click();
   };
 
+  const quickActions = [
+    {
+      title: t("مهمة جديدة", "New Task"),
+      icon: CheckSquare,
+      gradient: "from-indigo-500 to-indigo-600",
+      action: "/vault/plans",
+    },
+    {
+      title: t("اجتماع", "Meeting"),
+      icon: Calendar,
+      gradient: "from-sky-500 to-sky-600",
+      action: "/vault/calendar",
+    },
+    {
+      title: t("مقضى", "Grocery"),
+      icon: ShoppingBag,
+      gradient: "from-rose-500 to-rose-600",
+      action: "/vault/plans",
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Hidden File Input */}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-indigo-500/5">
       <input
         type="file"
         multiple
@@ -177,394 +216,307 @@ export default function VaultPage() {
         accept="image/*,audio/*,.pdf,.doc,.docx"
       />
 
-      {/* Sidebar */}
       <VaultSidebar />
 
-      {/* Main content - responsive margin */}
-      <main className="lg:me-64 p-4 md:p-6 lg:p-8 transition-all duration-300">
-        {/* Header */}
+      <main className="lg:me-64 p-4 md:p-8 transition-all duration-300">
+        {/* Hero Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-6 md:mb-8"
+          className="mb-8"
         >
-          <div className="flex items-center gap-3">
-            <MobileMenuButton />
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">
-                {t("مرحباً بك في ذكرني", "Welcome to Thakirni")}
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
-                {t(
-                  "ذاكرتك الثانية لحفظ كل اللحظات",
-                  "Your second brain to preserve every moment",
-                )}
-              </p>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <MobileMenuButton />
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 bg-clip-text text-transparent">
+                  {getGreeting()}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {new Date().toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-1 md:gap-2">
-            <span className="hidden sm:inline-flex">
-              <LanguageToggle />
-            </span>
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="icon"
-              className="bg-transparent relative"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -end-1 w-2 h-2 bg-primary rounded-full" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex">
+                <LanguageToggle />
+              </span>
+              <ThemeToggle />
+              <Button
+                variant="outline"
+                size="icon"
+                className="relative border-indigo-200 dark:border-indigo-900"
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute -top-1 -end-1 w-2.5 h-2.5 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full animate-pulse" />
+              </Button>
+            </div>
           </div>
         </motion.div>
 
-        {/* Quick Add Bar */}
+        {/* Quick Stats Bar */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 md:mb-8"
+          transition={{ delay: 0.1 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const form = e.currentTarget;
-              const input = form.elements.namedItem(
-                "planTitle",
-              ) as HTMLInputElement;
-              if (!input || !input.value.trim()) return;
+          <div className="bg-gradient-to-br from-indigo-500/10 to-indigo-600/10 rounded-2xl p-4 border border-indigo-200 dark:border-indigo-900/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <CheckSquare className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{stats.todayReminders}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("مهام اليوم", "Today's Tasks")}
+                </p>
+              </div>
+            </div>
+          </div>
 
-              const val = input.value.toLowerCase();
-              let category: "task" | "meeting" | "grocery" = "task";
-              if (
-                val.includes("meeting") ||
-                val.includes("mo3ad") ||
-                val.includes("موع") ||
-                val.includes("قاب")
-              )
-                category = "meeting";
-              if (
-                val.includes("buy") ||
-                val.includes("shary") ||
-                val.includes("شرا") ||
-                val.includes("جب")
-              )
-                category = "grocery";
+          <div className="bg-gradient-to-br from-rose-500/10 to-rose-600/10 rounded-2xl p-4 border border-rose-200 dark:border-rose-900/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                <ImageIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{memories.length}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("ذكريات", "Memories")}
+                </p>
+              </div>
+            </div>
+          </div>
 
-              addPlan({
-                title: input.value,
-                category,
-                status: "pending",
-                is_recurring: false,
-                priority: "medium",
-                reminder_date: new Date().toISOString(),
-              });
-              input.value = "";
-              toast.success(t("تمت الإضافة", "Added"));
-            }}
-            className="flex gap-2 p-1.5 bg-card border border-border rounded-2xl shadow-sm focus-within:ring-2 ring-primary/20 transition-all"
-          >
-            <input
-              name="planTitle"
-              className="flex-1 bg-transparent px-3 md:px-4 border-none outline-none text-foreground placeholder-muted-foreground text-sm md:text-base min-w-0"
-              placeholder={t(
-                "ما الذي تريد تذكره؟",
-                "What do you want to remember?",
-              )}
-            />
-            <Button
-              type="submit"
-              size="sm"
-              className="rounded-xl px-4 md:px-6 shrink-0"
-            >
-              {t("إضافة", "Add")}
-            </Button>
-          </form>
+          <div className="bg-gradient-to-br from-purple-500/10 to-purple-600/10 rounded-2xl p-4 border border-purple-200 dark:border-purple-900/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">24</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("معدل الإنجاز", "Completion")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-sky-500/10 to-sky-600/10 rounded-2xl p-4 border border-sky-200 dark:border-sky-900/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">12</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("نشاط", "Streak")}
+                </p>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Morning Briefing Widget */}
-        <div className="mb-6 md:mb-8">
-          <DailySummary />
-        </div>
-
-        {/* Stats & Agenda */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-          {/* Stat Cards */}
-          <div className="bg-card rounded-xl p-3 md:p-4 border border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                <ImageIcon className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xl md:text-2xl font-bold">
-                  {memories.length}
-                </p>
-                <p className="text-[11px] md:text-xs text-muted-foreground truncate">
-                  {t("ذكرياتي", "Memories")}
-                </p>
-              </div>
-            </div>
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-indigo-500" />
+            {t("إجراءات سريعة", "Quick Actions")}
+          </h2>
+          <div className="grid grid-cols-3 gap-4">
+            {quickActions.map((action, i) => (
+              <motion.a
+                key={i}
+                href={action.action}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className={`group relative bg-gradient-to-br ${action.gradient} rounded-2xl p-6 text-white overflow-hidden shadow-lg hover:shadow-2xl transition-all`}
+              >
+                <div className="relative z-10">
+                  <action.icon className="w-8 h-8 mb-3" />
+                  <p className="font-semibold text-sm">{action.title}</p>
+                </div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500" />
+              </motion.a>
+            ))}
           </div>
+        </motion.div>
 
-          <div className="bg-card rounded-xl p-3 md:p-4 border border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                <Clock className="w-4 h-4 md:w-5 md:h-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xl md:text-2xl font-bold">
-                  {stats.todayReminders}
-                </p>
-                <p className="text-[11px] md:text-xs text-muted-foreground truncate">
-                  {t("تذكيرات اليوم", "Today")}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Agenda Card */}
-          <div className="col-span-2 bg-card rounded-xl p-3 md:p-4 border border-border relative overflow-hidden">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold flex items-center gap-2 text-sm md:text-base">
-                <Calendar className="w-4 h-4 text-green-500" />
+        {/* Main Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+          {/* Next Up */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="lg:col-span-2 bg-card rounded-2xl border border-border p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Clock className="w-5 h-5 text-indigo-500" />
                 {t("القادم", "Next Up")}
-              </h3>
-              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                {nextUp.length}
+              </h2>
+              <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-medium">
+                {nextUp.length} {t("مهام", "tasks")}
               </span>
             </div>
 
             {nextUp.length > 0 ? (
-              <div className="space-y-1.5 md:space-y-2">
-                {nextUp.map((plan) => (
-                  <div
-                    key={plan.id}
-                    className="flex items-center justify-between p-1.5 md:p-2 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm"
-                  >
-                    <div className="flex items-center gap-2 truncate">
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${plan.category === "meeting" ? "bg-blue-500" : "bg-amber-500"}`}
-                      />
-                      <span className="truncate text-xs md:text-sm">
-                        {plan.title}
-                      </span>
-                    </div>
-                    <span className="text-[10px] opacity-70 whitespace-nowrap ms-2">
-                      {plan.reminder_date
-                        ? new Date(plan.reminder_date).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "Today"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-16 md:h-20 text-xs text-muted-foreground">
-                {t("لا توجد مواعيد قادمة", "No upcoming plans")}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-          {/* Main Content - Memory Stream */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="lg:col-span-2 bg-card rounded-xl border border-border p-4 md:p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base md:text-lg font-semibold text-foreground flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-primary" />
-                {t("ذكرياتي الأخيرة", "Recent Memories")}
-              </h2>
-              <Button
-                size="sm"
-                className="gap-1.5 md:gap-2"
-                onClick={handleAddNewMemory}
-              >
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">
-                  {t("ذكرى جديدة", "New Memory")}
-                </span>
-                <span className="sm:hidden">{t("جديد", "New")}</span>
-              </Button>
-            </div>
-
-            {isLoading ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <Skeleton key={i} className="aspect-square rounded-lg" />
-                ))}
-              </div>
-            ) : memories.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                  <ImageIcon className="w-8 h-8 text-muted-foreground/50" />
-                </div>
-                <h3 className="text-base font-medium text-foreground mb-1">
-                  {t("لا توجد ذكريات بعد", "No memories yet")}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {t(
-                    "ابدأ بإضافة أول ذكرى لك",
-                    "Start by adding your first memory",
-                  )}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddNewMemory}
-                  className="bg-transparent"
-                >
-                  <Plus className="w-4 h-4 me-2" />
-                  {t("أضف ذكرى", "Add Memory")}
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                {memories.slice(0, 6).map((memory, i) => (
+              <div className="space-y-2">
+                {nextUp.slice(0, 5).map((plan, i) => (
                   <motion.div
-                    key={memory.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="relative group aspect-square rounded-lg bg-muted overflow-hidden flex flex-col"
+                    key={plan.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.05 }}
+                    className="flex items-center justify-between p-3 rounded-xl border border-border hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-500/5 transition-all group cursor-pointer"
                   >
-                    <div className="flex-1 relative">
-                      {memory.type === "photo" && memory.content_url && (
-                        <img
-                          src={memory.content_url}
-                          alt={memory.title || ""}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      {memory.type === "voice" && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-900/20 p-2">
-                          <Mic className="w-8 h-8 text-foreground/70 mb-2" />
-                          <audio
-                            controls
-                            src={memory.content_url}
-                            className="w-full h-8 max-w-[140px] opacity-70 hover:opacity-100 transition-opacity"
-                          />
-                        </div>
-                      )}
-                      {memory.type === "text" && (
-                        <div className="absolute inset-0 p-3 md:p-4 flex items-center justify-center text-center bg-primary/5">
-                          <p className="text-xs line-clamp-4 font-medium">
-                            {memory.description || memory.title}
-                          </p>
-                        </div>
-                      )}
-
-                      {!memory.content_url && memory.type !== "text" && (
-                        <div className="flex items-center justify-center w-full h-full">
-                          <FileText className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-
-                      <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
-                        <p className="text-xs text-white truncate font-medium">
-                          {memory.title}
-                        </p>
-                        <p className="text-[10px] text-white/70">
-                          {memory.hijri_date}
-                        </p>
-                      </div>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          plan.category === "meeting"
+                            ? "bg-sky-500"
+                            : plan.category === "grocery"
+                              ? "bg-rose-500"
+                              : "bg-indigo-500"
+                        }`}
+                      />
+                      <p className="text-sm font-medium truncate">
+                        {plan.title}
+                      </p>
                     </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                   </motion.div>
                 ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center mb-4">
+                  <CheckSquare className="w-8 h-8 text-indigo-500" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t("لا توجد مهام قادمة", "No upcoming tasks")}
+                </p>
               </div>
             )}
           </motion.div>
 
-          {/* Side Cards */}
-          <div className="space-y-4 md:space-y-6">
-            {/* Friday Reminders */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-card rounded-xl border border-border p-4 md:p-6"
+          {/* Daily Summary */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            <DailySummary />
+          </motion.div>
+        </div>
+
+        {/* Recent Memories */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-rose-500" />
+              {t("ذكريات حديثة", "Recent Memories")}
+            </h2>
+            <Button
+              size="sm"
+              onClick={handleAddNewMemory}
+              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600"
             >
-              <h3 className="text-base md:text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-primary" />
-                {t("تذكيرات الجمعة", "Friday Reminders")}
+              <Plus className="w-4 h-4 mr-2" />
+              {t("جديد", "New")}
+            </Button>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="aspect-square rounded-2xl" />
+              ))}
+            </div>
+          ) : memories.length === 0 ? (
+            <div className="bg-card rounded-2xl border-2 border-dashed border-border p-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4">
+                <ImageIcon className="w-8 h-8 text-rose-500" />
+              </div>
+              <h3 className="font-semibold mb-1">
+                {t("لا توجد ذكريات", "No memories yet")}
               </h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">
-                      {t("رسالة جمعة مباركة", "Jumma Mubarak Message")}
+              <p className="text-sm text-muted-foreground mb-4">
+                {t("ابدأ بإضافة أول ذكرى", "Start by adding your first memory")}
+              </p>
+              <Button
+                size="sm"
+                onClick={handleAddNewMemory}
+                className="bg-gradient-to-r from-rose-500 to-pink-500"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t("إضافة ذكرى", "Add Memory")}
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {memories.slice(0, 4).map((memory, i) => (
+                <motion.div
+                  key={memory.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + i * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="group relative aspect-square rounded-2xl bg-gradient-to-br from-muted to-muted/50 overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all"
+                >
+                  {memory.type === "photo" && memory.content_url && (
+                    <img
+                      src={memory.content_url}
+                      alt={memory.title || ""}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  {memory.type === "text" && (
+                    <div className="absolute inset-0 p-4 flex items-center justify-center text-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+                      <p className="text-sm line-clamp-4 font-medium">
+                        {memory.description || memory.title}
+                      </p>
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                    <p className="text-xs text-white font-medium truncate">
+                      {memory.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t(
-                        "إرسال تلقائي لمجموعة العائلة",
-                        "Auto-send to family group",
-                      )}
+                    <p className="text-[10px] text-white/70">
+                      {memory.hijri_date}
                     </p>
                   </div>
-                  <Switch
-                    checked={fridayReminder}
-                    onCheckedChange={handleFridayToggle}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t(
-                    'سيتم إرسال رسالة "جمعة مباركة" تلقائياً كل يوم جمعة الساعة ١٠ صباحاً',
-                    "A 'Jumma Mubarak' message will be sent automatically every Friday at 10 AM",
-                  )}
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Quick Upload */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className={`bg-card rounded-xl border-2 border-dashed p-4 md:p-6 transition-colors ${
-                isDragOver ? "border-primary bg-primary/5" : "border-border"
-              }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              <div className="text-center">
-                <Upload
-                  className={`w-10 h-10 mx-auto mb-3 ${isDragOver ? "text-primary" : "text-muted-foreground"}`}
-                />
-                <h3 className="text-sm font-medium text-foreground mb-1">
-                  {t("رفع سريع", "Quick Upload")}
-                </h3>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {t(
-                    "اسحب الملفات هنا أو اضغط للاختيار",
-                    "Drag files here or click to select",
-                  )}
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-transparent"
-                  onClick={handleAddNewMemory}
-                >
-                  {t("اختر ملفات", "Select Files")}
-                </Button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
 
         {/* AI Chat */}
         <motion.div
           id="ai-chat"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.7 }}
         >
           <AIChat />
         </motion.div>
