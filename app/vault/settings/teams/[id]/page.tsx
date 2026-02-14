@@ -2,12 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import {
-  getTeamDetails,
-  getTeamMembers,
-  removeMember,
-} from "@/app/actions/teams";
+import { create Client } from "@/lib/supabase/client";
+import { getTeamDetails, getTeamMembers, removeMember } from "@/app/actions/teams";
 import { getTeamProjects } from "@/app/actions/projects";
 import { InviteMemberDialog } from "@/components/team/invite-member-dialog";
 import { CreateProjectDialog } from "@/components/team/create-project-dialog";
@@ -59,9 +55,7 @@ export default function TeamSettingsPage({
     const fetchData = async () => {
       try {
         const supabase = createClient();
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) {
           router.push("/auth");
@@ -112,12 +106,12 @@ export default function TeamSettingsPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-indigo-500/5 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="flex gap-2">
-            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" />
-            <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce [animation-delay:0.2s]" />
-            <div className="w-3 h-3 bg-rose-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" />
+            <div className="w-3 h-3 bg-orange-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+            <div className="w-3 h-3 bg-teal-500 rounded-full animate-bounce [animation-delay:0.4s]" />
           </div>
           <p className="text-sm text-muted-foreground">Loading team...</p>
         </div>
@@ -128,42 +122,17 @@ export default function TeamSettingsPage({
   if (!team) return null;
 
   const getRoleBadge = (role: string) => {
-    const config: Record<
-      string,
-      { bg: string; text: string; icon: any; border: string }
-    > = {
-      owner: {
-        bg: "bg-gradient-to-r from-amber-500/10 to-orange-500/10",
-        text: "text-amber-600 dark:text-amber-500",
-        icon: Crown,
-        border: "border-amber-200 dark:border-amber-900",
-      },
-      admin: {
-        bg: "bg-gradient-to-r from-indigo-500/10 to-purple-500/10",
-        text: "text-indigo-600 dark:text-indigo-500",
-        icon: Shield,
-        border: "border-indigo-200 dark:border-indigo-900",
-      },
-      member: {
-        bg: "bg-gradient-to-r from-sky-500/10 to-sky-600/10",
-        text: "text-sky-600 dark:text-sky-500",
-        icon: UserIcon,
-        border: "border-sky-200 dark:border-sky-900",
-      },
-      viewer: {
-        bg: "bg-slate-500/10",
-        text: "text-slate-600 dark:text-slate-500",
-        icon: Eye,
-        border: "border-slate-200 dark:border-slate-900",
-      },
+    const config: Record<string, { bg: string; text: string; icon: any; border: string }> = {
+      owner: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-500", icon: Crown, border: "border-amber-500/20" },
+      admin: { bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-500", icon: Shield, border: "border-blue-500/20" },
+      member: { bg: "bg-teal-500/10", text: "text-teal-600 dark:text-teal-500", icon: UserIcon, border: "border-teal-500/20" },
+      viewer: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", icon: Eye, border: "border-slate-500/20" },
     };
 
     const { bg, text, icon: Icon, border } = config[role] || config.member;
 
     return (
-      <Badge
-        className={`${bg} ${text} ${border} border flex items-center gap-1.5 px-3 py-1`}
-      >
+      <Badge className={`${bg} ${text} ${border} border flex items-center gap-1.5 px-3 py-1`}>
         <Icon className="w-3.5 h-3.5" />
         {role.charAt(0).toUpperCase() + role.slice(1)}
       </Badge>
@@ -173,7 +142,7 @@ export default function TeamSettingsPage({
   const getSubscriptionBadge = () => {
     if (team.subscription_status === "active") {
       return (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-green-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-900 w-fit">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 w-fit">
           <CheckCircle2 className="w-4 h-4" />
           <span className="text-sm font-medium">Active</span>
         </div>
@@ -182,7 +151,7 @@ export default function TeamSettingsPage({
 
     if (team.subscription_status === "trial") {
       return (
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-600 dark:text-indigo-500 border border-indigo-200 dark:border-indigo-900 w-fit">
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 w-fit">
           <Sparkles className="w-4 h-4" />
           <span className="text-sm font-medium">Trial</span>
         </div>
@@ -190,7 +159,7 @@ export default function TeamSettingsPage({
     }
 
     return (
-      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-rose-500/10 to-red-500/10 text-rose-600 dark:text-rose-500 border border-rose-200 dark:border-rose-900 w-fit">
+      <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 w-fit">
         <XCircle className="w-4 h-4" />
         <span className="text-sm font-medium">Inactive</span>
       </div>
@@ -207,7 +176,7 @@ export default function TeamSettingsPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-indigo-500/5">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
         {/* Header */}
         <motion.div
@@ -222,13 +191,13 @@ export default function TeamSettingsPage({
                 Back to Vault
               </Link>
             </Button>
-            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 bg-clip-text text-transparent flex items-center gap-3">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shrink-0 shadow-xl shadow-indigo-500/20">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground flex items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0 shadow-xl shadow-blue-500/30">
                 <Building2 className="w-7 h-7 text-white" />
               </div>
               {team.name}
             </h1>
-            <p className="text-muted-foreground flex items-center gap-2">
+            <p className="text-muted-foreground flex items-center gap-2 text-sm">
               <Users className="w-4 h-4" />
               Team settings and collaboration
             </p>
@@ -241,10 +210,10 @@ export default function TeamSettingsPage({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <Card className="border-rose-200 dark:border-rose-900 bg-gradient-to-r from-rose-500/5 to-pink-500/5">
+            <Card className="border-orange-500/30 bg-orange-500/5">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center shrink-0 shadow-lg shadow-rose-500/20">
+                  <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/30">
                     <AlertCircle className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -252,13 +221,9 @@ export default function TeamSettingsPage({
                       Subscription Required
                     </h3>
                     <p className="text-sm text-muted-foreground mb-3">
-                      Your team's subscription is inactive. Renew to restore
-                      access for all members.
-                    </p>
-                    <Button
-                      size="sm"
-                      className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-lg shadow-rose-500/20"
-                    >
+                      Your team's subscription is inactive. Renew to restore access for all members.
+                    </h3>
+                    <Button size="sm" className="bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20">
                       Renew Now
                     </Button>
                   </div>
@@ -275,10 +240,10 @@ export default function TeamSettingsPage({
           transition={{ delay: 0.1 }}
           className="grid sm:grid-cols-3 gap-4"
         >
-          <Card className="border-indigo-200 dark:border-indigo-900 bg-gradient-to-br from-indigo-500/5 to-transparent overflow-hidden">
+          <Card className="border-blue-500/20 bg-blue-500/5">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -289,26 +254,24 @@ export default function TeamSettingsPage({
             </CardContent>
           </Card>
 
-          <Card className="border-purple-200 dark:border-purple-900 bg-gradient-to-br from-purple-500/5 to-transparent overflow-hidden">
+          <Card className="border-orange-500/20 bg-orange-500/5">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+                <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/30">
                   <FolderKanban className="w-6 h-6 text-white" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{projects.length}</p>
-                  <p className="text-xs text-muted-foreground">
-                    Active Projects
-                  </p>
+                  <p className="text-xs text-muted-foreground">Active Projects</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-rose-200 dark:border-rose-900 bg-gradient-to-br from-rose-500/5 to-transparent overflow-hidden">
+          <Card className="border-teal-500/20 bg-teal-500/5">
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                <div className="w-12 h-12 rounded-xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -329,10 +292,10 @@ export default function TeamSettingsPage({
             transition={{ delay: 0.2 }}
             className="lg:col-span-1"
           >
-            <Card className="border-border/50">
+            <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-indigo-500" />
+                  <Building2 className="w-5 h-5 text-blue-500" />
                   Team Details
                 </CardTitle>
                 <CardDescription>Basic information</CardDescription>
@@ -375,7 +338,7 @@ export default function TeamSettingsPage({
                 </div>
 
                 {userRole === "owner" && (
-                  <Button className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/20">
+                  <Button className="w-full bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20">
                     Manage Billing
                   </Button>
                 )}
@@ -391,27 +354,22 @@ export default function TeamSettingsPage({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.25 }}
             >
-              <Card className="border-border/50">
+              <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <Users className="w-5 h-5 text-indigo-500" />
+                        <Users className="w-5 h-5 text-blue-500" />
                         Team Members
                       </CardTitle>
                       <CardDescription>
-                        {members.length} of{" "}
-                        {team.tier === "starter" ? "5" : "unlimited"} members
+                        {members.length} of {team.tier === "starter" ? "5" : "unlimited"} members
                       </CardDescription>
                     </div>
 
                     {(userRole === "owner" || userRole === "admin") &&
                       team.subscription_status === "active" && (
-                        <Button
-                          size="sm"
-                          onClick={() => setInviteDialogOpen(true)}
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/20"
-                        >
+                        <Button size="sm" onClick={() => setInviteDialogOpen(true)} className="bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/20">
                           <Users className="w-4 h-4 mr-2" />
                           Invite
                         </Button>
@@ -425,12 +383,12 @@ export default function TeamSettingsPage({
                         key={member.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between p-4 rounded-xl border border-border/50 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-500/5 transition-all group"
+                        className="flex items-center justify-between p-4 rounded-xl border border-border hover:border-blue-500/50 hover:bg-blue-500/5 transition-all group"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <Avatar className="w-10 h-10 border-2 border-background shadow-md">
                             <AvatarImage src={member.profile?.avatar_url} />
-                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white text-sm font-semibold">
+                            <AvatarFallback className="bg-blue-500 text-white text-sm font-semibold">
                               {member.profile?.full_name?.[0] || "U"}
                             </AvatarFallback>
                           </Avatar>
@@ -453,7 +411,7 @@ export default function TeamSettingsPage({
                               variant="ghost"
                               size="sm"
                               onClick={() => handleRemoveMember(member.user_id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity text-rose-600 hover:text-rose-500 hover:bg-rose-500/10"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity text-red-600 hover:text-red-500 hover:bg-red-500/10"
                             >
                               Remove
                             </Button>
@@ -472,25 +430,19 @@ export default function TeamSettingsPage({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="border-border/50">
+              <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-lg flex items-center gap-2">
-                        <FolderKanban className="w-5 h-5 text-purple-500" />
+                        <FolderKanban className="w-5 h-5 text-orange-500" />
                         Projects
                       </CardTitle>
-                      <CardDescription>
-                        Organize work into projects
-                      </CardDescription>
+                      <CardDescription>Organize work into projects</CardDescription>
                     </div>
 
                     {(userRole === "owner" || userRole === "admin") && (
-                      <Button
-                        size="sm"
-                        onClick={() => setCreateProjectDialogOpen(true)}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg shadow-purple-500/20"
-                      >
+                      <Button size="sm" onClick={() => setCreateProjectDialogOpen(true)} className="bg-orange-500 hover:bg-orange-600 shadow-lg shadow-orange-500/20">
                         <FolderKanban className="w-4 h-4 mr-2" />
                         New Project
                       </Button>
@@ -508,14 +460,14 @@ export default function TeamSettingsPage({
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: 0.35 + i * 0.05 }}
                           whileHover={{ scale: 1.03, y: -3 }}
-                          className="block p-4 border border-border/50 rounded-xl hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-lg hover:shadow-purple-500/10 transition-all group"
+                          className="block p-4 border border-border rounded-xl hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all group"
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <div
                               className="w-4 h-4 rounded-full shadow-sm"
                               style={{ backgroundColor: project.color }}
                             />
-                            <h3 className="font-semibold text-sm group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                            <h3 className="font-semibold text-sm group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                               {project.name}
                             </h3>
                           </div>
@@ -529,8 +481,8 @@ export default function TeamSettingsPage({
                     </div>
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mx-auto mb-4">
-                        <FolderKanban className="w-8 h-8 text-purple-500" />
+                      <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
+                        <FolderKanban className="w-8 h-8 text-orange-500" />
                       </div>
                       <p className="text-sm">No projects yet</p>
                     </div>
