@@ -91,18 +91,37 @@ FOR ALL USING (
 );
 
 -- Add policies for team_members table
+DROP POLICY IF EXISTS "View team members" ON team_members;
 CREATE POLICY "View team members" ON team_members
 FOR SELECT USING (
-    EXISTS (SELECT 1 FROM team_members WHERE team_id = team_members.team_id AND user_id = auth.uid())
+    EXISTS (
+        SELECT 1 FROM team_members tm 
+        WHERE tm.team_id = team_members.team_id 
+        AND tm.user_id = auth.uid()
+    )
 );
 
+DROP POLICY IF EXISTS "Team admins can manage members" ON team_members;
 CREATE POLICY "Team admins can manage members" ON team_members
 FOR ALL USING (
     EXISTS (
-        SELECT 1 FROM team_members 
-        WHERE team_id = team_members.team_id 
-        AND user_id = auth.uid() 
-        AND role IN ('owner', 'admin')
+        SELECT 1 FROM team_members tm
+        WHERE tm.team_id = team_members.team_id 
+        AND tm.user_id = auth.uid() 
+        AND tm.role IN ('owner', 'admin')
+    )
+);
+
+-- Add policy for team members to insert themselves (when invited)
+DROP POLICY IF EXISTS "Users can join teams when invited" ON team_members;
+CREATE POLICY "Users can join teams when invited" ON team_members
+FOR INSERT WITH CHECK (
+    user_id = auth.uid() OR
+    EXISTS (
+        SELECT 1 FROM team_members tm
+        WHERE tm.team_id = team_members.team_id 
+        AND tm.user_id = auth.uid() 
+        AND tm.role IN ('owner', 'admin')
     )
 );
 
