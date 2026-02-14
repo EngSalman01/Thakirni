@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { create Client } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 import { getTeamDetails, getTeamMembers, removeMember } from "@/app/actions/teams";
 import { getTeamProjects } from "@/app/actions/projects";
 import { InviteMemberDialog } from "@/components/team/invite-member-dialog";
