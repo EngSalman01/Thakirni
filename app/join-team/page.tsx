@@ -35,8 +35,7 @@ export default async function JoinTeamPage({
               <XCircle className="w-5 h-5" /> Invalid Link
             </CardTitle>
             <CardDescription>
-              This invitation link is missing a token. Please check the link and
-              try again.
+              This invitation link is missing a token.
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -49,7 +48,18 @@ export default async function JoinTeamPage({
     );
   }
 
-  // 2. Fetch Invitation
+  // 2. Check Authentication FIRST (before querying invitation to satisfy RLS)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // If NOT logged in, redirect to Sign Up (with return URL)
+  if (!user) {
+    const returnUrl = encodeURIComponent(`/join-team?token=${token}`);
+    redirect(`/auth?next=${returnUrl}`);
+  }
+
+  // 3. Fetch Invitation (now authenticated, RLS will allow read)
   const { data: invitation, error: inviteError } = await supabase
     .from("team_invitations")
     .select("*, teams(name)")
@@ -57,7 +67,6 @@ export default async function JoinTeamPage({
     .single();
 
   if (inviteError || !invitation) {
-    const isExpired = !invitation && !inviteError; // Could be expired or processed
     return (
       <div className="flex items-center justify-center min-h-screen bg-muted/50 p-4">
         <Card className="w-full max-w-md">
@@ -67,7 +76,8 @@ export default async function JoinTeamPage({
             </CardTitle>
             <CardDescription>
               This invitation may have expired, been revoked, or already
-              accepted.
+              accepted. Or it may have been sent to a different email (
+              {user.email}).
             </CardDescription>
           </CardHeader>
           <CardFooter>
@@ -82,20 +92,7 @@ export default async function JoinTeamPage({
 
   const teamName = (invitation.teams as any)?.name || "the team";
 
-  // 3. Check Authentication
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // If NOT logged in, redirect to Sign Up (with return URL)
-  if (!user) {
-    // We want them to sign up/login and then come back here to accept
-    const returnUrl = encodeURIComponent(`/join-team?token=${token}`);
-    redirect(`/auth?next=${returnUrl}`); // Assuming /auth is the login/signup page
-  }
-
   // 4. Check if already a member
-  // (We check this to show a friendly "You are already in" message instead of an error)
   const { data: membership } = await supabase
     .from("team_members")
     .select("id")

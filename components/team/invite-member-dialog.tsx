@@ -62,12 +62,16 @@ export function InviteMemberDialog({
 
       if (result.error) {
         toast.error(result.error);
-      } else if (result.link) {
-        setInviteLink(result.link);
-        toast.success("Invitation created! You can now copy the link.");
       } else {
-        toast.success("Invitation sent successfully");
+        // Success - prioritize email message
+        toast.success(`Invitation sent to ${email}`);
+
+        // Optional: still set link if you want to allow copying as backup,
+        // but user requested "send email not a link".
+        // We'll reset and close to emphasize "sent".
         onOpenChange(false);
+        setEmail("");
+        setRole("member");
       }
     } catch (error) {
       toast.error("Failed to send invitation");
