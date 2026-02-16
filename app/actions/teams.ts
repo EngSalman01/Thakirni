@@ -69,92 +69,101 @@ export async function createTeam(name: string, slug: string) {
   }
 }
 
-// Invite team member
-export async function inviteMember(
+// Create team invitation
+export async function createInvitation(
   teamId: string,
-  userId: string,
+  email: string,
   role: TeamRole = "member"
 ) {
   try {
     const supabase = await createClient();
     
+    // 1. Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return { error: "Unauthorized" };
+      console.error("Auth error:", authError);
+      return { error: "Unauthorized: Please sign in again." };
     }
 
-    // Check if user is admin/owner of this team
-    const { data: membership } = await supabase
+    // 2. Verify permissions (Owner/Admin only)
+    // We use a safe query that won't trigger recursion
+    const { data: membership, error: memError } = await supabase
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
 
-    if (!membership || !["owner", "admin"].includes(membership.role)) {
-      return { error: "You don't have permission to invite members" };
+    if (memError || !membership || !["owner", "admin"].includes(membership.role)) {
+      console.error("Permission denied. User:", user.id, "Team:", teamId, "Role:", membership?.role);
+      return { error: "You don't have permission to invite members." };
     }
 
-    // Get team tier, subscription status, and current member count
-    const { data: team } = await supabase
-      .from("teams")
-      .select("tier, subscription_status")
-      .eq("id", teamId)
-      .single();
-
-    // Check subscription status
-    if (team?.subscription_status !== "active") {
-      return {
-        error: "Team subscription is inactive. Please renew to add members.",
-      };
-    }
-
-    const { count } = await supabase
-      .from("team_members")
-      .select("*", { count: "exact", head: true })
-      .eq("team_id", teamId);
-
-    // Enforce member limit for starter plan
-    if (team?.tier === "starter" && count !== null && count >= 5) {
-      return {
-        error: "Team limit reached. Upgrade to Pro to add more members.",
-      };
-    }
-
-    // Check if user is already a member
-    const { data: existingMember } = await supabase
-      .from("team_members")
-      .select("id")
+    // 3. Check if user is already a member
+    // First, try to find their user ID if they exist in auth (optional optimization)
+    // For now, we just check if the email is already invited or in the team (if we could link email to user_id)
+    // Since we can't easily query profiles by email without admin status, we'll rely on the invitation table unique constraint
+    // But we can check existing invitations
+    
+    const { data: existingInvite } = await supabase
+      .from("team_invitations")
+      .select("id, token")
       .eq("team_id", teamId)
-      .eq("user_id", userId)
+      .eq("email", email)
       .single();
 
-    if (existingMember) {
-      return { error: "User is already a member of this team" };
+    if (existingInvite) {
+      // Return existing token if already invited
+      return { 
+        success: true, 
+        message: "User already invited. Here is the link again.",
+        link: `${process.env.NEXT_PUBLIC_APP_URL}/invite/${existingInvite.token}`
+      };
     }
 
-    // Add member
-    const { data, error } = await supabase
-      .from("team_members")
+    // 4. Create new invitation
+    const token = crypto.randomUUID(); // Generate unique token
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+    const { data: invite, error: inviteError } = await supabase
+      .from("team_invitations")
       .insert({
         team_id: teamId,
-        user_id: userId,
+        email,
         role,
+        token,
+        invited_by: user.id,
+        expires_at: expiresAt.toISOString(),
       })
       .select()
       .single();
 
-    if (error) {
-      console.error("Error inviting member:", error);
-      return { error: "Failed to invite member" };
+    if (inviteError) {
+      console.error("Error creating invitation:", inviteError);
+      return { error: "Failed to create invitation: " + inviteError.message };
     }
 
+    // 5. Generate Link
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${token}`;
+
     revalidatePath(`/vault/settings/teams/${teamId}`);
-    return { data };
+    
+    return { 
+      success: true, 
+      message: "Invitation created!", 
+      link: inviteLink 
+    };
+
   } catch (error) {
-    console.error("Member invitation error:", error);
+    console.error("Invitation error:", error);
     return { error: "An unexpected error occurred" };
   }
+}
+
+// Old inviteMember function - keeping for compatibility but forwarding to createInvitation
+export async function inviteMember(teamId: string, email: string, role: TeamRole = "member") {
+    return createInvitation(teamId, email, role);
 }
 
 // Remove team member
@@ -381,6 +390,83 @@ export async function getUserTeams() {
     return { data };
   } catch (error) {
     console.error("Get user teams error:", error);
+    return { error: "An unexpected error occurred" };
+  }
+}
+// Get team by slug
+export async function getTeamBySlug(slug: string) {
+  try {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { error: "Unauthorized" };
+    }
+
+    const { data: team, error } = await supabase
+      .from("teams")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+
+    if (error) {
+      console.error("Error fetching team by slug:", error);
+      return { error: "Team not found" };
+    }
+
+    // specific check: implies user must be a member or owner to see it?
+    // The RLS policy "View my teams" handles this (owner or member)
+    // checking if we can select it essentially checks permission via RLS
+    // but explicit check is good for returning specific error
+
+    return { data: team };
+  } catch (error) {
+    console.error("Get team by slug error:", error);
+    return { error: "An unexpected error occurred" };
+  }
+}
+
+// Get team tasks
+export async function getTeamTasks(teamId: string) {
+  try {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return { error: "Unauthorized" };
+    }
+
+    // Verify membership
+    const { data: membership, error: memError } = await supabase
+      .from("team_members")
+      .select("id, role")
+      .eq("team_id", teamId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (memError || !membership) {
+      console.error(`[TeamTasks] Membership check failed for User ${user.id} Team ${teamId}`, memError);
+      return { error: "You are not a member of this team" };
+    }
+
+    const { data, error } = await supabase
+      .from("plans")
+      .select(`
+        *,
+        assignee:profiles!assigned_to(full_name, avatar_url)
+      `)
+      .eq("team_id", teamId)
+      .eq("category", "task") // Only tasks for now
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching team tasks:", error);
+      return { error: "Failed to fetch tasks" };
+    }
+
+    return { data };
+  } catch (error) {
+    console.error("Get team tasks error:", error);
     return { error: "An unexpected error occurred" };
   }
 }
