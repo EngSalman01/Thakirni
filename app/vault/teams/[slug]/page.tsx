@@ -95,42 +95,50 @@ export default function TeamDashboard() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-background text-foreground">
-      {/* 1. Header (Asana Style) */}
-      <header className="flex items-center justify-between border-b px-6 py-3 bg-card sticky top-0 z-10">
+    <div className="flex h-full flex-col bg-gradient-to-br from-background via-background to-muted/20 text-foreground">
+      {/* 1. Header (Enhanced Asana Style) */}
+      <header className="flex items-center justify-between border-b px-6 py-4 bg-card/80 backdrop-blur-md sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="h-10 w-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-            {team.name[0]}
+          <div
+            className="h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-2 ring-white/10 relative overflow-hidden group"
+            style={{
+              background: `linear-gradient(135deg, ${team.color || "#6366f1"} 0%, ${adjustColor(team.color || "#6366f1", -20)} 100%)`,
+            }}
+          >
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+            <span className="relative z-10">{team.name[0]}</span>
           </div>
           <div>
-            <h1 className="text-xl font-semibold flex items-center gap-2">
+            <h1 className="text-2xl font-bold flex items-center gap-2 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
               {team.name}
-              <ChevronDown className="w-4 h-4 text-muted-foreground/50 cursor-pointer" />
             </h1>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-muted/50 cursor-pointer transition-colors">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                Set status
+            <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 cursor-pointer transition-all hover:scale-105 border border-emerald-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Active
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-muted/50 hover:bg-muted cursor-pointer transition-colors">
+                {tasks.length} tasks
               </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex -space-x-2 mr-2">
+          <div className="flex -space-x-3 mr-2">
             {[1, 2, 3].map((i) => (
               <Avatar
                 key={i}
-                className="h-8 w-8 border-2 border-background ring-2 ring-background cursor-pointer hover:z-10 transition-transform hover:scale-105"
+                className="h-9 w-9 border-2 border-background ring-1 ring-border cursor-pointer hover:z-10 transition-all hover:scale-110 hover:shadow-lg"
               >
-                <AvatarFallback className="bg-indigo-100 text-indigo-700 text-xs font-medium">
+                <AvatarFallback className="bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-700 text-xs font-semibold">
                   U{i}
                 </AvatarFallback>
               </Avatar>
             ))}
             <button
               onClick={() => setInviteOpen(true)}
-              className="h-8 w-8 rounded-full bg-muted flex items-center justify-center border-2 border-background hover:bg-muted/80 z-10 text-xs shadow-sm text-muted-foreground transition-colors"
+              className="h-9 w-9 rounded-full bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center border-2 border-background ring-1 ring-border hover:from-primary/20 hover:to-primary/10 hover:ring-primary/50 z-10 text-xs shadow-sm text-muted-foreground hover:text-primary transition-all hover:scale-110"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -139,14 +147,15 @@ export default function TeamDashboard() {
             variant="default"
             size="sm"
             onClick={() => setInviteOpen(true)}
-            className="h-8 bg-blue-600 hover:bg-blue-700 text-white gap-2 px-4 shadow-sm"
+            className="h-9 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white gap-2 px-5 shadow-md hover:shadow-lg transition-all hover:scale-105"
           >
-            Share
+            <UserPlus className="w-4 h-4" />
+            Invite
           </Button>
           <Button
             size="icon"
             variant="outline"
-            className="h-8 w-8 text-muted-foreground"
+            className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
           >
             <Settings className="w-4 h-4" />
           </Button>
@@ -154,82 +163,79 @@ export default function TeamDashboard() {
       </header>
 
       {/* 2. Tabs & Toolbar */}
-      <div className="flex flex-col border-b bg-card/30">
+      <div className="flex flex-col border-b bg-card/50 backdrop-blur-sm">
         <Tabs defaultValue="list" className="w-full">
-          <div className="px-6 flex items-center justify-between border-b bg-card">
-            <TabsList className="bg-transparent h-auto p-0 gap-8">
+          <div className="px-6 flex items-center justify-between border-b bg-card/30">
+            <TabsList className="bg-transparent h-auto p-0 gap-6">
               {[
-                "Overview",
-                "List",
-                "Board",
-                "Timeline",
-                "Calendar",
-                "Dashboard",
-                "Messages",
-                "More...",
+                { value: "overview", label: "Overview" },
+                { value: "list", label: "List" },
+                { value: "board", label: "Board" },
+                { value: "timeline", label: "Timeline", disabled: true },
+                { value: "calendar", label: "Calendar", disabled: true },
               ].map((tab) => (
                 <TabsTrigger
-                  key={tab}
-                  value={tab.toLowerCase()}
-                  disabled={[
-                    "Timeline",
-                    "Dashboard",
-                    "Messages",
-                    "More...",
-                  ].includes(tab)}
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none px-0 py-3 text-muted-foreground data-[state=active]:text-foreground font-medium text-sm disabled:opacity-50"
+                  key={tab.value}
+                  value={tab.value}
+                  disabled={tab.disabled}
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-1 py-3.5 text-muted-foreground data-[state=active]:text-foreground font-medium text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:text-foreground"
                 >
-                  {tab}
+                  {tab.label}
                 </TabsTrigger>
               ))}
             </TabsList>
           </div>
 
           {/* Toolbar */}
-          <div className="px-6 py-3 flex items-center justify-between bg-background/50 backdrop-blur-sm sticky top-[65px] z-10">
+          <div className="px-6 py-3.5 flex items-center justify-between bg-background/80 backdrop-blur-sm sticky top-[73px] z-10 border-b border-border/50">
             <Button
               size="sm"
-              className="gap-2 bg-blue-600 hover:bg-blue-700 text-white h-8 font-medium shadow-sm transition-all hover:translate-y-[1px]"
+              className="gap-2 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground h-9 font-medium shadow-md transition-all hover:shadow-lg hover:scale-105"
             >
-              <Plus className="w-4 h-4" /> Add task{" "}
-              <ChevronDown className="w-3 h-3 opacity-70" />
+              <Plus className="w-4 h-4" />
+              Add task
             </Button>
 
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 text-muted-foreground hover:text-foreground gap-2 text-xs"
+                className="h-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 text-xs transition-all"
               >
-                <Filter className="w-3.5 h-3.5" /> Filter
+                <Filter className="w-3.5 h-3.5" />
+                Filter
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 text-muted-foreground hover:text-foreground gap-2 text-xs"
+                className="h-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 text-xs transition-all"
               >
-                <ArrowUpDown className="w-3.5 h-3.5" /> Sort
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                Sort
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 text-muted-foreground hover:text-foreground gap-2 text-xs"
+                className="h-8 text-muted-foreground hover:text-foreground hover:bg-muted/50 gap-2 text-xs transition-all"
               >
-                <ListFilter className="w-3.5 h-3.5" /> Group
+                <ListFilter className="w-3.5 h-3.5" />
+                Group
               </Button>
             </div>
           </div>
 
           {/* 3. Main Content - List View */}
           <TabsContent value="list" className="m-0 focus-visible:ring-0">
-            <div className="min-h-[calc(100vh-180px)] bg-background">
+            <div className="min-h-[calc(100vh-220px)] bg-background/50">
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-8 py-2 border-b text-[11px] font-semibold text-muted-foreground/70 tracking-wide uppercase select-none sticky top-[118px] bg-background z-10">
+              <div className="grid grid-cols-12 gap-4 px-8 py-3 border-b border-border/50 text-[11px] font-bold text-muted-foreground/80 tracking-wider uppercase select-none sticky top-[145px] bg-background/95 backdrop-blur-sm z-10">
                 <div className="col-span-6 pl-8">Task Name</div>
                 <div className="col-span-2">Assignee</div>
                 <div className="col-span-2">Due Date</div>
                 <div className="col-span-1">Priority</div>
-                <div className="col-span-1 border-l pl-4">Category</div>
+                <div className="col-span-1 border-l border-border/50 pl-4">
+                  Category
+                </div>
               </div>
 
               {/* Task Sections */}
@@ -245,21 +251,21 @@ export default function TeamDashboard() {
                   tasks={groupedTasks.today}
                   isOpen={sections.today}
                   onToggle={() => toggleSection("today")}
-                  emptyText="Add task..."
+                  emptyText="No tasks for today"
                 />
                 <TaskSection
                   title="Do next week"
                   tasks={groupedTasks.upcoming}
                   isOpen={sections.upcoming}
                   onToggle={() => toggleSection("upcoming")}
-                  emptyText="Add task..."
+                  emptyText="No upcoming tasks"
                 />
                 <TaskSection
                   title="Do later"
                   tasks={groupedTasks.later}
                   isOpen={sections.later}
                   onToggle={() => toggleSection("later")}
-                  emptyText="Add task..."
+                  emptyText="No tasks scheduled for later"
                 />
               </div>
             </div>
@@ -276,40 +282,55 @@ export default function TeamDashboard() {
   );
 }
 
+// Helper function to adjust color brightness
+function adjustColor(color: string, amount: number) {
+  const clamp = (num: number) => Math.min(Math.max(num, 0), 255);
+  const num = parseInt(color.replace("#", ""), 16);
+  const r = clamp((num >> 16) + amount);
+  const g = clamp(((num >> 8) & 0x00ff) + amount);
+  const b = clamp((num & 0x0000ff) + amount);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
 function TaskSection({ title, tasks, isOpen, onToggle, emptyText }: any) {
   return (
-    <div className="mt-6">
+    <div className="mt-4">
       <div
-        className="flex items-center gap-2 px-6 py-2 cursor-pointer hover:bg-muted/30 group select-none"
+        className="flex items-center gap-2 px-6 py-2.5 cursor-pointer hover:bg-muted/40 group select-none rounded-lg mx-2 transition-all"
         onClick={onToggle}
       >
         <div
           className={cn(
-            "p-0.5 rounded-sm hover:bg-muted transition-transform duration-200",
+            "p-0.5 rounded-md hover:bg-muted transition-all duration-200",
             isOpen ? "rotate-90" : "",
           )}
         >
-          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
         </div>
-        <h3 className="text-sm font-semibold text-foreground group-hover:text-blue-600 transition-colors">
+        <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
           {title}
         </h3>
-        <span className="text-xs text-muted-foreground ml-2 font-normal">
-          {tasks.length > 0 ? tasks.length : ""}
-        </span>
+        {tasks.length > 0 && (
+          <span className="text-xs text-muted-foreground ml-2 font-medium px-2 py-0.5 rounded-full bg-muted/50">
+            {tasks.length}
+          </span>
+        )}
       </div>
 
       {isOpen && (
         <div className="mt-1">
           {tasks.length === 0 ? (
-            <div className="px-8 py-2 ml-8 text-sm text-muted-foreground/50 italic hover:bg-muted/20 cursor-text transition-colors border-b border-transparent hover:border-border/50">
-              {emptyText || "No tasks"}
+            <div className="px-8 py-4 ml-8 text-sm text-muted-foreground/60 italic hover:bg-muted/30 cursor-pointer transition-all border-b border-transparent hover:border-border/50 rounded-lg mx-2 group">
+              <div className="flex items-center gap-2">
+                <Plus className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span>{emptyText || "No tasks"}</span>
+              </div>
             </div>
           ) : (
             tasks.map((task: any) => (
               <div
                 key={task.id}
-                className="group grid grid-cols-12 gap-4 px-8 py-2.5 border-b border-border/40 hover:bg-muted/30 cursor-pointer text-sm transition-all hover:shadow-sm items-center"
+                className="group grid grid-cols-12 gap-4 px-8 py-3 border-b border-border/30 hover:bg-gradient-to-r hover:from-muted/50 hover:to-transparent cursor-pointer text-sm transition-all hover:border-border items-center mx-2 rounded-lg"
               >
                 <div className="col-span-6 flex items-center gap-3 pl-2 relative">
                   <div className="absolute left-0 opacity-0 group-hover:opacity-100 transition-opacity cursor-move">
@@ -331,20 +352,20 @@ function TaskSection({ title, tasks, isOpen, onToggle, emptyText }: any) {
 
                   <button
                     className={cn(
-                      "w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-200",
+                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 hover:scale-110",
                       task.status === "completed"
-                        ? "bg-green-500 border-green-500 text-white"
-                        : "border-muted-foreground/40 text-transparent hover:border-green-500 hover:text-green-500",
+                        ? "bg-emerald-500 border-emerald-500 text-white shadow-md"
+                        : "border-muted-foreground/40 text-transparent hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10",
                     )}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   </button>
                   <span
                     className={cn(
-                      "font-medium truncate",
+                      "font-medium truncate transition-colors",
                       task.status === "completed"
                         ? "line-through text-muted-foreground"
-                        : "text-foreground",
+                        : "text-foreground group-hover:text-primary",
                     )}
                   >
                     {task.title}
@@ -353,31 +374,32 @@ function TaskSection({ title, tasks, isOpen, onToggle, emptyText }: any) {
                 <div className="col-span-2 flex items-center gap-2">
                   {task.assignee ? (
                     <div className="flex items-center gap-2 group/assignee">
-                      <Avatar className="h-6 w-6 border border-border">
-                        <AvatarFallback className="text-[9px] bg-indigo-50 text-indigo-600 font-bold">
+                      <Avatar className="h-7 w-7 border-2 border-border ring-1 ring-background transition-transform group-hover:scale-110">
+                        <AvatarFallback className="text-[10px] bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 font-bold">
                           {task.assignee.full_name
                             ?.substring(0, 2)
                             .toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-xs text-muted-foreground truncate opacity-0 group-hover/assignee:opacity-100 transition-opacity max-w-[80px]">
+                      <span className="text-xs text-muted-foreground truncate opacity-0 group-hover/assignee:opacity-100 transition-opacity max-w-[80px] font-medium">
                         {task.assignee.full_name?.split(" ")[0]}
                       </span>
                     </div>
                   ) : (
-                    <div className="h-6 w-6 rounded-full border border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-muted-foreground/60 transition-colors">
-                      <UserPlus className="w-3 h-3 text-muted-foreground/50" />
+                    <div className="h-7 w-7 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+                      <UserPlus className="w-3.5 h-3.5 text-muted-foreground/50" />
                     </div>
                   )}
                 </div>
-                <div className="col-span-2 text-muted-foreground text-xs flex items-center">
+                <div className="col-span-2 text-muted-foreground text-xs flex items-center font-medium">
                   {task.plan_date ? (
                     <span
                       className={cn(
+                        "transition-colors",
                         task.plan_date <
                           new Date().toISOString().split("T")[0] &&
                           task.status !== "completed"
-                          ? "text-red-500 font-medium"
+                          ? "text-red-500 font-semibold"
                           : "",
                       )}
                     >
@@ -387,19 +409,19 @@ function TaskSection({ title, tasks, isOpen, onToggle, emptyText }: any) {
                       })}
                     </span>
                   ) : (
-                    "-"
+                    <span className="text-muted-foreground/40">-</span>
                   )}
                 </div>
                 <div className="col-span-1">
                   {task.priority && (
                     <span
                       className={cn(
-                        "px-2 py-0.5 rounded text-[10px] font-medium border inline-block text-center min-w-[60px]",
+                        "px-2.5 py-1 rounded-md text-[10px] font-bold border inline-block text-center min-w-[65px] transition-all hover:scale-105 shadow-sm",
                         task.priority === "high"
-                          ? "bg-red-50 text-red-600 border-red-100"
+                          ? "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50"
                           : task.priority === "medium"
-                            ? "bg-orange-50 text-orange-600 border-orange-100"
-                            : "bg-slate-50 text-slate-600 border-slate-100",
+                            ? "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-900/50"
+                            : "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-900/50",
                       )}
                     >
                       {task.priority.charAt(0).toUpperCase() +
@@ -407,8 +429,8 @@ function TaskSection({ title, tasks, isOpen, onToggle, emptyText }: any) {
                     </span>
                   )}
                 </div>
-                <div className="col-span-1 border-l pl-4">
-                  <span className="px-2 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium border border-border/50 truncate max-w-full block text-center">
+                <div className="col-span-1 border-l border-border/50 pl-4">
+                  <span className="px-2.5 py-1 rounded-md bg-muted/70 text-muted-foreground text-[10px] font-semibold border border-border/50 truncate max-w-full block text-center hover:bg-muted transition-colors">
                     Project Launch
                   </span>
                 </div>
