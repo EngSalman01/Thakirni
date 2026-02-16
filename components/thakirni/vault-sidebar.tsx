@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Settings,
@@ -153,6 +153,8 @@ const WorkspaceSwitcher = ({ onNavigate }: { onNavigate?: () => void }) => {
     fetchTeams();
   }, []);
 
+  const router = useRouter();
+
   const currentWorkspace =
     workspace === "personal"
       ? { name: t("الخزنة الشخصية", "Personal Vault"), icon: Home }
@@ -206,6 +208,7 @@ const WorkspaceSwitcher = ({ onNavigate }: { onNavigate?: () => void }) => {
                   key={team.id}
                   onClick={() => {
                     setWorkspace(team.id);
+                    router.push(`/vault/teams/${team.slug}`);
                     onNavigate?.();
                   }}
                   className="cursor-pointer"
