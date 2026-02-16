@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { Resend } from "resend";
 import type { Team, TeamMember, TeamRole } from "@/lib/types";
 
 // Team creation
@@ -70,6 +72,7 @@ export async function createTeam(name: string, slug: string) {
 }
 
 // Create team invitation
+// Create team invitation
 export async function createInvitation(
   teamId: string,
   email: string,
@@ -85,11 +88,10 @@ export async function createInvitation(
       return { error: "Unauthorized: Please sign in again." };
     }
 
-    // 2. Verify permissions (Owner/Admin only)
-    // We use a safe query that won't trigger recursion
+    // 2. Refresh permissions (Owner/Admin only)
     const { data: membership, error: memError } = await supabase
       .from("team_members")
-      .select("role")
+      .select("role, teams(name)")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
@@ -100,11 +102,6 @@ export async function createInvitation(
     }
 
     // 3. Check if user is already a member
-    // First, try to find their user ID if they exist in auth (optional optimization)
-    // For now, we just check if the email is already invited or in the team (if we could link email to user_id)
-    // Since we can't easily query profiles by email without admin status, we'll rely on the invitation table unique constraint
-    // But we can check existing invitations
-    
     const { data: existingInvite } = await supabase
       .from("team_invitations")
       .select("id, token")
@@ -112,46 +109,73 @@ export async function createInvitation(
       .eq("email", email)
       .single();
 
+    // 4. Create new invitation or get existing
+    let token = "";
+    
     if (existingInvite) {
-      // Return existing token if already invited
-      return { 
-        success: true, 
-        message: "User already invited. Here is the link again.",
-        link: `${process.env.NEXT_PUBLIC_APP_URL}/invite/${existingInvite.token}`
-      };
+      token = existingInvite.token;
+      // Update expiration if needed, or just re-send
+    } else {
+      token = crypto.randomUUID(); // Generate unique token
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+      const { error: inviteError } = await supabase
+        .from("team_invitations")
+        .insert({
+          team_id: teamId,
+          email,
+          role,
+          token,
+          invited_by: user.id,
+          expires_at: expiresAt.toISOString(),
+        });
+
+      if (inviteError) {
+        console.error("Error creating invitation:", inviteError);
+        return { error: "Failed to create invitation: " + inviteError.message };
+      }
     }
 
-    // 4. Create new invitation
-    const token = crypto.randomUUID(); // Generate unique token
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+    // 5. Generate Link & Send Email
+    // Dynamic Base URL
+    const headersList = await headers();
+    const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const inviteLink = `${origin}/join-team?token=${token}`;
 
-    const { data: invite, error: inviteError } = await supabase
-      .from("team_invitations")
-      .insert({
-        team_id: teamId,
-        email,
-        role,
-        token,
-        invited_by: user.id,
-        expires_at: expiresAt.toISOString(),
-      })
-      .select()
-      .single();
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      const { error: emailError } = await resend.emails.send({
+        from: 'Thakirni <onboarding@resend.dev>', // Update this if user accepts custom domain
+        to: email,
+        subject: `You've been invited to join ${(membership.teams as any)?.name} on Thakirni`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>You've been invited!</h2>
+            <p><strong>${user.email}</strong> has invited you to join the team <strong>${(membership.teams as any)?.name}</strong> on Thakirni.</p>
+            <div style="margin: 24px 0;">
+              <a href="${inviteLink}" style="background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                Join Team
+              </a>
+            </div>
+            <p style="color: #666; font-size: 14px;">Or copy this link: <br> <a href="${inviteLink}">${inviteLink}</a></p>
+          </div>
+        `
+      });
 
-    if (inviteError) {
-      console.error("Error creating invitation:", inviteError);
-      return { error: "Failed to create invitation: " + inviteError.message };
+      if (emailError) {
+        console.error("Resend error:", emailError);
+        // We don't fail the whole action, but notify
+        return { success: true, message: "Invitation created, but failed to send email. You can copy the link.", link: inviteLink };
+      }
     }
-
-    // 5. Generate Link
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${token}`;
 
     revalidatePath(`/vault/settings/teams/${teamId}`);
     
     return { 
       success: true, 
-      message: "Invitation created!", 
+      message: "Invitation sent successfully!", 
       link: inviteLink 
     };
 
