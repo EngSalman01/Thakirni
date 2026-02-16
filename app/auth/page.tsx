@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation"; // Changed from window.location
+import { useRouter, useSearchParams } from "next/navigation"; // Changed from window.location
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,8 +27,8 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { t } = useLanguage();
-  const router = useRouter();
-  const supabase = createClient();
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams.get("next");
 
   // --- REAL SIGN IN ---
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -53,7 +53,7 @@ export default function AuthPage() {
 
     // Success
     router.refresh();
-    router.push("/vault");
+    router.push(nextUrl || "/vault");
   };
 
   // --- REAL SIGN UP ---
