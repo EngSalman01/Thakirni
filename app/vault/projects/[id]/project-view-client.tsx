@@ -140,7 +140,7 @@ export function ProjectViewClient({
       <div className="border-b bg-card/30 px-6 py-2 flex items-center justify-between sticky top-[73px] z-10 backdrop-blur-sm">
         <Tabs
           value={view}
-          onValueChange={(v) => setView(v as ViewMode)}
+          onValueChange={(v: string) => setView(v as ViewMode)}
           className="w-[400px]"
         >
           <TabsList className="bg-muted/50 p-1">
@@ -403,21 +403,21 @@ function BoardView({
                   <div
                     className="mt-2 text-[10px] text-muted-foreground/50 text-center border-t pt-2 opacity-50 hover:opacity-100 cursor-pointer"
                     onClick={() => {
-                      const next =
+                      const nextStatus =
                         col.id === "pending"
                           ? "in_progress"
                           : col.id === "in_progress"
                             ? "completed"
                             : "pending";
-                      onStatusChange(task.id, next);
+                      onStatusChange(task.id, nextStatus);
                     }}
                   >
                     Move to{" "}
-                    {next === "pending"
-                      ? "To Do"
-                      : next === "in_progress"
-                        ? "Progress"
-                        : "Done"}
+                    {col.id === "pending"
+                      ? "In Progress"
+                      : col.id === "in_progress"
+                        ? "Completed"
+                        : "To Do"}
                   </div>
                 </motion.div>
               ))}
