@@ -187,7 +187,7 @@ export default function VaultPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-12 gap-2"
+                className="h-12 gap-2 cursor-pointer"
                 onClick={handleNewMemory}
               >
                 <Plus className="w-4 h-4" />
@@ -196,7 +196,7 @@ export default function VaultPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-12 gap-2"
+                className="h-12 gap-2 cursor-pointer"
                 onClick={handleVoiceNote}
               >
                 <Mic className="w-4 h-4" />
@@ -205,7 +205,7 @@ export default function VaultPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-12 gap-2"
+                className="h-12 gap-2 cursor-pointer"
                 onClick={handleUpload}
               >
                 <Upload className="w-4 h-4" />
@@ -214,7 +214,7 @@ export default function VaultPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-12 gap-2"
+                className="h-12 gap-2 cursor-pointer"
                 onClick={handleReminders}
               >
                 <Bell className="w-4 h-4" />
