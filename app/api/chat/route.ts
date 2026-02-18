@@ -12,13 +12,11 @@ const groq = createGroq({
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
-    console.log("[v0] Chat API called with", messages?.length, "messages")
 
     const supabase = await createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
-    console.log("[v0] User:", user?.id ?? "not authenticated")
 
     const result = streamText({
       model: groq("llama-3.3-70b-versatile"),
@@ -86,7 +84,6 @@ Respond in the same language the user uses.`,
               .single()
 
             if (error) {
-              console.log("[v0] Create plan error:", error.message)
               return { success: false, message: error.message }
             }
 
@@ -144,7 +141,6 @@ Respond in the same language the user uses.`,
             const { data, error } = await query
 
             if (error) {
-              console.log("[v0] List plans error:", error.message)
               return { success: false, message: error.message, plans: [] }
             }
 
@@ -159,7 +155,6 @@ Respond in the same language the user uses.`,
       maxSteps: 5,
     })
 
-    console.log("[v0] Stream created successfully")
     return result.toDataStreamResponse()
   } catch (error: any) {
     console.error("[v0] Chat API error:", error?.message || error)
