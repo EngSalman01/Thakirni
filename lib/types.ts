@@ -45,3 +45,41 @@ export interface ChatMessage {
   content: string;
   created_at: string;
 }
+
+export type SubscriptionType = 'individual' | 'team' | 'company';
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  team_id?: string | null;
+  subscription_type: SubscriptionType;
+  status: 'active' | 'inactive' | 'cancelled';
+  plan_name: string;
+  price?: number | null;
+  billing_cycle?: 'monthly' | 'yearly' | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectColumn {
+  id: string;
+  project_id: string;
+  title: string;
+  position: number;
+  created_at: string;
+}
+
+export interface ProjectTask {
+  id: string;
+  column_id: string;
+  project_id: string;
+  title: string;
+  description?: string | null;
+  position: number;
+  assigned_to?: string | null;
+  priority: 'low' | 'medium' | 'high';
+  due_date?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
