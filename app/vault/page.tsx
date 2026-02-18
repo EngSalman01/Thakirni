@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { useSubscription } from "@/hooks/use-subscription";
@@ -48,6 +49,29 @@ export default function VaultPage() {
   const [currentTeam, setCurrentTeam] = React.useState<any>(null);
   const [teamMembers, setTeamMembers] = React.useState<any[]>([]);
   const [isLoadingTeam, setIsLoadingTeam] = React.useState(false);
+
+  const { t } = useLanguage();
+  const router = useRouter();
+
+  const handleNewMemory = () => {
+    toast.success("Memory form opening...");
+    // TODO: Open memory creation modal
+  };
+
+  const handleVoiceNote = () => {
+    toast.success("Voice note recording...");
+    // TODO: Open voice recorder
+  };
+
+  const handleUpload = () => {
+    toast.success("Upload dialog opening...");
+    // TODO: Open file upload dialog
+  };
+
+  const handleReminders = () => {
+    toast.success("Reminders page opening...");
+    router.push("/vault/reminders");
+  };
 
   // Fetch team for team/company subscriptions
   React.useEffect(() => {
@@ -160,19 +184,39 @@ export default function VaultPage() {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Button variant="outline" size="sm" className="h-12 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-12 gap-2"
+                onClick={handleNewMemory}
+              >
                 <Plus className="w-4 h-4" />
                 New Memory
               </Button>
-              <Button variant="outline" size="sm" className="h-12 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-12 gap-2"
+                onClick={handleVoiceNote}
+              >
                 <Mic className="w-4 h-4" />
                 Voice Note
               </Button>
-              <Button variant="outline" size="sm" className="h-12 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-12 gap-2"
+                onClick={handleUpload}
+              >
                 <Upload className="w-4 h-4" />
                 Upload
               </Button>
-              <Button variant="outline" size="sm" className="h-12 gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-12 gap-2"
+                onClick={handleReminders}
+              >
                 <Bell className="w-4 h-4" />
                 Reminders
               </Button>

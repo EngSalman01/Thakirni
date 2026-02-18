@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { Check, X, Sparkles, Building2, User, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -42,7 +44,47 @@ const cardVariants: Variants = {
 
 export default function PricingPage() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const handleSubscribe = async (tierId: string) => {
+    setLoading(tierId);
+    try {
+      if (tierId === "free") {
+        // Free tier - just redirect to sign up or vault
+        toast.success("Welcome to Thakirni!");
+        router.push("/auth");
+        return;
+      }
+
+      if (tierId === "individual") {
+        // Individual subscription - collect email for waitlist
+        toast.success("Redirecting to subscription setup...");
+        router.push("/checkout/individual");
+        return;
+      }
+
+      if (tierId === "team") {
+        // Team subscription - collect email for waitlist
+        toast.success("Redirecting to team subscription setup...");
+        router.push("/checkout/team");
+        return;
+      }
+
+      if (tierId === "companies") {
+        // Company subscription - create team
+        toast.success("Creating team workspace...");
+        router.push("/vault/settings/teams/new");
+        return;
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+      toast.error("Failed to process subscription");
+    } finally {
+      setLoading(null);
+    }
+  };
 
   const pricingTiers = [
     {
@@ -366,14 +408,17 @@ export default function PricingPage() {
                               ? "bg-transparent border-2 border-muted-foreground/20 hover:border-foreground text-foreground hover:bg-accent"
                               : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
                         )}
-                        disabled={tier.underDevelopment}
-                        onClick={() => {
-                          if (tier.id === "companies") {
-                            window.location.href = "/vault/settings/teams/new";
-                          }
-                        }}
+                        disabled={tier.underDevelopment || loading === tier.id}
+                        onClick={() => handleSubscribe(tier.id)}
                       >
-                        {t(tier.ctaAr, tier.ctaEn)}
+                        {loading === tier.id ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            {t("جاري...", "Loading...")}
+                          </div>
+                        ) : (
+                          t(tier.ctaAr, tier.ctaEn)
+                        )}
                       </Button>
                     </CardFooter>
                   </div>
