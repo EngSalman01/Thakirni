@@ -21,7 +21,10 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
+import {
+  VaultSidebar,
+  MobileMenuButton,
+} from "@/components/thakirni/vault-sidebar";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
 
