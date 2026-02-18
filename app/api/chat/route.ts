@@ -12,13 +12,11 @@ const groq = createGroq({
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
-    console.log("[v0] Chat API called with", messages?.length, "messages")
 
     const supabase = await createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
-    console.log("[v0] User:", user?.id ?? "not authenticated")
 
     // 1. Setup Time Context (Saudi Arabia)
     const now = new Date()
@@ -162,7 +160,6 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
               .single()
 
             if (error) {
-              console.error("[v0] Create plan error:", error)
               return { success: false, message: error.message }
             }
 
@@ -236,7 +233,6 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
             const { data, error } = await query
 
             if (error) {
-              console.error("[v0] List plans error:", error)
               return { success: false, message: error.message, plans: [] }
             }
 
@@ -255,7 +251,6 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
       },
     })
 
-    console.log("[v0] Stream created successfully")
     return result.toDataStreamResponse()
   } catch (error: any) {
     console.error("[v0] Chat API error:", error?.message || error)
