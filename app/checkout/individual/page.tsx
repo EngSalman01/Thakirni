@@ -28,7 +28,8 @@ export default function IndividualCheckout() {
         return;
       }
 
-      const response = await fetch('/api/waitlist', {
+      // First, save email to waitlist
+      const waitlistResponse = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -38,21 +39,44 @@ export default function IndividualCheckout() {
         }),
       });
 
-      const data = await response.json();
+      const waitlistData = await waitlistResponse.json();
 
-      if (data.success) {
-        setCompleted(true);
-        toast.success(t('تم! تحقق من بريدك', 'Success! Check your email'));
-        setTimeout(() => {
-          router.push('/auth');
-        }, 2000);
-      } else if (data.message?.includes('already')) {
-        toast.info(t('أنت مسجل بالفعل', 'Already registered'));
-        setTimeout(() => {
-          router.push('/auth');
-        }, 1500);
-      } else {
-        toast.error(data.message || t('حدث خطأ', 'An error occurred'));
+      if (!waitlistData.success && !waitlistData.message?.includes('already')) {
+        toast.error(t('فشل الطلب', 'Request failed'));
+        setLoading(false);
+        return;
+      }
+
+      // Create 2Checkout session
+      const productId = process.env.NEXT_PUBLIC_2CHECKOUT_INDIVIDUAL_PRODUCT_ID;
+      
+      if (!productId) {
+        toast.error(t('خطأ في الإعداد', 'Configuration error'));
+        setLoading(false);
+        return;
+      }
+
+      const checkoutResponse = await fetch('/api/2checkout/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          email,
+          plan: 'individual',
+        }),
+      });
+
+      const checkoutData = await checkoutResponse.json();
+
+      if (checkoutData.error) {
+        toast.error(checkoutData.error);
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to 2Checkout
+      if (checkoutData.redirectUrl) {
+        window.location.href = checkoutData.redirectUrl;
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -129,18 +153,18 @@ export default function IndividualCheckout() {
                   disabled={loading}
                   className="h-11 text-base"
                 />
-                <p className="text-xs text-muted-foreground">
-                  {t('سنرسل لك رابط التحقق', 'We\'ll send you a verification link')}
+                <p className="text-xs text-emerald-foreground">
+                  {t('سنرسل لك رابط التحقق', 'We\'ll redirect you to 2Checkout payment')}
                 </p>
               </div>
 
               {/* Info Box */}
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 space-y-2">
                 <p className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">
-                  {t('✓ مجاني تماماً', '✓ Completely Free')}
+                  {t('✓ 29 ريال فقط / الشهر', '✓ Just SAR 29 / month')}
                 </p>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                  {t('لا توجد اشتراكات أو رسوم. استمتع بجميع المميزات مجاناً للأبد.', 'No subscriptions or fees. Enjoy all features for free forever.')}
+                  {t('دفعة آمنة عبر 2Checkout. يمكنك الإلغاء في أي وقت.', 'Secure payment via 2Checkout. Cancel anytime.')}
                 </p>
               </div>
 
@@ -156,7 +180,7 @@ export default function IndividualCheckout() {
                     {t('جاري...', 'Loading...')}
                   </>
                 ) : (
-                  t('ابدأ الآن', 'Get Started')
+                  t('الدفع الآن - 29 ريال', 'Pay Now - SAR 29')
                 )}
               </Button>
 
