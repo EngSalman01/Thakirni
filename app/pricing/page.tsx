@@ -266,7 +266,7 @@ export default function PricingPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid md:grid-cols-4 gap-8 max-w-7xl mx-auto items-start"
+            className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch px-4 lg:px-0"
           >
             {pricingTiers.map((tier, index) => (
               <motion.div
@@ -276,11 +276,10 @@ export default function PricingPage() {
               >
                 <Card
                   className={cn(
-                    "relative h-full flex flex-col transition-all duration-300 border overflow-hidden",
-                    // Increased opacity for better readability, removed backdrop blur from normal cards if needed
+                    "relative h-full flex flex-col transition-all duration-300 border overflow-hidden rounded-2xl",
                     tier.popular
-                      ? "bg-background/80 backdrop-blur-md border-emerald-500 ring-1 ring-emerald-500/50 shadow-2xl shadow-emerald-500/10"
-                      : "bg-card border-border hover:border-primary/50 hover:shadow-lg",
+                      ? "bg-background/80 backdrop-blur-md border-emerald-500 ring-2 ring-emerald-500/50 shadow-2xl shadow-emerald-500/20 scale-105 md:scale-100 lg:scale-105"
+                      : "bg-card border-border hover:border-primary/50 hover:shadow-lg hover:scale-105",
                   )}
                 >
                   {/* Under Development Overlay */}
@@ -319,7 +318,7 @@ export default function PricingPage() {
                       relied on the overlay for the disabled look */}
                   <CardHeader
                     className={cn(
-                      "pb-4",
+                      "pb-6 pt-8 px-6",
                       tier.underDevelopment && "opacity-50",
                     )}
                   >
@@ -366,7 +365,7 @@ export default function PricingPage() {
                       tier.underDevelopment && "opacity-50 pointer-events-none",
                     )}
                   >
-                    <CardContent className="flex-1">
+                    <CardContent className="flex-1 px-6">
                       <div className="w-full h-px bg-border mb-6" />
                       <ul className="space-y-4">
                         {tier.features.map((feature, featureIndex) => (
@@ -398,10 +397,10 @@ export default function PricingPage() {
                       </ul>
                     </CardContent>
 
-                    <CardFooter className="pt-6">
+                    <CardFooter className="pt-6 px-6 pb-8">
                       <Button
                         className={cn(
-                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300 cursor-pointer",
+                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300 cursor-pointer hover:scale-105",
                           tier.buttonVariant === "emerald"
                             ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             : tier.buttonVariant === "outline"
