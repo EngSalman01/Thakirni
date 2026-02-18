@@ -28,7 +28,8 @@ export default function TeamCheckout() {
         return;
       }
 
-      const response = await fetch('/api/waitlist', {
+      // First, save email to waitlist
+      const waitlistResponse = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -38,21 +39,44 @@ export default function TeamCheckout() {
         }),
       });
 
-      const data = await response.json();
+      const waitlistData = await waitlistResponse.json();
 
-      if (data.success) {
-        setCompleted(true);
-        toast.success(t('تم! تحقق من بريدك', 'Success! Check your email'));
-        setTimeout(() => {
-          router.push('/auth');
-        }, 2000);
-      } else if (data.message?.includes('already')) {
-        toast.info(t('أنت مسجل بالفعل', 'Already registered'));
-        setTimeout(() => {
-          router.push('/auth');
-        }, 1500);
-      } else {
-        toast.error(data.message || t('حدث خطأ', 'An error occurred'));
+      if (!waitlistData.success && !waitlistData.message?.includes('already')) {
+        toast.error(t('فشل الطلب', 'Request failed'));
+        setLoading(false);
+        return;
+      }
+
+      // Create 2Checkout session
+      const productId = process.env.NEXT_PUBLIC_2CHECKOUT_TEAM_PRODUCT_ID;
+      
+      if (!productId) {
+        toast.error(t('خطأ في الإعداد', 'Configuration error'));
+        setLoading(false);
+        return;
+      }
+
+      const checkoutResponse = await fetch('/api/2checkout/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          email,
+          plan: 'team',
+        }),
+      });
+
+      const checkoutData = await checkoutResponse.json();
+
+      if (checkoutData.error) {
+        toast.error(checkoutData.error);
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to 2Checkout
+      if (checkoutData.redirectUrl) {
+        window.location.href = checkoutData.redirectUrl;
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -95,11 +119,11 @@ export default function TeamCheckout() {
           <h1 className="text-4xl font-bold text-foreground mb-2">
             {t('باقة الفريق', 'Team Plan')}
           </h1>
-          <p className="text-xl text-blue-600 dark:text-blue-500 font-semibold">
-            {t('مجاني للفرق', 'Free for Teams')}
+          <p className="text-xl text-emerald-600 dark:text-emerald-500 font-semibold">
+            {t('99 ريال سعودي / الشهر', 'SAR 99 / month')}
           </p>
           <p className="text-muted-foreground mt-2">
-            {t('تعاون فعال مع فريقك - لا توجد رسوم مخفية', 'Collaborate with your team - No hidden fees')}
+            {t('تعاون مع فريقك بسهولة', 'Collaborate with your team easily')}
           </p>
         </div>
 
@@ -148,7 +172,7 @@ export default function TeamCheckout() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white h-12 text-base font-semibold"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-12 text-base font-semibold"
               >
                 {loading ? (
                   <>
@@ -156,7 +180,7 @@ export default function TeamCheckout() {
                     {t('جاري...', 'Loading...')}
                   </>
                 ) : (
-                  t('ابدأ الآن', 'Get Started')
+                  t('الدفع الآن - 99 ريال', 'Pay Now - SAR 99')
                 )}
               </Button>
 
