@@ -54,42 +54,40 @@ export interface ChatMessage {
   created_at: string;
 }
 
-// Multi-tenant types
-export type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
-export type TeamTier = 'starter' | 'pro' | 'enterprise';
+export type SubscriptionType = 'individual' | 'team' | 'company';
 
-export interface Team {
+export interface Subscription {
   id: string;
-  name: string;
-  slug: string;
-  owner_id: string;
-  tier: TeamTier;
-  subscription_status: string;
-  created_at: string;
-}
-
-export interface TeamMember {
-  id: string;
-  team_id: string;
   user_id: string;
-  role: TeamRole;
-  joined_at: string;
-  // Joined data from queries
-  profile?: Profile;
+  team_id?: string | null;
+  subscription_type: SubscriptionType;
+  status: 'active' | 'inactive' | 'cancelled';
+  plan_name: string;
+  price?: number | null;
+  billing_cycle?: 'monthly' | 'yearly' | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface Project {
+export interface ProjectColumn {
   id: string;
-  team_id: string;
-  name: string;
-  description?: string | null;
-  color: string;
-  created_by: string;
+  project_id: string;
+  title: string;
+  position: number;
   created_at: string;
 }
 
-// Extended Plan type with assignee profile
-export interface PlanWithAssignee extends Plan {
-  assignee?: Profile | null;
+export interface ProjectTask {
+  id: string;
+  column_id: string;
+  project_id: string;
+  title: string;
+  description?: string | null;
+  position: number;
+  assigned_to?: string | null;
+  priority: 'low' | 'medium' | 'high';
+  due_date?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
