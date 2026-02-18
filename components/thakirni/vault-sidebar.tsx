@@ -249,7 +249,7 @@ const LogoSection = ({ onNavigate }: { onNavigate?: () => void }) => (
       onClick={onNavigate}
       aria-label="Thakirni Home"
     >
-      <BrandLogo width={100} height={35} />
+      <BrandLogo size="md" />
     </Link>
   </div>
 );

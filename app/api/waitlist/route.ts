@@ -48,9 +48,20 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Waitlist error:', error);
+      console.error('[v0] Waitlist insert error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        email,
+        plan
+      });
       return NextResponse.json(
-        { success: false, message: 'Failed to add to waitlist' },
+        { 
+          success: false, 
+          message: `Database error: ${error.message || 'Failed to add to waitlist'}`,
+          error: error.code 
+        },
         { status: 500 }
       );
     }
