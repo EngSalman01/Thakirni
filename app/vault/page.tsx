@@ -142,7 +142,79 @@ export default function VaultPage() {
       <VaultSidebar />
 
       <main className="lg:me-64 transition-all duration-300">
-        <DashboardRouter />
+        <div className="p-6 md:p-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground">Your Vault</h1>
+                <p className="text-muted-foreground mt-2">
+                  Your personal memory collection and reminders
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <LanguageToggle />
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <Button variant="outline" size="sm" className="h-12 gap-2">
+                <Plus className="w-4 h-4" />
+                New Memory
+              </Button>
+              <Button variant="outline" size="sm" className="h-12 gap-2">
+                <Mic className="w-4 h-4" />
+                Voice Note
+              </Button>
+              <Button variant="outline" size="sm" className="h-12 gap-2">
+                <Upload className="w-4 h-4" />
+                Upload
+              </Button>
+              <Button variant="outline" size="sm" className="h-12 gap-2">
+                <Bell className="w-4 h-4" />
+                Reminders
+              </Button>
+            </div>
+
+            {/* Chat Section */}
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">AI Assistant</h2>
+                <p className="text-sm text-muted-foreground">
+                  Chat with your memories and get insights
+                </p>
+              </div>
+              <AIChat />
+            </div>
+
+            {/* Placeholder for memories list */}
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Recent Memories</h2>
+                <p className="text-sm text-muted-foreground">
+                  Your saved memories and notes appear here
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="p-4 rounded-lg border border-border bg-card hover:bg-card/80 transition-colors cursor-pointer"
+                  >
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Memory {i}
+                    </div>
+                    <div className="h-20 bg-muted/20 rounded flex items-center justify-center text-muted-foreground">
+                      No memories yet
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   );
