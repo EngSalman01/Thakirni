@@ -401,7 +401,7 @@ export default function PricingPage() {
                     <CardFooter className="pt-6">
                       <Button
                         className={cn(
-                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300",
+                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300 cursor-pointer",
                           tier.buttonVariant === "emerald"
                             ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                             : tier.buttonVariant === "outline"
