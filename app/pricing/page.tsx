@@ -116,8 +116,8 @@ export default function PricingPage() {
       targetEn: "Teams & Startups",
       price: "99",
       priceAnnual: "990",
-      priceSuffixAr: "/ مستخدم",
-      priceSuffixEn: "/ user",
+      priceSuffixAr: "/ شهر (حتى ٥ مستخدمين)",
+      priceSuffixEn: "/ month (Up to 5 users)",
       icon: Building2,
       features: [
         {
@@ -136,17 +136,17 @@ export default function PricingPage() {
           included: true,
         },
         {
-          ar: "دعم ذو أولوية واتفاقية مستوى خدمة",
-          en: "Priority Support & SLA",
+          ar: "إدارة المشاريع والمهام",
+          en: "Project & Task Management",
           included: true,
         },
         { ar: "دخول عبر API", en: "API Access", included: true },
       ],
-      ctaAr: "تواصل مع المبيعات",
-      ctaEn: "Contact Sales",
+      ctaAr: "ابدأ الآن",
+      ctaEn: "Get Started",
       buttonVariant: "secondary",
       popular: false,
-      underDevelopment: true,
+      underDevelopment: false,
     },
   ];
 
@@ -358,6 +358,11 @@ export default function PricingPage() {
                               : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
                         )}
                         disabled={tier.underDevelopment}
+                        onClick={() => {
+                          if (tier.id === "companies") {
+                            window.location.href = "/vault/settings/teams/new";
+                          }
+                        }}
                       >
                         {t(tier.ctaAr, tier.ctaEn)}
                       </Button>

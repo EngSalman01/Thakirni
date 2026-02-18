@@ -10,6 +10,9 @@ export interface Memory {
   created_at: string; // ISO timestamp
   updated_at: string; // ISO timestamp
   user_id: string;
+  // Multi-tenant fields
+  team_id?: string | null;
+  is_shared?: boolean;
 }
 
 export interface Plan {
@@ -26,6 +29,10 @@ export interface Plan {
   priority: 'low' | 'medium' | 'high';
   created_at: string;
   updated_at: string;
+  // Multi-tenant fields
+  team_id?: string | null;
+  project_id?: string | null;
+  assigned_to?: string | null;
 }
 
 export interface Profile {
@@ -34,6 +41,7 @@ export interface Profile {
   avatar_url?: string | null;
   preferred_language: 'ar' | 'en';
   timezone: string;
+  plan_tier?: 'FREE' | 'INDIVIDUAL' | 'COMPANY';
   created_at: string;
   updated_at: string;
 }
