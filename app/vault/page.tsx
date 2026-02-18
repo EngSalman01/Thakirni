@@ -54,22 +54,18 @@ export default function VaultPage() {
   const router = useRouter();
 
   const handleNewMemory = () => {
-    toast.success("Memory form opening...");
-    // TODO: Open memory creation modal
+    router.push("/vault/new-memory");
   };
 
   const handleVoiceNote = () => {
-    toast.success("Voice note recording...");
-    // TODO: Open voice recorder
+    router.push("/vault/voice-note");
   };
 
   const handleUpload = () => {
-    toast.success("Upload dialog opening...");
-    // TODO: Open file upload dialog
+    router.push("/vault/upload");
   };
 
   const handleReminders = () => {
-    toast.success("Reminders page opening...");
     router.push("/vault/reminders");
   };
 

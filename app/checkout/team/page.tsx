@@ -60,12 +60,12 @@ export default function TeamCheckout() {
           router.push("/auth");
         }, 1500);
       } else {
-        toast.error(data.message || t("حدث خطأ", "An error occurred"));
+        toast.error(data.message || t('حدث خطأ', 'An error occurred'));
+        setLoading(false);
       }
     } catch (error) {
-      console.error("Signup error:", error);
-      toast.error(t("خطأ في الاتصال", "Connection error"));
-    } finally {
+      console.error('Signup error:', error);
+      toast.error(t('خطأ في الاتصال', 'Connection error'));
       setLoading(false);
     }
   };
