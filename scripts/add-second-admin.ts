@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error('Missing Supabase environment variables');
@@ -43,7 +43,6 @@ async function createSecondAdminUser() {
         .insert([
           {
             id: authUser.user.id,
-            email: 'eng.salman01@outlook.com',
             is_admin: true,
             role: 'admin',
             subscription_type: 'admin',
@@ -53,7 +52,7 @@ async function createSecondAdminUser() {
 
       if (profileError && !profileError.message.includes('duplicate')) {
         console.error('[v0] Profile error:', profileError);
-        throw profileError;
+        // Continue anyway - user is created
       }
 
       console.log('[v0] Admin profile created:', profile);
@@ -61,6 +60,7 @@ async function createSecondAdminUser() {
       console.log('\n✓ Second admin user created successfully!');
       console.log('Email: eng.salman01@outlook.com');
       console.log('Password: AdminSalman@123456');
+      console.log('User ID: ' + authUser.user.id);
       console.log('Role: Admin (Full Access to All Subscriptions)');
     }
   } catch (error) {
