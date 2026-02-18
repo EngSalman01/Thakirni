@@ -1,80 +1,115 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useLanguage } from "@/components/language-provider";
-import { toast } from "sonner";
-import { Loader2, Check } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { Loader2, CreditCard, CheckCircle2, Lock } from 'lucide-react';
+import { useLanguage } from '@/components/language-provider';
 
-export default function CheckoutIndividualPage() {
+declare global {
+  interface Window {
+    MoyasarCheckout: any;
+  }
+}
+
+export default function IndividualCheckout() {
   const { t } = useLanguage();
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    fullName: "",
-  });
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'apple' | 'email'>('card');
+  const [email, setEmail] = useState('');
+  const [completed, setCompleted] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Load Moyasar script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.moyasar.com/mpay/moyasar.js';
+    script.async = true;
+    script.onload = () => setScriptLoaded(true);
+    document.body.appendChild(script);
+  }, []);
+
+  const handleCardPayment = () => {
+    if (!scriptLoaded) {
+      toast.error('Payment system loading, please wait...');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (window.MoyasarCheckout) {
+        window.MoyasarCheckout.openCheckout({
+          amount: 29 * 100, // 29 SAR in halalas
+          currency: 'SAR',
+          description: 'Individual subscription - Thakirni',
+          publishable_key: process.env.NEXT_PUBLIC_MOYASAR_KEY || 'pk_test_demo',
+          callback_url: '/checkout/callback?plan=individual',
+          metadata: {
+            plan: 'individual',
+            subscription_type: 'individual',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error('Failed to open payment form');
+      setLoading(false);
+    }
+  };
+
+  const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // For now, just collect email - no actual payment processing
-      // This simulates a waitlist/email collection
-      if (!formData.email || !formData.fullName) {
-        toast.error(t("يرجى ملء جميع الحقول", "Please fill all fields"));
-        setLoading(false);
-        return;
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          plan: 'individual',
+          country: 'SA',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCompleted(true);
+        toast.success('Added to waitlist! Check your email.');
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 2000);
+      } else {
+        toast.error(data.message || 'Failed to add to waitlist');
       }
-
-      // Simulate storing email in waitlist
-      console.log("[v0] Email collected for Individual plan:", formData);
-      
-      setSubmitted(true);
-      toast.success(t("شكراً على اهتمامك!", "Thank you for your interest!"));
-
-      // Redirect to auth or vault after 2 seconds
-      setTimeout(() => {
-        router.push("/auth?plan=individual");
-      }, 2000);
     } catch (error) {
-      console.error("Submission error:", error);
-      toast.error(t("حدث خطأ", "An error occurred"));
+      console.error('Signup error:', error);
+      toast.error('Failed to process request');
     } finally {
       setLoading(false);
     }
   };
 
-  if (submitted) {
+  if (completed) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="pt-12 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-emerald-500/10 rounded-full">
-                <Check className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-emerald-500/30 bg-emerald-500/5">
+          <CardContent className="pt-12 pb-12 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-emerald-500/20 rounded-full">
+                <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-500" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              {t("تم التسجيل بنجاح!", "Registered Successfully!")}
+              {t('تم بنجاح!', 'Success!')}
             </h2>
-            <p className="text-muted-foreground mb-4">
-              {t(
-                "سيتم توجيهك قريباً...",
-                "You'll be redirected shortly..."
-              )}
+            <p className="text-muted-foreground">
+              {t('شكراً على اشتراكك. جاري إعادة التوجيه...', 'Thank you for subscribing. Redirecting...')}
             </p>
           </CardContent>
         </Card>
@@ -83,128 +118,193 @@ export default function CheckoutIndividualPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {t("باقة الأفراد", "Individual Plan")}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 py-12">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {t('باقة الأفراد', 'Individual Plan')}
           </h1>
-          <p className="text-muted-foreground">
-            {t(
-              "29 ريال / شهر",
-              "29 SAR / month"
-            )}
+          <p className="text-xl text-emerald-600 dark:text-emerald-500 font-semibold">
+            {t('29 ريال سعودي / الشهر', 'SAR 29 / month')}
+          </p>
+          <p className="text-muted-foreground mt-2">
+            {t('احفظ ذكرياتك وملاحظاتك بأمان', 'Save your memories and notes securely')}
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("أكمل التسجيل", "Complete Registration")}</CardTitle>
-            <CardDescription>
-              {t(
-                "سنبدأ بجمع بيانات الاتصال الخاصة بك",
-                "We'll start with your contact information"
-              )}
-            </CardDescription>
-          </CardHeader>
+        {/* Payment Method Selector */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <button
+            onClick={() => setPaymentMethod('card')}
+            className={`p-4 rounded-lg border-2 transition-all ${
+              paymentMethod === 'card'
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-border hover:border-emerald-500/50'
+            }`}
+          >
+            <CreditCard className="w-6 h-6 mb-2" />
+            <div className="font-semibold text-foreground">{t('بطاقة', 'Card')}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('فيزا أو ماستركارد', 'Visa/Mastercard')}
+            </p>
+          </button>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="fullName">
-                  {t("الاسم الكامل", "Full Name")} *
-                </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder={t("محمد أحمد", "Mohammed Ahmed")}
-                  value={formData.fullName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
-                  }
-                  required
-                  disabled={loading}
-                />
-              </div>
+          <button
+            onClick={() => setPaymentMethod('apple')}
+            className={`p-4 rounded-lg border-2 transition-all ${
+              paymentMethod === 'apple'
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-border hover:border-emerald-500/50'
+            }`}
+          >
+            <div className="text-2xl mb-2">🍎</div>
+            <div className="font-semibold text-foreground">{t('Apple Pay', 'Apple Pay')}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('سريع وآمن', 'Fast & Secure')}
+            </p>
+          </button>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  {t("البريد الإلكتروني", "Email")} *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  required
-                  disabled={loading}
-                />
-              </div>
+          <button
+            onClick={() => setPaymentMethod('email')}
+            className={`p-4 rounded-lg border-2 transition-all ${
+              paymentMethod === 'email'
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-border hover:border-emerald-500/50'
+            }`}
+          >
+            <div className="text-xl mb-2">📧</div>
+            <div className="font-semibold text-foreground">{t('قائمة الانتظار', 'Waitlist')}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t('مجاني', 'Free')}
+            </p>
+          </button>
+        </div>
 
-              {/* Info Message */}
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+        {/* Payment Forms */}
+        {(paymentMethod === 'card' || paymentMethod === 'apple') ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                {t('الدفع الآمن', 'Secure Payment')}
+              </CardTitle>
+              <CardDescription>
+                {t(
+                  'معالج آمن من موسى (Moyasar) - البوابة الدفع الرسمية للسعودية',
+                  'Powered by Moyasar - Saudi Arabia\'s trusted payment gateway'
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
                 <p className="text-sm text-blue-700 dark:text-blue-400">
                   {t(
-                    "نحن في مرحلة مبكرة. سيتم تفعيل الدفع قريباً.",
-                    "We're in beta. Payment processing will be enabled soon."
+                    'لا نحفظ بيانات بطاقتك. كل شيء معالج مباشرة عبر Moyasar الآمن',
+                    'Your card data is never stored. Everything is processed securely through Moyasar.'
                   )}
                 </p>
               </div>
 
-              {/* Submit Button */}
               <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-11"
+                onClick={handleCardPayment}
+                disabled={loading || !scriptLoaded}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-12 text-base font-semibold rounded-lg"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                    {t("جاري...", "Processing...")}
+                    {t('جاري المعالجة...', 'Processing...')}
+                  </>
+                ) : !scriptLoaded ? (
+                  <>
+                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                    {t('جاري التحميل...', 'Loading...')}
                   </>
                 ) : (
-                  t("تابع", "Continue")
+                  t('إتمام الدفع - 29 ريال', 'Pay - SAR 29')
                 )}
               </Button>
 
-              {/* Back Button */}
-              <Button
-                type="button"
-                variant="outline"
-                disabled={loading}
-                onClick={() => router.back()}
-                className="w-full"
-              >
-                {t("رجوع", "Back")}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+              {/* Security Badges */}
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2 bg-muted rounded">
+                  <div className="text-lg mb-1">🔒</div>
+                  <p className="text-muted-foreground">{t('آمن SSL', 'SSL Secure')}</p>
+                </div>
+                <div className="p-2 bg-muted rounded">
+                  <div className="text-lg mb-1">✓</div>
+                  <p className="text-muted-foreground">{t('موثوق', 'Verified')}</p>
+                </div>
+                <div className="p-2 bg-muted rounded">
+                  <div className="text-lg mb-1">📱</div>
+                  <p className="text-muted-foreground">{t('جوال', 'Mobile Ready')}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('قائمة الانتظار', 'Waitlist')}</CardTitle>
+              <CardDescription>
+                {t('أضف بريدك للحصول على إشعار عندما نبدأ الدفع', 'Add your email to get notified when we launch')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleEmailSignup} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t('البريد الإلكتروني', 'Email')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('لن نشارك بريدك مع أحد', 'We will never share your email')}
+                  </p>
+                </div>
 
-        {/* Features Preview */}
-        <div className="mt-8 p-4 rounded-lg border border-border bg-card">
-          <h3 className="font-semibold text-foreground mb-3">
-            {t("ما تحصل عليه:", "What's Included:")}
-          </h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("رسائل وملاحظات صوتية غير محدودة", "Unlimited messages & voice notes")}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("حفظ الذكريات", "Memory saving & organization")}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("مساعد ذكي", "AI assistant")}</span>
-            </li>
-          </ul>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-12 text-base font-semibold rounded-lg"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                      {t('جاري الإضافة...', 'Adding...')}
+                    </>
+                  ) : (
+                    t('إضافة للقائمة', 'Join Waitlist')
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Features List */}
+        <div className="mt-12 grid md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-lg border border-border bg-card">
+            <div className="text-2xl mb-2">✨</div>
+            <p className="font-semibold text-foreground mb-1">{t('ملاحظات غير محدودة', 'Unlimited Notes')}</p>
+            <p className="text-xs text-muted-foreground">{t('احفظ ما تريد', 'Save everything')}</p>
+          </div>
+          <div className="p-4 rounded-lg border border-border bg-card">
+            <div className="text-2xl mb-2">🎙️</div>
+            <p className="font-semibold text-foreground mb-1">{t('ملاحظات صوتية', 'Voice Notes')}</p>
+            <p className="text-xs text-muted-foreground">{t('سجل بصوتك', 'Record your voice')}</p>
+          </div>
+          <div className="p-4 rounded-lg border border-border bg-card">
+            <div className="text-2xl mb-2">🤖</div>
+            <p className="font-semibold text-foreground mb-1">{t('مساعد ذكي', 'AI Assistant')}</p>
+            <p className="text-xs text-muted-foreground">{t('تحليل ذكي', 'Smart analysis')}</p>
+          </div>
         </div>
       </div>
     </div>
