@@ -63,6 +63,22 @@ export async function createTeam(name: string, slug: string) {
       return { error: `Failed to set up team ownership: ${memberError.message}` };
     }
 
+    // Create team subscription record for the user
+    const { error: subscriptionError } = await supabase
+      .from("subscriptions")
+      .insert({
+        user_id: user.id,
+        team_id: team.id,
+        subscription_type: "team", // Assuming team is created with team subscription
+        status: "active",
+        plan_name: "Team Starter",
+      });
+
+    if (subscriptionError) {
+      console.warn("Warning: Failed to create subscription record:", subscriptionError);
+      // Non-critical error - team still created successfully
+    }
+
     revalidatePath("/vault/settings/teams");
     return { data: team };
   } catch (error) {

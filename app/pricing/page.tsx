@@ -91,13 +91,18 @@ export default function PricingPage() {
           included: true,
         },
         {
-          ar: 'تحليل "الدماغ الثاني" بالذكاء الاصطناعي',
-          en: '"Second Brain" AI Analysis',
+          ar: "حفظ الذكريات وتنظيمها",
+          en: "Memory Saving & Organization",
           included: true,
         },
         {
-          ar: "مزامنة التقويم والمهام",
-          en: "Calendar & Task Sync",
+          ar: "مساعد ذكي للملاحظات والتذكيرات",
+          en: "AI Assistant for Notes & Reminders",
+          included: true,
+        },
+        {
+          ar: "مزامنة التقويم والمهام الشخصية",
+          en: "Personal Calendar & Task Sync",
           included: true,
         },
         { ar: "بحث كامل في الذاكرة", en: "Full Memory Search", included: true },
@@ -109,16 +114,16 @@ export default function PricingPage() {
       popular: true,
     },
     {
-      id: "companies",
-      nameAr: "باقة الشركات",
-      nameEn: "Companies",
-      targetAr: "للشركات والفرق الناشئة",
-      targetEn: "Teams & Startups",
-      price: "99",
-      priceAnnual: "990",
-      priceSuffixAr: "/ شهر (حتى ٥ مستخدمين)",
-      priceSuffixEn: "/ month (Up to 5 users)",
-      icon: Building2,
+      id: "team",
+      nameAr: "باقة الفرق",
+      nameEn: "Team",
+      targetAr: "للفرق والمشاريع الصغيرة",
+      targetEn: "Teams & Small Projects",
+      price: "79",
+      priceAnnual: "790",
+      priceSuffixAr: "/ شهر (حتى ١٠ مستخدمين)",
+      priceSuffixEn: "/ month (Up to 10 users)",
+      icon: Zap,
       features: [
         {
           ar: "كل مميزات الأفراد",
@@ -126,27 +131,31 @@ export default function PricingPage() {
           included: true,
         },
         {
-          ar: "لوحة تحكم لإدارة الفريق",
-          en: "Admin Dashboard for Team Management",
+          ar: "لوحة كانبان لإدارة المشاريع",
+          en: "Kanban Board for Project Management",
           included: true,
         },
         {
-          ar: "قاعدة معرفة مشتركة (دماغ الشركة)",
-          en: "Shared Knowledge Base (Company Brain)",
+          ar: "إدارة المهام والتعيين",
+          en: "Task Management & Assignment",
           included: true,
         },
         {
-          ar: "إدارة المشاريع والمهام",
-          en: "Project & Task Management",
+          ar: "ذاكرة جماعية للفريق",
+          en: "Shared Team Memory",
           included: true,
         },
-        { ar: "دخول عبر API", en: "API Access", included: true },
+        {
+          ar: "تذكيرات جماعية",
+          en: "Team Reminders",
+          included: true,
+        },
+        { ar: "دعم فني الأولوية", en: "Priority Support", included: true },
       ],
       ctaAr: "ابدأ الآن",
       ctaEn: "Get Started",
-      buttonVariant: "secondary",
+      buttonVariant: "default",
       popular: false,
-      underDevelopment: false,
     },
   ];
 
@@ -215,7 +224,7 @@ export default function PricingPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto items-start"
+            className="grid md:grid-cols-4 gap-8 max-w-7xl mx-auto items-start"
           >
             {pricingTiers.map((tier, index) => (
               <motion.div
