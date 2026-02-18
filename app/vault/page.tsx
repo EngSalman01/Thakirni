@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
+import { useSubscription } from "@/hooks/use-subscription";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
