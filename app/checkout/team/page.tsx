@@ -28,8 +28,7 @@ export default function TeamCheckout() {
         return;
       }
 
-      // First, save email to waitlist
-      const waitlistResponse = await fetch('/api/waitlist', {
+      const response = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -39,44 +38,21 @@ export default function TeamCheckout() {
         }),
       });
 
-      const waitlistData = await waitlistResponse.json();
+      const data = await response.json();
 
-      if (!waitlistData.success && !waitlistData.message?.includes('already')) {
-        toast.error(t('فشل الطلب', 'Request failed'));
-        setLoading(false);
-        return;
-      }
-
-      // Create 2Checkout session
-      const productId = process.env.NEXT_PUBLIC_2CHECKOUT_TEAM_PRODUCT_ID;
-      
-      if (!productId) {
-        toast.error(t('خطأ في الإعداد', 'Configuration error'));
-        setLoading(false);
-        return;
-      }
-
-      const checkoutResponse = await fetch('/api/2checkout/create-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId,
-          email,
-          plan: 'team',
-        }),
-      });
-
-      const checkoutData = await checkoutResponse.json();
-
-      if (checkoutData.error) {
-        toast.error(checkoutData.error);
-        setLoading(false);
-        return;
-      }
-
-      // Redirect to 2Checkout
-      if (checkoutData.redirectUrl) {
-        window.location.href = checkoutData.redirectUrl;
+      if (data.success) {
+        setCompleted(true);
+        toast.success(t('تم! تحقق من بريدك', 'Success! Check your email'));
+        setTimeout(() => {
+          router.push('/auth');
+        }, 2000);
+      } else if (data.message?.includes('already')) {
+        toast.info(t('أنت مسجل بالفعل', 'Already registered'));
+        setTimeout(() => {
+          router.push('/auth');
+        }, 1500);
+      } else {
+        toast.error(data.message || t('حدث خطأ', 'An error occurred'));
       }
     } catch (error) {
       console.error('Signup error:', error);
@@ -89,11 +65,11 @@ export default function TeamCheckout() {
   if (completed) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-        <Card className="border-blue-500/30 bg-blue-500/5 w-full max-w-md">
+        <Card className="border-emerald-500/30 bg-emerald-500/5 w-full max-w-md">
           <CardContent className="pt-12 pb-12 text-center">
             <div className="flex justify-center mb-6">
-              <div className="p-4 bg-blue-500/20 rounded-full">
-                <CheckCircle2 className="w-12 h-12 text-blue-600 dark:text-blue-500" />
+              <div className="p-4 bg-emerald-500/20 rounded-full">
+                <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-500" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
@@ -120,10 +96,10 @@ export default function TeamCheckout() {
             {t('باقة الفريق', 'Team Plan')}
           </h1>
           <p className="text-xl text-emerald-600 dark:text-emerald-500 font-semibold">
-            {t('99 ريال سعودي / الشهر', 'SAR 99 / month')}
+            {t('مجاني تماماً', 'Completely Free')}
           </p>
           <p className="text-muted-foreground mt-2">
-            {t('تعاون مع فريقك بسهولة', 'Collaborate with your team easily')}
+            {t('تعاون مع فريقك بسهولة - لا توجد رسوم مخفية', 'Collaborate with your team - No hidden fees')}
           </p>
         </div>
 
@@ -132,7 +108,7 @@ export default function TeamCheckout() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              {t('ابدأ فريقك الآن', 'Start Your Team')}
+              {t('ابدأ مجاناً الآن', 'Get Started for Free')}
             </CardTitle>
             <CardDescription>
               {t('لا توجد بطاقة ائتمان مطلوبة', 'No credit card required')}
@@ -159,12 +135,12 @@ export default function TeamCheckout() {
               </div>
 
               {/* Info Box */}
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
-                <p className="font-semibold text-blue-700 dark:text-blue-400 text-sm">
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 space-y-2">
+                <p className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">
                   {t('✓ مجاني تماماً', '✓ Completely Free')}
                 </p>
-                <p className="text-xs text-blue-700 dark:text-blue-400">
-                  {t('لا توجد اشتراكات أو رسوم. استمتع بجميع مميزات الفريق مجاناً للأبد.', 'No subscriptions or fees. Enjoy all team features for free forever.')}
+                <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                  {t('لا توجد اشتراكات أو رسوم. استمتع بجميع المميزات مجاناً للأبد.', 'No subscriptions or fees. Enjoy all features for free forever.')}
                 </p>
               </div>
 
@@ -180,7 +156,7 @@ export default function TeamCheckout() {
                     {t('جاري...', 'Loading...')}
                   </>
                 ) : (
-                  t('الدفع الآن - 99 ريال', 'Pay Now - SAR 99')
+                  t('ابدأ الآن', 'Get Started')
                 )}
               </Button>
 
@@ -192,7 +168,7 @@ export default function TeamCheckout() {
                 <Button
                   type="button"
                   variant="link"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                  className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700"
                   onClick={() => router.push('/auth')}
                 >
                   {t('سجل دخولك', 'Login')}
@@ -207,10 +183,10 @@ export default function TeamCheckout() {
           <h3 className="font-semibold text-foreground text-lg">{t('المميزات المتضمنة:', 'Included Features:')}</h3>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { icon: '👥', title: t('فريق غير محدود', 'Unlimited Team Members'), desc: t('أضف أعضاء مجاناً', 'Add members for free') },
-              { icon: '📋', title: t('مجلس كانبان', 'Kanban Board'), desc: t('إدارة المشاريع', 'Manage projects') },
-              { icon: '💬', title: t('تعليقات وملاحظات', 'Comments & Notes'), desc: t('التعاون السلس', 'Smooth collaboration') },
-              { icon: '📊', title: t('تقارير الفريق', 'Team Reports'), desc: t('تحليل الأداء', 'Performance analytics') },
+              { icon: '👥', title: t('أعضاء فريق غير محدودين', 'Unlimited Team Members'), desc: t('أضف فريقك كله', 'Add your whole team') },
+              { icon: '🔄', title: t('تعاون فوري', 'Real-time Collaboration'), desc: t('العمل معاً بكفاءة', 'Work together efficiently') },
+              { icon: '📊', title: t('لوحة تحكم متقدمة', 'Advanced Dashboard'), desc: t('إدارة المشاريع', 'Manage projects') },
+              { icon: '🔐', title: t('أمان على مستوى المؤسسة', 'Enterprise Security'), desc: t('حماية البيانات', 'Data protection') },
             ].map((feature, i) => (
               <div key={i} className="p-4 rounded-lg border border-border bg-card hover:bg-card/80 transition-colors">
                 <div className="text-2xl mb-2">{feature.icon}</div>
@@ -231,13 +207,13 @@ export default function TeamCheckout() {
               </div>
               <div className="w-px h-12 bg-border" />
               <div className="text-center">
-                <p className="text-2xl font-bold text-foreground">∞</p>
-                <p className="text-xs text-muted-foreground">{t('أعضاء', 'Members')}</p>
+                <p className="text-2xl font-bold text-foreground">0</p>
+                <p className="text-xs text-muted-foreground">{t('رسوم مخفية', 'Hidden Fees')}</p>
               </div>
               <div className="w-px h-12 bg-border" />
               <div className="text-center">
-                <p className="text-2xl font-bold text-foreground">24/7</p>
-                <p className="text-xs text-muted-foreground">{t('دعم', 'Support')}</p>
+                <p className="text-2xl font-bold text-foreground">∞</p>
+                <p className="text-xs text-muted-foreground">{t('بلا حدود', 'Unlimited')}</p>
               </div>
             </div>
           </CardContent>
