@@ -25,7 +25,7 @@ export function LandingHeader() {
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <BrandLogo width={60} height={20} variant="icon" />
+            <BrandLogo size="sm" variant="icon" />
           </Link>
 
           {/* Desktop Navigation */}
