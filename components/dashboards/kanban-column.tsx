@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, GripVertical } from "lucide-react";
-import { Task, useTasks } from "@/hooks/use-tasks";
+import { Task } from "@/hooks/use-tasks";
 import { TaskColumn } from "@/hooks/use-columns";
 import { TaskCard } from "./task-card";
 import { Button } from "@/components/ui/button";
