@@ -1,20 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
-import { Loader2, CheckCircle2, Mail } from 'lucide-react';
-import { useLanguage } from '@/components/language-provider';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Loader2, CheckCircle2, Mail } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
+import { useRouter } from "next/navigation";
 
 export default function TeamCheckout() {
   const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [completed, setCompleted] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -23,18 +29,20 @@ export default function TeamCheckout() {
 
     try {
       if (!email) {
-        toast.error(t('يرجى إدخال بريدك الإلكتروني', 'Please enter your email'));
+        toast.error(
+          t("يرجى إدخال بريدك الإلكتروني", "Please enter your email"),
+        );
         setLoading(false);
         return;
       }
 
-      const response = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          plan: 'team',
-          country: 'SA',
+          plan: "team",
+          country: "SA",
         }),
       });
 
@@ -42,14 +50,14 @@ export default function TeamCheckout() {
 
       if (data.success) {
         setCompleted(true);
-        toast.success(t('تم! تحقق من بريدك', 'Success! Check your email'));
+        toast.success(t("تم! تحقق من بريدك", "Success! Check your email"));
         setTimeout(() => {
-          router.push('/auth');
+          router.push("/auth");
         }, 2000);
-      } else if (data.message?.includes('already')) {
-        toast.info(t('أنت مسجل بالفعل', 'Already registered'));
+      } else if (data.message?.includes("already")) {
+        toast.info(t("أنت مسجل بالفعل", "Already registered"));
         setTimeout(() => {
-          router.push('/auth');
+          router.push("/auth");
         }, 1500);
       } else {
         toast.error(data.message || t('حدث خطأ', 'An error occurred'));
@@ -73,13 +81,19 @@ export default function TeamCheckout() {
               </div>
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              {t('تم التسجيل!', 'Registered!')}
+              {t("تم التسجيل!", "Registered!")}
             </h2>
             <p className="text-muted-foreground mb-2">
-              {t('سيتم إعادة توجيهك لتسجيل الدخول...', 'Redirecting to login...')}
+              {t(
+                "سيتم إعادة توجيهك لتسجيل الدخول...",
+                "Redirecting to login...",
+              )}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t('تحقق من بريدك للمزيد من المعلومات', 'Check your email for more info')}
+              {t(
+                "تحقق من بريدك للمزيد من المعلومات",
+                "Check your email for more info",
+              )}
             </p>
           </CardContent>
         </Card>
@@ -93,13 +107,16 @@ export default function TeamCheckout() {
         {/* Header */}
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold text-foreground mb-2">
-            {t('باقة الفريق', 'Team Plan')}
+            {t("باقة الفريق", "Team Plan")}
           </h1>
           <p className="text-xl text-emerald-600 dark:text-emerald-500 font-semibold">
-            {t('مجاني تماماً', 'Completely Free')}
+            {t("مجاني تماماً", "Completely Free")}
           </p>
           <p className="text-muted-foreground mt-2">
-            {t('تعاون مع فريقك بسهولة - لا توجد رسوم مخفية', 'Collaborate with your team - No hidden fees')}
+            {t(
+              "تعاون مع فريقك بسهولة - لا توجد رسوم مخفية",
+              "Collaborate with your team - No hidden fees",
+            )}
           </p>
         </div>
 
@@ -108,17 +125,19 @@ export default function TeamCheckout() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="w-5 h-5" />
-              {t('ابدأ مجاناً الآن', 'Get Started for Free')}
+              {t("ابدأ مجاناً الآن", "Get Started for Free")}
             </CardTitle>
             <CardDescription>
-              {t('لا توجد بطاقة ائتمان مطلوبة', 'No credit card required')}
+              {t("لا توجد بطاقة ائتمان مطلوبة", "No credit card required")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-6">
               {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="email">{t('البريد الإلكتروني', 'Email Address')}</Label>
+                <Label htmlFor="email">
+                  {t("البريد الإلكتروني", "Email Address")}
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -130,17 +149,23 @@ export default function TeamCheckout() {
                   className="h-11 text-base"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {t('سنرسل لك رابط التحقق', 'We\'ll send you a verification link')}
+                  {t(
+                    "سنرسل لك رابط التحقق",
+                    "We'll send you a verification link",
+                  )}
                 </p>
               </div>
 
               {/* Info Box */}
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 space-y-2">
                 <p className="font-semibold text-emerald-700 dark:text-emerald-400 text-sm">
-                  {t('✓ مجاني تماماً', '✓ Completely Free')}
+                  {t("✓ مجاني تماماً", "✓ Completely Free")}
                 </p>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                  {t('لا توجد اشتراكات أو رسوم. استمتع بجميع المميزات مجاناً للأبد.', 'No subscriptions or fees. Enjoy all features for free forever.')}
+                  {t(
+                    "لا توجد اشتراكات أو رسوم. استمتع بجميع المميزات مجانا .",
+                    "No subscriptions or fees. Enjoy all features for free.",
+                  )}
                 </p>
               </div>
 
@@ -153,25 +178,25 @@ export default function TeamCheckout() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                    {t('جاري...', 'Loading...')}
+                    {t("جاري...", "Loading...")}
                   </>
                 ) : (
-                  t('ابدأ الآن', 'Get Started')
+                  t("ابدأ الآن", "Get Started")
                 )}
               </Button>
 
               {/* Already registered */}
               <div className="text-center text-sm">
                 <span className="text-muted-foreground">
-                  {t('لديك حساب بالفعل؟', 'Already have an account?')}
+                  {t("لديك حساب بالفعل؟", "Already have an account?")}
                 </span>
                 <Button
                   type="button"
                   variant="link"
                   className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700"
-                  onClick={() => router.push('/auth')}
+                  onClick={() => router.push("/auth")}
                 >
-                  {t('سجل دخولك', 'Login')}
+                  {t("سجل دخولك", "Login")}
                 </Button>
               </div>
             </form>
@@ -180,17 +205,40 @@ export default function TeamCheckout() {
 
         {/* Features List */}
         <div className="space-y-4 mb-8">
-          <h3 className="font-semibold text-foreground text-lg">{t('المميزات المتضمنة:', 'Included Features:')}</h3>
+          <h3 className="font-semibold text-foreground text-lg">
+            {t("المميزات المتضمنة:", "Included Features:")}
+          </h3>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              { icon: '👥', title: t('أعضاء فريق غير محدودين', 'Unlimited Team Members'), desc: t('أضف فريقك كله', 'Add your whole team') },
-              { icon: '🔄', title: t('تعاون فوري', 'Real-time Collaboration'), desc: t('العمل معاً بكفاءة', 'Work together efficiently') },
-              { icon: '📊', title: t('لوحة تحكم متقدمة', 'Advanced Dashboard'), desc: t('إدارة المشاريع', 'Manage projects') },
-              { icon: '🔐', title: t('أمان على مستوى المؤسسة', 'Enterprise Security'), desc: t('حماية البيانات', 'Data protection') },
+              {
+                icon: "👥",
+                title: t("أعضاء فريق غير محدودين", "Unlimited Team Members"),
+                desc: t("أضف فريقك كله", "Add your whole team"),
+              },
+              {
+                icon: "🔄",
+                title: t("تعاون فوري", "Real-time Collaboration"),
+                desc: t("العمل معاً بكفاءة", "Work together efficiently"),
+              },
+              {
+                icon: "📊",
+                title: t("لوحة تحكم متقدمة", "Advanced Dashboard"),
+                desc: t("إدارة المشاريع", "Manage projects"),
+              },
+              {
+                icon: "🔐",
+                title: t("أمان على مستوى المؤسسة", "Enterprise Security"),
+                desc: t("حماية البيانات", "Data protection"),
+              },
             ].map((feature, i) => (
-              <div key={i} className="p-4 rounded-lg border border-border bg-card hover:bg-card/80 transition-colors">
+              <div
+                key={i}
+                className="p-4 rounded-lg border border-border bg-card hover:bg-card/80 transition-colors"
+              >
                 <div className="text-2xl mb-2">{feature.icon}</div>
-                <p className="font-semibold text-foreground mb-1">{feature.title}</p>
+                <p className="font-semibold text-foreground mb-1">
+                  {feature.title}
+                </p>
                 <p className="text-xs text-muted-foreground">{feature.desc}</p>
               </div>
             ))}
@@ -203,17 +251,23 @@ export default function TeamCheckout() {
             <div className="flex items-center justify-center gap-6">
               <div className="text-center">
                 <p className="text-2xl font-bold text-foreground">100%</p>
-                <p className="text-xs text-muted-foreground">{t('مجاني', 'Free')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("مجاني", "Free")}
+                </p>
               </div>
               <div className="w-px h-12 bg-border" />
               <div className="text-center">
                 <p className="text-2xl font-bold text-foreground">0</p>
-                <p className="text-xs text-muted-foreground">{t('رسوم مخفية', 'Hidden Fees')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("رسوم مخفية", "Hidden Fees")}
+                </p>
               </div>
               <div className="w-px h-12 bg-border" />
               <div className="text-center">
                 <p className="text-2xl font-bold text-foreground">∞</p>
-                <p className="text-xs text-muted-foreground">{t('بلا حدود', 'Unlimited')}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("بلا حدود", "Unlimited")}
+                </p>
               </div>
             </div>
           </CardContent>
