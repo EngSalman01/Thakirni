@@ -1,79 +1,85 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useLanguage } from "@/components/language-provider";
-import { toast } from "sonner";
-import { Loader2, Check } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { Loader2, CheckCircle2, Mail } from 'lucide-react';
+import { useLanguage } from '@/components/language-provider';
+import { useRouter } from 'next/navigation';
 
-export default function CheckoutTeamPage() {
+export default function TeamCheckout() {
   const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    fullName: "",
-    teamName: "",
-  });
+  const [email, setEmail] = useState('');
+  const [completed, setCompleted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (!formData.email || !formData.fullName || !formData.teamName) {
-        toast.error(t("يرجى ملء جميع الحقول", "Please fill all fields"));
+      if (!email) {
+        toast.error(t('يرجى إدخال بريدك الإلكتروني', 'Please enter your email'));
         setLoading(false);
         return;
       }
 
-      // Simulate storing team info in waitlist
-      console.log("[v0] Team signup collected:", formData);
-      
-      setSubmitted(true);
-      toast.success(t("شكراً على اهتمامك!", "Thank you for your interest!"));
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          plan: 'team',
+          country: 'SA',
+        }),
+      });
 
-      // Redirect to auth after 2 seconds
-      setTimeout(() => {
-        router.push("/auth?plan=team");
-      }, 2000);
+      const data = await response.json();
+
+      if (data.success) {
+        setCompleted(true);
+        toast.success(t('تم! تحقق من بريدك', 'Success! Check your email'));
+        setTimeout(() => {
+          router.push('/auth');
+        }, 2000);
+      } else if (data.message?.includes('already')) {
+        toast.info(t('أنت مسجل بالفعل', 'Already registered'));
+        setTimeout(() => {
+          router.push('/auth');
+        }, 1500);
+      } else {
+        toast.error(data.message || t('حدث خطأ', 'An error occurred'));
+      }
     } catch (error) {
-      console.error("Submission error:", error);
-      toast.error(t("حدث خطأ", "An error occurred"));
+      console.error('Signup error:', error);
+      toast.error(t('خطأ في الاتصال', 'Connection error'));
     } finally {
       setLoading(false);
     }
   };
 
-  if (submitted) {
+  if (completed) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full">
-          <CardContent className="pt-12 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="p-3 bg-emerald-500/10 rounded-full">
-                <Check className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+        <Card className="border-blue-500/30 bg-blue-500/5 w-full max-w-md">
+          <CardContent className="pt-12 pb-12 text-center">
+            <div className="flex justify-center mb-6">
+              <div className="p-4 bg-blue-500/20 rounded-full">
+                <CheckCircle2 className="w-12 h-12 text-blue-600 dark:text-blue-500" />
               </div>
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              {t("تم التسجيل بنجاح!", "Registered Successfully!")}
+              {t('تم التسجيل!', 'Registered!')}
             </h2>
-            <p className="text-muted-foreground mb-4">
-              {t(
-                "سيتم توجيهك قريباً...",
-                "You'll be redirected shortly..."
-              )}
+            <p className="text-muted-foreground mb-2">
+              {t('سيتم إعادة توجيهك لتسجيل الدخول...', 'Redirecting to login...')}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t('تحقق من بريدك للمزيد من المعلومات', 'Check your email for more info')}
             </p>
           </CardContent>
         </Card>
@@ -82,94 +88,59 @@ export default function CheckoutTeamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {t("باقة الفريق", "Team Plan")}
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 py-12">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl font-bold text-foreground mb-2">
+            {t('باقة الفريق', 'Team Plan')}
           </h1>
-          <p className="text-muted-foreground">
-            {t(
-              "79 ريال / شهر (حتى ١٠ مستخدمين)",
-              "79 SAR / month (Up to 10 users)"
-            )}
+          <p className="text-xl text-blue-600 dark:text-blue-500 font-semibold">
+            {t('مجاني للفرق', 'Free for Teams')}
+          </p>
+          <p className="text-muted-foreground mt-2">
+            {t('تعاون فعال مع فريقك - لا توجد رسوم مخفية', 'Collaborate with your team - No hidden fees')}
           </p>
         </div>
 
-        <Card>
+        {/* Main Signup Card */}
+        <Card className="mb-8">
           <CardHeader>
-            <CardTitle>{t("إنشاء فريقك", "Create Your Team")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="w-5 h-5" />
+              {t('ابدأ فريقك الآن', 'Start Your Team')}
+            </CardTitle>
             <CardDescription>
-              {t(
-                "أخبرنا عن فريقك وسنبدأ من هناك",
-                "Tell us about your team and we'll get started"
-              )}
+              {t('لا توجد بطاقة ائتمان مطلوبة', 'No credit card required')}
             </CardDescription>
           </CardHeader>
-
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Full Name */}
+            <form onSubmit={handleSignup} className="space-y-6">
+              {/* Email Input */}
               <div className="space-y-2">
-                <Label htmlFor="fullName">
-                  {t("الاسم الكامل", "Full Name")} *
-                </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder={t("محمد أحمد", "Mohammed Ahmed")}
-                  value={formData.fullName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, fullName: e.target.value })
-                  }
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Team Name */}
-              <div className="space-y-2">
-                <Label htmlFor="teamName">
-                  {t("اسم الفريق", "Team Name")} *
-                </Label>
-                <Input
-                  id="teamName"
-                  type="text"
-                  placeholder={t("فريق التطوير", "Development Team")}
-                  value={formData.teamName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, teamName: e.target.value })
-                  }
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email">
-                  {t("البريد الإلكتروني", "Email")} *
-                </Label>
+                <Label htmlFor="email">{t('البريد الإلكتروني', 'Email Address')}</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
+                  className="h-11 text-base"
                 />
+                <p className="text-xs text-muted-foreground">
+                  {t('سنرسل لك رابط التحقق', 'We\'ll send you a verification link')}
+                </p>
               </div>
 
-              {/* Info Message */}
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-400">
-                  {t(
-                    "نحن في مرحلة مبكرة. سيتم تفعيل الدفع قريباً.",
-                    "We're in beta. Payment processing will be enabled soon."
-                  )}
+              {/* Info Box */}
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 space-y-2">
+                <p className="font-semibold text-blue-700 dark:text-blue-400 text-sm">
+                  {t('✓ مجاني تماماً', '✓ Completely Free')}
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-400">
+                  {t('لا توجد اشتراكات أو رسوم. استمتع بجميع مميزات الفريق مجاناً للأبد.', 'No subscriptions or fees. Enjoy all team features for free forever.')}
                 </p>
               </div>
 
@@ -177,56 +148,76 @@ export default function CheckoutTeamPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white h-11"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white h-12 text-base font-semibold"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                    {t("جاري...", "Processing...")}
+                    {t('جاري...', 'Loading...')}
                   </>
                 ) : (
-                  t("إنشاء الفريق", "Create Team")
+                  t('ابدأ الآن', 'Get Started')
                 )}
               </Button>
 
-              {/* Back Button */}
-              <Button
-                type="button"
-                variant="outline"
-                disabled={loading}
-                onClick={() => router.back()}
-                className="w-full"
-              >
-                {t("رجوع", "Back")}
-              </Button>
+              {/* Already registered */}
+              <div className="text-center text-sm">
+                <span className="text-muted-foreground">
+                  {t('لديك حساب بالفعل؟', 'Already have an account?')}
+                </span>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700"
+                  onClick={() => router.push('/auth')}
+                >
+                  {t('سجل دخولك', 'Login')}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
 
-        {/* Features Preview */}
-        <div className="mt-8 p-4 rounded-lg border border-border bg-card">
-          <h3 className="font-semibold text-foreground mb-3">
-            {t("ما تحصل عليه:", "What's Included:")}
-          </h3>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("لوحة كانبان", "Kanban board")}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("إدارة المهام", "Task management")}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("ذاكرة جماعية", "Shared memory")}</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-              <span>{t("حتى ١٠ مستخدمين", "Up to 10 users")}</span>
-            </li>
-          </ul>
+        {/* Features List */}
+        <div className="space-y-4 mb-8">
+          <h3 className="font-semibold text-foreground text-lg">{t('المميزات المتضمنة:', 'Included Features:')}</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              { icon: '👥', title: t('فريق غير محدود', 'Unlimited Team Members'), desc: t('أضف أعضاء مجاناً', 'Add members for free') },
+              { icon: '📋', title: t('مجلس كانبان', 'Kanban Board'), desc: t('إدارة المشاريع', 'Manage projects') },
+              { icon: '💬', title: t('تعليقات وملاحظات', 'Comments & Notes'), desc: t('التعاون السلس', 'Smooth collaboration') },
+              { icon: '📊', title: t('تقارير الفريق', 'Team Reports'), desc: t('تحليل الأداء', 'Performance analytics') },
+            ].map((feature, i) => (
+              <div key={i} className="p-4 rounded-lg border border-border bg-card hover:bg-card/80 transition-colors">
+                <div className="text-2xl mb-2">{feature.icon}</div>
+                <p className="font-semibold text-foreground mb-1">{feature.title}</p>
+                <p className="text-xs text-muted-foreground">{feature.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Social Proof */}
+        <Card className="border-border/50 bg-card/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-center gap-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-foreground">100%</p>
+                <p className="text-xs text-muted-foreground">{t('مجاني', 'Free')}</p>
+              </div>
+              <div className="w-px h-12 bg-border" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-foreground">∞</p>
+                <p className="text-xs text-muted-foreground">{t('أعضاء', 'Members')}</p>
+              </div>
+              <div className="w-px h-12 bg-border" />
+              <div className="text-center">
+                <p className="text-2xl font-bold text-foreground">24/7</p>
+                <p className="text-xs text-muted-foreground">{t('دعم', 'Support')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
