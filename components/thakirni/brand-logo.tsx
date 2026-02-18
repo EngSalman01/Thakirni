@@ -17,13 +17,13 @@ export function BrandLogo({ className, width = 120, height = 40 }: BrandLogoProp
   const src = "/images/logo-full.png"
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative inline-flex", className)}>
       <Image 
         src={src}
         alt="Thakirni Logo" 
         width={width} 
         height={height} 
-        className="object-contain"
+        className="object-contain w-auto h-auto"
         priority
       />
     </div>
