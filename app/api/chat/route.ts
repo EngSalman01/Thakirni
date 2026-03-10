@@ -136,8 +136,7 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
           execute: async (input) => {
             if (!user) return { success: false, message: "يجب تسجيل الدخول أولاً" }
             
-            console.log("[v0] Creating plan:", JSON.stringify(input, null, 2))
-            console.log("[v0] User ID:", user.id)
+
             
             const { data, error } = await supabase
               .from("plans")
@@ -163,7 +162,7 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
               return { success: false, message: error.message }
             }
 
-            console.log("[v0] Plan created successfully:", data)
+          
             return {
               success: true,
               message: `Scheduled "${input.title}" on ${input.plan_date} ${input.plan_time ? 'at ' + input.plan_time : ''}.`,
@@ -192,7 +191,7 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
               .single()
 
             if (error) {
-                console.log("[v0] Save memory error:", error.message)
+              
                 return { success: false, message: error.message }
             }
             return { success: true, message: "Memory saved!", memory: data }
@@ -208,7 +207,7 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
           execute: async ({ date_filter, category }) => {
             if (!user) return { success: false, message: "Login required", plans: [] }
 
-            console.log("[v0] Listing plans - Filter:", date_filter, "Category:", category, "User:", user.id)
+          
 
             let query = supabase
               .from("plans")
@@ -225,7 +224,7 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
                const tmrw = new Date(now)
                tmrw.setDate(tmrw.getDate() + 1)
                const tomorrowDate = tmrw.toISOString().split('T')[0]
-               console.log("[v0] Tomorrow date:", tomorrowDate)
+             
                query = query.eq("plan_date", tomorrowDate)
             }
             if (date_filter === "upcoming") query = query.gte("plan_date", currentDate)
@@ -236,9 +235,7 @@ REMEMBER: You are having a CONVERSATION. Gather all information FIRST, then crea
               return { success: false, message: error.message, plans: [] }
             }
 
-            console.log("[v0] Plans found:", data?.length || 0)
-            if (data && data.length > 0) {
-              console.log("[v0] First plan:", data[0])
+  if (data && data.length > 0) {
             }
 
             return {
