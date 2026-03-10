@@ -2,11 +2,11 @@
 
 import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import {
   Eye,
   EyeOff,
@@ -23,6 +23,7 @@ import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { createClient } from "@/lib/supabase/client";
 
 function AuthForm() {
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -130,13 +131,31 @@ function AuthForm() {
         </h1>
       </div>
 
-      <Tabs defaultValue="signin" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-8">
-          <TabsTrigger value="signin">
+      <div className="w-full">
+        <div className="grid w-full grid-cols-2 mb-8 gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("signin")}
+            className={`py-2 px-4 rounded-md font-medium transition-colors ${
+              activeTab === "signin"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
             {t("تسجيل الدخول", "Sign In")}
-          </TabsTrigger>
-          <TabsTrigger value="signup">{t("حساب جديد", "Sign Up")}</TabsTrigger>
-        </TabsList>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("signup")}
+            className={`py-2 px-4 rounded-md font-medium transition-colors ${
+              activeTab === "signup"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            }`}
+          >
+            {t("حساب جديد", "Sign Up")}
+          </button>
+        </div>
 
         {/* Show Global Form Errors */}
         {errors.form && (
@@ -146,9 +165,9 @@ function AuthForm() {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
-          {/* Sign In Form */}
-          <TabsContent value="signin" className="space-y-6 w-full">
+        {/* Sign In Form */}
+        {activeTab === "signin" && (
+          <div key="signin" className="space-y-6 w-full">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-foreground">
                 {t("مرحباً بعودتك", "Welcome Back")}
@@ -224,10 +243,12 @@ function AuthForm() {
                   : t("تسجيل الدخول", "Sign In")}
               </Button>
             </form>
-          </TabsContent>
+          </div>
+        )}
 
-          {/* Sign Up Form */}
-          <TabsContent value="signup" className="space-y-6 w-full">
+        {/* Sign Up Form */}
+        {activeTab === "signup" && (
+          <div key="signup" className="space-y-6 w-full">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-foreground">
                 {t("إنشاء حساب جديد", "Create an account")}
@@ -331,8 +352,8 @@ function AuthForm() {
                   : t("إنشاء الحساب", "Create Account")}
               </Button>
             </form>
-          </TabsContent>
-        </AnimatePresence>
+          </div>
+        )}
 
         {/* Google Login (Shared) */}
         <div className="relative mt-6">
@@ -374,7 +395,7 @@ function AuthForm() {
             {t("Continue with Google", "Continue with Google")}
           </span>
         </Button>
-      </Tabs>
+      </div>
     </motion.div>
   );
 }
@@ -401,7 +422,7 @@ export default function AuthPage() {
           >
             <div className="mb-8">
               <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-sm border border-white/10">
-                <BrandLogo width={80} height={80} variant="icon" />
+                <BrandLogo size="lg" variant="icon" />
               </div>
             </div>
 
