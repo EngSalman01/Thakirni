@@ -14,25 +14,27 @@ export function BrandLogo({
   size = "md",
   variant = "full"
 }: BrandLogoProps) {
-  // Consistent sizing based on size prop
+  // Fixed square dimensions for brain icon logo
   const sizeConfig = {
-    sm: { width: 40, height: 40 },
-    md: { width: 80, height: 80 },
-    lg: { width: 120, height: 120 }
+    sm: 32,    // 32px
+    md: 64,    // 64px
+    lg: 96     // 96px
   }
 
-  const config = sizeConfig[size]
+  const dimension = sizeConfig[size]
   const src = "/images/logo-full.png"
 
   return (
-    <div className={cn("relative inline-flex items-center justify-center flex-shrink-0", className)}>
+    <div 
+      className={cn("relative inline-flex items-center justify-center flex-shrink-0", className)}
+      style={{ width: dimension, height: dimension }}
+    >
       <Image 
         src={src}
         alt="Thakirni Logo" 
-        width={config.width}
-        height={config.height}
-        style={{ width: "auto", height: "auto" }}
-        className="object-contain"
+        width={dimension}
+        height={dimension}
+        className="w-full h-full object-contain"
         priority
       />
     </div>
