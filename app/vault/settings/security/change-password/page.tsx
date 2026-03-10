@@ -1,28 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { ArrowRight, Lock } from 'lucide-react';
-import { useLanguage } from '@/context/language-context';
-import { useAuth } from '@/context/auth-context';
+import { ArrowRight, Lock, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useLanguage } from '@/components/language-provider';
+import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 
 export default function ChangePasswordPage() {
   const router = useRouter();
-  const { user } = useAuth();
   const { t } = useLanguage();
+  const [supabase] = useState(() => createClient());
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  if (!user) {
-    router.push('/auth');
-    return null;
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          router.push('/auth');
+        }
+      } finally {
+        setChecking(false);
+      }
+    };
+    checkAuth();
+  }, [supabase, router]);
+
+  if (checking) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,12 +67,32 @@ export default function ChangePasswordPage() {
         return;
       }
 
-      // Call Supabase API to change password
-      const { error } = await (await import('@/lib/supabase/client')).createClient()
-        .auth
-        .updateUser({ password: newPassword });
+      // First verify current password by signing in again
+      const { data: userData } = await supabase.auth.getSession();
+      if (!userData.session?.user.email) {
+        toast.error(t('فشل التحقق من البيانات', 'Failed to verify account'));
+        setLoading(false);
+        return;
+      }
 
-      if (error) {
+      // Re-authenticate user with current password
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: userData.session.user.email,
+        password: currentPassword,
+      });
+
+      if (authError) {
+        setErrors({ currentPassword: t('كلمة المرور الحالية غير صحيحة', 'Current password is incorrect') });
+        setLoading(false);
+        return;
+      }
+
+      // Update password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updateError) {
         toast.error(t('فشل تغيير كلمة المرور', 'Failed to change password'));
         setLoading(false);
         return;
