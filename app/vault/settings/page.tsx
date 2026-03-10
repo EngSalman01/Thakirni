@@ -430,13 +430,12 @@ const SecurityCard = ({
         <Button
           variant="outline"
           className="w-full justify-start gap-3"
-          disabled
+          onClick={() => {
+            window.location.href = '/vault/settings/security/change-password';
+          }}
         >
           <Lock className="w-4 h-4" aria-hidden="true" />
           {t("تغيير كلمة المرور", "Change Password")}
-          <span className="ms-auto text-xs text-muted-foreground">
-            {t("قريباً", "Soon")}
-          </span>
         </Button>
         <Button
           variant="outline"
