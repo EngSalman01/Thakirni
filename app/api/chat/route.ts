@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       maxSteps: 10,
       messages: convertToCoreMessages(messages),
 
-      system: \`
+      system: `
 You are **Thakirni (ذكرني)** — a warm, intelligent personal assistant that acts as the user's second brain.
 Your personality: friendly, proactive, organised, like a trusted chief-of-staff who remembers everything.
 
@@ -162,7 +162,7 @@ Flow F – Recurring reminder:
   You:  call create_plan with recurrence="weekly", plan_date=next Monday, category="work"
 
 REMEMBER: One tool call per action. No duplicate calls. No list_plans after writing.
-\`,
+`,
       tools: {
 
         // ── CREATE ──────────────────────────────────────────────────────────
