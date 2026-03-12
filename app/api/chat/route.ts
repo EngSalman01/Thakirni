@@ -174,7 +174,7 @@ REMEMBER: One tool call per action. No duplicate calls. No list_plans after writ
             title: z.string().describe("Short, clear title"),
             description: z.string().optional().describe("Details, agenda, or notes"),
 
-            plan_date: z.string().describe(\`Date (YYYY-MM-DD). Today = \${currentDate}\`),
+            plan_date: z.string().describe(`Date (YYYY-MM-DD). Today = ${currentDate}`),
             plan_time: z.string().optional().describe("Start time (HH:MM:SS). Required for meetings."),
             end_time: z.string().optional().describe("End time (HH:MM:SS). Default: start + 1 hour."),
             is_all_day: z.boolean().optional().describe("True for birthdays, holidays, all-day events."),
@@ -199,7 +199,7 @@ REMEMBER: One tool call per action. No duplicate calls. No list_plans after writ
             if (input.plan_time && !endTime) {
               const [h, m] = input.plan_time.split(":").map(Number)
               const endH = (h + 1) % 24
-              endTime = \`\${String(endH).padStart(2, "0")}:\${String(m).padStart(2, "0")}:00\`
+              endTime = `${String(endH).padStart(2, "0")}:${String(m).padStart(2, "0")}:00`
             }
 
             const { data, error } = await supabase
@@ -226,7 +226,7 @@ REMEMBER: One tool call per action. No duplicate calls. No list_plans after writ
 
             return {
               success: true,
-              message: \`Scheduled "\${input.title}" on \${input.plan_date}\${input.plan_time ? " at " + input.plan_time.slice(0, 5) : ""}.\`,
+              message: `Scheduled "${input.title}" on ${input.plan_date}${input.plan_time ? " at " + input.plan_time.slice(0, 5) : ""}.`,
               plan: data,
             }
           },
@@ -398,7 +398,7 @@ REMEMBER: One tool call per action. No duplicate calls. No list_plans after writ
 
             // Full-text search on content
             if (query) {
-              dbQuery = dbQuery.ilike("content", \`%\${query}%\`)
+              dbQuery = dbQuery.ilike("content", `%${query}%`)
             }
 
             // Tag filter — Supabase array contains
