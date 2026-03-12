@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -8,254 +8,263 @@ import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-side
 import { useSubscription } from "@/hooks/use-subscription";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Bell,
-  Calendar,
-  Clock,
-  Plus,
-  Upload,
-  ImageIcon,
-  Mic,
-  FileText,
-  MessageSquare,
-} from "lucide-react";
+import { Bell, Plus, Upload, Mic, Brain } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
-import { useMemories } from "@/hooks/use-memories";
-import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
 
-// Dynamic import to prevent SSR issues with AI SDK
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface Team {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+interface TeamMember {
+  id: string;
+  name: string;
+  avatar?: string | null;
+}
+
+// ── Dynamic Imports (defined OUTSIDE component so they're stable references) ──
+
 const AIChat = dynamic(
-  () =>
-    import("@/components/thakirni/ai-chat").then((mod) => ({
-      default: mod.AIChat,
-    })),
+  () => import("@/components/thakirni/ai-chat").then((m) => ({ default: m.AIChat })),
   {
     ssr: false,
     loading: () => (
       <div className="h-[500px] bg-card rounded-xl border border-border flex items-center justify-center">
-        <div className="text-muted-foreground">Loading chat...</div>
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
+          <Brain className="w-8 h-8 animate-pulse" />
+          <span className="text-sm">Loading assistant...</span>
+        </div>
       </div>
     ),
   },
 );
 
+const TeamDashboard = dynamic(
+  () =>
+    import("@/components/dashboards/team-dashboard").then((m) => ({
+      default: m.TeamDashboard,
+    })),
+  { ssr: false },
+);
+
+// ── Quick Actions config ──────────────────────────────────────────────────────
+
+const QUICK_ACTIONS = [
+  { icon: Plus, href: "/vault/new-memory", labelAr: "ذكرى جديدة", labelEn: "New Memory" },
+  { icon: Mic, href: "/vault/voice-note", labelAr: "ملاحظة صوتية", labelEn: "Voice Note" },
+  { icon: Upload, href: "/vault/upload", labelAr: "رفع ملف", labelEn: "Upload" },
+  { icon: Bell, href: "/vault/reminders", labelAr: "التذكيرات", labelEn: "Reminders" },
+] as const;
+
+// ── Shared page shell ─────────────────────────────────────────────────────────
+
+function PageShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-background">
+      <VaultSidebar />
+      <main className="lg:me-64 transition-all duration-300">
+        {children}
+      </main>
+    </div>
+  );
+}
+
+// ── Loading skeleton ──────────────────────────────────────────────────────────
+
+function VaultSkeleton() {
+  return (
+    <PageShell>
+      <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-9 rounded-md" />
+            <Skeleton className="h-9 w-9 rounded-md" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 rounded-lg" />
+          ))}
+        </div>
+        <Skeleton className="h-[500px] rounded-xl" />
+      </div>
+    </PageShell>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
 export default function VaultPage() {
   const { subscriptionType, isLoading: subscriptionLoading } = useSubscription();
-  const [currentTeam, setCurrentTeam] = React.useState<any>(null);
-  const [teamMembers, setTeamMembers] = React.useState<any[]>([]);
-  const [isLoadingTeam, setIsLoadingTeam] = React.useState(false);
+  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
 
   const { t } = useLanguage();
   const router = useRouter();
 
-  const handleNewMemory = () => {
-    router.push("/vault/new-memory");
-  };
+  // ── Fetch team data ──────────────────────────────────────────────────────
 
-  const handleVoiceNote = () => {
-    router.push("/vault/voice-note");
-  };
-
-  const handleUpload = () => {
-    router.push("/vault/upload");
-  };
-
-  const handleReminders = () => {
-    router.push("/vault/reminders");
-  };
-
-  // Fetch team for team/company subscriptions
-  React.useEffect(() => {
-    if (subscriptionType === "team" || subscriptionType === "company") {
-      fetchTeamData();
-    }
-  }, [subscriptionType]);
-
-  const fetchTeamData = async () => {
+  const fetchTeamData = useCallback(async () => {
     setIsLoadingTeam(true);
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: teamMemberData } = await supabase
+      const { data: membership } = await supabase
         .from("team_members")
         .select("team_id")
         .eq("user_id", user.id)
         .single();
 
-      if (teamMemberData) {
-        const { data: teamData } = await supabase
-          .from("teams")
-          .select("*")
-          .eq("id", teamMemberData.team_id)
-          .single();
+      if (!membership) return;
 
-        if (teamData) {
-          setCurrentTeam(teamData);
+      const { data: team } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", membership.team_id)
+        .single();
 
-          const { data: membersData } = await supabase
-            .from("team_members")
-            .select("user_id, profiles(full_name, avatar_url)")
-            .eq("team_id", teamData.id);
+      if (!team) return;
+      setCurrentTeam(team as Team);
 
-          setTeamMembers(
-            membersData?.map((m: any) => ({
-              id: m.user_id,
-              name: m.profiles?.full_name || "Team Member",
-              avatar: m.profiles?.avatar_url,
-            })) || []
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching team:", error);
+      const { data: members } = await supabase
+        .from("team_members")
+        .select("user_id, profiles(full_name, avatar_url)")
+        .eq("team_id", team.id);
+
+      setTeamMembers(
+        members?.map((m: any) => ({
+          id: m.user_id,
+          name: m.profiles?.full_name ?? t("عضو الفريق", "Team Member"),
+          avatar: m.profiles?.avatar_url ?? null,
+        })) ?? [],
+      );
+    } catch (err) {
+      console.error("[VaultPage] fetchTeamData error:", err);
     } finally {
       setIsLoadingTeam(false);
     }
-  };
+  }, [t]);
 
-  // Import TeamDashboard dynamically to avoid circular imports
-  const TeamDashboard = dynamic(
-    () => import("@/components/dashboards/team-dashboard").then(mod => ({ default: mod.TeamDashboard })),
-    { ssr: false }
-  );
+  useEffect(() => {
+    if (subscriptionType === "team" || subscriptionType === "company") {
+      fetchTeamData();
+    }
+  }, [subscriptionType, fetchTeamData]);
 
-  if (subscriptionLoading || isLoadingTeam) {
-    return (
-      <div className="min-h-screen bg-background">
-        <VaultSidebar />
-        <main className="lg:me-64 p-6">
-          <Skeleton className="h-12 w-1/3 mb-6" />
-          <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24" />
-            ))}
-          </div>
-        </main>
-      </div>
-    );
+  // ── Loading ──────────────────────────────────────────────────────────────
+
+  const isTeamSubscription =
+    subscriptionType === "team" || subscriptionType === "company";
+
+  if (subscriptionLoading || (isTeamSubscription && isLoadingTeam)) {
+    return <VaultSkeleton />;
   }
 
-  // Show team dashboard for team/company subscriptions
-  if ((subscriptionType === "team" || subscriptionType === "company") && currentTeam) {
+  // ── Team dashboard ───────────────────────────────────────────────────────
+
+  if (isTeamSubscription) {
+    // Still loading team (edge case: subscription loaded, team fetch in flight)
+    if (!currentTeam) return <VaultSkeleton />;
+
     return (
-      <div className="min-h-screen bg-background">
-        <VaultSidebar />
-        <main className="lg:me-64 p-6">
+      <PageShell>
+        <div className="p-6 md:p-8">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <TeamDashboard team={currentTeam} teamMembers={teamMembers} />
           </motion.div>
-        </main>
-      </div>
+        </div>
+      </PageShell>
     );
   }
 
-  // Individual dashboard (original vault content)
+  // ── Individual dashboard ─────────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-background">
-      <VaultSidebar />
+    <PageShell>
+      <div className="p-6 md:p-8">
+        <div className="max-w-6xl mx-auto space-y-8">
 
-      <main className="lg:me-64 transition-all duration-300">
-        <div className="p-6 md:p-8">
-          <div className="max-w-6xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground">Your Vault</h1>
-                <p className="text-muted-foreground mt-2">
-                  Your personal memory collection and reminders
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <LanguageToggle />
-              </div>
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+          >
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">
+                {t("خزينتك", "Your Vault")}
+              </h1>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {t(
+                  "مجموعة ذكرياتك الشخصية وتذكيراتك",
+                  "Your personal memory collection and reminders",
+                )}
+              </p>
             </div>
+            <div className="flex items-center gap-2">
+              <MobileMenuButton />
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
+          </motion.div>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-12 gap-2 cursor-pointer"
-                onClick={handleNewMemory}
+          {/* Quick Actions */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+          >
+            {QUICK_ACTIONS.map(({ icon: Icon, href, labelAr, labelEn }) => (
+              <Button
+                key={href}
+                variant="outline"
+                className="h-12 gap-2"
+                onClick={() => router.push(href)}
               >
-                <Plus className="w-4 h-4" />
-                New Memory
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{t(labelAr, labelEn)}</span>
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-12 gap-2 cursor-pointer"
-                onClick={handleVoiceNote}
-              >
-                <Mic className="w-4 h-4" />
-                Voice Note
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-12 gap-2 cursor-pointer"
-                onClick={handleUpload}
-              >
-                <Upload className="w-4 h-4" />
-                Upload
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-12 gap-2 cursor-pointer"
-                onClick={handleReminders}
-              >
-                <Bell className="w-4 h-4" />
-                Reminders
-              </Button>
-            </div>
+            ))}
+          </motion.div>
 
-            {/* Chat Section */}
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">AI Assistant</h2>
-                <p className="text-sm text-muted-foreground">
-                  Chat with your memories and get insights
-                </p>
-              </div>
-              <AIChat />
+          {/* AI Chat */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="space-y-3"
+          >
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">
+                {t("المساعد الذكي", "AI Assistant")}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  "تحدّث مع ذكرياتك واحصل على رؤى",
+                  "Chat with your memories and get insights",
+                )}
+              </p>
             </div>
+            <AIChat />
+          </motion.div>
 
-            {/* Placeholder for memories list */}
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Recent Memories</h2>
-                <p className="text-sm text-muted-foreground">
-                  Your saved memories and notes appear here
-                </p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="p-4 rounded-lg border border-border bg-card hover:bg-card/80 transition-colors cursor-pointer"
-                  >
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Memory {i}
-                    </div>
-                    <div className="h-20 bg-muted/20 rounded flex items-center justify-center text-muted-foreground">
-                      No memories yet
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 }

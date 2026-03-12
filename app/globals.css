@@ -3,31 +3,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Light Theme ──────────────────────────────────────────────────────────── */
 :root {
-  /* Modern Light Theme - Clean & Minimal */
   --background: hsl(210 20% 98%);
   --foreground: hsl(222 47% 11%);
 
-  /* Surface colors */
   --muted: hsl(210 20% 96%);
   --muted-foreground: hsl(215 16% 47%);
 
-  /* Cards */
   --card: hsl(0 0% 100%);
   --card-foreground: hsl(222 47% 11%);
 
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222 47% 11%);
 
-  /* Primary - Blue */
+  /* Primary – Blue */
   --primary: hsl(217 91% 60%);
   --primary-foreground: hsl(0 0% 100%);
 
-  /* Secondary - Orange */
-  --secondary: hsl(25 95% 53%);
-  --secondary-foreground: hsl(0 0% 100%);
+  /* Secondary – neutral slate (NOT orange — use --orange for accent actions) */
+  --secondary: hsl(215 16% 93%);
+  --secondary-foreground: hsl(222 47% 20%);
 
-  /* Accent - Teal */
+  /* Accent – Teal */
   --accent: hsl(173 80% 40%);
   --accent-foreground: hsl(0 0% 100%);
 
@@ -40,13 +38,17 @@
 
   --radius: 0.75rem;
 
-  /* Custom colors */
+  /* Brand palette – use directly when needed */
   --blue: hsl(217 91% 60%);
   --blue-light: hsl(217 91% 70%);
   --orange: hsl(25 95% 53%);
   --teal: hsl(173 80% 40%);
 
-  /* Chart colors */
+  /* Scrollbar */
+  --scrollbar-thumb: hsl(214 32% 82%);
+  --scrollbar-track: transparent;
+
+  /* Chart */
   --chart-1: hsl(217 91% 60%);
   --chart-2: hsl(25 95% 53%);
   --chart-3: hsl(173 80% 40%);
@@ -54,31 +56,27 @@
   --chart-5: hsl(339 90% 51%);
 }
 
+/* ─── Dark Theme ───────────────────────────────────────────────────────────── */
 .dark {
-  /* Modern Dark Theme - Slate & Blue */
   --background: hsl(222 47% 11%);
   --foreground: hsl(210 40% 98%);
 
-  /* Surface colors */
   --muted: hsl(217 33% 17%);
   --muted-foreground: hsl(215 20% 65%);
 
-  /* Cards */
   --card: hsl(222 47% 14%);
   --card-foreground: hsl(210 40% 98%);
 
   --popover: hsl(222 47% 14%);
   --popover-foreground: hsl(210 40% 98%);
 
-  /* Primary - Electric Blue */
   --primary: hsl(217 91% 60%);
-  --primary-foreground: hsl(222 47% 11%);
+  --primary-foreground: hsl(0 0% 100%);
+  /* white text on blue — readable */
 
-  /* Secondary - Coral Orange */
-  --secondary: hsl(25 95% 53%);
-  --secondary-foreground: hsl(222 47% 11%);
+  --secondary: hsl(217 33% 20%);
+  --secondary-foreground: hsl(210 40% 90%);
 
-  /* Accent - Bright Teal */
   --accent: hsl(173 80% 40%);
   --accent-foreground: hsl(222 47% 11%);
 
@@ -89,13 +87,14 @@
   --input: hsl(217 33% 21%);
   --ring: hsl(217 91% 60%);
 
-  /* Custom colors */
   --blue: hsl(217 91% 60%);
   --blue-light: hsl(217 91% 70%);
   --orange: hsl(25 95% 53%);
   --teal: hsl(173 80% 40%);
 
-  /* Chart colors */
+  --scrollbar-thumb: hsl(217 33% 28%);
+  --scrollbar-track: transparent;
+
   --chart-1: hsl(217 91% 60%);
   --chart-2: hsl(25 95% 53%);
   --chart-3: hsl(173 80% 40%);
@@ -103,42 +102,31 @@
   --chart-5: hsl(339 90% 51%);
 }
 
+/* ─── Tailwind Theme Mapping ───────────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-
-  /* Custom colors */
   --color-blue: var(--blue);
   --color-blue-light: var(--blue-light);
   --color-orange: var(--orange);
   --color-teal: var(--teal);
-
-  /* Chart colors */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -160,11 +148,13 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-fade-in-up: fade-in-up 0.6s ease-out forwards;
   --animate-shimmer: shimmer 2s linear infinite;
+  --animate-pulse-slow: pulse 3s ease-in-out infinite;
 
   @keyframes accordion-down {
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
@@ -174,6 +164,7 @@
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
@@ -184,6 +175,7 @@
       opacity: 0;
       transform: translateY(20px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
@@ -194,30 +186,149 @@
     0% {
       background-position: -200% 0;
     }
+
     100% {
       background-position: 200% 0;
     }
   }
 }
 
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground;
+    /* Prevent layout shift from scrollbar appearing/disappearing */
+    scrollbar-gutter: stable;
+  }
+
+  /* ── Custom scrollbar ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  /* ── Text selection ── */
+  ::selection {
+    background-color: hsl(217 91% 60% / 0.25);
+    color: var(--foreground);
+  }
+
+  /* ── Focus visible – keyboard-only ring ── */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ── Headings ── */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  /* ── Links ── */
+  a {
+    @apply transition-colors duration-150;
   }
 }
 
-/* Glass effect */
+/* ─── Utilities ────────────────────────────────────────────────────────────── */
+@layer utilities {
+
+  /* Force English (LTR) font on numeric/latin content inside RTL layouts */
+  .font-english {
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  .font-arabic {
+    font-family: var(--font-tajawal), system-ui, sans-serif;
+  }
+
+  /* Tabular numbers — prevents layout shift in counters / prices */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Orange CTA helper (avoids hijacking --secondary) */
+  .btn-orange {
+    background-color: var(--orange);
+    color: hsl(0 0% 100%);
+  }
+
+  .btn-orange:hover {
+    background-color: hsl(25 95% 47%);
+  }
+}
+
+/* ─── Glass Effects ─────────────────────────────────────────────────────────── */
 .glass {
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.dark .glass {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .glass-card {
-  backdrop-filter: blur(12px);
-  background-color: color-mix(in srgb, var(--card) 95%, transparent);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  background-color: color-mix(in srgb, var(--card) 90%, transparent);
   border: 1px solid var(--border);
+}
+
+/* ─── Gradient Text ─────────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Subtle page noise overlay (add to a ::before pseudo on body if desired) */
+.noise::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }

@@ -3,16 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
-import { Check, X, Sparkles, Building2, User, Zap } from "lucide-react";
+import { Check, X, Sparkles, User, Zap, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { LandingHeader } from "@/components/thakirni/landing-header";
 import { LandingFooter } from "@/components/thakirni/landing-footer";
@@ -20,224 +20,204 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
 import { Switch } from "@/components/ui/switch";
 
+// ── Animation Variants ────────────────────────────────────────────────────────
+
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-    },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut",
-    },
-  },
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type TierId = "free" | "individual" | "team";
+
+interface Feature {
+  ar: string;
+  en: string;
+  included: boolean;
+}
+
+interface PricingTier {
+  id: TierId;
+  nameAr: string;
+  nameEn: string;
+  targetAr: string;
+  targetEn: string;
+  /** Monthly price in SAR */
+  monthlyPrice: number;
+  /** Annual price in SAR (total for the year) */
+  annualPrice: number;
+  icon: React.ElementType;
+  features: Feature[];
+  ctaAr: string;
+  ctaEn: string;
+  popular: boolean;
+  /** Show "coming soon" overlay */
+  comingSoon?: boolean;
+  /** Extra pricing note shown after the amount */
+  noteSuffixAr?: string;
+  noteSuffixEn?: string;
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const pricingTiers: PricingTier[] = [
+  {
+    id: "free",
+    nameAr: "الباقة المجانية",
+    nameEn: "Free",
+    targetAr: "للطلاب والمستخدمين الخفيفين",
+    targetEn: "Students & Light Users",
+    monthlyPrice: 0,
+    annualPrice: 0,
+    icon: Zap,
+    features: [
+      { ar: "٥٠ رسالة / شهرياً", en: "50 messages / month", included: true },
+      { ar: "مساعد ذكي أساسي", en: "Basic AI assistant", included: true },
+      { ar: "احتفاظ بالذاكرة ٧ أيام", en: "7-day history retention", included: true },
+      { ar: "مستخدم واحد", en: "Single user", included: true },
+      { ar: "تحليل الذكاء الاصطناعي", en: "AI analysis", included: false },
+      { ar: "مزامنة التقويم", en: "Calendar sync", included: false },
+    ],
+    ctaAr: "ابدأ مجاناً",
+    ctaEn: "Start Free",
+    popular: false,
+  },
+  {
+    id: "individual",
+    nameAr: "باقة الأفراد",
+    nameEn: "Individual",
+    targetAr: "للمحترفين والمستقلين",
+    targetEn: "Professionals & Freelancers",
+    monthlyPrice: 29,
+    annualPrice: 278,   // 29 × 12 × 0.8 = ~278  →  true 20% saving
+    icon: User,
+    features: [
+      { ar: "رسائل وملاحظات صوتية غير محدودة", en: "Unlimited messages & voice notes", included: true },
+      { ar: "حفظ الذاكرة وتنظيمها", en: "Memory saving & organisation", included: true },
+      { ar: "مساعد ذكي للملاحظات والتذكيرات", en: "AI assistant for notes & reminders", included: true },
+      { ar: "مزامنة التقويم والمهام الشخصية", en: "Personal calendar & task sync", included: true },
+      { ar: "بحث كامل في الذاكرة", en: "Full memory search", included: true },
+      { ar: "دعم فني عبر البريد", en: "Email support", included: true },
+    ],
+    ctaAr: "اشترك الآن",
+    ctaEn: "Subscribe Now",
+    popular: true,
+  },
+  {
+    id: "team",
+    nameAr: "باقة الفرق",
+    nameEn: "Team",
+    targetAr: "للفرق والمشاريع الصغيرة",
+    targetEn: "Teams & Small Projects",
+    monthlyPrice: 79,
+    annualPrice: 758,   // 79 × 12 × 0.8 = ~758
+    icon: Users,
+    noteSuffixAr: "حتى ١٠ مستخدمين",
+    noteSuffixEn: "up to 10 users",
+    features: [
+      { ar: "كل مميزات الأفراد", en: "Everything in Individual", included: true },
+      { ar: "لوحة كانبان لإدارة المشاريع", en: "Kanban board for project management", included: true },
+      { ar: "إدارة المهام والتعيين", en: "Task management & assignment", included: true },
+      { ar: "ذاكرة جماعية للفريق", en: "Shared team memory", included: true },
+      { ar: "تذكيرات جماعية", en: "Team reminders", included: true },
+      { ar: "دعم فني ذو أولوية", en: "Priority support", included: true },
+    ],
+    ctaAr: "ابدأ الآن",
+    ctaEn: "Get Started",
+    popular: false,
+    comingSoon: true,
+  },
+];
+
+// ── Trust Badges ──────────────────────────────────────────────────────────────
+
+const trustBadges = [
+  { ar: "ضمان استرداد ٣٠ يوم", en: "30-day money back", icon: Sparkles },
+  { ar: "دعم فني على مدار الساعة", en: "24 / 7 support", icon: User },
+  { ar: "إلغاء في أي وقت", en: "Cancel anytime", icon: X },
+  { ar: "بياناتك آمنة ومحفوظة", en: "Secure data", icon: Shield },
+];
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [isAnnual, setIsAnnual] = useState(false);
-  const [loading, setLoading] = useState<string | null>(null);
+  const [loading, setLoading] = useState<TierId | null>(null);
 
-  const handleSubscribe = async (tierId: string) => {
-    setLoading(tierId);
-    try {
-      if (tierId === "free") {
-        // Free tier - just redirect to sign up or vault
-        toast.success("Welcome to Thakirni!");
-        router.push("/auth");
-        return;
-      }
+  // ── Helpers ──────────────────────────────────────────────────────────────────
 
-      if (tierId === "individual") {
-        // Individual subscription - collect email for waitlist
-        toast.success("Redirecting to subscription setup...");
-        router.push("/checkout/individual");
-        return;
-      }
-
-      if (tierId === "team") {
-        // Team subscription - collect email for waitlist
-        toast.success("Redirecting to team subscription setup...");
-        router.push("/checkout/team");
-        return;
-      }
-
-      if (tierId === "companies") {
-        // Company subscription - create team
-        toast.success("Creating team workspace...");
-        router.push("/vault/settings/teams/new");
-        return;
-      }
-    } catch (error) {
-      console.error("Subscription error:", error);
-      toast.error("Failed to process subscription");
-    } finally {
-      setLoading(null);
+  function displayedPrice(tier: PricingTier): string {
+    if (tier.monthlyPrice === 0) return "0";
+    if (isAnnual) {
+      // Show effective monthly cost when billed annually
+      return Math.round(tier.annualPrice / 12).toString();
     }
-  };
+    return tier.monthlyPrice.toString();
+  }
 
-  const pricingTiers = [
-    {
-      id: "free",
-      nameAr: "الباقة المجانية",
-      nameEn: "Free",
-      targetAr: "للطلاب والمستخدمين الخفيفين",
-      targetEn: "Students & Light Users",
-      price: "0",
-      priceAnnual: "0",
-      icon: Zap,
-      features: [
-        { ar: "٥٠ رسالة / شهرياً", en: "50 Messages/month", included: true },
-        {
-          ar: "مساعد ذكي أساسي",
-          en: "Basic AI Assistant",
-          included: true,
-        },
-        {
-          ar: "احتفاظ بالذاكرة ٧ أيام",
-          en: "7-day history retention",
-          included: true,
-        },
-        { ar: "مستخدم واحد", en: "Single User", included: true },
-        { ar: "تحليل الذكاء الاصطناعي", en: "AI Analysis", included: false },
-        { ar: "مزامنة التقويم", en: "Calendar Sync", included: false },
-      ],
-      ctaAr: "ابدأ مجاناً",
-      ctaEn: "Start Free",
-      buttonVariant: "secondary",
-      popular: false,
-    },
-    {
-      id: "individual",
-      nameAr: "باقة الأفراد",
-      nameEn: "Individual",
-      targetAr: "للمحترفين والمستقلين",
-      targetEn: "Professionals & Freelancers",
-      price: "29",
-      priceAnnual: "290",
-      icon: User,
-      features: [
-        {
-          ar: "رسائل وملاحظات صوتية غير محدودة",
-          en: "Unlimited Messages & Voice Notes",
-          included: true,
-        },
-        {
-          ar: "حفظ الذكريات وتنظيمها",
-          en: "Memory Saving & Organization",
-          included: true,
-        },
-        {
-          ar: "مساعد ذكي للملاحظات والتذكيرات",
-          en: "AI Assistant for Notes & Reminders",
-          included: true,
-        },
-        {
-          ar: "مزامنة التقويم والمهام الشخصية",
-          en: "Personal Calendar & Task Sync",
-          included: true,
-        },
-        { ar: "بحث كامل في الذاكرة", en: "Full Memory Search", included: true },
-        { ar: "دعم فني عبر البريد", en: "Email Support", included: true },
-      ],
-      ctaAr: "اشترك الآن",
-      ctaEn: "Subscribe Now",
-      buttonVariant: "emerald",
-      popular: true,
-    },
-    {
-      id: "team",
-      nameAr: "باقة الفرق",
-      nameEn: "Team",
-      targetAr: "للفرق والمشاريع الصغيرة",
-      targetEn: "Teams & Small Projects",
-      price: "79",
-      priceAnnual: "790",
-      priceSuffixAr: "/ شهر (حتى ١٠ مستخدمين)",
-      priceSuffixEn: "/ month (Up to 10 users)",
-      icon: Zap,
-      features: [
-        {
-          ar: "كل مميزات الأفراد",
-          en: "Everything in Individual",
-          included: true,
-        },
-        {
-          ar: "لوحة كانبان لإدارة المشاريع",
-          en: "Kanban Board for Project Management",
-          included: true,
-        },
-        {
-          ar: "إدارة المهام والتعيين",
-          en: "Task Management & Assignment",
-          included: true,
-        },
-        {
-          ar: "ذاكرة جماعية للفريق",
-          en: "Shared Team Memory",
-          included: true,
-        },
-        {
-          ar: "تذكيرات جماعية",
-          en: "Team Reminders",
-          included: true,
-        },
-        { ar: "دعم فني الأولوية", en: "Priority Support", included: true },
-      ],
-      ctaAr: "ابدأ الآن",
-      ctaEn: "Get Started",
-      buttonVariant: "default",
-      popular: false,
-    },
-  ];
+  function annualSaving(tier: PricingTier): number {
+    return Math.round(100 - (tier.annualPrice / (tier.monthlyPrice * 12)) * 100);
+  }
+
+  // ── Subscribe handler ─────────────────────────────────────────────────────
+
+  async function handleSubscribe(tierId: TierId) {
+    if (loading) return;
+    setLoading(tierId);
+
+    const destinations: Record<TierId, string> = {
+      free: "/auth",
+      individual: "/checkout/individual",
+      team: "/checkout/team",
+    };
+
+    // Small delay so the spinner is visible before navigation
+    await new Promise((r) => setTimeout(r, 400));
+    router.push(destinations[tierId]);
+    // Don't reset loading — navigation will unmount the component
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <main className="min-h-screen bg-background">
       <LandingHeader />
 
-      <section className="pt-32 pb-20 overflow-hidden relative">
-        {/* Background accents */}
+      <section className="pt-32 pb-20 relative overflow-hidden">
+        {/* Background blobs */}
         <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5  rounded-full blur-[100px] pointer-events-none" />
 
         <div className="container mx-auto px-4 relative z-10">
-          {/* Header */}
+
+          {/* ── Header ── */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+            className="text-center mb-14"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-5">
               {t("خـطط مرنة تناسب طموحك", "Flexible Plans for Your Ambition")}
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
               {t(
-                "سواء كنت فرداً يريد تنظيم حياته أو شركة تبحث عن ذكاء جماعي، لدينا ما يناسبك.",
-                "Whether you're an individual organizing your life or a company seeking collective intelligence, we have you covered.",
+                "سواء كنت فرداً يريد تنظيم حياته أو فريقاً يبحث عن ذكاء جماعي، لدينا ما يناسبك.",
+                "Whether you're an individual organising your life or a team seeking collective intelligence, we have you covered.",
               )}
             </p>
 
-            {/* Toggle */}
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <span
-                className={cn(
-                  "text-sm transition-colors",
-                  !isAnnual
-                    ? "text-foreground font-medium"
-                    : "text-muted-foreground",
-                )}
-              >
+            {/* Billing toggle */}
+            <div className="inline-flex items-center gap-4 bg-muted/50 border border-border rounded-full px-5 py-2.5">
+              <span className={cn("text-sm transition-colors", !isAnnual ? "text-foreground font-medium" : "text-muted-foreground")}>
                 {t("شهري", "Monthly")}
               </span>
               <Switch
@@ -245,151 +225,132 @@ export default function PricingPage() {
                 onCheckedChange={setIsAnnual}
                 className="data-[state=checked]:bg-emerald-500"
               />
-              <span
-                className={cn(
-                  "text-sm transition-colors",
-                  isAnnual
-                    ? "text-foreground font-medium"
-                    : "text-muted-foreground",
-                )}
-              >
+              <span className={cn("text-sm transition-colors flex items-center gap-2", isAnnual ? "text-foreground font-medium" : "text-muted-foreground")}>
                 {t("سنوي", "Yearly")}
-                <span className="ms-2 text-xs bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium">
                   {t("وفر ٢٠٪", "Save 20%")}
                 </span>
               </span>
             </div>
           </motion.div>
 
-          {/* Pricing Cards */}
+          {/* ── Cards ── */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto items-stretch px-4 lg:px-0"
+            className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch"
           >
-            {pricingTiers.map((tier, index) => (
-              <motion.div
-                key={index}
-                variants={cardVariants}
-                className="h-full"
-              >
+            {pricingTiers.map((tier) => (
+              <motion.div key={tier.id} variants={cardVariants} className="h-full">
                 <Card
                   className={cn(
                     "relative h-full flex flex-col transition-all duration-300 border overflow-hidden rounded-2xl",
                     tier.popular
-                      ? "bg-background/80 backdrop-blur-md border-emerald-500 ring-2 ring-emerald-500/50 shadow-2xl shadow-emerald-500/20 scale-105 md:scale-100 lg:scale-105"
-                      : "bg-card border-border hover:border-primary/50 hover:shadow-lg hover:scale-105",
+                      ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-2xl shadow-emerald-500/15 lg:scale-105"
+                      : "border-border hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
                   )}
                 >
-                  {/* Under Development Overlay */}
-                  {tier.underDevelopment && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/50 backdrop-blur-sm">
-                      {/* Red X */}
-                      <div className="relative mb-6">
-                        <X className="w-48 h-48 text-red-500/90 stroke-[1.5]" />
-                      </div>
 
-                      {/* Text */}
-                      <div className="text-center px-4">
-                        <h3 className="text-2xl font-bold text-foreground mb-1">
-                          {t("قيد التطوير", "Under Development")}
-                        </h3>
-                        <p
-                          className="text-muted-foreground font-english"
-                          dir="ltr"
-                        >
-                          Coming Soon
+                  {/* ── Coming Soon Overlay ── */}
+                  {tier.comingSoon && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
+                      <div className="bg-muted border border-border rounded-xl px-6 py-5 text-center shadow-xl">
+                        <p className="text-lg font-bold text-foreground mb-1">
+                          {t("قريباً", "Coming Soon")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {t("قيد التطوير", "Under development")}
                         </p>
                       </div>
                     </div>
                   )}
 
+                  {/* ── Popular Badge ── */}
                   {tier.popular && (
-                    <div className="absolute -top-4 inset-x-0 flex justify-center">
-                      <div className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg shadow-emerald-500/10">
-                        <Sparkles className="w-3.5 h-3.5" />
+                    <div className="absolute -top-px inset-x-0 flex justify-center">
+                      <div className="bg-emerald-500 text-white px-4 py-1 rounded-b-full text-xs font-semibold flex items-center gap-1 shadow-md">
+                        <Sparkles className="w-3 h-3" />
                         {t("الأكثر شعبية", "Most Popular")}
                       </div>
                     </div>
                   )}
 
-                  {/* Removed extra blur filter from header/content to fix "all blurry" issue, 
-                      relied on the overlay for the disabled look */}
-                  <CardHeader
-                    className={cn(
-                      "pb-6 pt-8 px-6",
-                      tier.underDevelopment && "opacity-50",
-                    )}
-                  >
+                  {/* ── Header ── */}
+                  <CardHeader className={cn("pb-4 pt-8 px-6", tier.comingSoon && "opacity-40")}>
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <CardTitle className="text-2xl font-bold text-foreground mb-1">
+                        <CardTitle className="text-xl font-bold text-foreground mb-1">
                           {t(tier.nameAr, tier.nameEn)}
                         </CardTitle>
-                        <CardDescription className="text-muted-foreground">
+                        <CardDescription>
                           {t(tier.targetAr, tier.targetEn)}
                         </CardDescription>
                       </div>
-                      <div
-                        className={cn(
-                          "p-2 rounded-lg",
-                          tier.popular
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-500"
-                            : "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        <tier.icon className="w-6 h-6" />
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        tier.popular
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "bg-muted text-muted-foreground",
+                      )}>
+                        <tier.icon className="w-5 h-5" />
                       </div>
                     </div>
 
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-foreground">
-                        {isAnnual ? tier.priceAnnual : tier.price}
+                    {/* Price */}
+                    <div className="flex items-baseline gap-1 flex-wrap">
+                      <span className="text-4xl font-bold text-foreground tabular-nums">
+                        {displayedPrice(tier)}
                       </span>
-                      <span className="text-emerald-600 dark:text-emerald-500 text-xl font-bold">
+                      <span className="text-emerald-600 dark:text-emerald-400 text-lg font-semibold">
                         {t("ر.س", "SAR")}
                       </span>
-                      <span className="text-muted-foreground text-sm ms-2">
-                        {tier.priceSuffixAr &&
-                          t(tier.priceSuffixAr, tier.priceSuffixEn)}
-                        / {isAnnual ? t("سنة", "year") : t("شهر", "month")}
+                      <span className="text-muted-foreground text-sm ms-1">
+                        / {t("شهر", "month")}
                       </span>
+                    </div>
+
+                    {/* Annual note */}
+                    <div className="min-h-[1.25rem] mt-1">
+                      {isAnnual && tier.monthlyPrice > 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          {t(
+                            `يُفوتر ${tier.annualPrice} ر.س سنوياً`,
+                            `Billed ${tier.annualPrice} SAR / year`,
+                          )}
+                          {" · "}
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                            {t(`وفر ${annualSaving(tier)}٪`, `Save ${annualSaving(tier)}%`)}
+                          </span>
+                        </p>
+                      ) : tier.noteSuffixEn ? (
+                        <p className="text-xs text-muted-foreground">
+                          {t(tier.noteSuffixAr ?? "", tier.noteSuffixEn)}
+                        </p>
+                      ) : null}
                     </div>
                   </CardHeader>
 
-                  {/* Content (Features + Button) */}
-                  <div
-                    className={cn(
-                      "flex flex-col flex-1",
-                      tier.underDevelopment && "opacity-50 pointer-events-none",
-                    )}
-                  >
-                    <CardContent className="flex-1 px-6">
-                      <div className="w-full h-px bg-border mb-6" />
-                      <ul className="space-y-4">
-                        {tier.features.map((feature, featureIndex) => (
-                          <li
-                            key={featureIndex}
-                            className="flex items-start gap-3"
-                          >
+                  {/* ── Features ── */}
+                  <div className={cn("flex flex-col flex-1", tier.comingSoon && "opacity-40 pointer-events-none")}>
+                    <CardContent className="flex-1 px-6 pt-2">
+                      <div className="w-full h-px bg-border mb-5" />
+                      <ul className="space-y-3.5">
+                        {tier.features.map((feature, i) => (
+                          <li key={i} className="flex items-start gap-3">
                             {feature.included ? (
-                              <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-500" />
+                              <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                               </div>
                             ) : (
-                              <div className="mt-0.5 w-5 h-5 flex items-center justify-center flex-shrink-0">
-                                <X className="w-4 h-4 text-muted-foreground/50" />
+                              <div className="mt-0.5 w-5 h-5 flex items-center justify-center shrink-0">
+                                <X className="w-4 h-4 text-muted-foreground/40" />
                               </div>
                             )}
-                            <span
-                              className={cn(
-                                "text-sm",
-                                feature.included
-                                  ? "text-foreground/90"
-                                  : "text-muted-foreground/70",
-                              )}
-                            >
+                            <span className={cn(
+                              "text-sm leading-snug",
+                              feature.included ? "text-foreground/90" : "text-muted-foreground/60",
+                            )}>
                               {t(feature.ar, feature.en)}
                             </span>
                           </li>
@@ -397,24 +358,26 @@ export default function PricingPage() {
                       </ul>
                     </CardContent>
 
-                    <CardFooter className="pt-6 px-6 pb-8">
+                    {/* ── CTA ── */}
+                    <CardFooter className="px-6 pb-7 pt-5">
                       <Button
                         className={cn(
-                          "w-full h-12 text-base font-medium rounded-xl transition-all duration-300 cursor-pointer hover:scale-105",
-                          tier.buttonVariant === "emerald"
+                          "w-full h-11 text-sm font-medium rounded-xl transition-all duration-200",
+                          tier.popular
                             ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                            : tier.buttonVariant === "outline"
-                              ? "bg-transparent border-2 border-muted-foreground/20 hover:border-foreground text-foreground hover:bg-accent"
-                              : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+                            : tier.id === "free"
+                              ? "variant-secondary"
+                              : "bg-primary text-primary-foreground hover:bg-primary/90",
                         )}
-                        disabled={tier.underDevelopment || loading === tier.id}
+                        disabled={!!tier.comingSoon || loading === tier.id}
                         onClick={() => handleSubscribe(tier.id)}
+                        variant={tier.popular || tier.id === "team" ? "default" : "secondary"}
                       >
                         {loading === tier.id ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                          <span className="flex items-center gap-2">
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             {t("جاري...", "Loading...")}
-                          </div>
+                          </span>
                         ) : (
                           t(tier.ctaAr, tier.ctaEn)
                         )}
@@ -426,48 +389,27 @@ export default function PricingPage() {
             ))}
           </motion.div>
 
-          {/* FAQ / Trust */}
+          {/* ── Trust badges ── */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.7 }}
             className="mt-20 border-t border-border pt-10"
           >
-            <div className="grid md:grid-cols-4 gap-6 text-center">
-              {[
-                {
-                  labelAr: "ضمان استرداد ٣٠ يوم",
-                  labelEn: "30-Day Money Back",
-                  icon: Sparkles,
-                },
-                {
-                  labelAr: "دعم فني على مدار الساعة",
-                  labelEn: "24/7 Support",
-                  icon: User,
-                },
-                {
-                  labelAr: "إلغاء في أي وقت",
-                  labelEn: "Cancel Anytime",
-                  icon: X,
-                },
-                {
-                  labelAr: "بياناتك آمنة ومحفوظة",
-                  labelEn: "Secure Data",
-                  icon: Check,
-                },
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center gap-2 text-muted-foreground"
-                >
-                  <item.icon className="w-5 h-5 mb-1 text-emerald-500/70" />
-                  <span className="text-sm">
-                    {t(item.labelAr, item.labelEn)}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center max-w-3xl mx-auto">
+              {trustBadges.map((item, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center mb-1">
+                    <item.icon className="w-4 h-4 text-emerald-500" />
+                  </div>
+                  <span className="text-xs font-medium leading-snug">
+                    {t(item.ar, item.en)}
                   </span>
                 </div>
               ))}
             </div>
           </motion.div>
+
         </div>
       </section>
 
