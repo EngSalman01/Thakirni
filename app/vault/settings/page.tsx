@@ -1,655 +1,553 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   VaultSidebar,
   MobileMenuButton,
 } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
 import {
-  User,
-  Bell,
-  Shield,
-  Globe,
-  Smartphone,
-  Mail,
-  Lock,
-  LogOut,
-  Crown,
-  CheckCircle2,
-  Loader2,
-  AlertCircle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  User, Bell, Shield, Globe, Smartphone,
+  Mail, Lock, LogOut, Crown, CheckCircle2,
+  AlertCircle, ArrowRight, Loader2,
 } from "lucide-react";
-
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
+import { useSubscription } from "@/hooks/use-subscription";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-// Types
+// ── Types ─────────────────────────────────────────────────────────────────────
+
 interface Profile {
   id: string;
-  full_name?: string;
-  avatar_url?: string;
-  phone?: string;
-  plan_tier?: "FREE" | "INDIVIDUAL" | "COMPANY";
-  updated_at?: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  notification_email: boolean;
+  notification_push: boolean;
+  notification_friday: boolean;
 }
 
-interface NotificationSettings {
-  email: boolean;
-  push: boolean;
-  friday: boolean;
+// ── Section wrapper ───────────────────────────────────────────────────────────
+
+function Section({
+  icon: Icon,
+  title,
+  children,
+  delay = 0,
+  className = "",
+}: {
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay }}
+      className={className}
+    >
+      <Card className="p-4 md:p-6">
+        <div className="flex items-center gap-3 mb-5">
+          <Icon className="w-5 h-5 text-primary" />
+          <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        </div>
+        {children}
+      </Card>
+    </motion.div>
+  );
 }
 
-// Sub-components
-const PageHeader = ({ t }: { t: (ar: string, en: string) => string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="flex items-center justify-between mb-6 md:mb-8"
-  >
-    <div className="flex items-center gap-3">
-      <MobileMenuButton />
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-foreground">
-          {t("الإعدادات", "Settings")}
-        </h1>
-        <p className="text-sm md:text-base text-muted-foreground">
-          {t("إدارة حسابك وتفضيلاتك", "Manage your account and preferences")}
-        </p>
-      </div>
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+
+function SettingsSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <VaultSidebar />
+      <main className="lg:me-64 p-4 md:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-5xl">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className={`h-64 rounded-xl ${i === 2 ? "lg:col-span-2" : ""}`} />
+          ))}
+        </div>
+      </main>
     </div>
-    <div className="flex items-center gap-1 md:gap-2">
-      <span className="hidden sm:inline-flex">
-        <LanguageToggle />
-      </span>
-      <ThemeToggle />
-    </div>
-  </motion.div>
-);
+  );
+}
 
-const ProfileSkeleton = () => (
-  <div className="space-y-4">
-    <div className="flex items-center gap-4 mb-6">
-      <Skeleton className="w-16 h-16 rounded-full" />
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-3 w-48" />
-      </div>
-    </div>
-    <Skeleton className="h-10 w-full" />
-    <Skeleton className="h-10 w-full" />
-    <Skeleton className="h-10 w-full" />
-  </div>
-);
+// ── Page ──────────────────────────────────────────────────────────────────────
 
-const ProfileCard = ({
-  profile,
-  email,
-  name,
-  setName,
-  loading,
-  saving,
-  onSave,
-  t,
-}: {
-  profile: Profile | null;
-  email: string;
-  name: string;
-  setName: (name: string) => void;
-  loading: boolean;
-  saving: boolean;
-  onSave: () => void;
-  t: (ar: string, en: string) => string;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.1 }}
-  >
-    <Card className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <User className="w-5 h-5 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("الملف الشخصي", "Profile")}
-        </h2>
-      </div>
-
-      {loading ? (
-        <ProfileSkeleton />
-      ) : (
-        <>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={name || "User avatar"}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span className="text-primary text-xl md:text-2xl font-bold">
-                  {name?.charAt(0).toUpperCase() || "U"}
-                </span>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-foreground truncate">
-                {name || t("مستخدم", "User")}
-              </p>
-              <p className="text-sm text-muted-foreground truncate" dir="ltr">
-                {email}
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">{t("الاسم", "Name")}</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1"
-                placeholder={t("أدخل اسمك", "Enter your name")}
-              />
-            </div>
-            <div>
-              <Label htmlFor="email">{t("البريد الإلكتروني", "Email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                disabled
-                className="mt-1 opacity-60 cursor-not-allowed"
-                dir="ltr"
-              />
-              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" aria-hidden="true" />
-                {t(
-                  "لا يمكن تغيير البريد الإلكتروني",
-                  "Email cannot be changed",
-                )}
-              </p>
-            </div>
-            <Button
-              className="w-full"
-              onClick={onSave}
-              disabled={saving || !name.trim()}
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin me-2" />
-                  {t("جاري الحفظ...", "Saving...")}
-                </>
-              ) : (
-                t("حفظ التغييرات", "Save Changes")
-              )}
-            </Button>
-          </div>
-        </>
-      )}
-    </Card>
-  </motion.div>
-);
-
-const NotificationCard = ({
-  notifications,
-  onToggle,
-  t,
-}: {
-  notifications: NotificationSettings;
-  onToggle: (key: keyof NotificationSettings) => void;
-  t: (ar: string, en: string) => string;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.2 }}
-  >
-    <Card className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Bell className="w-5 h-5 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("الإشعارات", "Notifications")}
-        </h2>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Mail
-              className="w-5 h-5 text-muted-foreground shrink-0"
-              aria-hidden="true"
-            />
-            <div className="min-w-0">
-              <Label
-                htmlFor="email-notifications"
-                className="font-medium text-foreground text-sm cursor-pointer"
-              >
-                {t("إشعارات البريد", "Email Notifications")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t(
-                  "استلام التذكيرات عبر البريد",
-                  "Receive reminders via email",
-                )}
-              </p>
-            </div>
-          </div>
-          <Switch
-            id="email-notifications"
-            checked={notifications.email}
-            onCheckedChange={() => onToggle("email")}
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Smartphone
-              className="w-5 h-5 text-muted-foreground shrink-0"
-              aria-hidden="true"
-            />
-            <div className="min-w-0">
-              <Label
-                htmlFor="push-notifications"
-                className="font-medium text-foreground text-sm cursor-pointer"
-              >
-                {t("إشعارات الهاتف", "Push Notifications")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t("إشعارات فورية على الهاتف", "Instant push notifications")}
-              </p>
-            </div>
-          </div>
-          <Switch
-            id="push-notifications"
-            checked={notifications.push}
-            onCheckedChange={() => onToggle("push")}
-          />
-        </div>
-
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <Crown
-              className="w-5 h-5 text-muted-foreground shrink-0"
-              aria-hidden="true"
-            />
-            <div className="min-w-0">
-              <Label
-                htmlFor="friday-reminders"
-                className="font-medium text-foreground text-sm cursor-pointer"
-              >
-                {t("تذكيرات الجمعة", "Friday Reminders")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t(
-                  "رسائل جمعة مباركة أسبوعية",
-                  "Weekly Jumma Mubarak messages",
-                )}
-              </p>
-            </div>
-          </div>
-          <Switch
-            id="friday-reminders"
-            checked={notifications.friday}
-            onCheckedChange={() => onToggle("friday")}
-          />
-        </div>
-      </div>
-    </Card>
-  </motion.div>
-);
-
-const SubscriptionCard = ({ t }: { t: (ar: string, en: string) => string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.3 }}
-    className="lg:col-span-2"
-  >
-    <Card className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Crown className="w-5 h-5 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("الاشتراك", "Subscription")}
-        </h2>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Free Plan */}
-        <Card className="p-4 border-2 border-border hover:shadow-md transition-shadow">
-          <h3 className="text-lg font-bold text-foreground text-center">
-            {t("الباقة المجانية", "Free Plan")}
-          </h3>
-          <p className="text-center text-2xl font-bold text-primary my-2">
-            {t("مجاني", "Free")}
-          </p>
-          <p className="text-sm text-muted-foreground text-center mb-4">
-            {t("للاستخدام الشخصي", "For personal use")}
-          </p>
-          <ul className="text-sm space-y-2 mb-4">
-            <li className="flex items-center gap-2">
-              <CheckCircle2
-                className="w-4 h-4 text-primary shrink-0"
-                aria-hidden="true"
-              />
-              <span>{t("ذاكرة محدودة", "Limited memory")}</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2
-                className="w-4 h-4 text-primary shrink-0"
-                aria-hidden="true"
-              />
-              <span>{t("مساعد ذكي أساسي", "Basic AI assistant")}</span>
-            </li>
-          </ul>
-          <Button className="w-full" variant="outline" disabled>
-            {t("الخطة الحالية", "Current Plan")}
-          </Button>
-        </Card>
-
-        {/* Pro Plan */}
-        <Card className="p-4 border-2 border-primary relative overflow-hidden hover:shadow-lg transition-shadow">
-          <div className="absolute top-0 end-0 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-es-xl font-bold">
-            {t("الأكثر شيوعاً", "Most Popular")}
-          </div>
-          <h3 className="text-lg font-bold text-foreground text-center mt-2">
-            {t("برو", "Pro")}
-          </h3>
-          <p className="text-center text-2xl font-bold text-primary my-2">
-            <span dir="ltr">{t("٣٠ ريال", "30 SAR")}</span>
-            <span className="text-sm text-muted-foreground">
-              {t("/شهر", "/month")}
-            </span>
-          </p>
-          <p className="text-sm text-muted-foreground text-center mb-4">
-            {t("للمستخدمين النشطين", "For active users")}
-          </p>
-          <ul className="text-sm space-y-2 mb-4">
-            <li className="flex items-center gap-2">
-              <CheckCircle2
-                className="w-4 h-4 text-primary shrink-0"
-                aria-hidden="true"
-              />
-              <span>{t("ذاكرة غير محدودة", "Unlimited memory")}</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2
-                className="w-4 h-4 text-primary shrink-0"
-                aria-hidden="true"
-              />
-              <span>{t("أولوية في الدعم", "Priority support")}</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2
-                className="w-4 h-4 text-primary shrink-0"
-                aria-hidden="true"
-              />
-              <span>{t("تحليل متقدم", "Advanced analytics")}</span>
-            </li>
-          </ul>
-          <Button className="w-full" disabled>
-            {t("قريباً", "Coming Soon")}
-          </Button>
-        </Card>
-      </div>
-    </Card>
-  </motion.div>
-);
-
-const SecurityCard = ({
-  onSignOut,
-  t,
-}: {
-  onSignOut: () => void;
-  t: (ar: string, en: string) => string;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.4 }}
-  >
-    <Card className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Shield className="w-5 h-5 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("الأمان", "Security")}
-        </h2>
-      </div>
-
-      <div className="space-y-3">
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3"
-          onClick={() => {
-            window.location.href = '/vault/settings/security/change-password';
-          }}
-        >
-          <Lock className="w-4 h-4" aria-hidden="true" />
-          {t("تغيير كلمة المرور", "Change Password")}
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-          onClick={onSignOut}
-        >
-          <LogOut className="w-4 h-4" aria-hidden="true" />
-          {t("تسجيل الخروج من جميع الأجهزة", "Sign Out From All Devices")}
-        </Button>
-      </div>
-    </Card>
-  </motion.div>
-);
-
-const AppearanceCard = ({ t }: { t: (ar: string, en: string) => string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.5 }}
-  >
-    <Card className="p-4 md:p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Globe className="w-5 h-5 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">
-          {t("اللغة والمظهر", "Language & Theme")}
-        </h2>
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
-          <div className="min-w-0">
-            <p className="font-medium text-foreground text-sm">
-              {t("اللغة", "Language")}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t("اختر لغة التطبيق", "Choose app language")}
-            </p>
-          </div>
-          <LanguageToggle />
-        </div>
-        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
-          <div className="min-w-0">
-            <p className="font-medium text-foreground text-sm">
-              {t("المظهر", "Theme")}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t("الوضع الليلي أو النهاري", "Dark or light mode")}
-            </p>
-          </div>
-          <ThemeToggle />
-        </div>
-      </div>
-    </Card>
-  </motion.div>
-);
-
-// Main Component
 export default function SettingsPage() {
   const { t } = useLanguage();
+  const router = useRouter();
+  const { subscriptionType } = useSubscription();
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [origName, setOrigName] = useState("");   // to detect dirty state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [name, setName] = useState("");
-  const [notifications, setNotifications] = useState<NotificationSettings>({
-    email: true,
-    push: true,
-    friday: true,
+  const [signOutOpen, setSignOutOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+
+  // Notification state — keys match DB columns
+  const [notifs, setNotifs] = useState({
+    notification_email: true,
+    notification_push: true,
+    notification_friday: true,
   });
+  const [savingNotif, setSavingNotif] = useState<string | null>(null);
 
-  // Fetch user profile
+  const abortRef = useRef<AbortController | null>(null);
+
+  // ── Fetch profile ──────────────────────────────────────────────────────────
+
   useEffect(() => {
-    let mounted = true;
+    abortRef.current = new AbortController();
 
-    const fetchProfile = async () => {
+    const fetch = async () => {
       try {
         const supabase = createClient();
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser();
+        const { data: { user }, error: userErr } = await supabase.auth.getUser();
+        if (userErr || !user) { router.push("/auth"); return; }
 
-        if (userError) throw userError;
-        if (!user || !mounted) return;
-
-        setEmail(user.email || "");
+        setEmail(user.email ?? "");
 
         const { data, error } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, full_name, avatar_url, phone, notification_email, notification_push, notification_friday")
           .eq("id", user.id)
           .single();
 
-        if (mounted) {
-          if (error) {
-            console.error("[Settings] Error fetching profile:", error);
-            // Fallback to user metadata
-            setName(
-              user.user_metadata?.full_name || user.email?.split("@")[0] || "",
-            );
-          } else {
-            setProfile(data);
-            setName(data.full_name || "");
-          }
+        if (abortRef.current?.signal.aborted) return;
+
+        if (error) {
+          // Profile row may not exist yet — fall back to auth metadata
+          const fallback = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "";
+          setName(fallback);
+          setOrigName(fallback);
+        } else {
+          setProfile(data as Profile);
+          const n = data.full_name ?? "";
+          setName(n);
+          setOrigName(n);
+          setNotifs({
+            notification_email: data.notification_email ?? true,
+            notification_push: data.notification_push ?? true,
+            notification_friday: data.notification_friday ?? true,
+          });
         }
-      } catch (error) {
-        console.error("[Settings] Error:", error);
-        toast.error(t("حدث خطأ في تحميل البيانات", "Error loading data"));
+      } catch (err) {
+        console.error("[Settings] fetch:", err);
+        toast.error(t("فشل تحميل البيانات", "Failed to load profile"));
       } finally {
-        if (mounted) setLoading(false);
+        if (!abortRef.current?.signal.aborted) setLoading(false);
       }
     };
 
-    fetchProfile();
+    fetch();
+    return () => abortRef.current?.abort();
+  }, [router, t]);
 
-    return () => {
-      mounted = false;
-    };
-  }, [t]);
+  // ── Save profile name ──────────────────────────────────────────────────────
 
-  const handleSaveProfile = useCallback(async () => {
+  const handleSaveName = useCallback(async () => {
     if (!name.trim()) {
       toast.error(t("الاسم مطلوب", "Name is required"));
       return;
     }
-
     setSaving(true);
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { error } = await supabase
         .from("profiles")
-        .update({
-          full_name: name.trim(),
-          updated_at: new Date().toISOString(),
-        })
+        .update({ full_name: name.trim(), updated_at: new Date().toISOString() })
         .eq("id", user.id);
 
       if (error) throw error;
 
-      toast.success(t("تم حفظ التغييرات بنجاح", "Changes saved successfully"));
-
-      // Update local state
-      setProfile((prev) => (prev ? { ...prev, full_name: name.trim() } : null));
-    } catch (error) {
-      console.error("[Settings] Error saving profile:", error);
-      toast.error(t("حدث خطأ أثناء الحفظ", "Error saving changes"));
+      setOrigName(name.trim());
+      setProfile((p) => p ? { ...p, full_name: name.trim() } : null);
+      toast.success(t("تم حفظ الاسم", "Name saved"));
+    } catch (err) {
+      console.error("[Settings] save name:", err);
+      toast.error(t("فشل الحفظ", "Failed to save"));
     } finally {
       setSaving(false);
     }
   }, [name, t]);
 
-  const handleNotificationChange = useCallback(
-    (key: keyof NotificationSettings) => {
-      setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
-      toast.success(t("تم تحديث الإعدادات", "Settings updated"));
-    },
-    [t],
-  );
+  // ── Toggle notification + persist immediately ──────────────────────────────
 
-  const handleSignOut = useCallback(async () => {
+  const handleToggleNotif = useCallback(async (
+    key: "notification_email" | "notification_push" | "notification_friday",
+  ) => {
+    const newVal = !notifs[key];
+
+    // Optimistic update
+    setNotifs((prev) => ({ ...prev, [key]: newVal }));
+    setSavingNotif(key);
+
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signOut();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ [key]: newVal, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
 
       if (error) throw error;
 
-      toast.success(t("تم تسجيل الخروج", "Signed out successfully"));
-      window.location.href = "/auth";
-    } catch (error) {
-      console.error("[Settings] Error signing out:", error);
-      toast.error(t("حدث خطأ أثناء تسجيل الخروج", "Error signing out"));
-      // Force redirect even on error
-      window.location.href = "/auth";
+      toast.success(t("تم تحديث الإشعارات", "Notifications updated"));
+    } catch (err) {
+      // Rollback on error
+      setNotifs((prev) => ({ ...prev, [key]: !newVal }));
+      toast.error(t("فشل تحديث الإشعارات", "Failed to update notifications"));
+    } finally {
+      setSavingNotif(null);
     }
-  }, [t]);
+  }, [notifs, t]);
+
+  // ── Sign out ───────────────────────────────────────────────────────────────
+
+  const handleSignOut = useCallback(async () => {
+    setSigningOut(true);
+    try {
+      const supabase = createClient();
+      // scope: 'global' signs out all sessions across all devices
+      const { error } = await supabase.auth.signOut({ scope: "global" });
+      if (error) throw error;
+      toast.success(t("تم تسجيل الخروج من جميع الأجهزة", "Signed out from all devices"));
+      router.push("/auth");
+    } catch (err) {
+      console.error("[Settings] sign out:", err);
+      toast.error(t("حدث خطأ", "Something went wrong"));
+      router.push("/auth");   // force redirect anyway
+    } finally {
+      setSigningOut(false);
+      setSignOutOpen(false);
+    }
+  }, [router, t]);
+
+  // ── Loading ────────────────────────────────────────────────────────────────
+
+  if (loading) return <SettingsSkeleton />;
+
+  const isDirty = name.trim() !== origName;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
       <main className="lg:me-64 p-4 md:p-6 lg:p-8 transition-all duration-300">
-        <PageHeader t={t} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 max-w-5xl">
-          <ProfileCard
-            profile={profile}
-            email={email}
-            name={name}
-            setName={setName}
-            loading={loading}
-            saving={saving}
-            onSave={handleSaveProfile}
-            t={t}
-          />
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-6 md:mb-8"
+        >
+          <div className="flex items-center gap-3">
+            <MobileMenuButton />
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+                {t("الإعدادات", "Settings")}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {t("إدارة حسابك وتفضيلاتك", "Manage your account and preferences")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex"><LanguageToggle /></span>
+            <ThemeToggle />
+          </div>
+        </motion.div>
 
-          <NotificationCard
-            notifications={notifications}
-            onToggle={handleNotificationChange}
-            t={t}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-5xl">
 
-          <SubscriptionCard t={t} />
+          {/* ── Profile ── */}
+          <Section icon={User} title={t("الملف الشخصي", "Profile")} delay={0.05}>
+            {/* Avatar */}
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-primary text-xl font-bold">
+                    {name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground truncate">{name || t("مستخدم", "User")}</p>
+                <p className="text-sm text-muted-foreground truncate" dir="ltr">{email}</p>
+              </div>
+            </div>
 
-          <SecurityCard onSignOut={handleSignOut} t={t} />
+            <div className="space-y-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <Label htmlFor="name">{t("الاسم", "Full Name")}</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={t("أدخل اسمك", "Enter your name")}
+                  maxLength={60}
+                />
+              </div>
 
-          <AppearanceCard t={t} />
+              {/* Email (read-only) */}
+              <div className="space-y-1.5">
+                <Label htmlFor="email">{t("البريد الإلكتروني", "Email")}</Label>
+                <Input id="email" type="email" value={email} disabled dir="ltr" className="opacity-60" />
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {t("لا يمكن تغيير البريد الإلكتروني", "Email cannot be changed")}
+                </p>
+              </div>
+
+              <Button
+                className="w-full"
+                onClick={handleSaveName}
+                disabled={saving || !isDirty || !name.trim()}
+              >
+                {saving ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    {t("جاري الحفظ...", "Saving...")}
+                  </span>
+                ) : t("حفظ التغييرات", "Save Changes")}
+              </Button>
+            </div>
+          </Section>
+
+          {/* ── Notifications ── */}
+          <Section icon={Bell} title={t("الإشعارات", "Notifications")} delay={0.1}>
+            <div className="space-y-2">
+              {([
+                { key: "notification_email", icon: Mail, ar: "إشعارات البريد", en: "Email Notifications", descAr: "تذكيرات عبر البريد", descEn: "Reminders via email" },
+                { key: "notification_push", icon: Smartphone, ar: "إشعارات الهاتف", en: "Push Notifications", descAr: "إشعارات فورية", descEn: "Instant notifications" },
+                { key: "notification_friday", icon: Crown, ar: "تذكيرات الجمعة", en: "Friday Reminders", descAr: "جمعة مباركة أسبوعياً", descEn: "Weekly Jumma reminders" },
+              ] as const).map(({ key, icon: Icon, ar, en, descAr, descEn }) => (
+                <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <Label htmlFor={key} className="text-sm font-medium cursor-pointer">
+                        {t(ar, en)}
+                      </Label>
+                      <p className="text-xs text-muted-foreground">{t(descAr, descEn)}</p>
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {savingNotif === key ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Switch
+                        id={key}
+                        checked={notifs[key]}
+                        onCheckedChange={() => handleToggleNotif(key)}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* ── Subscription ── */}
+          <Section icon={Crown} title={t("الاشتراك", "Subscription")} delay={0.15} className="lg:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {([
+                {
+                  id: "free", nameAr: "مجاني", nameEn: "Free",
+                  priceAr: "٠ ريال", priceEn: "0 SAR",
+                  features: [
+                    { ar: "٥٠ رسالة / شهرياً", en: "50 messages / month" },
+                    { ar: "مساعد ذكي أساسي", en: "Basic AI assistant" },
+                  ],
+                },
+                {
+                  id: "individual", nameAr: "أفراد", nameEn: "Individual",
+                  priceAr: "٢٩ ريال", priceEn: "29 SAR",
+                  popular: true,
+                  features: [
+                    { ar: "رسائل غير محدودة", en: "Unlimited messages" },
+                    { ar: "مزامنة التقويم", en: "Calendar sync" },
+                    { ar: "بحث كامل", en: "Full memory search" },
+                  ],
+                },
+                {
+                  id: "team", nameAr: "فرق", nameEn: "Team",
+                  priceAr: "٧٩ ريال", priceEn: "79 SAR",
+                  features: [
+                    { ar: "كل مميزات الأفراد", en: "Everything in Individual" },
+                    { ar: "لوحة كانبان", en: "Kanban board" },
+                    { ar: "ذاكرة مشتركة", en: "Shared team memory" },
+                  ],
+                },
+              ]).map((tier) => {
+                const isCurrent = subscriptionType === tier.id ||
+                  (tier.id === "free" && !subscriptionType);
+                return (
+                  <Card
+                    key={tier.id}
+                    className={`p-4 border-2 transition-all ${isCurrent
+                        ? "border-primary shadow-md"
+                        : tier.popular
+                          ? "border-emerald-500/50"
+                          : "border-border"
+                      }`}
+                  >
+                    {tier.popular && (
+                      <div className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full w-fit mb-2">
+                        {t("الأكثر شيوعاً", "Most Popular")}
+                      </div>
+                    )}
+                    <h3 className="font-bold text-foreground">{t(tier.nameAr, tier.nameEn)}</h3>
+                    <p className="text-xl font-bold text-primary my-1" dir="ltr">
+                      {t(tier.priceAr, tier.priceEn)}
+                      <span className="text-xs text-muted-foreground font-normal ms-1">
+                        {t("/شهر", "/mo")}
+                      </span>
+                    </p>
+                    <ul className="space-y-1 mb-4">
+                      {tier.features.map((f, i) => (
+                        <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                          {t(f.ar, f.en)}
+                        </li>
+                      ))}
+                    </ul>
+                    {isCurrent ? (
+                      <Button variant="outline" className="w-full text-xs" disabled>
+                        {t("خطتك الحالية", "Current Plan")}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs"
+                        onClick={() => router.push("/pricing")}
+                      >
+                        {t("ترقية", "Upgrade")}
+                        <ArrowRight className="w-3 h-3 ms-1 rtl:rotate-180" />
+                      </Button>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          </Section>
+
+          {/* ── Security ── */}
+          <Section icon={Shield} title={t("الأمان", "Security")} delay={0.2}>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3"
+                onClick={() => router.push("/vault/settings/security/change-password")}
+              >
+                <Lock className="w-4 h-4" />
+                {t("تغيير كلمة المرور", "Change Password")}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => setSignOutOpen(true)}
+              >
+                <LogOut className="w-4 h-4" />
+                {t("تسجيل الخروج من جميع الأجهزة", "Sign Out From All Devices")}
+              </Button>
+            </div>
+          </Section>
+
+          {/* ── Appearance ── */}
+          <Section icon={Globe} title={t("اللغة والمظهر", "Language & Theme")} delay={0.25}>
+            <div className="space-y-2">
+              {[
+                { labelAr: "اللغة", labelEn: "Language", descAr: "اختر لغة التطبيق", descEn: "Choose app language", control: <LanguageToggle /> },
+                { labelAr: "المظهر", labelEn: "Theme", descAr: "الوضع الليلي أو النهاري", descEn: "Dark or light mode", control: <ThemeToggle /> },
+              ].map((row) => (
+                <div key={row.labelEn} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                  <div>
+                    <p className="text-sm font-medium">{t(row.labelAr, row.labelEn)}</p>
+                    <p className="text-xs text-muted-foreground">{t(row.descAr, row.descEn)}</p>
+                  </div>
+                  {row.control}
+                </div>
+              ))}
+            </div>
+          </Section>
+
         </div>
       </main>
+
+      {/* ── Sign Out Confirmation ── */}
+      <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("تسجيل الخروج من جميع الأجهزة", "Sign Out From All Devices")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                "سيتم تسجيل خروجك من جميع الجلسات النشطة على كل الأجهزة. هل أنت متأكد؟",
+                "This will end all active sessions across all your devices. Are you sure?",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={signingOut}>
+              {t("إلغاء", "Cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {signingOut ? (
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {t("جاري الخروج...", "Signing out...")}
+                </span>
+              ) : t("تسجيل الخروج", "Sign Out")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }
