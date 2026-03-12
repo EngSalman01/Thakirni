@@ -49,8 +49,8 @@ export async function POST(req: Request) {
     // Determine time-of-day greeting hint
     const timeOfDay =
       currentHour < 12 ? "morning" :
-      currentHour < 17 ? "afternoon" :
-      currentHour < 21 ? "evening" : "night"
+        currentHour < 17 ? "afternoon" :
+          currentHour < 21 ? "evening" : "night"
 
     const result = streamText({
       model: groq("llama-3.3-70b-versatile"),
@@ -63,9 +63,9 @@ Your personality: friendly, proactive, organised, like a trusted chief-of-staff 
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 🕒 CURRENT CONTEXT (Saudi Arabia / Riyadh)
-  Date : \${currentDate} (\${currentDayName})
-  Time : \${currentTime}  (\${timeOfDay})
-  Tomorrow : \${dayMap.tomorrow}
+  Date : ${currentDate} (${currentDayName})
+  Time : ${currentTime}  (${timeOfDay})
+  Tomorrow : ${dayMap.tomorrow}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 ════════════════════════════════════════
@@ -86,8 +86,8 @@ CORE PHILOSOPHY — READ CAREFULLY
    - "at 5" in the morning → assume 05:00; if afternoon/evening → assume 17:00
    - No end time given → default +1 hour
    - No date given for a task → default to today
-   - "next week" → \${addDays(7)}
-   - "this weekend" → \${addDays(6 - new Date(currentDate).getDay())} (nearest Saturday)
+   - "next week" → ${addDays(7)}
+   - "this weekend" → ${addDays(6 - new Date(currentDate).getDay())} (nearest Saturday)
 
 4. **SECOND BRAIN MODE**
    If the user shares a fact, idea, quote, or piece of info with no time attached,
@@ -163,6 +163,7 @@ Flow F – Recurring reminder:
 
 REMEMBER: One tool call per action. No duplicate calls. No list_plans after writing.
 `,
+
       tools: {
 
         // ── CREATE ──────────────────────────────────────────────────────────
