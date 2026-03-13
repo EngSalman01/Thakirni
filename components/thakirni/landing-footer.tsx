@@ -11,7 +11,7 @@ export function LandingFooter() {
   return (
     <footer className="py-12 border-t border-foreground/10">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8 mb-12">
+        <div className="grid md:grid-cols-5 gap-8 mb-12">
           {/* Brand */}
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center mb-4">
@@ -86,6 +86,39 @@ export function LandingFooter() {
                   className="text-foreground/60 hover:text-gold transition-colors"
                 >
                   {t("الوظائف", "Careers")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="font-bold text-foreground mb-4">
+              {t("الشروط والسياسات", "Legal")}
+            </h4>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/terms"
+                  className="text-foreground/60 hover:text-gold transition-colors"
+                >
+                  {t("شروط الاستخدام", "Terms of Service")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="text-foreground/60 hover:text-gold transition-colors"
+                >
+                  {t("سياسة الخصوصية", "Privacy Policy")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/refund"
+                  className="text-foreground/60 hover:text-gold transition-colors"
+                >
+                  {t("سياسة الاسترداد", "Refund Policy")}
                 </Link>
               </li>
             </ul>
