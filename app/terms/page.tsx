@@ -46,15 +46,15 @@ export default function TermsPage() {
 
         <Section title={t('١. القبول والموافقة', '1. Acceptance')}>
           {t(
-            'باستخدامك لتطبيق تذكرني ("الخدمة")، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على هذه الشروط، يرجى عدم استخدام الخدمة.',
-            'By using Thakirni ("the Service"), you agree to be bound by these Terms. If you do not agree, please do not use the Service.',
+            'باستخدامك لتطبيق تذكرني (Thakirni) ("الخدمة")، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على هذه الشروط، يرجى عدم استخدام الخدمة.',
+            'By using Thakirni (تذكرني) ("the Service"), you agree to be bound by these Terms. If you do not agree, please do not use the Service.',
           )}
         </Section>
 
         <Section title={t('٢. وصف الخدمة', '2. Description of Service')}>
           {t(
-            'تذكرني هو تطبيق مساعد شخصي ذكي يتيح للمستخدمين إدارة المهام والتقويم والذاكرة الثانية. تتوفر الخدمة بخطط مجانية ومدفوعة.',
-            'Thakirni is an AI-powered personal assistant application that allows users to manage tasks, calendar events, and a second brain memory system. The Service is available on free and paid plans.',
+            'تذكرني (Thakirni) هو تطبيق مساعد شخصي ذكي يتيح للمستخدمين إدارة المهام والتقويم والذاكرة الثانية. تتوفر الخدمة بخطط مجانية ومدفوعة. الاسم القانوني للمنتج هو Thakirni.',
+            'Thakirni (تذكرني) is an AI-powered personal assistant application that allows users to manage tasks, calendar events, and a second brain memory system. The Service is available on free and paid plans. The legal product name is Thakirni.',
           )}
         </Section>
 

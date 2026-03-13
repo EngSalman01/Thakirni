@@ -51,17 +51,17 @@ export default function RefundPage() {
           )}
         </Section>
 
-        <Section title={t('٢. ضمان استرداد الأموال خلال ٧ أيام', '2. 7-Day Money-Back Guarantee')}>
+        <Section title={t('٢. ضمان استرداد الأموال خلال ١٤ يومًا', '2. 14-Day Money-Back Guarantee')}>
           {t(
-            'نقدم ضمان استرداد كامل للأموال خلال ٧ أيام من تاريخ أول دفعة لأي خطة مدفوعة. إذا لم تكن راضيًا لأي سبب خلال هذه الفترة، تواصل معنا وسنرد لك المبلغ بالكامل دون أسئلة.',
-            'We offer a full money-back guarantee within 7 days of your first payment for any paid plan. If you are unsatisfied for any reason within this period, contact us and we will issue a full refund, no questions asked.',
+            'نقدم ضمان استرداد كامل للأموال خلال ١٤ يومًا من تاريخ أي دفعة. إذا لم تكن راضيًا لأي سبب خلال هذه الفترة، تواصل معنا وسنرد لك المبلغ بالكامل دون أسئلة.',
+            'We offer a full money-back guarantee within 14 days of any payment. If you are unsatisfied for any reason within this period, contact us and we will issue a full refund, no questions asked.',
           )}
         </Section>
 
         <Section title={t('٣. الاشتراكات المتجددة', '3. Recurring Subscriptions')}>
           {t(
-            'بعد انتهاء فترة الـ ٧ أيام، لا يحق عمومًا استرداد رسوم الاشتراكات المتجددة. ومع ذلك، إذا واجهت مشكلة تقنية خطيرة منعتك من استخدام الخدمة ولم نتمكن من حلها، سنقيّم طلبك ونرد عليه على أساس كل حالة على حدة.',
-            'After the 7-day period, recurring subscription charges are generally non-refundable. However, if you experienced a serious technical issue that prevented you from using the Service and we were unable to resolve it, we will evaluate your request on a case-by-case basis.',
+            'تسري سياسة الاسترداد لمدة ١٤ يومًا على جميع الدفعات بما فيها الاشتراكات المتجددة. يمكنك طلب استرداد أي دفعة خلال ١٤ يومًا من تاريخها.',
+            'The 14-day refund policy applies to all payments including recurring subscription charges. You may request a refund for any payment within 14 days of that payment date.',
           )}
         </Section>
 
@@ -79,10 +79,10 @@ export default function RefundPage() {
           )}
         </Section>
 
-        <Section title={t('٦. حالات الاسترداد الاستثنائية', '6. Exceptional Refund Cases')}>
+        <Section title={t('٦. كيف تعمل سياسة الاسترداد', '6. How Our Refund Policy Works')}>
           {t(
-            'في حالات الأخطاء التقنية الجسيمة من جانبنا، أو الرسوم المكررة بالخطأ، أو أي حالة تشعر فيها أنك دُفعت بشكل غير عادل، يرجى التواصل معنا وسنعمل على حل المشكلة بسرعة.',
-            'In cases of significant technical errors on our part, duplicate charges, or any situation where you feel you were charged unfairly, please contact us and we will work to resolve the issue promptly.',
+            'تنطبق سياسة الاسترداد لمدة ١٤ يومًا على جميع الدفعات دون استثناء. لا توجد شروط أو قيود إضافية — إذا طلبت استردادًا خلال ١٤ يومًا، ستحصل عليه.',
+            'The 14-day refund policy applies to all payments without exception. There are no additional conditions or restrictions — if you request a refund within 14 days, you will receive it.',
           )}
         </Section>
 
