@@ -25,7 +25,7 @@ function formatDuration(seconds: number): string {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// ── Waveform Bars (animated while recording) ──────────────────────────────────
+// ── Waveform Bars ─────────────────────────────────────────────────────────────
 
 function WaveformBars({ active }: { active: boolean }) {
   return (
@@ -36,20 +36,12 @@ function WaveformBars({ active }: { active: boolean }) {
           className="w-1 rounded-full bg-emerald-500"
           animate={
             active
-              ? {
-                height: ['8px', `${16 + Math.random() * 24}px`, '8px'],
-                opacity: [0.5, 1, 0.5],
-              }
+              ? { height: ['8px', `${16 + Math.random() * 24}px`, '8px'], opacity: [0.5, 1, 0.5] }
               : { height: '4px', opacity: 0.3 }
           }
           transition={
             active
-              ? {
-                duration: 0.6 + Math.random() * 0.4,
-                repeat: Infinity,
-                delay: i * 0.05,
-                ease: 'easeInOut',
-              }
+              ? { duration: 0.6 + Math.random() * 0.4, repeat: Infinity, delay: i * 0.05, ease: 'easeInOut' }
               : { duration: 0.3 }
           }
         />
@@ -64,7 +56,6 @@ export default function VoiceNotePage() {
   const { t } = useLanguage();
   const router = useRouter();
 
-  // ── State ──────────────────────────────────────────────────────────────────
   const [state, setState] = useState<RecordingState>('idle');
   const [duration, setDuration] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -73,23 +64,26 @@ export default function VoiceNotePage() {
   const [title, setTitle] = useState('');
   const [permError, setPermError] = useState('');
 
-  // ── Refs ───────────────────────────────────────────────────────────────────
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  // Ref so the cleanup effect always sees the latest audioUrl (avoids stale closure)
+  const audioUrlRef = useRef<string | null>(null);
+  useEffect(() => { audioUrlRef.current = audioUrl; }, [audioUrl]);
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
-      stopTimer();
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      if (audioUrl) URL.revokeObjectURL(audioUrl);
+      if (timerRef.current) clearInterval(timerRef.current);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Timer helpers ──────────────────────────────────────────────────────────
+
   function startTimer() {
     timerRef.current = setInterval(() => setDuration((d) => d + 1), 1000);
   }
@@ -99,6 +93,7 @@ export default function VoiceNotePage() {
   }
 
   // ── Start recording ────────────────────────────────────────────────────────
+
   const startRecording = useCallback(async () => {
     setPermError('');
     setState('requesting');
@@ -124,31 +119,32 @@ export default function VoiceNotePage() {
         setAudioBlob(blob);
         setAudioUrl(url);
         setState('recorded');
-        // Stop mic access
-        stream.getTracks().forEach((t) => t.stop());
+        stream.getTracks().forEach((track) => track.stop());
       };
 
-      recorder.start(100); // collect data every 100ms
+      recorder.start(100);
       setState('recording');
       setDuration(0);
       startTimer();
     } catch (err: any) {
       setState('idle');
-      const msg =
+      setPermError(
         err?.name === 'NotAllowedError'
-          ? t('لم يتم السماح بالوصول للميكروفون', 'Microphone permission denied. Please allow access in your browser settings.')
-          : t('تعذّر الوصول للميكروفون', 'Could not access the microphone.');
-      setPermError(msg);
+          ? t('لم يتم السماح بالوصول للميكروفون. يرجى السماح بالوصول من إعدادات المتصفح.', 'Microphone permission denied. Please allow access in your browser settings.')
+          : t('تعذّر الوصول للميكروفون', 'Could not access the microphone.'),
+      );
     }
   }, [t]);
 
   // ── Stop recording ─────────────────────────────────────────────────────────
+
   const stopRecording = useCallback(() => {
     stopTimer();
     mediaRecorderRef.current?.stop();
   }, []);
 
   // ── Discard ────────────────────────────────────────────────────────────────
+
   const discardRecording = useCallback(() => {
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioUrl(null);
@@ -160,6 +156,7 @@ export default function VoiceNotePage() {
   }, [audioUrl]);
 
   // ── Playback ───────────────────────────────────────────────────────────────
+
   const togglePlayback = useCallback(() => {
     if (!audioRef.current) return;
     if (isPlaying) {
@@ -171,7 +168,8 @@ export default function VoiceNotePage() {
     }
   }, [isPlaying]);
 
-  // ── Save to Supabase ───────────────────────────────────────────────────────
+  // ── Save ───────────────────────────────────────────────────────────────────
+
   const saveVoiceNote = useCallback(async () => {
     if (!audioBlob) return;
     setState('saving');
@@ -185,44 +183,40 @@ export default function VoiceNotePage() {
         return;
       }
 
-      // 1. Upload audio file to Supabase Storage
       const fileName = `voice-notes/${user.id}/${Date.now()}.webm`;
-      const { data: uploadData, error: uploadError } = await supabase
-        .storage
+
+      const { error: uploadError } = await supabase.storage
         .from('memories')
         .upload(fileName, audioBlob, { contentType: 'audio/webm', upsert: false });
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase
-        .storage
+      const { data: { publicUrl } } = supabase.storage
         .from('memories')
         .getPublicUrl(fileName);
 
-      // 2. Save memory record
-      const { error: dbError } = await supabase
-        .from('memories')
-        .insert({
-          user_id: user.id,
-          content: title || t('ملاحظة صوتية', 'Voice note'),
-          tags: ['voice', 'audio'],
-          type: 'voice',
-          file_url: publicUrl,
-          duration_seconds: duration,
-        });
+      const { error: dbError } = await supabase.from('memories').insert({
+        user_id: user.id,
+        content: title || t('ملاحظة صوتية', 'Voice note'),
+        tags: ['voice', 'audio'],
+        type: 'voice',
+        file_url: publicUrl,
+        duration_seconds: duration,
+      });
 
       if (dbError) throw dbError;
 
       toast.success(t('تم حفظ الملاحظة الصوتية ✅', 'Voice note saved ✅'));
       router.push('/vault');
     } catch (err: any) {
-      console.error('[VoiceNote] Save error:', err);
+      console.error('[VoiceNote] save error:', err);
       toast.error(t('فشل الحفظ، حاول مجدداً', 'Failed to save. Please try again.'));
       setState('recorded');
     }
   }, [audioBlob, title, duration, t, router]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
@@ -268,20 +262,19 @@ export default function VoiceNotePage() {
               {/* Recorder UI */}
               <div className="flex flex-col items-center gap-6 py-6">
 
-                {/* Waveform */}
                 <WaveformBars active={state === 'recording'} />
 
-                {/* Timer */}
+                {/* Timer — tabular-nums for non-jumping digits */}
                 <motion.p
                   key={duration}
-                  className="text-4xl font-bold tabular text-foreground"
+                  className="text-4xl font-bold tabular-nums text-foreground"
                   animate={{ scale: state === 'recording' ? [1, 1.04, 1] : 1 }}
                   transition={{ duration: 0.3 }}
                 >
                   {formatDuration(duration)}
                 </motion.p>
 
-                {/* Status label */}
+                {/* Status */}
                 <p className="text-sm text-muted-foreground">
                   {state === 'idle' && t('جاهز للتسجيل', 'Ready to record')}
                   {state === 'requesting' && t('جاري الوصول للميكروفون...', 'Requesting microphone...')}
@@ -290,20 +283,19 @@ export default function VoiceNotePage() {
                   {state === 'saving' && t('جاري الحفظ...', 'Saving...')}
                 </p>
 
-                {/* Main record / stop button */}
+                {/* Record / Stop button */}
                 {(state === 'idle' || state === 'recording' || state === 'requesting') && (
                   <motion.button
                     whileTap={{ scale: 0.93 }}
                     onClick={state === 'recording' ? stopRecording : startRecording}
                     disabled={state === 'requesting'}
-                    className={`
-                      w-24 h-24 rounded-full flex items-center justify-center
-                      shadow-lg transition-colors duration-200 disabled:opacity-50
-                      ${state === 'recording'
+                    className={[
+                      'w-24 h-24 rounded-full flex items-center justify-center',
+                      'shadow-lg transition-colors duration-200 disabled:opacity-50',
+                      state === 'recording'
                         ? 'bg-red-600 hover:bg-red-500 shadow-red-500/30'
-                        : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/30'
-                      }
-                    `}
+                        : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/30',
+                    ].join(' ')}
                   >
                     {state === 'recording'
                       ? <Square className="w-8 h-8 text-white" />
@@ -322,7 +314,6 @@ export default function VoiceNotePage() {
                     exit={{ opacity: 0 }}
                     className="space-y-5"
                   >
-                    {/* Hidden audio element */}
                     <audio
                       ref={audioRef}
                       src={audioUrl}
@@ -331,12 +322,7 @@ export default function VoiceNotePage() {
 
                     {/* Playback bar */}
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={togglePlayback}
-                        className="shrink-0"
-                      >
+                      <Button size="icon" variant="ghost" onClick={togglePlayback} className="shrink-0">
                         {isPlaying
                           ? <Pause className="w-5 h-5" />
                           : <Play className="w-5 h-5" />
@@ -345,12 +331,12 @@ export default function VoiceNotePage() {
                       <div className="flex-1 h-1.5 rounded-full bg-border overflow-hidden">
                         <div className="h-full bg-emerald-500 w-0 transition-all" />
                       </div>
-                      <span className="text-sm tabular text-muted-foreground shrink-0">
+                      <span className="text-sm tabular-nums text-muted-foreground shrink-0">
                         {formatDuration(duration)}
                       </span>
                     </div>
 
-                    {/* Title input */}
+                    {/* Title */}
                     <div className="space-y-1.5">
                       <Label htmlFor="note-title">
                         {t('عنوان الملاحظة (اختياري)', 'Note title (optional)')}
@@ -367,7 +353,7 @@ export default function VoiceNotePage() {
                     <div className="flex gap-3">
                       <Button
                         variant="outline"
-                        className="flex-1 gap-2 text-destructive hover:text-destructive"
+                        className="flex-1 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={discardRecording}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -378,11 +364,10 @@ export default function VoiceNotePage() {
                         onClick={saveVoiceNote}
                         disabled={state === 'saving'}
                       >
-                        {state === 'saving' ? (
-                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <Save className="w-4 h-4" />
-                        )}
+                        {state === 'saving'
+                          ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          : <Save className="w-4 h-4" />
+                        }
                         {t('حفظ', 'Save')}
                       </Button>
                     </div>

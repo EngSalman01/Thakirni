@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Heart, Plus, Search, ImageIcon, Mic, FileText,
-  Download, Share2, Trash2, MoreVertical, Brain,
+  Download, Share2, Trash2, MoreVertical,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -157,7 +157,9 @@ function MemoryCard({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="w-7 h-7 text-white hover:bg-white/20"
                   onClick={(e) => e.stopPropagation()}
                 >
