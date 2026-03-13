@@ -1,7 +1,7 @@
 import { streamText, tool, convertToCoreMessages } from "ai"
 import { createGroq } from "@ai-sdk/groq"
 import { z } from "zod"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 
 export const maxDuration = 30
 
@@ -48,6 +48,7 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
     const supabase = await createClient()
+    const serviceSupabase = createServiceClient()  // for AI table writes
     const { data: { user } } = await supabase.auth.getUser()
 
     const { currentDate, currentTime, currentDayName, currentHour, addDays } = getSaudiTime()
@@ -78,21 +79,16 @@ export async function POST(req: Request) {
     if (user) {
       const [factsRes, historyRes, profileRes] = await Promise.all([
 
-        // Last 30 stored personal facts
-        supabase
+        // Last 30 stored personal facts (service client — bypasses RLS)
+        serviceSupabase
           .from("user_facts")
           .select("fact, category")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(30),
 
-        // Last 20 conversation turns for short-term memory
-        supabase
-          .from("conversations")
-          .select("role, content, created_at")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(20),
+        // conversation history placeholder
+        Promise.resolve({ data: [], error: null }),
 
         // User display name
         supabase
@@ -118,21 +114,15 @@ export async function POST(req: Request) {
         factsBlock = `\n━━━━━━━━━━━━━━━━━━━━━━━━\n🧠 WHAT I KNOW ABOUT YOU\n${lines}\n━━━━━━━━━━━━━━━━━━━━━━━━`
       }
 
-      // Recent history oldest-first so the AI reads it chronologically
-      if (historyRes.data && historyRes.data.length > 0) {
-        const turns = [...historyRes.data].reverse()
-        const lines = turns
-          .map(t =>
-            `  [${t.role === "user" ? "You" : "Thakirni"}]: ${t.content.slice(0, 200)}`)
-          .join("\n")
-        historyBlock = `\n━━━━━━━━━━━━━━━━━━━━━━━━\n💬 RECENT CONVERSATION HISTORY\n${lines}\n━━━━━━━━━━━━━━━━━━━━━━━━`
-      }
+      // historyBlock intentionally empty — conversation history is already in
+      // the messages array passed to convertToCoreMessages(). Injecting it again
+      // into the system prompt causes the model to duplicate responses.
     }
 
     // ── Persist incoming user message (fire-and-forget) ───────────────────────
     const lastUserMessage = messages[messages.length - 1]
     if (user && lastUserMessage?.role === "user") {
-      supabase
+      serviceSupabase
         .from("conversations")
         .insert({
           user_id: user.id,
@@ -155,7 +145,7 @@ export async function POST(req: Request) {
       onFinish: async ({ text }) => {
         if (!user || !text) return
         try {
-          await supabase.from("conversations").insert({
+          await serviceSupabase.from("conversations").insert({
             user_id: user.id,
             role: "assistant",
             content: text,
@@ -180,7 +170,6 @@ ${profileName ? `The user's name is ${profileName}.` : ""}
   Weekend  : ${addDays(6 - new Date(currentDate).getDay())}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 ${factsBlock}
-${historyBlock}
 
 ════════════════════════
 1. PERSONA & TONE
@@ -212,7 +201,7 @@ Required fields before create_plan:
 3. PROACTIVE ASSISTANCE & HISTORY
 ════════════════════════
 - Daily Briefings: If the user greets you with no specific task, call list_plans(date_filter="today") and give a warm brief overview of their day. If no plans, ask what they want to focus on.
-- Use RECENT CONVERSATION HISTORY above to maintain context across the session. Reference past messages naturally when relevant.
+- The full conversation is available to you in the messages array. Reference earlier messages naturally when relevant (e.g. "Following up on what you said earlier...").
 
 ════════════════════════
 4. THE SECOND BRAIN
@@ -496,8 +485,8 @@ One tool call per action. No duplicate calls.
           execute: async ({ fact, category }) => {
             if (!user) return { success: false, message: "Login required" }
 
-            // Check for near-duplicate before inserting
-            const { data: existing } = await supabase
+            // Use service client to bypass RLS on server-only table
+            const { data: existing } = await serviceSupabase
               .from("user_facts")
               .select("id")
               .eq("user_id", user.id)
@@ -506,14 +495,14 @@ One tool call per action. No duplicate calls.
               .limit(1)
 
             if (existing && existing.length > 0) {
-              await supabase
+              await serviceSupabase
                 .from("user_facts")
                 .update({ fact })
                 .eq("id", existing[0].id)
               return { success: true, message: "Fact updated." }
             }
 
-            const { error } = await supabase
+            const { error } = await serviceSupabase
               .from("user_facts")
               .insert({ user_id: user.id, fact, category })
 
@@ -538,7 +527,7 @@ One tool call per action. No duplicate calls.
           execute: async ({ days_back, source_type }) => {
             if (!user) return { success: false, message: "Login required", events: [] }
 
-            let query = supabase
+            let query = serviceSupabase
               .from("timeline_events")
               .select("title, description, event_date, source_type, importance")
               .eq("user_id", user.id)
@@ -572,7 +561,7 @@ One tool call per action. No duplicate calls.
           execute: async ({ category }) => {
             if (!user) return { success: false, message: "Login required", facts: [] }
 
-            let query = supabase
+            let query = serviceSupabase
               .from("user_facts")
               .select("fact, category, created_at")
               .eq("user_id", user.id)
