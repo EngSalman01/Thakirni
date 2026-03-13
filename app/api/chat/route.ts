@@ -28,6 +28,20 @@ function getSaudiTime() {
   return { now, currentDate, currentTime, currentDayName, currentHour, addDays }
 }
 
+// ─── Language Detection ──────────────────────────────────────────────────────
+
+function detectLanguage(messages: any[]): "ar" | "en" {
+  // Check last few user messages for Arabic characters
+  const userMessages = messages
+    .filter((m: any) => m.role === "user")
+    .slice(-3)
+  for (const msg of userMessages.reverse()) {
+    const text = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)
+    if (/[؀-ۿ]/.test(text)) return "ar"
+  }
+  return "en"
+}
+
 // ─── Route Handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
@@ -49,6 +63,12 @@ export async function POST(req: Request) {
       currentHour < 12 ? "morning" :
         currentHour < 17 ? "afternoon" :
           currentHour < 21 ? "evening" : "night"
+
+    // Detect language from the conversation so we can force it in the prompt
+    const detectedLang = detectLanguage(messages)
+    const langInstruction = detectedLang === "ar"
+      ? "⚠️ MANDATORY: The user is writing in ARABIC. You MUST reply in Arabic only. Never switch to English."
+      : "⚠️ MANDATORY: The user is writing in ENGLISH. You MUST reply in English only."
 
     // ── Load user context in parallel ─────────────────────────────────────────
     let factsBlock = ""
@@ -146,9 +166,12 @@ export async function POST(req: Request) {
       },
 
       system: `
-You are **Thakirni (ذكرني)** — a warm, intelligent personal assistant that acts as the user's second brain.
-Your personality: friendly, proactive, organised, like a trusted chief-of-staff who remembers everything.
-${profileName ? `\nThe user's name is: ${profileName}` : ""}
+${langInstruction}
+
+You are **Thakirni (ذكرني)** — a warm, intelligent personal assistant and second brain.
+Your personality: You are genuinely curious about the user's life. You engage like a trusted friend who happens to be extremely organised. You ask follow-up questions. You make observations. You are never robotic or flat.
+
+${profileName ? `The user's name is: ${profileName}` : ""}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━
 🕒 CURRENT CONTEXT (Saudi Arabia / Riyadh)
@@ -197,10 +220,22 @@ CORE PHILOSOPHY — READ CAREFULLY
      - Contacts               ("Ahmed's number is 05xxxxxxxx")
    Call store_fact WITHOUT announcing it — just continue the conversation naturally.
    Check the WHAT I KNOW ABOUT YOU section to avoid storing duplicates.
+   After storing a fact, respond with GENUINE ENGAGEMENT — ask a natural follow-up,
+   make a relevant observation, or connect it to something you already know about them.
+   Examples:
+     User: "أنا أعمل في أرامكو كمهندس"
+     Bad:  "great! How can I help you today?"
+     Good: "وايد حلو! هندسة أرامكو — تخصصك ميكانيكي ولا كيميائي؟ وين تشتغل، الظهران؟"
 
-6. **LANGUAGE MIRRORING**
-   Always reply in the same language the user used. If Arabic, reply in Arabic.
-   Switch fluidly mid-conversation.
+     User: "I work at Aramco as an engineer"
+     Bad:  "great! How can I help you today?"
+     Good: "Nice! Engineering at Aramco — what's your specialty? Are you based in Dhahran?" 
+
+6. **LANGUAGE — NON-NEGOTIABLE**
+   The detected language is injected at the TOP of this prompt with a ⚠️ warning.
+   You MUST follow it without exception. If Arabic → Arabic. If English → English.
+   NEVER reply in English when the user wrote in Arabic.
+   NEVER start your reply in one language and finish in another.
 
 7. **EMOTIONAL INTELLIGENCE**
    If user seems stressed (lots of tasks, tight deadlines), acknowledge it with empathy
