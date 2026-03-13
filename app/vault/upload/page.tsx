@@ -22,15 +22,9 @@ import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
 const MAX_FILE_SIZE_MB = 25;
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
 
-const ACCEPTED_TYPES: Record<string, string[]> = {
-  'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic'],
-  'audio/*': ['.mp3', '.wav', '.ogg', '.m4a', '.webm'],
-  'video/*': ['.mp4', '.mov', '.webm'],
-  'application/pdf': ['.pdf'],
-  'text/*': ['.txt', '.md'],
-};
-
-const ACCEPT_STRING = Object.keys(ACCEPTED_TYPES).join(',');
+const ACCEPT_STRING = [
+  'image/*', 'audio/*', 'video/*', 'application/pdf', 'text/*',
+].join(',');
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,14 +34,14 @@ interface FileItem {
   id: string;
   file: File;
   preview: string | null;   // object URL for images
-  progress: number;          // 0-100
+  progress: number;           // 0-100
   status: UploadStatus;
   error?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function fileIcon(file: File) {
+function fileIcon(file: File): React.ElementType {
   if (file.type.startsWith('image/')) return ImageIcon;
   if (file.type.startsWith('video/')) return FileVideo;
   if (file.type.startsWith('audio/')) return FileAudio;
@@ -61,7 +55,7 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 }
 
-function uniqueId() {
+function uniqueId(): string {
   return Math.random().toString(36).slice(2, 9);
 }
 
@@ -113,7 +107,7 @@ function FileRow({
         </div>
       </div>
 
-      {/* Remove */}
+      {/* Remove — hidden while uploading */}
       {item.status !== 'uploading' && (
         <Button
           size="icon"
@@ -140,15 +134,20 @@ export default function UploadPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  // Keep a ref to the latest items so the cleanup effect always sees current previews
+  const itemsRef = useRef<FileItem[]>(items);
+  useEffect(() => { itemsRef.current = items; }, [items]);
 
-  // Revoke preview URLs on unmount
+  // Revoke ALL preview URLs on unmount using the ref (avoids stale closure)
   useEffect(() => {
     return () => {
-      items.forEach((i) => { if (i.preview) URL.revokeObjectURL(i.preview); });
+      itemsRef.current.forEach((i) => {
+        if (i.preview) URL.revokeObjectURL(i.preview);
+      });
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // ── Add files ────────────────────────────────────────────────────────────
+  // ── Add files ──────────────────────────────────────────────────────────────
 
   const addFiles = useCallback((raw: File[]) => {
     const validated: FileItem[] = [];
@@ -163,8 +162,8 @@ export default function UploadPage() {
         );
         continue;
       }
-      // Prevent duplicates by name+size
-      const exists = items.some(
+      // Prevent duplicates by name + size
+      const exists = itemsRef.current.some(
         (i) => i.file.name === file.name && i.file.size === file.size,
       );
       if (exists) continue;
@@ -179,14 +178,11 @@ export default function UploadPage() {
     }
 
     if (validated.length) setItems((prev) => [...prev, ...validated]);
-  }, [items, t]);
+  }, [t]);
 
-  // ── Drag handlers ────────────────────────────────────────────────────────
+  // ── Drag handlers ──────────────────────────────────────────────────────────
 
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const onDragLeave = () => setIsDragging(false);
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -194,7 +190,7 @@ export default function UploadPage() {
     addFiles(Array.from(e.dataTransfer.files));
   };
 
-  // ── Remove file ──────────────────────────────────────────────────────────
+  // ── Remove file ────────────────────────────────────────────────────────────
 
   const removeFile = useCallback((id: string) => {
     setItems((prev) => {
@@ -204,98 +200,96 @@ export default function UploadPage() {
     });
   }, []);
 
-  // ── Upload ───────────────────────────────────────────────────────────────
+  // ── Upload ─────────────────────────────────────────────────────────────────
 
   const handleUpload = useCallback(async () => {
-    const pending = items.filter((i) => i.status === 'pending');
+    const pending = itemsRef.current.filter((i) => i.status === 'pending');
     if (!pending.length) return;
 
     setIsUploading(true);
 
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error(t('يجب تسجيل الدخول أولاً', 'You must be signed in.'));
-      setIsUploading(false);
-      return;
-    }
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error(t('يجب تسجيل الدخول أولاً', 'You must be signed in.'));
+        return;
+      }
 
-    let successCount = 0;
+      let successCount = 0;
 
-    for (const item of pending) {
-      // Mark as uploading
-      setItems((prev) =>
-        prev.map((i) => i.id === item.id ? { ...i, status: 'uploading', progress: 10 } : i),
-      );
-
-      try {
-        const ext = item.file.name.split('.').pop() ?? 'bin';
-        const path = `uploads/${user.id}/${Date.now()}-${uniqueId()}.${ext}`;
-
-        // Upload to storage
-        const { error: uploadErr } = await supabase.storage
-          .from('memories')
-          .upload(path, item.file, { contentType: item.file.type, upsert: false });
-
-        if (uploadErr) throw uploadErr;
-
+      for (const item of pending) {
         setItems((prev) =>
-          prev.map((i) => i.id === item.id ? { ...i, progress: 70 } : i),
+          prev.map((i) => i.id === item.id ? { ...i, status: 'uploading', progress: 10 } : i),
         );
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('memories')
-          .getPublicUrl(path);
+        try {
+          const ext = item.file.name.split('.').pop() ?? 'bin';
+          const path = `uploads/${user.id}/${Date.now()}-${uniqueId()}.${ext}`;
 
-        // Save memory row
-        const { error: dbErr } = await supabase.from('memories').insert({
-          user_id: user.id,
-          content: description || item.file.name,
-          tags: [item.file.type.split('/')[0], 'upload'],
-          type: item.file.type.startsWith('image/') ? 'image' : 'file',
-          file_url: publicUrl,
-          file_name: item.file.name,
-          file_size: item.file.size,
-          mime_type: item.file.type,
-        });
+          const { error: uploadErr } = await supabase.storage
+            .from('memories')
+            .upload(path, item.file, { contentType: item.file.type, upsert: false });
 
-        if (dbErr) throw dbErr;
+          if (uploadErr) throw uploadErr;
 
-        setItems((prev) =>
-          prev.map((i) => i.id === item.id ? { ...i, status: 'done', progress: 100 } : i),
-        );
-        successCount++;
-      } catch (err: any) {
-        console.error('[Upload] error:', err);
-        setItems((prev) =>
-          prev.map((i) =>
-            i.id === item.id
-              ? { ...i, status: 'error', error: err?.message ?? 'Failed' }
-              : i,
+          setItems((prev) =>
+            prev.map((i) => i.id === item.id ? { ...i, progress: 70 } : i),
+          );
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('memories')
+            .getPublicUrl(path);
+
+          const { error: dbErr } = await supabase.from('memories').insert({
+            user_id: user.id,
+            content: description || item.file.name,
+            tags: [item.file.type.split('/')[0], 'upload'],
+            type: item.file.type.startsWith('image/') ? 'image' : 'file',
+            file_url: publicUrl,
+            file_name: item.file.name,
+            file_size: item.file.size,
+            mime_type: item.file.type,
+          });
+
+          if (dbErr) throw dbErr;
+
+          setItems((prev) =>
+            prev.map((i) => i.id === item.id ? { ...i, status: 'done', progress: 100 } : i),
+          );
+          successCount++;
+        } catch (err: any) {
+          console.error('[Upload] file error:', err);
+          setItems((prev) =>
+            prev.map((i) =>
+              i.id === item.id
+                ? { ...i, status: 'error', error: err?.message ?? t('فشل', 'Failed') }
+                : i,
+            ),
+          );
+        }
+      }
+
+      if (successCount > 0) {
+        toast.success(
+          t(
+            `تم رفع ${successCount} ملف بنجاح ✅`,
+            `${successCount} file${successCount > 1 ? 's' : ''} uploaded ✅`,
           ),
         );
+        setTimeout(() => router.push('/vault'), 1200);
       }
+    } finally {
+      setIsUploading(false);
     }
+  }, [description, t, router]);
 
-    setIsUploading(false);
-
-    if (successCount > 0) {
-      toast.success(
-        t(
-          `تم رفع ${successCount} ملف بنجاح ✅`,
-          `${successCount} file${successCount > 1 ? 's' : ''} uploaded ✅`,
-        ),
-      );
-      setTimeout(() => router.push('/vault'), 1200);
-    }
-  }, [items, description, t, router]);
-
-  // ── Derived ──────────────────────────────────────────────────────────────
+  // ── Derived ────────────────────────────────────────────────────────────────
 
   const pendingCount = items.filter((i) => i.status === 'pending').length;
   const hasItems = items.length > 0;
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-background">
@@ -394,7 +388,7 @@ export default function UploadPage() {
                 )}
               </AnimatePresence>
 
-              {/* Description (shown once files are added) */}
+              {/* Description — shown once files are added */}
               <AnimatePresence>
                 {hasItems && (
                   <motion.div
@@ -422,11 +416,10 @@ export default function UploadPage() {
                   disabled={!pendingCount || isUploading}
                   className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-500 text-white"
                 >
-                  {isUploading ? (
-                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
+                  {isUploading
+                    ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : <Upload className="w-4 h-4" />
+                  }
                   {isUploading
                     ? t('جاري الرفع...', 'Uploading...')
                     : pendingCount > 0
