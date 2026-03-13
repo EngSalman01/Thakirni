@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { Check, X, Sparkles, User, Zap, Users, Shield } from "lucide-react";
@@ -19,6 +19,8 @@ import { LandingFooter } from "@/components/thakirni/landing-footer";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/components/language-provider";
 import { Switch } from "@/components/ui/switch";
+import { initializePaddle, Paddle } from "@paddle/paddle-js";
+import { createClient } from "@/lib/supabase/client";
 
 // ── Animation Variants ────────────────────────────────────────────────────────
 
@@ -48,20 +50,25 @@ interface PricingTier {
   nameEn: string;
   targetAr: string;
   targetEn: string;
-  /** Monthly price in SAR */
   monthlyPrice: number;
-  /** Annual price in SAR (total for the year) */
   annualPrice: number;
   icon: React.ElementType;
   features: Feature[];
   ctaAr: string;
   ctaEn: string;
   popular: boolean;
-  /** Show "coming soon" overlay */
   comingSoon?: boolean;
-  /** Extra pricing note shown after the amount */
   noteSuffixAr?: string;
   noteSuffixEn?: string;
+}
+
+// ── Paddle Price IDs (set in Vercel env vars) ─────────────────────────────────
+
+const PADDLE_PRICES = {
+  individual: {
+    monthly: process.env.NEXT_PUBLIC_PADDLE_PRICE_INDIVIDUAL_MONTHLY!,
+    annual: process.env.NEXT_PUBLIC_PADDLE_PRICE_INDIVIDUAL_ANNUAL!,
+  },
 }
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -95,7 +102,7 @@ const pricingTiers: PricingTier[] = [
     targetAr: "للمحترفين والمستقلين",
     targetEn: "Professionals & Freelancers",
     monthlyPrice: 29,
-    annualPrice: 278,   // 29 × 12 × 0.8 = ~278  →  true 20% saving
+    annualPrice: 278,
     icon: User,
     features: [
       { ar: "رسائل وملاحظات صوتية غير محدودة", en: "Unlimited messages & voice notes", included: true },
@@ -116,7 +123,7 @@ const pricingTiers: PricingTier[] = [
     targetAr: "للفرق والمشاريع الصغيرة",
     targetEn: "Teams & Small Projects",
     monthlyPrice: 79,
-    annualPrice: 758,   // 79 × 12 × 0.8 = ~758
+    annualPrice: 758,
     icon: Users,
     noteSuffixAr: "حتى ١٠ مستخدمين",
     noteSuffixEn: "up to 10 users",
@@ -138,7 +145,7 @@ const pricingTiers: PricingTier[] = [
 // ── Trust Badges ──────────────────────────────────────────────────────────────
 
 const trustBadges = [
-  { ar: "ضمان استرداد ٣٠ يوم", en: "30-day money back", icon: Sparkles },
+  { ar: "ضمان استرداد ١٤ يوم", en: "14-day money back", icon: Sparkles },
   { ar: "دعم فني على مدار الساعة", en: "24 / 7 support", icon: User },
   { ar: "إلغاء في أي وقت", en: "Cancel anytime", icon: X },
   { ar: "بياناتك آمنة ومحفوظة", en: "Secure data", icon: Shield },
@@ -150,39 +157,85 @@ export default function PricingPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [isAnnual, setIsAnnual] = useState(false);
-  const [loading, setLoading] = useState<TierId | null>(null);
+  const [isLoading, setIsLoading] = useState<TierId | null>(null);
+  const [paddle, setPaddle] = useState<Paddle | null>(null);
 
-  // ── Helpers ──────────────────────────────────────────────────────────────────
+  // ── Init Paddle once on mount ─────────────────────────────────────────────
+
+  useEffect(() => {
+    initializePaddle({
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+      environment: "sandbox", // ← change to "production" when Paddle approves live account
+      eventCallback(event) {
+        if (event.name === "checkout.completed") {
+          toast.success(t("تم الاشتراك بنجاح! 🎉", "Subscription successful! 🎉"))
+          setTimeout(() => router.push("/vault"), 1500)
+        }
+      },
+    }).then((p) => { if (p) setPaddle(p) })
+  }, [])
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
   function displayedPrice(tier: PricingTier): string {
-    if (tier.monthlyPrice === 0) return "0";
-    if (isAnnual) {
-      // Show effective monthly cost when billed annually
-      return Math.round(tier.annualPrice / 12).toString();
-    }
-    return tier.monthlyPrice.toString();
+    if (tier.monthlyPrice === 0) return "0"
+    if (isAnnual) return Math.round(tier.annualPrice / 12).toString()
+    return tier.monthlyPrice.toString()
   }
 
   function annualSaving(tier: PricingTier): number {
-    return Math.round(100 - (tier.annualPrice / (tier.monthlyPrice * 12)) * 100);
+    return Math.round(100 - (tier.annualPrice / (tier.monthlyPrice * 12)) * 100)
+  }
+
+  function getPriceId(tierId: TierId): string | null {
+    if (tierId === "individual") {
+      return isAnnual ? PADDLE_PRICES.individual.annual : PADDLE_PRICES.individual.monthly
+    }
+    return null
   }
 
   // ── Subscribe handler ─────────────────────────────────────────────────────
 
   async function handleSubscribe(tierId: TierId) {
-    if (loading) return;
-    setLoading(tierId);
+    if (isLoading) return
 
-    const destinations: Record<TierId, string> = {
-      free: "/auth",
-      individual: "/checkout/individual",
-      team: "/checkout/team",
-    };
+    if (tierId === "free") {
+      router.push("/auth")
+      return
+    }
 
-    // Small delay so the spinner is visible before navigation
-    await new Promise((r) => setTimeout(r, 400));
-    router.push(destinations[tierId]);
-    // Don't reset loading — navigation will unmount the component
+    const priceId = getPriceId(tierId)
+    if (!priceId || !paddle) {
+      toast.error(t("حدث خطأ، حاول مرة أخرى", "Something went wrong, please try again"))
+      return
+    }
+
+    // Pre-fill checkout with user's email if logged in
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    setIsLoading(tierId)
+    try {
+      await paddle.Checkout.open({
+        items: [{ priceId, quantity: 1 }],
+        customer: user?.email ? { email: user.email } : undefined,
+        customData: {
+          user_id: user?.id ?? "",
+          plan_tier: tierId,
+          billing: isAnnual ? "annual" : "monthly",
+        },
+        settings: {
+          displayMode: "overlay",
+          theme: "dark",
+          successUrl: `${window.location.origin}/vault?subscribed=true`,
+        },
+      })
+    } catch (err) {
+      console.error("[Paddle] Checkout error:", err)
+      toast.error(t("تعذّر فتح نافذة الدفع", "Could not open checkout"))
+    } finally {
+      setIsLoading(null)
+    }
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -192,7 +245,6 @@ export default function PricingPage() {
       <LandingHeader />
 
       <section className="pt-32 pb-20 relative overflow-hidden">
-        {/* Background blobs */}
         <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5  rounded-full blur-[100px] pointer-events-none" />
 
@@ -243,30 +295,24 @@ export default function PricingPage() {
           >
             {pricingTiers.map((tier) => (
               <motion.div key={tier.id} variants={cardVariants} className="h-full">
-                <Card
-                  className={cn(
-                    "relative h-full flex flex-col transition-all duration-300 border overflow-hidden rounded-2xl",
-                    tier.popular
-                      ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-2xl shadow-emerald-500/15 lg:scale-105"
-                      : "border-border hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
-                  )}
-                >
+                <Card className={cn(
+                  "relative h-full flex flex-col transition-all duration-300 border overflow-hidden rounded-2xl",
+                  tier.popular
+                    ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-2xl shadow-emerald-500/15 lg:scale-105"
+                    : "border-border hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
+                )}>
 
-                  {/* ── Coming Soon Overlay ── */}
+                  {/* Coming Soon Overlay */}
                   {tier.comingSoon && (
                     <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
                       <div className="bg-muted border border-border rounded-xl px-6 py-5 text-center shadow-xl">
-                        <p className="text-lg font-bold text-foreground mb-1">
-                          {t("قريباً", "Coming Soon")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t("قيد التطوير", "Under development")}
-                        </p>
+                        <p className="text-lg font-bold text-foreground mb-1">{t("قريباً", "Coming Soon")}</p>
+                        <p className="text-sm text-muted-foreground">{t("قيد التطوير", "Under development")}</p>
                       </div>
                     </div>
                   )}
 
-                  {/* ── Popular Badge ── */}
+                  {/* Popular Badge */}
                   {tier.popular && (
                     <div className="absolute -top-px inset-x-0 flex justify-center">
                       <div className="bg-emerald-500 text-white px-4 py-1 rounded-b-full text-xs font-semibold flex items-center gap-1 shadow-md">
@@ -276,16 +322,13 @@ export default function PricingPage() {
                     </div>
                   )}
 
-                  {/* ── Header ── */}
                   <CardHeader className={cn("pb-4 pt-8 px-6", tier.comingSoon && "opacity-40")}>
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <CardTitle className="text-xl font-bold text-foreground mb-1">
                           {t(tier.nameAr, tier.nameEn)}
                         </CardTitle>
-                        <CardDescription>
-                          {t(tier.targetAr, tier.targetEn)}
-                        </CardDescription>
+                        <CardDescription>{t(tier.targetAr, tier.targetEn)}</CardDescription>
                       </div>
                       <div className={cn(
                         "p-2 rounded-lg",
@@ -297,7 +340,6 @@ export default function PricingPage() {
                       </div>
                     </div>
 
-                    {/* Price */}
                     <div className="flex items-baseline gap-1 flex-wrap">
                       <span className="text-4xl font-bold text-foreground tabular-nums">
                         {displayedPrice(tier)}
@@ -310,14 +352,10 @@ export default function PricingPage() {
                       </span>
                     </div>
 
-                    {/* Annual note */}
                     <div className="min-h-[1.25rem] mt-1">
                       {isAnnual && tier.monthlyPrice > 0 ? (
                         <p className="text-xs text-muted-foreground">
-                          {t(
-                            `يُفوتر ${tier.annualPrice} ر.س سنوياً`,
-                            `Billed ${tier.annualPrice} SAR / year`,
-                          )}
+                          {t(`يُفوتر ${tier.annualPrice} ر.س سنوياً`, `Billed ${tier.annualPrice} SAR / year`)}
                           {" · "}
                           <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                             {t(`وفر ${annualSaving(tier)}٪`, `Save ${annualSaving(tier)}%`)}
@@ -331,7 +369,6 @@ export default function PricingPage() {
                     </div>
                   </CardHeader>
 
-                  {/* ── Features ── */}
                   <div className={cn("flex flex-col flex-1", tier.comingSoon && "opacity-40 pointer-events-none")}>
                     <CardContent className="flex-1 px-6 pt-2">
                       <div className="w-full h-px bg-border mb-5" />
@@ -358,7 +395,6 @@ export default function PricingPage() {
                       </ul>
                     </CardContent>
 
-                    {/* ── CTA ── */}
                     <CardFooter className="px-6 pb-7 pt-5">
                       <Button
                         className={cn(
@@ -369,11 +405,11 @@ export default function PricingPage() {
                               ? "variant-secondary"
                               : "bg-primary text-primary-foreground hover:bg-primary/90",
                         )}
-                        disabled={!!tier.comingSoon || loading === tier.id}
+                        disabled={!!tier.comingSoon || isLoading === tier.id}
                         onClick={() => handleSubscribe(tier.id)}
                         variant={tier.popular || tier.id === "team" ? "default" : "secondary"}
                       >
-                        {loading === tier.id ? (
+                        {isLoading === tier.id ? (
                           <span className="flex items-center gap-2">
                             <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                             {t("جاري...", "Loading...")}
@@ -402,9 +438,7 @@ export default function PricingPage() {
                   <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center mb-1">
                     <item.icon className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <span className="text-xs font-medium leading-snug">
-                    {t(item.ar, item.en)}
-                  </span>
+                  <span className="text-xs font-medium leading-snug">{t(item.ar, item.en)}</span>
                 </div>
               ))}
             </div>
