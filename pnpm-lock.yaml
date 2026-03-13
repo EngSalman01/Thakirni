@@ -23,6 +23,9 @@ importers:
       '@paddle/paddle-js':
         specifier: ^1.6.2
         version: 1.6.2
+      '@paddle/paddle-node-sdk':
+        specifier: ^3.6.0
+        version: 3.6.0
       '@radix-ui/react-accordion':
         specifier: 1.2.2
         version: 1.2.2(@types/react-dom@19.2.3(@types/react@19.2.13))(@types/react@19.2.13)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -536,6 +539,10 @@ packages:
 
   '@paddle/paddle-js@1.6.2':
     resolution: {integrity: sha512-nx1NXCzwWUWjf0iaRDiXZlfWgFjNZ6996RFcTDk0G0ggzrh514Zsc6jGTPOUGdLB1sYJXVQiKKoNLoKoXhH+sA==}
+
+  '@paddle/paddle-node-sdk@3.6.0':
+    resolution: {integrity: sha512-EFP1thHb1FVuKGwSJ/+/oj5FvCk3l3adyVy/mpUnDq/MM31RdcAdNn+AZ8qYd0pF4rJxtwXmWMGjXqjHKhKHuA==}
+    engines: {node: '>=20'}
 
   '@radix-ui/number@1.1.0':
     resolution: {integrity: sha512-V3gRzhVNU1ldS5XhAPTom1fOIo4ccrjjJgmE+LI2h/WaFpHmx0MQApT+KZHnx8abG6Avtfcz4WoEciMnpFT3HQ==}
@@ -2953,6 +2960,8 @@ snapshots:
   '@opentelemetry/api@1.9.0': {}
 
   '@paddle/paddle-js@1.6.2': {}
+
+  '@paddle/paddle-node-sdk@3.6.0': {}
 
   '@radix-ui/number@1.1.0': {}
 
