@@ -26,7 +26,7 @@ import {
 import {
   User, Bell, Shield, Globe, Smartphone,
   Mail, Lock, LogOut, Crown, CheckCircle2,
-  AlertCircle, ArrowRight, Loader2,
+  AlertCircle, ArrowRight, Loader2, Phone,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -138,7 +138,7 @@ export default function SettingsPage() {
 
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, full_name, avatar_url, phone, notification_email, notification_push, notification_friday")
+          .select("id, full_name, avatar_url, phone_number, notification_email, notification_push, notification_friday")
           .eq("id", user.id)
           .single();
 
@@ -154,6 +154,9 @@ export default function SettingsPage() {
           const n = data.full_name ?? "";
           setName(n);
           setOrigName(n);
+          const p = data.phone_number ?? "";
+          setPhone(p);
+          setOrigPhone(p);
           setNotifs({
             notification_email: data.notification_email ?? true,
             notification_push: data.notification_push ?? true,
@@ -185,16 +188,34 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Normalise phone
+      const rawPhone = phone.trim().replace(/\s+/g, "")
+      const normPhone = rawPhone
+        .replace(/^\+/, "")
+        .replace(/^00/, "")
+        .replace(/^0/, "966")
+
+      if (normPhone && !/^966\d{9}$/.test(normPhone)) {
+        toast.error(t("رقم الهاتف غير صحيح", "Invalid phone number"))
+        return
+      }
+
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: name.trim(), updated_at: new Date().toISOString() })
+        .update({
+          full_name: name.trim(),
+          phone_number: normPhone || null,
+          updated_at: new Date().toISOString(),
+        })
         .eq("id", user.id);
 
       if (error) throw error;
 
       setOrigName(name.trim());
-      setProfile((p) => p ? { ...p, full_name: name.trim() } : null);
-      toast.success(t("تم حفظ الاسم", "Name saved"));
+      setOrigPhone(normPhone);
+      setPhone(normPhone);
+      setProfile((p) => p ? { ...p, full_name: name.trim(), phone_number: normPhone || null } : null);
+      toast.success(t("تم حفظ التغييرات", "Changes saved"));
     } catch (err) {
       console.error("[Settings] save name:", err);
       toast.error(t("فشل الحفظ", "Failed to save"));
@@ -261,7 +282,7 @@ export default function SettingsPage() {
 
   if (loading) return <SettingsSkeleton />;
 
-  const isDirty = name.trim() !== origName;
+  const isDirty = name.trim() !== origName || phone.trim() !== origPhone;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -335,6 +356,34 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
                   {t("لا يمكن تغيير البريد الإلكتروني", "Email cannot be changed")}
+                </p>
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-1.5">
+                <Label htmlFor="phone">
+                  {t("رقم الجوال", "Phone Number")}
+                  <span className="text-muted-foreground text-xs ms-1">
+                    {t("(للواتساب)", "(for WhatsApp)")}
+                  </span>
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="05xxxxxxxx"
+                    className="ps-10"
+                    dir="ltr"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    "أضف رقمك لاستخدام ذكرني عبر واتساب مباشرة",
+                    "Add your number to use Thakirni directly via WhatsApp",
+                  )}
                 </p>
               </div>
 
