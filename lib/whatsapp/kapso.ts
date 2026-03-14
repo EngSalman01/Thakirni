@@ -1,31 +1,16 @@
-// ── Kapso WhatsApp Client ─────────────────────────────────────────────────────
-// Docs: https://docs.kapso.ai
+import { WhatsAppClient } from '@kapso/whatsapp-cloud-api'
 
-export async function sendWhatsAppMessage(
-    phone: string,
-    text: string,
-): Promise<void> {
-    const phoneNumberId = process.env.KAPSO_PHONE_NUMBER_ID
-    const url = `https://api.kapso.ai/meta/whatsapp/v24.0/${phoneNumberId}/messages`
+const client = new WhatsAppClient({
+    baseUrl: 'https://api.kapso.ai/meta/whatsapp',
+    kapsoApiKey: process.env.KAPSO_API_KEY!
+})
 
-    const res = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${process.env.KAPSO_API_KEY}`,
-        },
-        body: JSON.stringify({
-            messaging_product: "whatsapp",
-            to: phone,
-            type: "text",
-            text: { body: text },
-        }),
+export async function sendWhatsAppMessage(phone: string, text: string): Promise<void> {
+    await client.messages.sendText({
+        phoneNumberId: process.env.KAPSO_PHONE_NUMBER_ID!,
+        to: phone,
+        body: text,
     })
-
-    if (!res.ok) {
-        const err = await res.text()
-        throw new Error(`[Kapso] sendMessage failed: ${res.status} ${err}`)
-    }
 }
 
 export async function downloadKapsoMedia(mediaUrl: string): Promise<Buffer> {
