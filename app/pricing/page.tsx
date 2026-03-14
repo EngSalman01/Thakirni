@@ -166,12 +166,6 @@ export default function PricingPage() {
     initializePaddle({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
       environment: "sandbox", // ← change to "production" when Paddle approves live account
-      eventCallback(event) {
-        if (event.name === "checkout.completed") {
-          toast.success(t("تم الاشتراك بنجاح! 🎉", "Subscription successful! 🎉"))
-          setTimeout(() => router.push("/vault"), 1500)
-        }
-      },
     }).then((p) => { if (p) setPaddle(p) })
   }, [])
 
@@ -227,7 +221,32 @@ export default function PricingPage() {
         settings: {
           displayMode: "overlay",
           theme: "dark",
-          successUrl: `${window.location.origin}/vault?subscribed=true`,
+        },
+        onCheckoutComplete: async (result) => {
+          // Verify payment with our backend
+          try {
+            const response = await fetch("/api/paddle/verify-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                transactionId: result.transactionId,
+              }),
+            })
+
+            if (response.ok) {
+              const data = await response.json()
+              toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
+              setTimeout(() => router.push("/vault?subscribed=true"), 500)
+            } else {
+              console.error("[Paddle] Verification failed:", await response.text())
+              toast.error(t("فشل التحقق من الدفع", "Payment verification failed"))
+            }
+          } catch (err) {
+            console.error("[Paddle] Verification error:", err)
+            toast.error(t("حدث خطأ في التحقق", "Verification error occurred"))
+          }
         },
       })
     } catch (err) {
