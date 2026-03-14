@@ -12,7 +12,7 @@ export async function sendWhatsAppMessage(
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-API-Key": process.env.KAPSO_API_KEY!,
+            "Authorization": `Bearer ${process.env.KAPSO_API_KEY}`,
         },
         body: JSON.stringify({
             messaging_product: "whatsapp",
@@ -30,7 +30,7 @@ export async function sendWhatsAppMessage(
 
 export async function downloadKapsoMedia(mediaUrl: string): Promise<Buffer> {
     const res = await fetch(mediaUrl, {
-        headers: { "X-API-Key": process.env.KAPSO_API_KEY! },
+        headers: { "Authorization": `Bearer ${process.env.KAPSO_API_KEY}` },
     })
     if (!res.ok) throw new Error(`[Kapso] media download failed: ${res.status}`)
     return Buffer.from(await res.arrayBuffer())
