@@ -3,7 +3,7 @@ import { createGroq } from "@ai-sdk/groq"
 import { generateText, tool } from "ai"
 import { z } from "zod"
 import { createServiceClient } from "@/lib/supabase/server"
-import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/whatsapp/kapso"
+import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/kapso"
 
 export const maxDuration = 60
 
@@ -119,8 +119,12 @@ export async function POST(req: NextRequest) {
         return new Response("Invalid JSON", { status: 400 })
     }
 
-    // Handle batched events
-    const events = Array.isArray(payload) ? payload : [payload]
+    // Kapso wraps messages in { type, batch, data: [...] }
+    const events = Array.isArray(payload.data)
+        ? payload.data
+        : Array.isArray(payload)
+            ? payload
+            : [payload]
 
     // Process async — return 200 immediately so Kapso doesn't timeout
     processEvents(events).catch(err =>
@@ -145,10 +149,9 @@ async function processEvents(events: any[]) {
 }
 
 async function processMessage(event: any, supabase: any) {
-    console.log("[WhatsApp DEBUG] Full event:", JSON.stringify(event, null, 2))
-    // Extract message details — adjust field names to match Kapso's actual payload
+    // Kapso payload: { message: { from, type, text: { body } }, conversation: { phone_number_id } }
     const message = event.message ?? event
-    const phone = message.from ?? message.phone ?? message.sender
+    const phone = message.from ?? event.conversation?.phone_number ?? ""
     const msgType = message.type ?? "text"
 
     if (!phone) {
