@@ -165,7 +165,7 @@ export default function PricingPage() {
   useEffect(() => {
     initializePaddle({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
-      environment: "sandbox", // ← change to "production" when Paddle approves live account
+      environment: "live_8e0fae4b790d37f73535fc67da4", // ← change to "production" when Paddle approves live account
     }).then((p) => { if (p) setPaddle(p) })
   }, [])
 
