@@ -108,6 +108,8 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [origName, setOrigName] = useState("");   // to detect dirty state
+  const [phone, setPhone] = useState("");
+  const [origPhone, setOrigPhone] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
@@ -222,7 +224,7 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
-  }, [name, t]);
+  }, [name, phone, t]);
 
   // ── Toggle notification + persist immediately ──────────────────────────────
 
@@ -474,10 +476,10 @@ export default function SettingsPage() {
                   <Card
                     key={tier.id}
                     className={`p-4 border-2 transition-all ${isCurrent
-                      ? "border-primary shadow-md"
-                      : tier.popular
-                        ? "border-emerald-500/50"
-                        : "border-border"
+                        ? "border-primary shadow-md"
+                        : tier.popular
+                          ? "border-emerald-500/50"
+                          : "border-border"
                       }`}
                   >
                     {tier.popular && (
