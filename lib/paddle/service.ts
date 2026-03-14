@@ -1,10 +1,10 @@
-import { Environment, PaddleSDK } from "@paddle/paddle-node-sdk";
+import { Environment, Paddle, LogLevel } from "@paddle/paddle-node-sdk";
 
-const paddleClient = new PaddleSDK({
-  clientToken: process.env.PADDLE_API_SECRET_KEY,
+const paddleClient = new Paddle(process.env.PADDLE_API_SECRET_KEY || "", {
   environment: process.env.PADDLE_ENVIRONMENT === "production" 
-    ? Environment.Production 
-    : Environment.Sandbox,
+    ? Environment.production 
+    : Environment.sandbox,
+  logLevel: LogLevel.error,
 });
 
 export interface PaddleTransaction {
