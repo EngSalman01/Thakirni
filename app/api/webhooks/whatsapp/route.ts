@@ -3,7 +3,7 @@ import { createGroq } from "@ai-sdk/groq"
 import { generateText, tool } from "ai"
 import { z } from "zod"
 import { createServiceClient } from "@/lib/supabase/server"
-import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/kapso"
+import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/whatsapp/kapso"
 
 export const maxDuration = 60
 
