@@ -20,6 +20,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.71.1(react@19.2.0))
+      '@kapso/whatsapp-cloud-api':
+        specifier: ^0.2.0
+        version: 0.2.0
       '@paddle/paddle-js':
         specifier: ^1.6.2
         version: 1.6.2
@@ -477,6 +480,10 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kapso/whatsapp-cloud-api@0.2.0':
+    resolution: {integrity: sha512-2u5FZu2wSfKJpDcVF01P9W5AQ0/4aOj9U963Wg15IkA6NZrxjWN5rqD+I4LlY0NTfCos+TmskdKExZLRsdpWEQ==}
+    engines: {node: '>=20.19'}
 
   '@next/env@15.5.10':
     resolution: {integrity: sha512-plg+9A/KoZcTS26fe15LHg+QxReTazrIOoKKUC3Uz4leGGeNPgLHdevVraAAOX0snnUs3WkRx3eUQpj9mreG6A==}
@@ -2741,6 +2748,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.3.6:
+    resolution: {integrity: sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg==}
+
 snapshots:
 
   '@ai-sdk/groq@1.2.9(zod@3.25.76)':
@@ -2930,6 +2940,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@kapso/whatsapp-cloud-api@0.2.0':
+    dependencies:
+      zod: 4.3.6
 
   '@next/env@15.5.10': {}
 
@@ -5214,3 +5228,5 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.3.6: {}
