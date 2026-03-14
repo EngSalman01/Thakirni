@@ -41,7 +41,7 @@ interface Profile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
-  phone: string | null;
+  phone_number: string | null;
   notification_email: boolean;
   notification_push: boolean;
   notification_friday: boolean;
@@ -474,10 +474,10 @@ export default function SettingsPage() {
                   <Card
                     key={tier.id}
                     className={`p-4 border-2 transition-all ${isCurrent
-                        ? "border-primary shadow-md"
-                        : tier.popular
-                          ? "border-emerald-500/50"
-                          : "border-border"
+                      ? "border-primary shadow-md"
+                      : tier.popular
+                        ? "border-emerald-500/50"
+                        : "border-border"
                       }`}
                   >
                     {tier.popular && (
