@@ -145,6 +145,7 @@ async function processEvents(events: any[]) {
 }
 
 async function processMessage(event: any, supabase: any) {
+    console.log("[WhatsApp DEBUG] Full event:", JSON.stringify(event, null, 2))
     // Extract message details — adjust field names to match Kapso's actual payload
     const message = event.message ?? event
     const phone = message.from ?? message.phone ?? message.sender
