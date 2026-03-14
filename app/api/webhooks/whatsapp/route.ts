@@ -126,10 +126,13 @@ export async function POST(req: NextRequest) {
             ? payload
             : [payload]
 
-    // Process async — return 200 immediately so Kapso doesn't timeout
-    processEvents(events).catch(err =>
-        console.error("[WhatsApp Webhook] Processing error:", err)
-    )
+    // Await processing — fire-and-forget doesn't work in serverless
+    // maxDuration = 60 gives us enough time
+    try {
+        await processEvents(events)
+    } catch (err: any) {
+        console.error("[WhatsApp Webhook] Processing error:", err?.message)
+    }
 
     return new Response("OK", { status: 200 })
 }
