@@ -104,3 +104,39 @@ export async function cancelSubscription(subscriptionId: string) {
     return { error: "Failed to cancel subscription" };
   }
 }
+
+// Sync subscription with Paddle
+export async function syncPaddleSubscription(paddleSubscriptionId: string) {
+  try {
+    const { getPaddleSubscription } = await import("@/lib/paddle/service");
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) return { error: "Unauthorized" };
+
+    // Fetch latest subscription data from Paddle
+    const paddleSubscription = await getPaddleSubscription(paddleSubscriptionId);
+    
+    if (!paddleSubscription) {
+      return { error: "Subscription not found in Paddle" };
+    }
+
+    // Update subscription in database
+    const { error } = await supabase
+      .from("subscriptions")
+      .update({
+        status: paddleSubscription.status,
+        next_billing_date: paddleSubscription.nextBilledAt,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("paddle_subscription_id", paddleSubscriptionId)
+      .eq("user_id", user.id);
+
+    if (error) throw error;
+    revalidatePath("/vault");
+    return { success: true, subscription: paddleSubscription };
+  } catch (error) {
+    console.error("Sync Paddle subscription error:", error);
+    return { error: "Failed to sync subscription" };
+  }
+}
