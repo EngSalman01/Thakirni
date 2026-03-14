@@ -529,3 +529,10 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
 
     console.log(`[WhatsApp] Replied to ${phone}: "${aiResponse.slice(0, 80)}..."`)
 }
+
+export async function GET(req: NextRequest) {
+    // Kapso webhook verification
+    const { searchParams } = new URL(req.url)
+    const challenge = searchParams.get("challenge") ?? searchParams.get("hub.challenge") ?? "ok"
+    return new Response(challenge, { status: 200 })
+}
