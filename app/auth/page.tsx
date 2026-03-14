@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Eye, EyeOff, Mail, Lock, User,
+  Eye, EyeOff, Mail, Lock, User, Phone,
   ArrowLeft, AlertCircle, CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
@@ -54,6 +54,7 @@ function AuthForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [signUpDone, setSignUpDone] = useState(false);  // email-confirm screen
   const [signUpPassword, setSignUpPassword] = useState(""); // for strength meter
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -128,6 +129,17 @@ function AuthForm() {
       setErrors({ form: msg });
       setIsLoading(false);
       return;
+    }
+
+    // Save phone number to profile if provided
+    if (phone) {
+      const { data: { user: newUser } } = await supabase.auth.getUser()
+      if (newUser) {
+        await supabase
+          .from("profiles")
+          .update({ phone_number: phone })
+          .eq("id", newUser.id)
+      }
     }
 
     // Show email-confirmation notice instead of redirecting
@@ -310,6 +322,30 @@ function AuthForm() {
                   <Input id="signup-email" name="email" type="email"
                     placeholder="example@email.com" className="ps-10" dir="ltr" required />
                 </div>
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-2 text-start">
+                <Label htmlFor="signup-phone">
+                  {t("رقم الجوال", "Phone Number")}
+                  <span className="text-muted-foreground text-xs ms-1">{t("(اختياري - لاستخدام واتساب)", "(optional — for WhatsApp)")}</span>
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="signup-phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="05xxxxxxxx"
+                    className={`ps-10 ${errors.phone ? "border-destructive" : ""}`}
+                    dir="ltr"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="text-sm text-destructive">{errors.phone}</p>
+                )}
               </div>
 
               {/* Password + strength meter */}
