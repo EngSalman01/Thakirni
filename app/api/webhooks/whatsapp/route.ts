@@ -158,6 +158,7 @@ async function processMessage(event: any, supabase: any) {
     const rawPhone = message.from ?? message.kapso?.phone_number ?? event.conversation?.phone_number ?? ""
     // normalise to no-plus format for DB lookup (stored as 966xxxxxxxxx)
     const phone = rawPhone.replace(/^\+/, "")
+    console.log("[WhatsApp DEBUG] Looking up phone:", phone)
     const msgType = message.type ?? "text"
 
     if (!phone) {
