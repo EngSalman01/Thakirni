@@ -3,7 +3,7 @@ import { createGroq } from "@ai-sdk/groq"
 import { generateText, tool } from "ai"
 import { z } from "zod"
 import { createServiceClient } from "@/lib/supabase/server"
-import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/whatsapp/kapso"
+import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/kapso"
 
 export const maxDuration = 60
 
@@ -149,9 +149,12 @@ async function processEvents(events: any[]) {
 }
 
 async function processMessage(event: any, supabase: any) {
-    // Kapso payload: { message: { from, type, text: { body } }, conversation: { phone_number_id } }
+    // Kapso payload structure per docs
     const message = event.message ?? event
-    const phone = message.from ?? event.conversation?.phone_number ?? ""
+    // phone is in message.from (no +) or message.kapso.phone_number (with +)
+    const rawPhone = message.from ?? message.kapso?.phone_number ?? event.conversation?.phone_number ?? ""
+    // normalise to no-plus format for DB lookup (stored as 966xxxxxxxxx)
+    const phone = rawPhone.replace(/^\+/, "")
     const msgType = message.type ?? "text"
 
     if (!phone) {
