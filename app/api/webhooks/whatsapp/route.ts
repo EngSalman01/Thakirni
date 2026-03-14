@@ -63,7 +63,6 @@ async function verifySignature(
         const sigHex = Array.from(new Uint8Array(sigBuffer))
             .map(b => b.toString(16).padStart(2, "0"))
             .join("")
-        // Kapso sends signature as hex or base64 — try both
         const sigBase64 = Buffer.from(sigBuffer).toString("base64")
         return signature === sigHex || signature === sigBase64 || `sha256=${sigHex}` === signature
     } catch {
@@ -97,7 +96,6 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-webhook-signature") ?? ""
     const eventType = req.headers.get("x-webhook-event") ?? ""
 
-    // ── Verify signature ────────────────────────────────────────────────────────
     const secret = process.env.KAPSO_WEBHOOK_SECRET
     if (secret) {
         const valid = await verifySignature(rawBody, signature, secret)
@@ -107,7 +105,6 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    // ── Only handle message events ──────────────────────────────────────────────
     if (eventType !== "whatsapp.message.received") {
         return new Response("OK", { status: 200 })
     }
@@ -119,15 +116,12 @@ export async function POST(req: NextRequest) {
         return new Response("Invalid JSON", { status: 400 })
     }
 
-    // Kapso wraps messages in { type, batch, data: [...] }
     const events = Array.isArray(payload.data)
         ? payload.data
         : Array.isArray(payload)
             ? payload
             : [payload]
 
-    // Await processing — fire-and-forget doesn't work in serverless
-    // maxDuration = 60 gives us enough time
     try {
         await processEvents(events)
     } catch (err: any) {
@@ -152,13 +146,11 @@ async function processEvents(events: any[]) {
 }
 
 async function processMessage(event: any, supabase: any) {
-    // Kapso payload structure per docs
     const message = event.message ?? event
-    // phone is in message.from (no +) or message.kapso.phone_number (with +)
     const rawPhone = message.from ?? message.kapso?.phone_number ?? event.conversation?.phone_number ?? ""
-    // normalise to no-plus format for DB lookup (stored as 966xxxxxxxxx)
     const phone = rawPhone.replace(/^\+/, "")
     console.log("[WhatsApp DEBUG] Looking up phone:", phone)
+
     const msgType = message.type ?? "text"
 
     if (!phone) {
@@ -172,7 +164,6 @@ async function processMessage(event: any, supabase: any) {
     if (msgType === "text") {
         messageText = message.text?.body ?? message.body ?? message.text ?? ""
     } else if (msgType === "audio" || msgType === "voice") {
-        // Transcribe voice note
         const mediaUrl = message.audio?.url ?? message.voice?.url ?? message.media_url
         if (mediaUrl) {
             try {
@@ -190,24 +181,24 @@ async function processMessage(event: any, supabase: any) {
             }
         }
     } else {
-        // Unsupported message type
-        await sendWhatsAppMessage(phone,
-            "عذراً، لا أدعم هذا النوع من الرسائل بعد. أرسل نصاً أو رسالة صوتية 🙏"
-        )
+        await sendWhatsAppMessage(phone, "عذراً، لا أدعم هذا النوع من الرسائل بعد. أرسل نصاً أو رسالة صوتية 🙏")
         return
     }
 
     if (!messageText.trim()) return
 
     // ── Look up user by phone number ────────────────────────────────────────────
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id, full_name, plan_tier")
         .eq("phone_number", phone)
         .single()
 
+    console.log("[WhatsApp DEBUG] phone:", phone)
+    console.log("[WhatsApp DEBUG] profile:", JSON.stringify(profile))
+    console.log("[WhatsApp DEBUG] error:", JSON.stringify(profileError))
+
     if (!profile) {
-        // User not registered
         const lang = detectLanguage(messageText)
         await sendWhatsAppMessage(phone,
             lang === "ar"
@@ -238,7 +229,6 @@ async function processMessage(event: any, supabase: any) {
             .limit(10),
     ])
 
-    // Build facts block
     let factsBlock = ""
     if (factsRes.data && factsRes.data.length > 0) {
         const byCategory: Record<string, string[]> = {}
@@ -252,7 +242,6 @@ async function processMessage(event: any, supabase: any) {
         factsBlock = `\n🧠 WHAT I KNOW ABOUT YOU:\n${lines}`
     }
 
-    // Build conversation history (oldest first)
     const history = historyRes.data
         ? [...historyRes.data].reverse().map((m: any) => ({
             role: m.role as "user" | "assistant",
@@ -260,21 +249,18 @@ async function processMessage(event: any, supabase: any) {
         }))
         : []
 
-    // ── Save user message ───────────────────────────────────────────────────────
     await supabase.from("conversations").insert({
         user_id: userId,
         role: "user",
         content: messageText,
     })
 
-    // ── Build time context ──────────────────────────────────────────────────────
     const { currentDate, currentTime, currentDayName, timeOfDay, addDays } = getSaudiTime()
 
     const langInstruction = lang === "ar"
         ? "⚠️ MANDATORY: Reply in ARABIC only. Never switch to English."
         : "⚠️ MANDATORY: Reply in ENGLISH only."
 
-    // ── Call Groq ───────────────────────────────────────────────────────────────
     const { text: aiResponse } = await generateText({
         model: groq("llama-3.3-70b-versatile"),
         maxSteps: 10,
@@ -299,7 +285,7 @@ You are responding via WhatsApp — keep replies concise and conversational.
 ${factsBlock}
 
 WHATSAPP RULES — CRITICAL:
-- NO markdown: no **, no ##, no bullet "-" — WhatsApp doesn't render them
+- NO markdown: no **, no ##, no bullet "-" — WhatsApp does not render them
 - Use emojis for structure instead: ✅ 📅 🧠 ⏰ 📍
 - Keep replies SHORT — 1 to 4 sentences max unless listing plans
 - Never say "How can I help you today?" after someone shares personal info
@@ -518,7 +504,6 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
         },
     })
 
-    // ── Save AI response & send via WhatsApp ────────────────────────────────────
     await Promise.all([
         supabase.from("conversations").insert({
             user_id: userId,
@@ -532,7 +517,6 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
 }
 
 export async function GET(req: NextRequest) {
-    // Kapso webhook verification
     const { searchParams } = new URL(req.url)
     const challenge = searchParams.get("challenge") ?? searchParams.get("hub.challenge") ?? "ok"
     return new Response(challenge, { status: 200 })
