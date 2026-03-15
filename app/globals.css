@@ -3,13 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ─── Light Theme ──────────────────────────────────────────────────────────── */
+/* ─── Light Theme (only — no dark mode) ───────────────────────────────────── */
 :root {
-  --background: hsl(210 20% 98%);
-  --foreground: hsl(222 47% 11%);
+  /* Backgrounds */
+  --background: hsl(0 0% 100%);        /* pure white */
+  --foreground: hsl(222 47% 11%);      /* near-black #0f172a */
 
-  --muted: hsl(210 20% 96%);
-  --muted-foreground: hsl(215 16% 47%);
+  --muted: hsl(210 20% 97%);           /* very light gray #f8fafc */
+  --muted-foreground: hsl(215 16% 47%); /* slate gray #64748b */
 
   --card: hsl(0 0% 100%);
   --card-foreground: hsl(222 47% 11%);
@@ -17,87 +18,62 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(222 47% 11%);
 
-  /* Primary – Blue */
-  --primary: hsl(217 91% 60%);
+  /* Primary – Emerald brand */
+  --primary: hsl(160 84% 39%);          /* #10b981 emerald */
   --primary-foreground: hsl(0 0% 100%);
 
-  /* Secondary – neutral slate (NOT orange — use --orange for accent actions) */
-  --secondary: hsl(215 16% 93%);
-  --secondary-foreground: hsl(222 47% 20%);
+  /* Secondary – indigo for gradients */
+  --secondary: hsl(239 84% 67%);        /* #6366f1 indigo */
+  --secondary-foreground: hsl(0 0% 100%);
 
-  /* Accent – Teal */
-  --accent: hsl(173 80% 40%);
-  --accent-foreground: hsl(0 0% 100%);
+  /* Accent – light emerald tint */
+  --accent: hsl(160 84% 95%);
+  --accent-foreground: hsl(160 84% 25%);
 
   --destructive: hsl(0 84% 60%);
   --destructive-foreground: hsl(0 0% 100%);
 
-  --border: hsl(214 32% 91%);
+  --border: hsl(214 32% 91%);           /* soft gray #e2e8f0 */
   --input: hsl(214 32% 91%);
-  --ring: hsl(217 91% 60%);
+  --ring: hsl(160 84% 39%);             /* emerald ring */
 
   --radius: 0.75rem;
 
-  /* Brand palette – use directly when needed */
+  /* Brand palette */
+  --emerald: #10b981;
+  --indigo: #6366f1;
   --blue: hsl(217 91% 60%);
   --blue-light: hsl(217 91% 70%);
   --orange: hsl(25 95% 53%);
   --teal: hsl(173 80% 40%);
+
+  /* Glass (light theme) */
+  --glass-surface: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+
+  /* Glow effects — soft, not neon */
+  --emerald-glow: rgba(16, 185, 129, 0.15);
+  --indigo-glow: rgba(99, 102, 241, 0.1);
+  --glow-emerald: 0 4px 20px rgba(16, 185, 129, 0.2);
+  --glow-indigo: 0 4px 20px rgba(99, 102, 241, 0.15);
+
+  /* Text colors */
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
+
+  /* Navy (kept for compatibility, maps to a light-theme neutral) */
+  --navy-dark: #f8fafc;
+  --navy-light: #f1f5f9;
 
   /* Scrollbar */
   --scrollbar-thumb: hsl(214 32% 82%);
   --scrollbar-track: transparent;
 
   /* Chart */
-  --chart-1: hsl(217 91% 60%);
-  --chart-2: hsl(25 95% 53%);
-  --chart-3: hsl(173 80% 40%);
-  --chart-4: hsl(271 81% 56%);
-  --chart-5: hsl(339 90% 51%);
-}
-
-/* ─── Dark Theme ───────────────────────────────────────────────────────────── */
-.dark {
-  --background: hsl(222 47% 11%);
-  --foreground: hsl(210 40% 98%);
-
-  --muted: hsl(217 33% 17%);
-  --muted-foreground: hsl(215 20% 65%);
-
-  --card: hsl(222 47% 14%);
-  --card-foreground: hsl(210 40% 98%);
-
-  --popover: hsl(222 47% 14%);
-  --popover-foreground: hsl(210 40% 98%);
-
-  --primary: hsl(217 91% 60%);
-  --primary-foreground: hsl(0 0% 100%);
-  /* white text on blue — readable */
-
-  --secondary: hsl(217 33% 20%);
-  --secondary-foreground: hsl(210 40% 90%);
-
-  --accent: hsl(173 80% 40%);
-  --accent-foreground: hsl(222 47% 11%);
-
-  --destructive: hsl(0 84% 60%);
-  --destructive-foreground: hsl(0 0% 100%);
-
-  --border: hsl(217 33% 21%);
-  --input: hsl(217 33% 21%);
-  --ring: hsl(217 91% 60%);
-
-  --blue: hsl(217 91% 60%);
-  --blue-light: hsl(217 91% 70%);
-  --orange: hsl(25 95% 53%);
-  --teal: hsl(173 80% 40%);
-
-  --scrollbar-thumb: hsl(217 33% 28%);
-  --scrollbar-track: transparent;
-
-  --chart-1: hsl(217 91% 60%);
-  --chart-2: hsl(25 95% 53%);
-  --chart-3: hsl(173 80% 40%);
+  --chart-1: hsl(160 84% 39%);
+  --chart-2: hsl(239 84% 67%);
+  --chart-3: hsl(25 95% 53%);
   --chart-4: hsl(271 81% 56%);
   --chart-5: hsl(339 90% 51%);
 }
@@ -139,8 +115,8 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   /* Font families */
-  --font-sans: var(--font-tajawal), var(--font-inter), system-ui, sans-serif;
-  --font-arabic: var(--font-tajawal), system-ui, sans-serif;
+  --font-sans: var(--font-ibm-plex-arabic), var(--font-tajawal), var(--font-inter), system-ui, sans-serif;
+  --font-arabic: var(--font-ibm-plex-arabic), var(--font-tajawal), system-ui, sans-serif;
   --font-english: var(--font-inter), system-ui, sans-serif;
 
   /* Animations */
@@ -151,45 +127,23 @@
   --animate-pulse-slow: pulse 3s ease-in-out infinite;
 
   @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-
-    to {
-      height: var(--radix-accordion-content-height);
-    }
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
   }
 
   @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-
-    to {
-      height: 0;
-    }
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
   }
 
   @keyframes fade-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-
-    100% {
-      background-position: 200% 0;
-    }
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
   }
 }
 
