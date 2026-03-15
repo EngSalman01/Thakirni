@@ -286,7 +286,7 @@ This is a private commercial project. Contributions are not open at this time.
 
 <div align="center">
 
-**صنع بـ ❤️ في المملكة العربية السعودية**
+**صنع بـ  ❤️ في المملكة العربية السعودية**
 
 *Made with ❤️ in Saudi Arabia*
 
