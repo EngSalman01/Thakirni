@@ -267,7 +267,6 @@ git push origin main
 - [ ] Calendar sync (Google Calendar)
 - [ ] Recurring plan reminders via WhatsApp
 - [ ] AI-generated weekly summaries
-- [ ] Multi-language support (beyond Arabic/English)
 
 ---
 
