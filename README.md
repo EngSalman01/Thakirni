@@ -8,30 +8,13 @@
 
 **Chat on the web or directly on WhatsApp. Never forget anything again.**
 
-[![Live](https://img.shields.io/badge/🌐_Live-thakirni.com-10b981?style=for-the-badge)](https://thakirni.com)
+[![Live](https://img.shields.io/badge/Live-thakirni.com-10b981?style=for-the-badge&logoColor=white)](https://thakirni.com)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-f55036?style=for-the-badge)](https://groq.com)
-[![License](https://img.shields.io/badge/License-Source_Available-orange?style=for-the-badge)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge)](CONTRIBUTING.md)
-
-<br />
-
-> **"You weren't designed to remember everything. Thakirni was."**
-> 
-> **"لست مصمماً لتتذكر كل شيء.. ذكرني تتكفل بذلك"**
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com)
 
 </div>
-
----
-
-## 🌟 We Build in Public!
-
-Thakirni is **source available** — the code is public so the community can learn, contribute, and help improve it.
-
-**Your name will be featured in this README** if you contribute — whether it's code, design, bug fixes, translations, or documentation.
-
-👉 **[See how to contribute](#-contributing)**
 
 ---
 
@@ -39,7 +22,7 @@ Thakirni is **source available** — the code is public so the community can lea
 
 Thakirni (ذكرني — Arabic for *"Remind me"*) is a bilingual AI personal assistant that acts as your second brain. It remembers your tasks, meetings, notes, and personal facts — and makes them available wherever you are, whether on the web or directly through WhatsApp.
 
-Built in Saudi Arabia 🇸🇦 for the Arab world — Arabic-first, privacy-focused, and AI-powered.
+> **"You weren't designed to remember everything. Thakirni was."**
 
 ---
 
@@ -47,11 +30,11 @@ Built in Saudi Arabia 🇸🇦 for the Arab world — Arabic-first, privacy-focu
 
 | Feature | Description |
 |---|---|
-| 🧠 **AI Second Brain** | Chat with your AI to create plans, save memories, and organize your life |
+| 🧠 **AI Second Brain** | Chat with your AI assistant to create plans, save memories, and organize your life |
 | 📱 **WhatsApp Native** | Message your AI directly on WhatsApp — no app needed |
 | 🎤 **Voice Notes** | Record voice notes, auto-transcribed by Groq Whisper |
-| 📅 **Smart Calendar** | AI schedules meetings and tasks from natural language |
-| 🔍 **Memory Search** | Search everything you've ever saved |
+| 📅 **Smart Calendar** | AI schedules meetings and tasks by understanding natural language |
+| 🔍 **Memory Search** | Search everything you've ever saved — notes, files, voice recordings |
 | 🌐 **Bilingual** | Arabic-first, English-supported, fully RTL-aware |
 | 👥 **Team Collaboration** | Shared workspaces, Kanban boards, and team memory |
 | 🔒 **Privacy First** | Your data is encrypted and hosted securely |
@@ -63,10 +46,10 @@ Built in Saudi Arabia 🇸🇦 for the Arab world — Arabic-first, privacy-focu
 ```
 Frontend        Next.js 15 (App Router) · TypeScript · Tailwind CSS · Framer Motion · shadcn/ui
 Backend         Next.js API Routes · Vercel Serverless Functions
-AI              Groq (llama-3.3-70b-versatile) · Whisper (voice) · Vercel AI SDK
+AI              Groq (llama-3.3-70b-versatile) · Whisper (voice transcription) · Vercel AI SDK
 Database        Supabase (PostgreSQL) · Row Level Security · Real-time
 Auth            Supabase Auth · Google OAuth
-WhatsApp        Kapso · @kapso/whatsapp-cloud-api
+WhatsApp        Kapso WhatsApp Business API · @kapso/whatsapp-cloud-api
 Payments        Paddle (Merchant of Record · handles Saudi VAT)
 Deployment      Vercel · Edge Network
 ```
@@ -79,7 +62,7 @@ Deployment      Vercel · Edge Network
 thakirni/
 ├── app/
 │   ├── api/
-│   │   ├── chat/              # AI chat endpoint (Groq + 10 tools)
+│   │   ├── chat/              # AI chat endpoint (Groq + tools)
 │   │   ├── webhooks/
 │   │   │   ├── whatsapp/      # Kapso WhatsApp webhook
 │   │   │   └── paddle/        # Paddle subscription webhook
@@ -93,7 +76,7 @@ thakirni/
 │   │   ├── upload/            # File uploads
 │   │   ├── voice-note/        # Voice recording
 │   │   └── settings/          # User preferences
-│   ├── pricing/               # Pricing + Paddle checkout
+│   ├── pricing/               # Pricing page + Paddle checkout
 │   ├── features/              # Features showcase
 │   ├── about/                 # About page
 │   ├── contact/               # Contact form
@@ -106,7 +89,7 @@ thakirni/
 │   ├── thakirni/              # App-specific components
 │   └── ui/                    # shadcn/ui components
 ├── lib/
-│   ├── supabase/              # Supabase clients
+│   ├── supabase/              # Supabase clients (anon + service role)
 │   └── whatsapp/              # Kapso WhatsApp client
 ├── hooks/                     # Custom React hooks
 └── supabase/migrations/       # Database migrations
@@ -114,7 +97,30 @@ thakirni/
 
 ---
 
+## 🗄 Database Schema
+
+| Table | Purpose |
+|---|---|
+| `profiles` | User profiles, phone numbers, subscription status, Paddle IDs |
+| `plans` | Calendar events, tasks, meetings, shopping lists |
+| `memories` | Second brain — notes, voice recordings, files, images |
+| `user_facts` | AI-extracted personal facts injected into every prompt |
+| `conversations` | Chat history for AI context continuity |
+| `timeline_events` | Auto-populated life log (via DB triggers) |
+| `teams` | Team workspaces |
+| `team_members` | Team membership and roles |
+| `team_invitations` | Invite tokens with expiry |
+| `projects` | Kanban project boards |
+| `task_columns` | Kanban columns |
+| `tasks` | Kanban tasks with assignments |
+| `subscriptions` | Paddle subscription tracking |
+| `waitlist` | Pre-launch waitlist with auto-position |
+
+---
+
 ## 🤖 AI Architecture
+
+The AI system is built around a **tool-calling** architecture. Every chat message goes through:
 
 ```
 User Message
@@ -126,14 +132,40 @@ Context Injection:
   • Last 20 conversation turns
   • Current Saudi Arabia date/time
     ↓
-Groq LLaMA 3.3 70B
+Groq LLaMA 3.3 70B (with 10 tools)
     ↓
-Tool Execution (10 tools → Supabase)
+Tool Execution (Supabase writes/reads)
     ↓
-Response → User (Web or WhatsApp)
+AI Response → User
 ```
 
-**Tools:** `create_plan` · `update_plan` · `delete_plan` · `mark_done` · `list_plans` · `save_memory` · `search_memories` · `store_fact` · `get_my_facts` · `get_timeline`
+**Available Tools:**
+`create_plan` · `update_plan` · `delete_plan` · `mark_done` · `list_plans`
+`save_memory` · `search_memories` · `store_fact` · `get_my_facts` · `get_timeline`
+
+---
+
+## 📱 WhatsApp Integration
+
+Users can interact with the full AI assistant directly on WhatsApp:
+
+```
+User sends WhatsApp message
+    ↓
+Kapso receives & forwards to webhook
+    ↓
+/api/webhooks/whatsapp
+    ↓
+Look up user by phone_number in profiles
+    ↓
+Load user_facts + conversation history
+    ↓
+Groq AI processes with same tools as web
+    ↓
+Response sent back via Kapso → WhatsApp
+```
+
+Voice messages are automatically transcribed using Groq Whisper before processing.
 
 ---
 
@@ -145,11 +177,13 @@ Response → User (Web or WhatsApp)
 - pnpm
 - Supabase account
 - Groq API key
+- Kapso account (for WhatsApp)
+- Paddle account (for payments)
 
 ### Installation
 
 ```bash
-# Clone the repo
+# Clone the repository
 git clone https://github.com/EngSalman01/Thakirni.git
 cd Thakirni
 
@@ -158,12 +192,12 @@ pnpm install
 
 # Set up environment variables
 cp .env.example .env.local
-# Fill in your keys
+# Fill in all required env vars (see below)
 
-# Run the database schema
-# Copy schema.sql → paste into Supabase SQL Editor → Run
+# Run database migrations
+# Paste schema.sql into Supabase SQL Editor
 
-# Start dev server
+# Start development server
 pnpm dev
 ```
 
@@ -192,14 +226,29 @@ PADDLE_WEBHOOK_SECRET=
 
 ---
 
-## 🗺 Branching Strategy
+## 💳 Pricing
 
-| Branch | Purpose | URL |
+| Plan | Price | Features |
 |---|---|---|
-| `main` | Production | thakirni.com |
-| `dev` | Development & testing | dev.thakirni.com |
+| **Free** | 0 SAR/month | 50 messages, basic AI, 7-day history |
+| **Individual** | 29 SAR/month | Unlimited messages, full memory, calendar sync |
+| **Team** | 79 SAR/month | Everything + Kanban, shared memory, priority support |
 
-All changes must go through `dev` and be tested before merging to `main` via Pull Request.
+Payments processed by **Paddle** — Saudi VAT handled automatically.
+
+---
+
+## 🌍 Deployment
+
+The app is deployed on **Vercel** with automatic deployments from the `main` branch.
+
+```bash
+# Deploy to production
+git push origin main
+# Vercel auto-deploys on every push
+```
+
+**Production URL:** [thakirni.com](https://thakirni.com)
 
 ---
 
@@ -209,114 +258,38 @@ All changes must go through `dev` and be tested before merging to `main` via Pul
 - [x] WhatsApp integration
 - [x] Voice note transcription
 - [x] Personal fact extraction
-- [x] Conversation history
+- [x] Conversation history persistence
 - [x] Timeline events
 - [x] Paddle payments
 - [x] Team collaboration
 - [ ] Mobile app (React Native)
 - [ ] Vector search for memories
-- [ ] Google Calendar sync
-- [ ] Recurring WhatsApp reminders
-- [ ] AI weekly summaries
-- [ ] Multi-language support
+- [ ] Calendar sync (Google Calendar)
+- [ ] Recurring plan reminders via WhatsApp
+- [ ] AI-generated weekly summaries
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions of all kinds — code, design, bug reports, translations, and documentation.
-
-### How to contribute
-
-1. **Fork** the repository
-2. **Create** your feature branch from `dev`:
-   ```bash
-   git checkout dev
-   git checkout -b feature/your-feature-name
-   ```
-3. **Make** your changes
-4. **Test** on `dev.thakirni.com` equivalent locally
-5. **Commit** with a clear message:
-   ```bash
-   git commit -m "feat: add your feature description"
-   ```
-6. **Push** to your fork and open a **Pull Request** into `dev`
-7. **Your name gets added** to the Contributors section below ⬇️
-
-### What we need help with
-
-- 🎨 UI/UX improvements
-- 🌐 Translations (we want to support more Arabic dialects)
-- 🧪 Writing tests
-- 📱 React Native mobile app
-- 🔍 Vector search implementation
-- 📅 Google Calendar sync
-- 📖 Documentation improvements
-- 🐛 Bug fixes
-
-### Commit conventions
-
-```
-feat:     New feature
-fix:      Bug fix
-docs:     Documentation only
-style:    Formatting, no logic change
-refactor: Code restructure
-perf:     Performance improvement
-chore:    Build process or tooling
-```
-
-Please open an issue before starting work on large features so we can discuss the approach.
+This is a private commercial project. Contributions are not open at this time.
 
 ---
 
-## 👥 Contributors
+## 📄 Legal
 
-Thanks to everyone who has contributed to Thakirni! Your name belongs here. 🌟
-
-<!-- ALL-CONTRIBUTORS-LIST:START -->
-
-| Avatar | Name | Contribution |
-|---|---|---|
-| <img src="https://github.com/EngSalman01.png" width="50" style="border-radius:50%" /> | **[Salman Almnaseer](https://github.com/EngSalman01)** | 🏗️ Creator & Lead Developer |
-
-*Want to see your name here? [Contribute to Thakirni](#-contributing)!*
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
-
----
-
-## 📄 License
-
-This project uses a **Source Available License** — see the [LICENSE](LICENSE) file for full details.
-
-**In short:**
-- ✅ You can view, study, and learn from the code
-- ✅ You can contribute via pull requests
-- ✅ You can use it for personal or educational purposes
-- ❌ You cannot launch a competing commercial product using this code
-- ❌ You cannot rebrand and redistribute it as your own
-
-For commercial licensing inquiries: support@thakirni.com
-
----
-
-## 📞 Contact
-
-- **Website:** [thakirni.com](https://thakirni.com)
-- **Email:** support@thakirni.com
-- **Location:** Dammam, Saudi Arabia 🇸🇦
+- [Terms of Service](https://thakirni.com/terms)
+- [Privacy Policy](https://thakirni.com/privacy)
+- [Refund Policy](https://thakirni.com/refund)
 
 ---
 
 <div align="center">
 
-**صنع بـ ❤️ في المملكة العربية السعودية**
+**صنع بـ  ❤️ في المملكة العربية السعودية**
 
 *Made with ❤️ in Saudi Arabia*
 
 © 2026 Thakirni. All rights reserved.
-
-⭐ **If you find this project useful, please give it a star!** ⭐
 
 </div>
