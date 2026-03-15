@@ -107,7 +107,7 @@ export default function RootLayout({
      * suppressHydrationWarning on both html and body — next/font and ThemeProvider
      * both inject classes that differ between server and client renders.
      */
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
         className={`${tajawal.variable} ${ibmPlexSansArabic.variable} ${inter.variable} font-sans antialiased`}
         suppressHydrationWarning
