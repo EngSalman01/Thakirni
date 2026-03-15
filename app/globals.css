@@ -332,3 +332,201 @@
   opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
+
+/* ─── NEW: Premium Design System ────────────────────────────────────────────── */
+
+:root {
+  /* ── Emerald Brand Color ── */
+  --emerald: #10b981;
+  --emerald-glow: rgba(16, 185, 129, 0.3);
+  --indigo: #6366f1;
+  --indigo-glow: rgba(99, 102, 241, 0.2);
+  --purple: #8b5cf6;
+
+  /* ── Deep Navy Background (Thakirni brand) ── */
+  --navy-dark: #0a0f1e;
+  --navy-light: #0f172a;
+  --glass-surface: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.06);
+
+  /* ── Text Colors ── */
+  --text-primary: #f8fafc;
+  --text-muted: #64748b;
+
+  /* ── Glow Effects ── */
+  --glow-emerald: 0 0 20px var(--emerald-glow);
+  --glow-indigo: 0 0 40px var(--indigo-glow);
+}
+
+/* ─── NEW: Keyframe Animations ──────────────────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 var(--emerald-glow);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px 8px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.8);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes dots-bounce {
+  0%, 20%, 100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes mesh-gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ─── NEW: Utility Classes ──────────────────────────────────────────────────── */
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-breathing {
+  animation: breathing 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(16, 185, 129, 0) 0%,
+    rgba(16, 185, 129, 0.3) 50%,
+    rgba(16, 185, 129, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-dots-bounce {
+  animation: dots-bounce 1.4s infinite;
+}
+
+.animate-dots-bounce > span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.animate-dots-bounce > span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.6s ease-out forwards;
+}
+
+.glow-emerald {
+  box-shadow: var(--glow-emerald);
+}
+
+.glow-indigo {
+  box-shadow: var(--glow-indigo);
+}
+
+.glass-dark {
+  background-color: var(--glass-surface);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--glass-border);
+}
+
+.border-glow {
+  border: 1px solid var(--emerald);
+  box-shadow: var(--glow-emerald);
+}
+
+/* ─── NEW: Input Autofill Override ──────────────────────────────────────────── */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
+}
+
+input:-webkit-autofill::first-line {
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+/* ─── NEW: Respect prefers-reduced-motion ────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

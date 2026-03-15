@@ -10,13 +10,40 @@ export function HeroSection() {
   const { t, isArabic } = useLanguage();
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center islamic-pattern overflow-hidden pt-20">
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
-
-      {/* Decorative elements */}
-      <div className="absolute top-20 start-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 end-10 w-96 h-96 bg-emerald-800/20 rounded-full blur-3xl" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20" style={{
+      background: "linear-gradient(135deg, #0a0f1e 0%, #1a1a3e 25%, #0f1a2e 50%, #0a0f1e 75%, #1a0f2e 100%)",
+      backgroundSize: "400% 400%",
+    }}>
+      {/* Animated gradient mesh background */}
+      <style>{`
+        @keyframes mesh-gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        .mesh-gradient {
+          animation: mesh-gradient 8s ease infinite;
+        }
+      `}</style>
+      
+      {/* Glowing orbs - floating decorative elements */}
+      <motion.div 
+        className="absolute top-20 start-10 w-72 h-72 rounded-full blur-3xl opacity-30"
+        style={{ background: "radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)" }}
+        animate={{ y: [0, -30, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div 
+        className="absolute -bottom-20 -end-20 w-96 h-96 rounded-full blur-3xl opacity-25"
+        style={{ background: "radial-gradient(circle, rgba(99,102,241,0.2) 0%, transparent 70%)" }}
+        animate={{ y: [0, 40, 0], x: [0, -20, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      />
+      <motion.div 
+        className="absolute top-1/2 end-20 w-80 h-80 rounded-full blur-3xl opacity-20"
+        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)" }}
+        animate={{ y: [0, 20, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+      />
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         <motion.div
@@ -25,26 +52,32 @@ export function HeroSection() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="max-w-4xl mx-auto"
         >
-          {/* Badge */}
+          {/* Badge with emerald glow */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-card/50 backdrop-blur-md border border-border px-4 py-2 rounded-full mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 border border-emerald-500/30 glass-dark"
+            style={{ boxShadow: "0 0 20px rgba(16, 185, 129, 0.2)" }}
           >
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-foreground/80">
-              {t("ذاكرتك الثانية الرقمية", "Your Second Digital Brain")}
+            <Sparkles className="w-4 h-4" style={{ color: "#10b981" }} />
+            <span className="text-sm text-foreground">
+              {t("✨ الذاكرة الثانية الرقمية", "✨ Your Second Digital Brain")}
             </span>
           </motion.div>
 
-          {/* Main headline */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-foreground leading-tight text-balance">
+          {/* Main headline with emerald accent */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 text-foreground leading-tight text-balance tracking-tighter">
             {t(
-              "لست مصمماً لتتذكر كل شيء..",
-              "You are not designed to remember everything..",
+              "لست مصمماً لتتذكر",
+              "You're not designed to",
             )}
-            <span className="block bg-gradient-to-l from-primary to-primary/80 bg-clip-text text-transparent mt-2 tracking-tighter leading-[2]">
+            <br />
+            {t(
+              "كل شيء",
+              "remember everything",
+            )}
+            <span className="block mt-4" style={{ color: "#10b981", textShadow: "0 0 20px rgba(16, 185, 129, 0.3)" }}>
               {t("'ذكرني' تتكفل بذلك", "'Thakirni' handles it for you")}
             </span>
           </h1>
@@ -57,7 +90,7 @@ export function HeroSection() {
             )}
           </p>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -65,15 +98,30 @@ export function HeroSection() {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <Link href="/auth">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg px-8 py-6 rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
               >
-                {t("ابدأ تجربتك المجانية", "Start Your Free Trial")}
-                <span className="font-english ms-2 text-sm opacity-80">
-                  {t("Start Organizing", "")}
-                </span>
-              </Button>
+                <Button
+                  size="lg"
+                  style={{
+                    backgroundColor: "#10b981",
+                    color: "white",
+                    boxShadow: "0 0 30px rgba(16, 185, 129, 0.4)",
+                  }}
+                  className="font-bold text-lg px-8 py-6 rounded-xl hover:shadow-xl transition-all duration-300 border-0"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "0 0 40px rgba(16, 185, 129, 0.6)";
+                    e.currentTarget.style.transform = "scale(1.02)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "0 0 30px rgba(16, 185, 129, 0.4)";
+                    e.currentTarget.style.transform = "scale(1)";
+                  }}
+                >
+                  {t("ابدأ الآن", "Get Started")}
+                </Button>
+              </motion.div>
             </Link>
 
             <Link href="#features">
