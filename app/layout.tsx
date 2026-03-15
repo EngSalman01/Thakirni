@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner"
 import React from "react"
 import type { Metadata, Viewport } from "next"
-import { Tajawal, Inter } from "next/font/google"
+import { Tajawal, Inter, IBM_Plex_Sans_Arabic } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
@@ -14,6 +14,13 @@ const tajawal = Tajawal({
   weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
   display: "swap",   // prevents invisible text during font load
+})
+
+const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ibm-plex-arabic",
+  display: "swap",
 })
 
 const inter = Inter({
@@ -100,9 +107,9 @@ export default function RootLayout({
      * suppressHydrationWarning on both html and body — next/font and ThemeProvider
      * both inject classes that differ between server and client renders.
      */
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${tajawal.variable} ${inter.variable} font-sans antialiased`}
+        className={`${tajawal.variable} ${ibmPlexSansArabic.variable} ${inter.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         {/*

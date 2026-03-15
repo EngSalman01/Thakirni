@@ -45,9 +45,14 @@ interface Message {
 // Extracted Components
 const ChatHeader = ({ t }: { t: (ar: string, en: string) => string }) => (
   <div className="flex items-center gap-3 p-3 md:p-4 border-b border-border bg-muted/30 shrink-0">
-    <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-      <Bot className="w-4 h-4 md:w-5 md:h-5 text-primary" />
-    </div>
+    <motion.div 
+      className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 border border-emerald-500/30"
+      animate={{ scale: [1, 1.08, 1] }}
+      transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+      style={{ boxShadow: "0 0 15px rgba(16, 185, 129, 0.3)" }}
+    >
+      <Bot className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
+    </motion.div>
     <div className="min-w-0">
       <h3 className="font-semibold text-foreground text-sm md:text-base">
         {t("مساعد ذكرني", "Thakirni Assistant")}
@@ -76,9 +81,14 @@ const EmptyState = ({
     animate={{ opacity: 1, y: 0 }}
     className="text-center py-6 md:py-8"
   >
-    <div className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-      <Calendar className="w-7 h-7 md:w-8 md:h-8 text-primary" />
-    </div>
+    <motion.div 
+      className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
+      animate={{ y: [0, -8, 0] }}
+      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+      style={{ boxShadow: "0 0 20px rgba(16, 185, 129, 0.2)" }}
+    >
+      <Calendar className="w-7 h-7 md:w-8 md:h-8 text-emerald-500" />
+    </motion.div>
     <h4 className="text-base md:text-lg font-semibold text-foreground mb-2">
       {t("مرحباً! كيف يمكنني مساعدتك؟", "Hello! How can I help you?")}
     </h4>
@@ -91,15 +101,19 @@ const EmptyState = ({
 
     <div className="flex flex-wrap justify-center gap-2">
       {suggestions.map((suggestion, i) => (
-        <Button
-          key={i}
-          variant="outline"
-          size="sm"
-          className="text-xs bg-transparent hover:bg-muted/50 transition-colors"
-          onClick={() => onSuggestionClick(suggestion)}
-        >
-          {suggestion}
-        </Button>
+        <motion.div key={i} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs border-emerald-500/30 hover:border-emerald-500/50 hover:bg-emerald-500/10 transition-all"
+            style={{
+              background: "linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(99, 102, 241, 0.05))"
+            }}
+            onClick={() => onSuggestionClick(suggestion)}
+          >
+            {suggestion}
+          </Button>
+        </motion.div>
       ))}
     </div>
   </motion.div>
@@ -240,11 +254,25 @@ const LoadingIndicator = () => (
     animate={{ opacity: 1 }}
     className="flex gap-3"
   >
-    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-muted flex items-center justify-center">
-      <Bot className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground" />
+    <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+      <Bot className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" />
     </div>
-    <div className="bg-muted rounded-2xl px-4 py-2">
-      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+    <div className="bg-muted rounded-2xl px-4 py-2 flex gap-1">
+      <motion.span 
+        className="w-2 h-2 rounded-full bg-emerald-500"
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 0.6, repeat: Infinity }}
+      />
+      <motion.span 
+        className="w-2 h-2 rounded-full bg-emerald-500"
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+      />
+      <motion.span 
+        className="w-2 h-2 rounded-full bg-emerald-500"
+        animate={{ y: [0, -8, 0] }}
+        transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+      />
     </div>
   </motion.div>
 );
@@ -418,31 +446,35 @@ export function AIChat() {
         </ScrollArea>
       </div>
 
-      {/* Input Area */}
+      {/* Input Area - Floating glass style */}
       <form
         ref={formRef}
         data-chat-form
         onSubmit={handleSubmit}
-        className="p-3 md:p-4 border-t border-border bg-muted/30 shrink-0"
+        className="p-3 md:p-4 shrink-0 bg-gradient-to-t from-background via-background/80 to-transparent"
       >
-        <div className="flex gap-2">
+        <motion.div 
+          className="flex gap-2 glass-dark rounded-2xl p-2 md:p-3"
+          whileHover={{ boxShadow: "0 0 30px rgba(16, 185, 129, 0.15)" }}
+          transition={{ duration: 0.3 }}
+        >
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t("اكتب رسالتك هنا...", "Type your message here...")}
-            className="flex-1 bg-background text-sm"
+            className="flex-1 bg-transparent text-sm border-0 focus:ring-0 placeholder-muted-foreground/60"
             disabled={isLoading}
             autoComplete="off"
           />
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={isListening ? stopListening : startListening}
             className={
               isListening
-                ? "bg-red-500 text-white hover:bg-red-600 hover:text-white border-red-500 animate-pulse"
-                : "text-muted-foreground hover:bg-muted"
+                ? "bg-red-500/20 text-red-500 hover:bg-red-500/30 shrink-0"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/10 shrink-0"
             }
             title={t(
               isListening ? "إيقاف التسجيل" : "تحدث",
@@ -455,19 +487,24 @@ export function AIChat() {
               <Mic className="w-4 h-4" />
             )}
           </Button>
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!input.trim() || isLoading}
-            className="bg-primary hover:bg-primary/90 shrink-0 disabled:opacity-50"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </Button>
-        </div>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!input.trim() || isLoading}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 disabled:opacity-50 disabled:bg-emerald-600/50"
+              style={{
+                boxShadow: !input.trim() || isLoading ? "none" : "0 0 20px rgba(16, 185, 129, 0.4)"
+              }}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          </motion.div>
+        </motion.div>
       </form>
     </Card>
   );
