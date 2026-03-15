@@ -188,7 +188,7 @@ function AuthForm() {
     );
   }
 
-  // ── Main form ──────────────────────────────────────────────────────────────
+  // ── Main form ───────────────────────────────────────────────���──────────────
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -256,20 +256,20 @@ function AuthForm() {
             <form onSubmit={handleSignIn} className="space-y-4 w-full">
               <div className="space-y-2 text-start">
                 <Label htmlFor="signin-email">{t("البريد الإلكتروني", "Email Address")}</Label>
-                <div className="relative">
-                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="relative group">
+                  <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-emerald-500 transition-colors" />
                   <Input id="signin-email" name="email" type="email"
-                    placeholder="example@email.com" className="ps-10" dir="ltr" required />
+                    placeholder="example@email.com" className="ps-10 focus:ring-emerald-500/50 focus:ring-2 transition-all" dir="ltr" required />
                 </div>
               </div>
 
               <div className="space-y-2 text-start">
                 <Label htmlFor="signin-password">{t("كلمة المرور", "Password")}</Label>
-                <div className="relative">
-                  <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="relative group">
+                  <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-emerald-500 transition-colors" />
                   <Input id="signin-password" name="password"
                     type={showSignInPw ? "text" : "password"}
-                    placeholder="••••••••" className="ps-10 pe-10" dir="ltr" required />
+                    placeholder="••••••••" className="ps-10 pe-10 focus:ring-emerald-500/50 focus:ring-2 transition-all" dir="ltr" required />
                   <button type="button"
                     onClick={() => setShowSignInPw(!showSignInPw)}
                     className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -284,9 +284,18 @@ function AuthForm() {
                 </Link>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? t("جارٍ التحميل...", "Loading...") : t("تسجيل الدخول", "Sign In")}
-              </Button>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold" 
+                  style={{
+                    boxShadow: "0 0 20px rgba(16, 185, 129, 0.3)"
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? t("جارٍ التحميل...", "Loading...") : t("تسجيل الدخول", "Sign In")}
+                </Button>
+              </motion.div>
             </form>
           </div>
         )}
@@ -451,13 +460,35 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Column */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent" />
-        </div>
-        <div className="absolute top-20 start-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 end-20 w-96 h-96 bg-teal-600/20 rounded-full blur-3xl" />
+      {/* Left Column - Animated gradient mesh background */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden" style={{
+        background: "linear-gradient(135deg, #0a0f1e 0%, #1a1a3e 25%, #0f1a2e 50%, #0a0f1e 75%, #1a0f2e 100%)",
+        backgroundSize: "400% 400%",
+      }}>
+        <style>{`
+          @keyframes auth-mesh {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+          .auth-mesh {
+            animation: auth-mesh 8s ease infinite;
+          }
+        `}</style>
+        <div className="absolute inset-0 auth-mesh opacity-60" />
+        
+        {/* Animated glowing orbs */}
+        <motion.div 
+          className="absolute top-20 start-20 w-64 h-64 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(16,185,129,0.2) 0%, transparent 70%)" }}
+          animate={{ y: [0, -30, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute bottom-20 end-20 w-96 h-96 rounded-full blur-3xl"
+          style={{ background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)" }}
+          animate={{ y: [0, 40, 0], x: [0, -20, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
 
         <div className="relative z-10 flex flex-col justify-center items-center h-full w-full p-12 text-center">
           <motion.div
@@ -466,11 +497,18 @@ export default function AuthPage() {
             transition={{ duration: 0.8 }}
             className="flex flex-col items-center"
           >
-            <div className="mb-8">
-              <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-sm border border-white/10">
+            {/* Breathing animated logo */}
+            <motion.div
+              className="mb-8 animate-breathing"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="bg-white/10 p-6 rounded-3xl backdrop-blur-sm border border-white/10" style={{
+                boxShadow: "0 0 30px rgba(16, 185, 129, 0.2)"
+              }}>
                 <BrandLogo size="lg" variant="icon" />
               </div>
-            </div>
+            </motion.div>
             <h2 className="text-4xl font-bold text-white mb-4">{t("ذكرني", "Thakirni")}</h2>
             <p className="text-xl text-white/80 mb-8 font-english" dir="ltr">Your legacy, secured.</p>
             <div className="space-y-4 text-white/70 text-lg">
