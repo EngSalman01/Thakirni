@@ -271,12 +271,13 @@ const NavigationItem = ({
         href={item.hash ? `${item.href}${item.hash}` : item.href}
         onClick={onNavigate}
         className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+          "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
           isActive && !item.hash
-            ? "bg-primary/10 text-primary shadow-sm"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            ? "text-emerald-500 bg-emerald-500/5 border-s-2 border-emerald-500"
+            : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
         )}
+        style={isActive && !item.hash ? { boxShadow: "inset 0 0 20px rgba(16, 185, 129, 0.1)" } : undefined}
         aria-current={isActive ? "page" : undefined}
       >
         <item.icon className="w-5 h-5 shrink-0" aria-hidden="true" />
@@ -522,7 +523,12 @@ export function VaultSidebar() {
     <SidebarContext.Provider value={contextValue}>
       {/* Desktop sidebar */}
       <aside
-        className="hidden lg:flex fixed top-0 end-0 h-screen w-64 bg-card border-s border-border flex-col z-40"
+        className="hidden lg:flex fixed top-0 end-0 h-screen w-64 glass-dark border-s border-border flex-col z-40"
+        style={{
+          background: "rgba(15, 23, 42, 0.8)",
+          backdropFilter: "blur(12px)",
+          borderLeft: "1px solid rgba(255, 255, 255, 0.06)"
+        }}
         aria-label="Sidebar navigation"
       >
         <SidebarContent />
@@ -532,7 +538,11 @@ export function VaultSidebar() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="w-72 p-0 bg-card"
+          className="w-72 p-0 glass-dark"
+          style={{
+            background: "rgba(15, 23, 42, 0.95)",
+            backdropFilter: "blur(12px)"
+          }}
           aria-describedby="mobile-nav-description"
         >
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
