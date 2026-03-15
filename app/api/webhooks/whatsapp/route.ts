@@ -515,7 +515,7 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
 
     console.log(`[WhatsApp] Replied to ${phone}: "${aiResponse.slice(0, 80)}..."`)
 }
-
+//AbuSalem
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const challenge = searchParams.get("challenge") ?? searchParams.get("hub.challenge") ?? "ok"
