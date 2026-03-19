@@ -2,23 +2,21 @@
 
 import Link from "next/link";
 import { Heart } from "lucide-react";
-import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { useLanguage } from "@/components/language-provider";
 
 export function LandingFooter() {
   const { t } = useLanguage();
 
   return (
-    <footer className="py-12 border-t border-foreground/10">
+    <footer className="py-20 bg-surface border-t border-outline-variant/30">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-5 gap-8 mb-12">
           {/* Brand */}
           <div className="md:col-span-2">
-            <Link href="/" className="flex items-center mb-4">
-              {/* Reduced from 160x50 to 120x40 */}
-              <BrandLogo width={120} height={40} />
-            </Link>
-            <p className="text-foreground/60 max-w-sm mb-4">
+            <span className="text-2xl font-headline font-bold gradient-text tracking-tight block mb-4">
+              Thakirni
+            </span>
+            <p className="text-on-surface-variant max-w-sm mb-4 leading-relaxed">
               {t(
                 "عقلك الثاني اللي يضبط يومك.. وثّق كل شي أول بأول، وريّح بالك من النسيان.",
                 "Your second brain that sorts your day.. Document everything as it happens, and rest your mind from forgetting.",
@@ -26,116 +24,87 @@ export function LandingFooter() {
             </p>
           </div>
 
-          {/* Links */}
+          {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">
+            <h4 className="font-headline font-bold text-on-surface mb-4">
               {t("روابط سريعة", "Quick Links")}
             </h4>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="#"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("المميزات", "Features")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("الأسعار", "Pricing")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("الأسئلة الشائعة", "FAQ")}
-                </Link>
-              </li>
+              {[
+                { ar: "المميزات", en: "Features", href: "#features" },
+                { ar: "الأسعار", en: "Pricing", href: "/pricing" },
+                { ar: "الأسئلة الشائعة", en: "FAQ", href: "#" },
+              ].map((link) => (
+                <li key={link.en}>
+                  <Link
+                    href={link.href}
+                    className="text-on-surface-variant hover:text-primary transition-colors text-sm"
+                  >
+                    {t(link.ar, link.en)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Contact */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">
+            <h4 className="font-headline font-bold text-on-surface mb-4">
               {t("تواصل معنا", "Contact Us")}
             </h4>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="#"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("الدعم الفني", "Support")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("الشراكات", "Partnerships")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="#"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("الوظائف", "Careers")}
-                </Link>
-              </li>
+              {[
+                { ar: "الدعم الفني", en: "Support", href: "#" },
+                { ar: "الشراكات", en: "Partnerships", href: "#" },
+                { ar: "الوظائف", en: "Careers", href: "#" },
+              ].map((link) => (
+                <li key={link.en}>
+                  <Link
+                    href={link.href}
+                    className="text-on-surface-variant hover:text-primary transition-colors text-sm"
+                  >
+                    {t(link.ar, link.en)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Legal */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">
+            <h4 className="font-headline font-bold text-on-surface mb-4">
               {t("الشروط والسياسات", "Legal")}
             </h4>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("شروط الاستخدام", "Terms of Service")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("سياسة الخصوصية", "Privacy Policy")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/refund"
-                  className="text-foreground/60 hover:text-gold transition-colors"
-                >
-                  {t("سياسة الاسترداد", "Refund Policy")}
-                </Link>
-              </li>
+              {[
+                { ar: "شروط الاستخدام", en: "Terms of Service", href: "/terms" },
+                { ar: "سياسة الخصوصية", en: "Privacy Policy", href: "/privacy" },
+                { ar: "سياسة الاسترداد", en: "Refund Policy", href: "/refund" },
+              ].map((link) => (
+                <li key={link.en}>
+                  <Link
+                    href={link.href}
+                    className="text-on-surface-variant hover:text-primary transition-colors text-sm"
+                  >
+                    {t(link.ar, link.en)}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
         {/* Bottom */}
-        <div className="pt-8 border-t border-foreground/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-foreground/50 text-sm">
+        <div className="pt-8 border-t border-outline-variant/30 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-on-surface-variant text-sm">
             {t(
               "© ٢٠٢٦ ذكرني. جميع الحقوق محفوظة.",
               "© 2026 Thakirni. All rights reserved.",
             )}
           </p>
-          <p className="flex items-center gap-1 text-foreground/50 text-sm">
+          <p className="flex items-center gap-1 text-on-surface-variant text-sm">
             {t("صنع بـ", "Made with")}{" "}
-            <Heart className="w-4 h-4 text-gold fill-gold" />{" "}
+            <Heart className="w-4 h-4 text-secondary fill-secondary" />{" "}
             {t("في المملكة العربية السعودية", "in Saudi Arabia")}
           </p>
         </div>
