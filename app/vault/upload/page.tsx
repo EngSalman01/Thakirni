@@ -4,7 +4,6 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -76,31 +75,31 @@ function FileRow({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -8 }}
-      className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card"
+      className="flex items-center gap-3 p-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-ambient"
     >
       {/* Thumbnail or icon */}
-      <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center shrink-0 overflow-hidden">
+      <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden">
         {item.preview
           ? <img src={item.preview} alt="" className="w-full h-full object-cover" />
-          : <Icon className="w-5 h-5 text-muted-foreground" />
+          : <Icon className="w-5 h-5 text-on-surface-variant" />
         }
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0 space-y-1">
-        <p className="text-sm font-medium truncate">{item.file.name}</p>
+        <p className="text-sm font-medium text-on-surface truncate">{item.file.name}</p>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{formatSize(item.file.size)}</span>
+          <span className="text-xs text-on-surface-variant">{formatSize(item.file.size)}</span>
           {item.status === 'uploading' && (
             <Progress value={item.progress} className="h-1 flex-1" />
           )}
           {item.status === 'done' && (
-            <span className="text-xs text-emerald-600 flex items-center gap-1">
+            <span className="text-xs text-primary flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3" /> Done
             </span>
           )}
           {item.status === 'error' && (
-            <span className="text-xs text-destructive flex items-center gap-1">
+            <span className="text-xs text-error flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> {item.error}
             </span>
           )}
@@ -112,7 +111,7 @@ function FileRow({
         <Button
           size="icon"
           variant="ghost"
-          className="shrink-0 h-7 w-7 text-muted-foreground hover:text-destructive"
+          className="shrink-0 h-7 w-7 rounded-full text-on-surface-variant hover:text-error hover:bg-error-container/20"
           onClick={() => onRemove(item.id)}
         >
           <X className="w-4 h-4" />
@@ -292,7 +291,7 @@ export default function UploadPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface">
       <VaultSidebar />
 
       <main className="lg:me-64 p-4 py-8">
@@ -300,26 +299,29 @@ export default function UploadPage() {
 
           {/* Back */}
           <div className="flex items-center gap-3 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+            <Button variant="ghost" size="icon" onClick={() => router.back()}
+              className="rounded-full hover:bg-surface-container-high">
               <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
             </Button>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-2xl font-headline font-bold text-on-surface">
               {t('رفع ملفات', 'Upload Files')}
             </h1>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('رفع صور أو ملفات', 'Upload Photos or Files')}</CardTitle>
-              <CardDescription>
+          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/20">
+            <div className="mb-6">
+              <h2 className="text-lg font-headline font-bold text-on-surface mb-1">
+                {t('رفع صور أو ملفات', 'Upload Photos or Files')}
+              </h2>
+              <p className="text-sm text-on-surface-variant">
                 {t(
                   `الحد الأقصى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`,
                   `Up to ${MAX_FILE_SIZE_MB} MB per file`,
                 )}
-              </CardDescription>
-            </CardHeader>
+              </p>
+            </div>
 
-            <CardContent className="space-y-5">
+            <div className="space-y-5">
 
               {/* Drop zone */}
               <div
@@ -331,8 +333,8 @@ export default function UploadPage() {
                   'border-2 border-dashed rounded-xl p-10 text-center cursor-pointer',
                   'transition-colors duration-200 select-none',
                   isDragging
-                    ? 'border-emerald-500 bg-emerald-500/5'
-                    : 'border-border hover:border-primary/50 hover:bg-muted/30',
+                    ? 'border-primary bg-primary/5'
+                    : 'border-outline-variant hover:border-primary/50 hover:bg-surface-container-low',
                 )}
               >
                 <motion.div
@@ -342,20 +344,20 @@ export default function UploadPage() {
                 >
                   <div className={cn(
                     'w-14 h-14 rounded-full flex items-center justify-center transition-colors',
-                    isDragging ? 'bg-emerald-500/15' : 'bg-muted',
+                    isDragging ? 'bg-primary/15' : 'bg-surface-container-high',
                   )}>
                     <Upload className={cn(
                       'w-6 h-6 transition-colors',
-                      isDragging ? 'text-emerald-600' : 'text-muted-foreground',
+                      isDragging ? 'text-primary' : 'text-on-surface-variant',
                     )} />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-on-surface-variant">
                     {isDragging
                       ? t('أفلت الملفات هنا', 'Drop files here')
                       : t('اسحب الملفات هنا أو انقر للاختيار', 'Drag files here or click to select')
                     }
                   </p>
-                  <p className="text-xs text-muted-foreground/60">
+                  <p className="text-xs text-on-surface-variant/60">
                     {t('صور، فيديو، صوت، PDF', 'Images, video, audio, PDF')}
                   </p>
                 </motion.div>
@@ -368,7 +370,7 @@ export default function UploadPage() {
                   className="hidden"
                   onChange={(e) => {
                     if (e.target.files) addFiles(Array.from(e.target.files));
-                    e.target.value = ''; // allow re-selecting same file
+                    e.target.value = '';
                   }}
                 />
               </div>
@@ -388,7 +390,7 @@ export default function UploadPage() {
                 )}
               </AnimatePresence>
 
-              {/* Description — shown once files are added */}
+              {/* Description */}
               <AnimatePresence>
                 {hasItems && (
                   <motion.div
@@ -397,13 +399,14 @@ export default function UploadPage() {
                     exit={{ opacity: 0 }}
                     className="space-y-1.5"
                   >
-                    <label className="text-sm font-medium text-foreground">
+                    <label className="text-sm font-medium text-on-surface">
                       {t('وصف (اختياري)', 'Description (optional)')}
                     </label>
                     <Input
                       placeholder={t('أضف وصفاً لهذه الملفات...', 'Add a description for these files...')}
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
+                      className="bg-surface-container-low border-outline-variant/50 rounded-xl focus-visible:ring-primary/40"
                     />
                   </motion.div>
                 )}
@@ -414,7 +417,7 @@ export default function UploadPage() {
                 <Button
                   onClick={handleUpload}
                   disabled={!pendingCount || isUploading}
-                  className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-500 text-white"
+                  className="flex-1 gap-2 power-gradient text-white font-bold rounded-full shadow-ambient"
                 >
                   {isUploading
                     ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -427,13 +430,14 @@ export default function UploadPage() {
                       : t('رفع', 'Upload')
                   }
                 </Button>
-                <Button variant="outline" onClick={() => router.back()} disabled={isUploading}>
+                <Button variant="outline" onClick={() => router.back()} disabled={isUploading}
+                  className="rounded-full border-outline-variant/50 hover:bg-surface-container-high">
                   {t('إلغاء', 'Cancel')}
                 </Button>
               </div>
 
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </main>
     </div>

@@ -38,9 +38,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "@supabase/supabase-js";
-import type { Team } from "@/lib/types";
 
 // Types
+interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  [key: string]: unknown;
+}
+
 interface Profile {
   id: string;
   full_name?: string;

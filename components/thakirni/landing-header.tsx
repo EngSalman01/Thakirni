@@ -19,39 +19,41 @@ export function LandingHeader() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/50"
+      className="fixed top-0 inset-x-0 z-50 glass border-b border-border/50 shadow-ambient"
     >
       <div className="container mx-auto px-4">
-        <nav className="flex items-center justify-between h-16">
+        <nav className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <BrandLogo size="sm" variant="icon" />
+            <span className="text-2xl font-bold gradient-text font-headline tracking-tight">
+              Thakirni
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             <Link
               href="#features"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
             >
               {t("المميزات", "Features")}
             </Link>
             <Link
               href="/pricing"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
             >
               {t("الأسعار", "Pricing")}
             </Link>
             <Link
               href="#contact"
-              className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+              className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium"
             >
               {t("تواصل معنا", "Contact")}
             </Link>
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-2">
             <LanguageToggle />
             <ThemeToggle />
             <Link href="/auth">
@@ -63,9 +65,14 @@ export function LandingHeader() {
               </Button>
             </Link>
             <Link href="/auth">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                {t("ابدأ الآن", "Start Now")}
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button className="power-gradient text-white font-bold rounded-full px-6 shadow-ambient hover:shadow-card transition-all duration-300">
+                  {t("ابدأ الآن", "Start Now")}
+                </Button>
+              </motion.div>
             </Link>
           </div>
 
@@ -93,7 +100,7 @@ export function LandingHeader() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md overflow-hidden"
+            className="md:hidden border-t border-border/50 glass overflow-hidden"
           >
             <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
               <Link
@@ -129,7 +136,7 @@ export function LandingHeader() {
                   </Button>
                 </Link>
                 <Link href="/auth" onClick={() => setMobileOpen(false)}>
-                  <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                  <Button className="w-full power-gradient text-white font-bold rounded-full">
                     {t("ابدأ الآن", "Start Now")}
                   </Button>
                 </Link>

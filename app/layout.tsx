@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner"
 import React from "react"
 import type { Metadata, Viewport } from "next"
-import { Tajawal, Inter, IBM_Plex_Sans_Arabic } from "next/font/google"
+import { Tajawal, Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
@@ -13,19 +13,20 @@ const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
   weight: ["400", "500", "700", "800"],
   variable: "--font-tajawal",
-  display: "swap",   // prevents invisible text during font load
-})
-
-const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-ibm-plex-arabic",
   display: "swap",
 })
 
-const inter = Inter({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+})
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-be-vietnam-pro",
   display: "swap",
 })
 
@@ -108,7 +109,7 @@ export default function RootLayout({
      */
     <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${tajawal.variable} ${ibmPlexSansArabic.variable} ${inter.variable} font-sans antialiased`}
+        className={`${tajawal.variable} ${plusJakartaSans.variable} ${beVietnamPro.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         {/*
@@ -119,7 +120,7 @@ export default function RootLayout({
          */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >

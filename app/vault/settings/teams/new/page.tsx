@@ -80,7 +80,7 @@ function PageSkeleton() {
 export default function NewTeamPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const { subscriptionType, isLoading: subscriptionLoading } = useSubscription();
+  const { subscriptionType, loading: subscriptionLoading } = useSubscription();
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");

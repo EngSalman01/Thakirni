@@ -69,13 +69,15 @@ function Section({
       transition={{ delay }}
       className={className}
     >
-      <Card className="p-4 md:p-6">
+      <div className="bg-surface-container-lowest rounded-xl p-4 md:p-6 shadow-ambient border border-outline-variant/20">
         <div className="flex items-center gap-3 mb-5">
-          <Icon className="w-5 h-5 text-primary" />
-          <h2 className="text-base font-semibold text-foreground">{title}</h2>
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+            <Icon className="w-4 h-4 text-primary" />
+          </div>
+          <h2 className="text-base font-headline font-semibold text-on-surface">{title}</h2>
         </div>
         {children}
-      </Card>
+      </div>
     </motion.div>
   );
 }
@@ -84,7 +86,7 @@ function Section({
 
 function SettingsSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface">
       <VaultSidebar />
       <main className="lg:me-64 p-4 md:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-5xl">
@@ -289,7 +291,7 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-surface">
       <VaultSidebar />
 
       <main className="lg:me-64 p-4 md:p-6 lg:p-8 transition-all duration-300">
@@ -303,10 +305,10 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <MobileMenuButton />
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+              <h1 className="text-xl md:text-2xl font-headline font-bold text-on-surface">
                 {t("الإعدادات", "Settings")}
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-on-surface-variant">
                 {t("إدارة حسابك وتفضيلاتك", "Manage your account and preferences")}
               </p>
             </div>
@@ -323,18 +325,18 @@ export default function SettingsPage() {
           <Section icon={User} title={t("الملف الشخصي", "Profile")} delay={0.05}>
             {/* Avatar */}
             <div className="flex items-center gap-4 mb-5">
-              <div className="w-14 h-14 rounded-full bg-primary/15 flex items-center justify-center shrink-0 overflow-hidden">
+              <div className="w-14 h-14 rounded-full power-gradient flex items-center justify-center shrink-0 overflow-hidden">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-primary text-xl font-bold">
+                  <span className="text-white text-xl font-bold">
                     {name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 )}
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-foreground truncate">{name || t("مستخدم", "User")}</p>
-                <p className="text-sm text-muted-foreground truncate" dir="ltr">{email}</p>
+                <p className="font-semibold text-on-surface truncate">{name || t("مستخدم", "User")}</p>
+                <p className="text-sm text-on-surface-variant truncate" dir="ltr">{email}</p>
               </div>
             </div>
 
@@ -348,14 +350,16 @@ export default function SettingsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder={t("أدخل اسمك", "Enter your name")}
                   maxLength={60}
+                  className="bg-surface-container-low border-outline-variant/50 rounded-xl focus-visible:ring-primary/40"
                 />
               </div>
 
               {/* Email (read-only) */}
               <div className="space-y-1.5">
                 <Label htmlFor="email">{t("البريد الإلكتروني", "Email")}</Label>
-                <Input id="email" type="email" value={email} disabled dir="ltr" className="opacity-60" />
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Input id="email" type="email" value={email} disabled dir="ltr"
+                  className="opacity-60 bg-surface-container-low border-outline-variant/50 rounded-xl" />
+                <p className="text-xs text-on-surface-variant flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
                   {t("لا يمكن تغيير البريد الإلكتروني", "Email cannot be changed")}
                 </p>
@@ -365,23 +369,23 @@ export default function SettingsPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="phone">
                   {t("رقم الجوال", "Phone Number")}
-                  <span className="text-muted-foreground text-xs ms-1">
+                  <span className="text-on-surface-variant text-xs ms-1">
                     {t("(للواتساب)", "(for WhatsApp)")}
                   </span>
                 </Label>
                 <div className="relative">
-                  <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
                   <Input
                     id="phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="05xxxxxxxx"
-                    className="ps-10"
+                    className="ps-10 bg-surface-container-low border-outline-variant/50 rounded-xl focus-visible:ring-primary/40"
                     dir="ltr"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-on-surface-variant">
                   {t(
                     "أضف رقمك لاستخدام ذكرني عبر واتساب مباشرة",
                     "Add your number to use Thakirni directly via WhatsApp",
@@ -390,13 +394,13 @@ export default function SettingsPage() {
               </div>
 
               <Button
-                className="w-full"
+                className="w-full power-gradient text-white font-bold rounded-full shadow-ambient"
                 onClick={handleSaveName}
                 disabled={saving || !isDirty || !name.trim()}
               >
                 {saving ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     {t("جاري الحفظ...", "Saving...")}
                   </span>
                 ) : t("حفظ التغييرات", "Save Changes")}
@@ -412,19 +416,19 @@ export default function SettingsPage() {
                 { key: "notification_push", icon: Smartphone, ar: "إشعارات الهاتف", en: "Push Notifications", descAr: "إشعارات فورية", descEn: "Instant notifications" },
                 { key: "notification_friday", icon: Crown, ar: "تذكيرات الجمعة", en: "Friday Reminders", descAr: "جمعة مباركة أسبوعياً", descEn: "Weekly Jumma reminders" },
               ] as const).map(({ key, icon: Icon, ar, en, descAr, descEn }) => (
-                <div key={key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                <div key={key} className="flex items-center justify-between p-3 rounded-xl bg-surface-container-low gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <Icon className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <Icon className="w-4 h-4 text-on-surface-variant shrink-0" />
                     <div className="min-w-0">
-                      <Label htmlFor={key} className="text-sm font-medium cursor-pointer">
+                      <Label htmlFor={key} className="text-sm font-medium cursor-pointer text-on-surface">
                         {t(ar, en)}
                       </Label>
-                      <p className="text-xs text-muted-foreground">{t(descAr, descEn)}</p>
+                      <p className="text-xs text-on-surface-variant">{t(descAr, descEn)}</p>
                     </div>
                   </div>
                   <div className="shrink-0">
                     {savingNotif === key ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      <Loader2 className="w-4 h-4 animate-spin text-on-surface-variant" />
                     ) : (
                       <Switch
                         id={key}
@@ -473,50 +477,50 @@ export default function SettingsPage() {
                 const isCurrent = subscriptionType === tier.id ||
                   (tier.id === "free" && !subscriptionType);
                 return (
-                  <Card
+                  <div
                     key={tier.id}
-                    className={`p-4 border-2 transition-all ${isCurrent
-                        ? "border-primary shadow-md"
+                    className={`p-4 rounded-xl border-2 transition-all bg-surface-container-lowest shadow-ambient ${
+                      isCurrent
+                        ? "border-primary"
                         : tier.popular
-                          ? "border-emerald-500/50"
-                          : "border-border"
-                      }`}
+                          ? "border-secondary/40"
+                          : "border-outline-variant/30"
+                    }`}
                   >
                     {tier.popular && (
-                      <div className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full w-fit mb-2">
+                      <div className="text-xs bg-secondary-container text-on-secondary-container px-3 py-0.5 rounded-full w-fit mb-2 font-semibold">
                         {t("الأكثر شيوعاً", "Most Popular")}
                       </div>
                     )}
-                    <h3 className="font-bold text-foreground">{t(tier.nameAr, tier.nameEn)}</h3>
+                    <h3 className="font-headline font-bold text-on-surface">{t(tier.nameAr, tier.nameEn)}</h3>
                     <p className="text-xl font-bold text-primary my-1" dir="ltr">
                       {t(tier.priceAr, tier.priceEn)}
-                      <span className="text-xs text-muted-foreground font-normal ms-1">
+                      <span className="text-xs text-on-surface-variant font-normal ms-1">
                         {t("/شهر", "/mo")}
                       </span>
                     </p>
                     <ul className="space-y-1 mb-4">
                       {tier.features.map((f, i) => (
-                        <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <li key={i} className="flex items-center gap-2 text-xs text-on-surface-variant">
                           <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
                           {t(f.ar, f.en)}
                         </li>
                       ))}
                     </ul>
                     {isCurrent ? (
-                      <Button variant="outline" className="w-full text-xs" disabled>
+                      <Button variant="outline" className="w-full text-xs rounded-full" disabled>
                         {t("خطتك الحالية", "Current Plan")}
                       </Button>
                     ) : (
                       <Button
-                        variant="outline"
-                        className="w-full text-xs"
+                        className="w-full text-xs rounded-full power-gradient text-white"
                         onClick={() => router.push("/pricing")}
                       >
                         {t("ترقية", "Upgrade")}
                         <ArrowRight className="w-3 h-3 ms-1 rtl:rotate-180" />
                       </Button>
                     )}
-                  </Card>
+                  </div>
                 );
               })}
             </div>
@@ -527,15 +531,15 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3"
+                className="w-full justify-start gap-3 rounded-xl border-outline-variant/50 hover:bg-surface-container-low"
                 onClick={() => router.push("/vault/settings/security/change-password")}
               >
-                <Lock className="w-4 h-4" />
+                <Lock className="w-4 h-4 text-primary" />
                 {t("تغيير كلمة المرور", "Change Password")}
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="w-full justify-start gap-3 rounded-xl border-outline-variant/50 text-error hover:text-error hover:bg-error-container/20"
                 onClick={() => setSignOutOpen(true)}
               >
                 <LogOut className="w-4 h-4" />
@@ -551,10 +555,10 @@ export default function SettingsPage() {
                 { labelAr: "اللغة", labelEn: "Language", descAr: "اختر لغة التطبيق", descEn: "Choose app language", control: <LanguageToggle /> },
                 { labelAr: "المظهر", labelEn: "Theme", descAr: "الوضع الليلي أو النهاري", descEn: "Dark or light mode", control: <ThemeToggle /> },
               ].map((row) => (
-                <div key={row.labelEn} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 gap-3">
+                <div key={row.labelEn} className="flex items-center justify-between p-3 rounded-xl bg-surface-container-low gap-3">
                   <div>
-                    <p className="text-sm font-medium">{t(row.labelAr, row.labelEn)}</p>
-                    <p className="text-xs text-muted-foreground">{t(row.descAr, row.descEn)}</p>
+                    <p className="text-sm font-medium text-on-surface">{t(row.labelAr, row.labelEn)}</p>
+                    <p className="text-xs text-on-surface-variant">{t(row.descAr, row.descEn)}</p>
                   </div>
                   {row.control}
                 </div>
