@@ -15,9 +15,9 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Bell, Shield, Smartphone, Mail, Lock, LogOut,
-  Crown, CheckCircle2, AlertCircle, ArrowRight, Loader2, Phone,
-  Key, Fingerprint, Sparkles, Plus, RefreshCw,
+  Bell, Shield, Mail, LogOut,
+  Crown, CheckCircle2, AlertCircle, Loader2, Phone,
+  Key, Fingerprint, Sparkles, RefreshCw, Calendar, X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -95,7 +95,10 @@ function ToggleRow({
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
       ) : (
-        <Switch checked={checked} onCheckedChange={onChange} />
+        // dir="ltr" prevents RTL from reversing the switch thumb direction
+        <div dir="ltr">
+          <Switch checked={checked} onCheckedChange={onChange} />
+        </div>
       )}
     </div>
   );
@@ -118,6 +121,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [calendarLoading, setCalendarLoading] = useState(false);
 
   const [notifs, setNotifs] = useState({
     notification_email: true,
@@ -178,17 +183,22 @@ export default function SettingsPage() {
 
   const handleSaveName = useCallback(async () => {
     if (!name.trim()) { toast.error(t("الاسم مطلوب", "Name is required")); return; }
+
+    // Validate phone BEFORE setting saving state so button doesn't get stuck
+    const rawPhone = phone.trim().replace(/\s+/g, "");
+    const normPhone = rawPhone
+      ? rawPhone.replace(/^\+/, "").replace(/^00/, "").replace(/^0/, "966")
+      : "";
+    if (normPhone && !/^966\d{9}$/.test(normPhone)) {
+      toast.error(t("رقم الهاتف غير صحيح — أدخل رقم سعودي مثل 05xxxxxxxx", "Invalid phone — enter a Saudi number like 05xxxxxxxx"));
+      return;
+    }
+
     setSaving(true);
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
-      const rawPhone = phone.trim().replace(/\s+/g, "");
-      const normPhone = rawPhone.replace(/^\+/, "").replace(/^00/, "").replace(/^0/, "966");
-      if (normPhone && !/^966\d{9}$/.test(normPhone)) {
-        toast.error(t("رقم الهاتف غير صحيح", "Invalid phone number")); return;
-      }
 
       const { error } = await supabase
         .from("profiles")
@@ -196,7 +206,7 @@ export default function SettingsPage() {
         .eq("id", user.id);
 
       if (error) throw error;
-      setOrigName(name.trim()); setOrigPhone(normPhone); setPhone(normPhone);
+      setOrigName(name.trim()); setOrigPhone(normPhone || ""); setPhone(normPhone || "");
       setProfile((p) => p ? { ...p, full_name: name.trim(), phone_number: normPhone || null } : null);
       toast.success(t("تم حفظ التغييرات", "Changes saved"));
     } catch (err) {
@@ -206,6 +216,39 @@ export default function SettingsPage() {
       setSaving(false);
     }
   }, [name, phone, t]);
+
+  // ── Google Calendar ─────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    // Check if Google Calendar is connected
+    fetch("/api/google-calendar/events")
+      .then((r) => r.json())
+      .then((d: { connected?: boolean }) => setCalendarConnected(d.connected === true))
+      .catch(() => {})
+    // Check for calendar connection result in URL
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("calendar") === "connected") {
+      setCalendarConnected(true)
+      toast.success(t("تم ربط Google Calendar بنجاح! 📅", "Google Calendar connected! 📅"))
+      window.history.replaceState({}, "", window.location.pathname)
+    } else if (params.get("calendar") === "error") {
+      toast.error(t("فشل ربط Google Calendar", "Failed to connect Google Calendar"))
+      window.history.replaceState({}, "", window.location.pathname)
+    }
+  }, [t]);
+
+  const handleDisconnectCalendar = useCallback(async () => {
+    setCalendarLoading(true)
+    try {
+      await fetch("/api/google-calendar/events", { method: "DELETE" })
+      setCalendarConnected(false)
+      toast.success(t("تم إلغاء ربط Google Calendar", "Google Calendar disconnected"))
+    } catch {
+      toast.error(t("حدث خطأ", "Something went wrong"))
+    } finally {
+      setCalendarLoading(false)
+    }
+  }, [t]);
 
   // ── Toggle notification ────────────────────────────────────────────────────
 
@@ -393,19 +436,27 @@ export default function SettingsPage() {
                 <ToggleRow
                   label={t("الحركة الأثيرية", "Ethereal Motion") as string}
                   desc={t("تحولات سلسة وتأثيرات العمق", "Smooth transitions & depth effects") as string}
-                  checked={true}
-                  onChange={() => {}}
+                  checked={notifs.notification_email}
+                  onChange={() => {
+                    const next = !notifs.notification_email
+                    setNotifs((p) => ({ ...p, notification_email: next }))
+                    localStorage.setItem("thakirni_motion", String(next))
+                  }}
                 />
                 <ToggleRow
                   label={t("وضع التركيز العميق", "Deep Focus Mode") as string}
-                  desc={t("إخماد جميع المدخلات العصبية غير الحرجة", "Suppress all non-critical neural inputs") as string}
-                  checked={false}
-                  onChange={() => {}}
+                  desc={t("إخماد جميع التنبيهات غير الضرورية", "Suppress all non-critical notifications") as string}
+                  checked={notifs.notification_push}
+                  onChange={() => {
+                    const next = !notifs.notification_push
+                    setNotifs((p) => ({ ...p, notification_push: next }))
+                    localStorage.setItem("thakirni_deepfocus", String(next))
+                  }}
                 />
                 <div className="flex justify-between items-center p-4 bg-white rounded-xl">
                   <div>
-                    <p className="font-label font-bold text-sm text-slate-800">{t("المظهر والمقياس", "Theme & Scale")}</p>
-                    <p className="text-sm text-slate-500">{t("الوضع الليلي أو النهاري", "Dark or light mode")}</p>
+                    <p className="font-label font-bold text-sm text-slate-800">{t("المظهر واللغة", "Theme & Language")}</p>
+                    <p className="text-sm text-slate-500">{t("الوضع الليلي أو النهاري والعربي/الإنجليزي", "Dark/light mode & Arabic/English")}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <LanguageToggle />
@@ -510,36 +561,76 @@ export default function SettingsPage() {
               </div>
             </SettingsCard>
 
-            {/* Neural Sync (Connected Apps) */}
+            {/* Connected Apps */}
             <SettingsCard delay={0.12}>
               <div className="flex items-center gap-3 mb-6">
                 <RefreshCw className="w-5 h-5 text-[#2552ca]" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
-                  {t("المزامنة العصبية", "Neural Sync")}
+                  {t("التطبيقات المرتبطة", "Connected Apps")}
                 </h2>
               </div>
               <div className="space-y-3">
-                {[
-                  { icon: "📄", label: "Notion Vault", status: "active" },
-                  { icon: "✉️", label: "Gmail Stream", status: "active" },
-                  { icon: "+", label: t("ربط Slack", "Connect Slack"), status: "connect" },
-                ].map(({ icon, label, status }) => (
-                  <div key={label as string} className="flex items-center justify-between p-4 bg-white rounded-xl">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-lg shrink-0">
-                        {icon}
-                      </div>
-                      <span className={`font-bold text-sm font-label ${status === "connect" ? "text-slate-400" : "text-slate-800"}`}>
-                        {label as string}
-                      </span>
+                {/* Google Calendar */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center shrink-0">
+                      <Calendar className="w-5 h-5 text-[#2552ca]" />
                     </div>
-                    {status === "active" ? (
-                      <span className="text-xs text-green-600 font-bold px-2 py-1 bg-green-50 rounded-full">ACTIVE</span>
-                    ) : (
-                      <button className="text-xs text-[#2552ca] font-bold font-label">CONNECT</button>
-                    )}
+                    <div>
+                      <p className="font-bold text-sm font-label text-slate-800">Google Calendar</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {calendarConnected
+                          ? t("متصل — مزامنة الأحداث تلقائياً", "Connected — events synced")
+                          : t("اربط التقويم لعرض أحداثك", "Connect to see your events")}
+                      </p>
+                    </div>
                   </div>
-                ))}
+                  {calendarConnected ? (
+                    <button
+                      onClick={handleDisconnectCalendar}
+                      disabled={calendarLoading}
+                      className="flex items-center gap-1.5 text-xs text-red-500 font-bold font-label hover:text-red-700 transition-colors"
+                    >
+                      {calendarLoading
+                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : <X className="w-3 h-3" />}
+                      {t("قطع الاتصال", "Disconnect")}
+                    </button>
+                  ) : (
+                    <a
+                      href="/api/google-calendar/connect"
+                      className="text-xs text-[#2552ca] font-bold font-label hover:underline"
+                    >
+                      {t("ربط", "Connect")}
+                    </a>
+                  )}
+                </div>
+
+                {/* WhatsApp — shows status based on phone */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-lg shrink-0">
+                      💬
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm font-label text-slate-800">WhatsApp</p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {profile?.phone_number
+                          ? t("متصل — تلقّى التذكيرات عبر واتساب", "Connected — receive reminders via WhatsApp")
+                          : t("أضف رقمك في الملف الشخصي", "Add your phone number above")}
+                      </p>
+                    </div>
+                  </div>
+                  {profile?.phone_number ? (
+                    <span className="text-xs text-green-600 font-bold px-2 py-1 bg-green-50 rounded-full">
+                      {t("مفعّل", "Active")}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400 font-bold px-2 py-1 bg-slate-50 rounded-full">
+                      {t("غير مفعّل", "Inactive")}
+                    </span>
+                  )}
+                </div>
               </div>
             </SettingsCard>
 

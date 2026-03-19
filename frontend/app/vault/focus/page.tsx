@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,117 +14,142 @@ import useSWR from "swr"
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
 
 const SESSION_TYPES = [
-  { value: "pomodoro", label: "بومودورو 🍅", minutes: 25, color: "#e53e3e" },
-  { value: "short_break", label: "استراحة قصيرة ☕", minutes: 5, color: "#38a169" },
-  { value: "long_break", label: "استراحة طويلة 🌿", minutes: 15, color: "#3182ce" },
-  { value: "deep_work", label: "عمل عميق 🔱", minutes: 50, color: "#805ad5" },
+  { value: "pomodoro",    label: "بومودورو 🍅",      minutes: 25, color: "#e53e3e" },
+  { value: "short_break", label: "استراحة قصيرة ☕", minutes: 5,  color: "#38a169" },
+  { value: "long_break",  label: "استراحة طويلة 🌿", minutes: 15, color: "#3182ce" },
+  { value: "deep_work",   label: "عمل عميق 🔱",      minutes: 50, color: "#805ad5" },
 ]
 
 async function fetchStats() {
-  const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) return null
-  const res = await fetch(`${API_URL}/api/focus/stats?days=7`, { headers: { Authorization: `Bearer ${session.access_token}` } })
-  if (!res.ok) return null
-  const d = await res.json() as { stats?: Record<string, unknown> }
-  return d.stats ?? null
+  try {
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return null
+    const res = await fetch(`${API_URL}/api/focus/stats?days=7`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (!res.ok) return null
+    const d = await res.json() as { stats?: Record<string, unknown> }
+    return d.stats ?? null
+  } catch {
+    return null
+  }
 }
 
 export default function FocusPage() {
   const { data: stats, mutate: mutateStats } = useSWR(`${API_URL}/api/focus/stats`, fetchStats)
   const [sessionType, setSessionType] = useState("pomodoro")
-  const [sessionId, setSessionId] = useState<string | null>(null)
-  const [isRunning, setIsRunning] = useState(false)
-  const [timeLeft, setTimeLeft] = useState(25 * 60)
-  const [totalTime, setTotalTime] = useState(25 * 60)
-  const [goal, setGoal] = useState("")
-  const [startedAt, setStartedAt] = useState<Date | null>(null)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [isRunning, setIsRunning]     = useState(false)
+  const [isPaused, setIsPaused]       = useState(false)
+  const [timeLeft, setTimeLeft]       = useState(25 * 60)
+  const [totalTime, setTotalTime]     = useState(25 * 60)
+  const [goal, setGoal]               = useState("")
+  const intervalRef  = useRef<ReturnType<typeof setInterval> | null>(null)
+  const sessionIdRef = useRef<string | null>(null)
+  const startedAtRef = useRef<Date | null>(null)
 
   const selectedType = SESSION_TYPES.find((t) => t.value === sessionType) ?? SESSION_TYPES[0]
 
+  // Timer tick
   useEffect(() => {
-    if (!isRunning) return
+    if (!isRunning || isPaused) {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      return
+    }
     intervalRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
           clearInterval(intervalRef.current!)
-          handleComplete()
+          completeSessionRef.current()
           return 0
         }
         return t - 1
       })
     }, 1000)
-    return () => clearInterval(intervalRef.current!)
-  }, [isRunning])
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [isRunning, isPaused])
 
-  function formatTime(secs: number) {
-    const m = Math.floor(secs / 60)
-    const s = secs % 60
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
-  }
+  // Use a ref for complete so the interval never has a stale closure
+  const completeSessionRef = useRef<() => void>(() => {})
 
-  async function getSession() {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    return session
-  }
+  const handleComplete = useCallback(async () => {
+    setIsRunning(false)
+    setIsPaused(false)
+    clearInterval(intervalRef.current!)
+    const sid = sessionIdRef.current
+    const sat = startedAtRef.current
+    const actualMinutes = sat ? Math.round((Date.now() - sat.getTime()) / 60000) : selectedType.minutes
+    toast.success(`أحسنت! أنجزت ${actualMinutes} دقيقة من التركيز! 🎉`)
+    sessionIdRef.current = null
+    startedAtRef.current = null
+    mutateStats()
+    if (!sid) return
+    try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      await fetch(`${API_URL}/api/focus/${sid}/complete`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ actual_minutes: actualMinutes }),
+      })
+    } catch { /* backend unavailable — timer still completed locally */ }
+  }, [selectedType.minutes, mutateStats])
+
+  // Keep ref in sync
+  useEffect(() => { completeSessionRef.current = handleComplete }, [handleComplete])
 
   async function startSession() {
-    const session = await getSession()
-    if (!session) return
-
-    const res = await fetch(`${API_URL}/api/focus/start`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ session_type: sessionType, duration_minutes: selectedType.minutes, goal: goal || undefined }),
-    })
-
-    const d = await res.json() as { session?: { id: string } }
-    if (!res.ok || !d.session) { toast.error("حدث خطأ"); return }
-
-    setSessionId(d.session.id)
     const mins = selectedType.minutes
+    // Start the timer immediately — no waiting for backend
     setTimeLeft(mins * 60)
     setTotalTime(mins * 60)
-    setStartedAt(new Date())
+    startedAtRef.current = new Date()
     setIsRunning(true)
+    setIsPaused(false)
     toast.success(`بدأت جلسة ${selectedType.label}! 🚀`)
-  }
 
-  async function handleComplete() {
-    setIsRunning(false)
-    if (!sessionId) return
-    const session = await getSession()
-    if (!session) return
-    const actualMinutes = startedAt ? Math.round((new Date().getTime() - startedAt.getTime()) / 60000) : selectedType.minutes
-
-    await fetch(`${API_URL}/api/focus/${sessionId}/complete`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ actual_minutes: actualMinutes }),
-    })
-
-    toast.success(`أحسنت! أنجزت ${actualMinutes} دقيقة من التركيز! 🎉`)
-    setSessionId(null)
-    setStartedAt(null)
-    mutateStats()
+    // Save to backend in background
+    try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      const res = await fetch(`${API_URL}/api/focus/start`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ session_type: sessionType, duration_minutes: mins, goal: goal || undefined }),
+      })
+      if (res.ok) {
+        const d = await res.json() as { session?: { id: string } }
+        if (d.session?.id) sessionIdRef.current = d.session.id
+      }
+    } catch { /* backend unavailable — session runs locally only */ }
   }
 
   async function abandonSession() {
     setIsRunning(false)
+    setIsPaused(false)
     clearInterval(intervalRef.current!)
-    if (!sessionId) return
-    const session = await getSession()
-    if (!session) return
-    await fetch(`${API_URL}/api/focus/${sessionId}/abandon`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    setSessionId(null)
+    const sid = sessionIdRef.current
+    sessionIdRef.current = null
+    startedAtRef.current = null
     setTimeLeft(selectedType.minutes * 60)
     setTotalTime(selectedType.minutes * 60)
     toast.info("تم إيقاف الجلسة")
+    if (!sid) return
+    try {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+      await fetch(`${API_URL}/api/focus/${sid}/abandon`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+    } catch { /* ignore */ }
+  }
+
+  function togglePause() {
+    setIsPaused((p) => !p)
   }
 
   const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
@@ -155,8 +180,11 @@ export default function FocusPage() {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-5xl font-mono font-bold">{formatTime(timeLeft)}</span>
+              <span className="text-5xl font-mono font-bold">{
+                `${String(Math.floor(timeLeft / 60)).padStart(2, "0")}:${String(timeLeft % 60).padStart(2, "0")}`
+              }</span>
               <span className="text-sm text-muted-foreground mt-1">{selectedType.label}</span>
+              {isPaused && <Badge variant="outline" className="mt-2 text-xs">متوقف مؤقتاً</Badge>}
             </div>
           </div>
 
@@ -183,7 +211,7 @@ export default function FocusPage() {
               />
 
               <Button
-                className="w-full h-12 text-base gap-2"
+                className="w-full h-12 text-base gap-2 text-white"
                 style={{ background: selectedType.color }}
                 onClick={startSession}
               >
@@ -192,13 +220,14 @@ export default function FocusPage() {
             </div>
           ) : (
             <div className="flex gap-3 w-full">
-              <Button variant="outline" className="flex-1 gap-2" onClick={() => setIsRunning(!isRunning)}>
-                <Pause className="w-4 h-4" /> إيقاف مؤقت
+              <Button variant="outline" className="flex-1 gap-2" onClick={togglePause}>
+                {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                {isPaused ? "استمرار" : "إيقاف مؤقت"}
               </Button>
               <Button variant="destructive" className="flex-1 gap-2" onClick={abandonSession}>
                 <Square className="w-4 h-4" /> إنهاء
               </Button>
-              <Button className="flex-1 gap-2" onClick={handleComplete} style={{ background: "#38a169" }}>
+              <Button className="flex-1 gap-2 text-white" onClick={handleComplete} style={{ background: "#38a169" }}>
                 <CheckCircle2 className="w-4 h-4" /> مكتمل ✅
               </Button>
             </div>
@@ -217,15 +246,15 @@ export default function FocusPage() {
           <CardContent className="pt-0">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-[#2552ca]">{stats.totalSessions as number}</p>
+                <p className="text-2xl font-bold text-[#2552ca]">{stats.totalSessions as number ?? 0}</p>
                 <p className="text-xs text-muted-foreground">جلسة</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#ad1d7f]">{stats.totalMinutes as number}</p>
+                <p className="text-2xl font-bold text-[#ad1d7f]">{stats.totalMinutes as number ?? 0}</p>
                 <p className="text-xs text-muted-foreground">دقيقة</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-[#fd65c2]">{stats.avgMinutes as number}</p>
+                <p className="text-2xl font-bold text-[#fd65c2]">{stats.avgMinutes as number ?? 0}</p>
                 <p className="text-xs text-muted-foreground">متوسط/جلسة</p>
               </div>
             </div>
