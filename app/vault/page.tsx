@@ -105,7 +105,7 @@ function VaultSkeleton() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function VaultPage() {
-  const { subscriptionType, isLoading: subscriptionLoading } = useSubscription();
+  const { subscriptionType, loading: subscriptionLoading } = useSubscription();
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoadingTeam, setIsLoadingTeam] = useState(false);
@@ -183,7 +183,7 @@ export default function VaultPage() {
       <PageShell>
         <div className="p-6 md:p-8">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <TeamDashboard team={currentTeam} teamMembers={teamMembers} />
+            <TeamDashboard team={currentTeam} teamMembers={teamMembers.map(m => ({ ...m, avatar: m.avatar ?? undefined }))} />
           </motion.div>
         </div>
       </PageShell>

@@ -132,12 +132,12 @@ function AuthForm() {
     }
 
     // Save phone number to profile if provided
-    if (phone) {
+    if (phoneNumber) {
       const { data: { user: newUser } } = await supabase.auth.getUser()
       if (newUser) {
         await supabase
           .from("profiles")
-          .update({ phone_number: phone })
+          .update({ phone_number: phoneNumber })
           .eq("id", newUser.id)
       }
     }
@@ -199,7 +199,7 @@ function AuthForm() {
       {/* Mobile Logo */}
       <div className="lg:hidden text-center mb-8 flex flex-col items-center">
         <div className="mb-4">
-          <BrandLogo width={60} height={60} variant="icon" />
+          <BrandLogo size="md" variant="icon" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">
           {t("ذكرني", "Thakirni")}

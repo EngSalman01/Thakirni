@@ -32,7 +32,7 @@ export function LegacyQRCard() {
             {/* Center logo */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-10 h-10 rounded-lg bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                <BrandLogo width={32} height={32} />
+                <BrandLogo size="sm" />
               </div>
             </div>
           </div>

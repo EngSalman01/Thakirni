@@ -129,7 +129,7 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
 
 export default function TeamPage() {
   const { slug } = useParams() as { slug: string };
-  const { subscriptionType, isLoading: subscriptionLoading } = useSubscription();
+  const { subscriptionType, loading: subscriptionLoading } = useSubscription();
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -153,18 +153,19 @@ export default function TeamPage() {
       if (!user) { router.push("/auth"); return; }
 
       // Fetch team
-      const teamData = await getTeamBySlug(slug) as Team | null;
-      if (!teamData) {
+      const teamData = await getTeamBySlug(slug);
+      if (!teamData || 'error' in teamData) {
         setError(t("لم يتم العثور على الفريق", "Team not found."));
         return;
       }
-      setTeam(teamData);
+      const team = teamData as any;
+      setTeam(team);
 
       // Verify the user is actually a member of this team
       const { data: membership } = await supabase
         .from("team_members")
         .select("id")
-        .eq("team_id", teamData.id)
+        .eq("team_id", team.id)
         .eq("user_id", user.id)
         .single();
 
@@ -177,7 +178,7 @@ export default function TeamPage() {
       const { data: membersData, error: membersError } = await supabase
         .from("team_members")
         .select("user_id, profiles(full_name, avatar_url)")
-        .eq("team_id", teamData.id);
+        .eq("team_id", team.id);
 
       if (membersError) throw membersError;
 
@@ -226,7 +227,7 @@ export default function TeamPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
       >
-        <TeamDashboard team={team} teamMembers={teamMembers} />
+        <TeamDashboard team={team} teamMembers={teamMembers.map(m => ({ ...m, avatar: m.avatar ?? undefined }))} />
       </motion.div>
     </PageShell>
   );

@@ -128,6 +128,8 @@ export function TeamDashboardMain() {
           title: captureInput,
           category: "task",
           status: "pending",
+          priority: "medium",
+          is_recurring: false,
         });
         toast.success("Captured successfully!");
         setCaptureInput("");

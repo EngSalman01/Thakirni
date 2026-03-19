@@ -15,7 +15,7 @@ import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type RecordingState = 'idle' | 'requesting' | 'recording' | 'recorded' | 'saving';
+type RecordingState = 'idle' | 'requesting' | 'recording' | 'recorded' | 'saving' | 'saved';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -307,7 +307,7 @@ export default function VoiceNotePage() {
 
               {/* Post-recording: playback + title + actions */}
               <AnimatePresence>
-                {state === 'recorded' && audioUrl && (
+                {(state === 'recorded' || state === 'saving') && audioUrl && (
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
