@@ -18,13 +18,13 @@ async function createAdminUser() {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as { success: boolean; user?: { id: string; email: string; isAdmin: boolean }; error?: string };
 
     if (response.ok && data.success) {
       console.log('[v0] Admin user created successfully!');
-      console.log('[v0] User ID:', data.user.id);
-      console.log('[v0] Email:', data.user.email);
-      console.log('[v0] Is Admin:', data.user.isAdmin);
+      console.log('[v0] User ID:', data.user?.id);
+      console.log('[v0] Email:', data.user?.email);
+      console.log('[v0] Is Admin:', data.user?.isAdmin);
     } else {
       console.error('[v0] Error:', data.error);
       process.exit(1);

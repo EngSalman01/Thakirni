@@ -1,0 +1,460 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion, Variants } from "framer-motion";
+import { Check, X, Sparkles, User, Zap, Users, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { LandingHeader } from "@/components/thakirni/landing-header";
+import { LandingFooter } from "@/components/thakirni/landing-footer";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/components/language-provider";
+import { Switch } from "@/components/ui/switch";
+import { initializePaddle, Paddle } from "@paddle/paddle-js";
+import { createClient } from "@/lib/supabase/client";
+
+// ── Animation Variants ────────────────────────────────────────────────────────
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type TierId = "free" | "individual" | "team";
+
+interface Feature {
+  ar: string;
+  en: string;
+  included: boolean;
+}
+
+interface PricingTier {
+  id: TierId;
+  nameAr: string;
+  nameEn: string;
+  targetAr: string;
+  targetEn: string;
+  monthlyPrice: number;
+  annualPrice: number;
+  icon: React.ElementType;
+  features: Feature[];
+  ctaAr: string;
+  ctaEn: string;
+  popular: boolean;
+  comingSoon?: boolean;
+  noteSuffixAr?: string;
+  noteSuffixEn?: string;
+}
+
+// ── Paddle Price IDs (set in Vercel env vars) ─────────────────────────────────
+
+const PADDLE_PRICES = {
+  pro: {
+    monthly: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY ?? "",
+    annual: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ANNUAL ?? "",
+  },
+  teams: {
+    monthly: process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY ?? "",
+    annual: process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_ANNUAL ?? "",
+  },
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+
+const pricingTiers: PricingTier[] = [
+  {
+    id: "free",
+    nameAr: "مجاني",
+    nameEn: "Free",
+    targetAr: "للمبتدئين",
+    targetEn: "Get started",
+    monthlyPrice: 0,
+    annualPrice: 0,
+    icon: Zap,
+    features: [
+      { ar: "١٠ خطط يومياً", en: "10 plans per day", included: true },
+      { ar: "٢٥ ذاكرة", en: "25 memories", included: true },
+      { ar: "مشروع واحد", en: "1 project", included: true },
+      { ar: "محادثة AI أساسية", en: "Basic AI chat", included: true },
+      { ar: "تتبع العادات والأهداف", en: "Habit & goal tracking", included: true },
+      { ar: "ملخص الاجتماعات", en: "Meeting summary", included: false },
+      { ar: "تحليل الوثائق", en: "Document AI", included: false },
+    ],
+    ctaAr: "ابدأ مجاناً",
+    ctaEn: "Start Free",
+    popular: false,
+  },
+  {
+    id: "individual",
+    nameAr: "برو",
+    nameEn: "Pro",
+    targetAr: "للمحترفين والمستقلين",
+    targetEn: "Professionals & Freelancers",
+    monthlyPrice: 9,
+    annualPrice: 79,
+    icon: User,
+    features: [
+      { ar: "١٠٠ خطة يومياً", en: "100 plans per day", included: true },
+      { ar: "١٠٠٠ ذاكرة", en: "1,000 memories", included: true },
+      { ar: "١٠ مشاريع", en: "10 projects", included: true },
+      { ar: "٣٠ ملخص اجتماع شهرياً 🎙️", en: "30 meeting summaries/month 🎙️", included: true },
+      { ar: "٥٠ وثيقة بالذكاء الاصطناعي شهرياً", en: "50 document AI/month", included: true },
+      { ar: "٣٠٠ دقيقة تسجيل شهرياً", en: "300 min voice/month", included: true },
+      { ar: "تحليلات وتقارير", en: "Analytics & reports", included: true },
+    ],
+    ctaAr: "اشترك الآن",
+    ctaEn: "Subscribe Now",
+    popular: true,
+  },
+  {
+    id: "team",
+    nameAr: "فرق",
+    nameEn: "Teams",
+    targetAr: "للفرق والمشاريع",
+    targetEn: "Teams & Organizations",
+    monthlyPrice: 19,
+    annualPrice: 159,
+    icon: Users,
+    noteSuffixAr: "لكل مستخدم",
+    noteSuffixEn: "per user",
+    features: [
+      { ar: "كل شيء غير محدود", en: "Everything unlimited", included: true },
+      { ar: "أعضاء فريق غير محدودين", en: "Unlimited team members", included: true },
+      { ar: "مشاريع غير محدودة", en: "Unlimited projects", included: true },
+      { ar: "ملخصات اجتماعات غير محدودة", en: "Unlimited meeting summaries", included: true },
+      { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes", included: true },
+      { ar: "دعم فني ذو أولوية", en: "Priority support", included: true },
+    ],
+    ctaAr: "ابدأ الآن",
+    ctaEn: "Get Started",
+    popular: false,
+  },
+];
+
+// ── Trust Badges ──────────────────────────────────────────────────────────────
+
+const trustBadges = [
+  { ar: "ضمان استرداد ١٤ يوم", en: "14-day money back", icon: Sparkles },
+  { ar: "دعم فني على مدار الساعة", en: "24 / 7 support", icon: User },
+  { ar: "إلغاء في أي وقت", en: "Cancel anytime", icon: X },
+  { ar: "بياناتك آمنة ومحفوظة", en: "Secure data", icon: Shield },
+];
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default function PricingPage() {
+  const { t } = useLanguage();
+  const router = useRouter();
+  const [isAnnual, setIsAnnual] = useState(false);
+  const [isLoading, setIsLoading] = useState<TierId | null>(null);
+  const [paddle, setPaddle] = useState<Paddle | null>(null);
+
+  // ── Init Paddle once on mount ─────────────────────────────────────────────
+
+  useEffect(() => {
+    initializePaddle({
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+      environment: "production", // ← change to "production" when Paddle approves live account
+    }).then((p) => { if (p) setPaddle(p) })
+  }, [])
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  function displayedPrice(tier: PricingTier): string {
+    if (tier.monthlyPrice === 0) return "0"
+    if (isAnnual) return Math.round(tier.annualPrice / 12).toString()
+    return tier.monthlyPrice.toString()
+  }
+
+  function annualSaving(tier: PricingTier): number {
+    return Math.round(100 - (tier.annualPrice / (tier.monthlyPrice * 12)) * 100)
+  }
+
+  function getPriceId(tierId: TierId): string | null {
+    if (tierId === "individual") {
+      return isAnnual ? PADDLE_PRICES.pro.annual : PADDLE_PRICES.pro.monthly
+    }
+    if (tierId === "team") {
+      return isAnnual ? PADDLE_PRICES.teams.annual : PADDLE_PRICES.teams.monthly
+    }
+    return null
+  }
+
+  // ── Subscribe handler ─────────────────────────────────────────────────────
+
+  async function handleSubscribe(tierId: TierId) {
+    if (isLoading) return
+
+    if (tierId === "free") {
+      router.push("/auth")
+      return
+    }
+
+    const priceId = getPriceId(tierId)
+    if (!priceId) {
+      toast.error(t("أضف معرّف السعر في إعدادات Paddle", "Add the price ID in Paddle settings"))
+      return
+    }
+    if (!paddle) {
+      toast.error(t("حدث خطأ، حاول مرة أخرى", "Something went wrong, please try again"))
+      return
+    }
+
+    // Pre-fill checkout with user's email if logged in
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    setIsLoading(tierId)
+    try {
+      await paddle.Checkout.open({
+        items: [{ priceId, quantity: 1 }],
+        customer: user?.email ? { email: user.email } : undefined,
+        customData: {
+          user_id: user?.id ?? "",
+          plan_tier: tierId,
+          billing: isAnnual ? "annual" : "monthly",
+        },
+        settings: {
+          displayMode: "overlay",
+          theme: "dark",
+        },
+      })
+      toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
+      setTimeout(() => router.push("/vault?subscribed=true"), 500)
+    } catch (err) {
+      console.error("[Paddle] Checkout error:", err)
+      toast.error(t("تعذّر فتح نافذة الدفع", "Could not open checkout"))
+    } finally {
+      setIsLoading(null)
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  return (
+    <main className="min-h-screen bg-background">
+      <LandingHeader />
+
+      <section className="pt-32 pb-20 relative overflow-hidden">
+        <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5  rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="container mx-auto px-4 relative z-10">
+
+          {/* ── Header ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-5">
+              {t("خـطط مرنة تناسب طموحك", "Flexible Plans for Your Ambition")}
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
+              {t(
+                "سواء كنت فرداً يريد تنظيم حياته أو فريقاً يبحث عن ذكاء جماعي، لدينا ما يناسبك.",
+                "Whether you're an individual organising your life or a team seeking collective intelligence, we have you covered.",
+              )}
+            </p>
+
+            {/* Billing toggle */}
+            <div className="inline-flex items-center gap-4 bg-muted/50 border border-border rounded-full px-5 py-2.5">
+              <span className={cn("text-sm transition-colors", !isAnnual ? "text-foreground font-medium" : "text-muted-foreground")}>
+                {t("شهري", "Monthly")}
+              </span>
+              <Switch
+                checked={isAnnual}
+                onCheckedChange={setIsAnnual}
+                className="data-[state=checked]:bg-emerald-500"
+              />
+              <span className={cn("text-sm transition-colors flex items-center gap-2", isAnnual ? "text-foreground font-medium" : "text-muted-foreground")}>
+                {t("سنوي", "Yearly")}
+                <span className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium">
+                  {t("وفر ٢٠٪", "Save 20%")}
+                </span>
+              </span>
+            </div>
+          </motion.div>
+
+          {/* ── Cards ── */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch"
+          >
+            {pricingTiers.map((tier) => (
+              <motion.div key={tier.id} variants={cardVariants} className="h-full">
+                <Card className={cn(
+                  "relative h-full flex flex-col transition-all duration-300 border overflow-hidden rounded-2xl",
+                  tier.popular
+                    ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-2xl shadow-emerald-500/15 lg:scale-105"
+                    : "border-border hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
+                )}>
+
+                  {/* Coming Soon Overlay */}
+                  {tier.comingSoon && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
+                      <div className="bg-muted border border-border rounded-xl px-6 py-5 text-center shadow-xl">
+                        <p className="text-lg font-bold text-foreground mb-1">{t("قريباً", "Coming Soon")}</p>
+                        <p className="text-sm text-muted-foreground">{t("قيد التطوير", "Under development")}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Popular Badge */}
+                  {tier.popular && (
+                    <div className="absolute -top-px inset-x-0 flex justify-center">
+                      <div className="bg-emerald-500 text-white px-4 py-1 rounded-b-full text-xs font-semibold flex items-center gap-1 shadow-md">
+                        <Sparkles className="w-3 h-3" />
+                        {t("الأكثر شعبية", "Most Popular")}
+                      </div>
+                    </div>
+                  )}
+
+                  <CardHeader className={cn("pb-4 pt-8 px-6", tier.comingSoon && "opacity-40")}>
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <CardTitle className="text-xl font-bold text-foreground mb-1">
+                          {t(tier.nameAr, tier.nameEn)}
+                        </CardTitle>
+                        <CardDescription>{t(tier.targetAr, tier.targetEn)}</CardDescription>
+                      </div>
+                      <div className={cn(
+                        "p-2 rounded-lg",
+                        tier.popular
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "bg-muted text-muted-foreground",
+                      )}>
+                        <tier.icon className="w-5 h-5" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-baseline gap-1 flex-wrap">
+                      <span className="text-4xl font-bold text-foreground tabular-nums">
+                        {displayedPrice(tier)}
+                      </span>
+                      <span className="text-emerald-600 dark:text-emerald-400 text-lg font-semibold">
+                        {t("ر.س", "SAR")}
+                      </span>
+                      <span className="text-muted-foreground text-sm ms-1">
+                        / {t("شهر", "month")}
+                      </span>
+                    </div>
+
+                    <div className="min-h-[1.25rem] mt-1">
+                      {isAnnual && tier.monthlyPrice > 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          {t(`يُفوتر ${tier.annualPrice} ر.س سنوياً`, `Billed ${tier.annualPrice} SAR / year`)}
+                          {" · "}
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                            {t(`وفر ${annualSaving(tier)}٪`, `Save ${annualSaving(tier)}%`)}
+                          </span>
+                        </p>
+                      ) : tier.noteSuffixEn ? (
+                        <p className="text-xs text-muted-foreground">
+                          {t(tier.noteSuffixAr ?? "", tier.noteSuffixEn)}
+                        </p>
+                      ) : null}
+                    </div>
+                  </CardHeader>
+
+                  <div className={cn("flex flex-col flex-1", tier.comingSoon && "opacity-40 pointer-events-none")}>
+                    <CardContent className="flex-1 px-6 pt-2">
+                      <div className="w-full h-px bg-border mb-5" />
+                      <ul className="space-y-3.5">
+                        {tier.features.map((feature, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                            {feature.included ? (
+                              <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                              </div>
+                            ) : (
+                              <div className="mt-0.5 w-5 h-5 flex items-center justify-center shrink-0">
+                                <X className="w-4 h-4 text-muted-foreground/40" />
+                              </div>
+                            )}
+                            <span className={cn(
+                              "text-sm leading-snug",
+                              feature.included ? "text-foreground/90" : "text-muted-foreground/60",
+                            )}>
+                              {t(feature.ar, feature.en)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+
+                    <CardFooter className="px-6 pb-7 pt-5">
+                      <Button
+                        className={cn(
+                          "w-full h-11 text-sm font-medium rounded-xl transition-all duration-200",
+                          tier.popular
+                            ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                            : tier.id === "free"
+                              ? "variant-secondary"
+                              : "bg-primary text-primary-foreground hover:bg-primary/90",
+                        )}
+                        disabled={!!tier.comingSoon || isLoading === tier.id}
+                        onClick={() => handleSubscribe(tier.id)}
+                        variant={tier.popular || tier.id === "team" ? "default" : "secondary"}
+                      >
+                        {isLoading === tier.id ? (
+                          <span className="flex items-center gap-2">
+                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            {t("جاري...", "Loading...")}
+                          </span>
+                        ) : (
+                          t(tier.ctaAr, tier.ctaEn)
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* ── Trust badges ── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.7 }}
+            className="mt-20 border-t border-border pt-10"
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center max-w-3xl mx-auto">
+              {trustBadges.map((item, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 text-muted-foreground">
+                  <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center mb-1">
+                    <item.icon className="w-4 h-4 text-emerald-500" />
+                  </div>
+                  <span className="text-xs font-medium leading-snug">{t(item.ar, item.en)}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+        </div>
+      </section>
+
+      <LandingFooter />
+    </main>
+  );
+}
