@@ -11,15 +11,15 @@ const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
 // ─── Time helpers ─────────────────────────────────────────────────────────────
 
 function getSaudiTime() {
-  const now  = new Date()
-  const tz   = "Asia/Riyadh"
-  const fmt  = (opts: Intl.DateTimeFormatOptions) =>
+  const now = new Date()
+  const tz = "Asia/Riyadh"
+  const fmt = (opts: Intl.DateTimeFormatOptions) =>
     now.toLocaleString("en-CA", { timeZone: tz, ...opts })
 
-  const currentDate    = fmt({ year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-")
-  const currentTime    = now.toLocaleTimeString("en-GB", { timeZone: tz, hour12: false }).slice(0, 5)
-  const currentDayName = now.toLocaleDateString("en-US",  { timeZone: tz, weekday: "long" })
-  const currentHour    = parseInt(now.toLocaleTimeString("en-GB", { timeZone: tz, hour12: false }).slice(0, 2))
+  const currentDate = fmt({ year: "numeric", month: "2-digit", day: "2-digit" }).replace(/\//g, "-")
+  const currentTime = now.toLocaleTimeString("en-GB", { timeZone: tz, hour12: false }).slice(0, 5)
+  const currentDayName = now.toLocaleDateString("en-US", { timeZone: tz, weekday: "long" })
+  const currentHour = parseInt(now.toLocaleTimeString("en-GB", { timeZone: tz, hour12: false }).slice(0, 2))
 
   const addDays = (d: number) => {
     const dt = new Date(now)
@@ -29,8 +29,8 @@ function getSaudiTime() {
 
   const timeOfDay: "morning" | "afternoon" | "evening" | "night" =
     currentHour < 12 ? "morning" :
-    currentHour < 17 ? "afternoon" :
-    currentHour < 21 ? "evening" : "night"
+      currentHour < 17 ? "afternoon" :
+        currentHour < 21 ? "evening" : "night"
 
   return { now, currentDate, currentTime, currentDayName, currentHour, timeOfDay, addDays }
 }
@@ -48,41 +48,62 @@ function detectLanguage(messages: unknown[]): "ar" | "en" {
   return "en"
 }
 
+// ─── Classify intent to help the model know its mode ─────────────────────────
+
+function classifyIntent(messages: unknown[]): "task" | "chat" | "question" | "correction" {
+  const last = (messages as Array<{ role: string; content: unknown }>)
+    .filter(m => m.role === "user")
+    .slice(-1)[0]
+  if (!last) return "chat"
+
+  const text = (typeof last.content === "string" ? last.content : JSON.stringify(last.content)).toLowerCase()
+
+  // Correction signals
+  if (/no[,\s]|wrong|mistake|not right|that's not|incorrect|لا |مو صح|غلط|مو كذا/.test(text)) return "correction"
+
+  // Task signals
+  if (/remind|schedule|add|create|cancel|delete|move|update|meeting|task|appointment|اضف|ذكرني|حدد|اجتماع|موعد|احذف|عدّل/.test(text)) return "task"
+
+  // Question signals — treat as pure chat/knowledge mode
+  if (/what|how|why|who|when|where|explain|tell me|define|هو ايش|ايش|كيف|ليش|وين|متى|وش/.test(text)) return "question"
+
+  return "chat"
+}
+
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
 
-    const supabase        = await createClient()
+    const supabase = await createClient()
     const serviceSupabase = createServiceClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     const { currentDate, currentTime, currentDayName, currentHour, timeOfDay, addDays } = getSaudiTime()
 
     const dayMap = {
-      today:              currentDate,
-      tomorrow:           addDays(1),
-      yesterday:          addDays(-1),
+      today: currentDate,
+      tomorrow: addDays(1),
+      yesterday: addDays(-1),
       "day after tomorrow": addDays(2),
-      "next week":        addDays(7),
+      "next week": addDays(7),
     }
 
     const detectedLang = detectLanguage(messages)
-    const langInstruction = detectedLang === "ar"
-      ? "⚠️ إلزامي: المستخدم يكتب بالعربي. ردّ بالعربي فقط — باللهجة السعودية العامية (الخليجية). لا تستخدم الفصحى الرسمية ولا تخلط مع الإنجليزي أبداً. أمثلة صح: 'وش تبي؟' / 'زين' / 'عال العال' / 'تمام' / 'ماشي' / 'خلني أشوف' / 'إن شاء الله'. أمثلة غلط: 'كيف يمكنني مساعدتك؟' / 'بالتأكيد' / 'حسناً'."
-      : "⚠️ MANDATORY: The user is writing in ENGLISH. You MUST reply in English only. Never switch to Arabic."
+    const intent = classifyIntent(messages)
 
-    // ── Load user context in parallel ──────────────────────────────────────────
-    let factsBlock  = ""
-    let todayBlock  = ""
+    const langInstruction = detectedLang === "ar"
+      ? "⚠️ إلزامي: المستخدم يكتب بالعربي. ردّ بالعربي فقط — باللهجة السعودية الخليجية. لا فصحى، لا إنجليزي."
+      : "⚠️ MANDATORY: User is writing in English. Reply in English only. Never switch to Arabic."
+
+    // ── Load user context in parallel ─────────────────────────────────────────
+    let factsBlock = ""
+    let todayBlock = ""
     let profileName = ""
-    let profileLang: "ar" | "en" = "ar"
 
     if (user) {
       const [factsRes, plansRes, profileRes] = await Promise.all([
-
-        // Stored personal facts (service role — bypasses RLS)
         serviceSupabase
           .from("user_facts")
           .select("fact, category")
@@ -90,7 +111,6 @@ export async function POST(req: Request) {
           .order("created_at", { ascending: false })
           .limit(40),
 
-        // Today's pending plans — pre-loaded so greeting needs no tool call
         supabase
           .from("plans")
           .select("title, plan_time, end_time, category, location, priority, status")
@@ -100,7 +120,6 @@ export async function POST(req: Request) {
           .order("plan_time", { ascending: true, nullsFirst: false })
           .limit(20),
 
-        // Profile
         supabase
           .from("profiles")
           .select("full_name, preferred_language")
@@ -109,22 +128,20 @@ export async function POST(req: Request) {
       ])
 
       profileName = profileRes.data?.full_name ?? ""
-      profileLang = (profileRes.data?.preferred_language as "ar" | "en") ?? "ar"
-
       factsBlock = formatFactsBlock(factsRes.data ?? [])
       todayBlock = formatTodayBlock(plansRes.data ?? [], currentDate)
     }
 
     const hijriDate = getHijriDate()
 
-    // ── Persist incoming user message (fire-and-forget) ─────────────────────
+    // ── Persist user message (fire-and-forget) ────────────────────────────────
     const lastUserMessage = messages[messages.length - 1]
     if (user && lastUserMessage?.role === "user") {
       serviceSupabase
         .from("conversations")
         .insert({
           user_id: user.id,
-          role:    "user",
+          role: "user",
           content: typeof lastUserMessage.content === "string"
             ? lastUserMessage.content
             : JSON.stringify(lastUserMessage.content),
@@ -135,7 +152,7 @@ export async function POST(req: Request) {
 
     // ── Stream ────────────────────────────────────────────────────────────────
     const result = streamText({
-      model:    groq("llama-3.3-70b-versatile"),
+      model: groq("llama-3.3-70b-versatile"),
       maxSteps: 15,
       messages: convertToCoreMessages(messages),
 
@@ -144,7 +161,7 @@ export async function POST(req: Request) {
         try {
           await serviceSupabase.from("conversations").insert({
             user_id: user.id,
-            role:    "assistant",
+            role: "assistant",
             content: text,
           })
         } catch (err) {
@@ -154,200 +171,198 @@ export async function POST(req: Request) {
 
       system: `
 ${langInstruction}
+Current detected intent: ${intent}
 
-You are Thakirni (ذكرني) — a personal assistant, second brain, and trusted companion. You remember everything, learn from every conversation, and get smarter over time.
+You are Thakirni (ذكرني).
 ${profileName ? `The user's name is ${profileName}.` : ""}
 
-━━━━━━━━━━━━━━━━━━━━━━━━
-🕒 NOW  (Riyadh / Saudi Arabia)
-  Date : ${currentDate} (${currentDayName})
-  Hijri: ${hijriDate}
-  Time : ${currentTime} (${timeOfDay})
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
+🕒 Riyadh  ${currentDate} (${currentDayName}) · ${currentTime} · ${timeOfDay}
+Hijri: ${hijriDate}
+━━━━━━━━━━━━━━━━━━━━
 ${todayBlock}
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 ${factsBlock}
-━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
-════════════════════════
-1. WHO YOU ARE
-════════════════════════
-You are a close, trusted friend who also happens to be perfectly organised and deeply knowledgeable.
-You have a memory — everything in "WHAT I KNOW ABOUT YOU" above is yours to use naturally in conversation.
-Reference it like a friend would: "أذكر إنك قلت..." / "didn't you mention..." — never like a robot reading a database.
 
-Tone (Arabic): Saudi/Gulf colloquial ONLY.
-  ✅ "هلا والله!" / "وش صاير؟" / "زين" / "عال العال" / "ماشي" / "خلني أشوف" / "تبي" / "قاعد" / "راح" / "وين كنت؟"
-  ❌ NEVER: "بالتأكيد" / "حسناً" / "كيف يمكنني مساعدتك؟" / "هل تريد أن..." / "يُرجى" / "لقد قمت بـ"
-  Keep it short — like a WhatsApp message, not a formal email.
+════════════════════════════════════
+WHO YOU ARE
+════════════════════════════════════
 
-Tone (English): Warm, natural, casual. Like a smart friend, not a corporate chatbot.
-  ✅ "sure!" / "got it" / "makes sense" / "let me check" / "sounds good"
-  ❌ NEVER: "Certainly!" / "Of course!" / "How may I assist you today?"
+You are the user's closest, most trusted friend — someone who is incredibly smart, deeply organised,
+remembers everything, and genuinely cares about them. You are NOT a corporate assistant.
+You are NOT a command-executor. You are a PERSON the user can talk to about anything.
 
-The ⚠️ language rule at the top is absolute — never mix languages in one reply.
-Use emojis sparingly and only when they feel natural.
+Think of yourself as the intersection of:
+  • A brilliant, knowledgeable friend (like Claude or ChatGPT) for questions and conversation
+  • A personal chief-of-staff who handles their calendar and second brain
+  • Someone who has known them for years and remembers every detail they've shared
 
-════════════════════════
-2. CONVERSATION FIRST — ALWAYS
-════════════════════════
-🚨 CRITICAL: You are a CONVERSATIONALIST, not a command executor.
+You have TWO modes that you switch between naturally:
 
-When someone mentions an event, task, or meeting — DO NOT add it immediately.
-Instead, have a brief, natural conversation to understand what they actually need.
+┌─────────────────────────────────────────────────────────────┐
+│ MODE 1: CONVERSATION (current intent: ${intent})            │
+│                                                             │
+│ If the user is just chatting, asking a question, venting,  │
+│ or exploring ideas — BE A CONVERSATIONALIST.               │
+│                                                             │
+│ • Answer questions like a smart, curious friend            │
+│ • Give opinions, make jokes, be real                       │
+│ • Do NOT force tasks or tools into every message           │
+│ • Do NOT ask "would you like me to add that to your         │
+│   calendar?" after every single thing they say             │
+│ • Match their energy — if they're relaxed, be relaxed      │
+│                                                             │
+│ MODE 2: ASSISTANT (when they clearly want action)          │
+│                                                             │
+│ If the user says "remind me", "add", "schedule", "what's   │
+│ on my calendar" — switch to assistant mode and use tools.  │
+└─────────────────────────────────────────────────────────────┘
 
-MEETING example:
-  User: "عندي اجتماع الأحد"
-  ❌ WRONG: [immediately calls create_plan]
-  ✅ RIGHT: "وش اجتماع؟ مع مين، وين، وكم الساعة؟" — ask naturally, wait for answers, THEN add it.
 
-TASK example:
-  User: "I need to call Ahmed"
-  ❌ WRONG: [immediately creates task]
-  ✅ RIGHT: "Sure — want me to add that as a reminder? When do you need to call him?"
+════════════════════════════════════
+LANGUAGE & TONE
+════════════════════════════════════
 
-RULE: For ANY create/update/delete action — ask at least ONE clarifying question first
-unless the user has already given you every detail in one message (title + date + time + location for meetings).
+Arabic tone — Saudi/Gulf colloquial ONLY:
+  ✅ "هلا!" / "وش صاير؟" / "زين" / "عال" / "ماشي" / "خلني أشوف" / "أيه والله" / "صح" / "تمام"
+  ❌ NEVER: "بالتأكيد" / "حسناً" / "كيف يمكنني مساعدتك؟" / "يُرجى" / "لقد قمت بـ"
 
-Required info before create_plan:
-  📅 Meeting : title + date + time + location  (ask for each one missing — ONE question at a time)
-  ✅ Task     : title (date defaults today, but ask "by when?" if it seems time-sensitive)
+English tone — warm, casual, zero corporate speak:
+  ✅ "yeah!" / "totally" / "makes sense" / "ooh good point" / "honestly..." / "hmm let me think"
+  ❌ NEVER: "Certainly!" / "Of course!" / "I'd be happy to assist!" / "As an AI language model"
+
+Keep messages SHORT. Think WhatsApp, not email. One idea per message.
+Use emojis only when they genuinely fit — not to pad every message.
+Never start a reply with the user's name unless it feels natural.
+
+
+════════════════════════════════════
+HANDLING MISTAKES & CORRECTIONS
+════════════════════════════════════
+
+When the user corrects you or says you got something wrong:
+  1. Acknowledge it honestly — "you're right, my bad" / "صح، غلطت"
+  2. Fix the answer immediately without over-apologising
+  3. If the correction reveals a fact about them → call store_fact silently to update it
+  4. If you stored something wrong earlier → call store_fact with the corrected info
+
+When YOU are unsure about something:
+  • Say so honestly: "honestly not 100% sure on that one" / "مو واثق ١٠٠٪"
+  • Don't make up facts. It's better to admit uncertainty than to be confidently wrong.
+  • For very recent events or news → tell them you don't have live internet access
+
+When a tool call fails or returns an error:
+  • Tell the user simply: "something went wrong on my end, try again?" — don't show raw errors
+  • Log the error internally but present it calmly
+
+
+════════════════════════════════════
+LEARNING ABOUT THE USER (Your superpower)
+════════════════════════════════════
+
+You get smarter about the user with every single message. This is what makes you different.
+
+ALWAYS extract and silently store facts when the user reveals:
+  → Their job, team, manager, company
+  → Family members, relationships, names
+  → Goals, habits, preferences, hobbies
+  → Health info, location, financial habits
+  → Anything personal that comes up naturally
+
+Rules for store_fact:
+  • SILENT. Never say "I've noted that" or "I'll remember that". Just do it.
+  • Avoid duplicates — check the WHAT I KNOW section above first
+  • One fact per call, keep it concise: "Works at Saudi Aramco as a software engineer"
+  • When the user corrects a fact → store the corrected version
+
+USE what you know:
+  • Reference it like a friend would: "أذكر إنك ذكرت..." / "wait, didn't you say..."
+  • Connect the dots: "that's the second time this week you mentioned being tired — you ok?"
+  • Bring it up when it's genuinely relevant, not every message
+
+
+════════════════════════════════════
+DAILY BRIEFING (on greeting)
+════════════════════════════════════
+
+When the user says hello/good morning/etc with no specific task:
+  • Use the TODAY'S SCHEDULE already loaded above — do NOT call list_plans
+  • Give a warm, SHORT briefing like a friend would
+  • Weave in something personal if you know something about them
+  • Arabic: "هلا! عندك اليوم ٢ مواعيد — أهمها اجتماع الساعة ٣. كيف حالك؟"
+  • English: "hey! you've got 2 things today — main one's your 3pm meeting. how you doing?"
+  • If nothing is scheduled: "ما عندك شي اليوم، استرح 😄" / "clear day today, nice"
+
+
+════════════════════════════════════
+TASK / PLANNING RULES
+════════════════════════════════════
+
+COLLECT FIRST, ACT ONCE — never call a write tool until you have all required fields.
+Ask for ONE missing piece at a time, conversationally.
+
+Required before create_plan:
+  📅 Meeting : title + date + time + location
+  ✅ Task    : title (date defaults today unless time-sensitive)
   🛒 Grocery : items list
 
-After you have all the info, confirm with the user before creating:
-  "تمام، أضيفه الأحد الساعة ١٠ في المكتب؟" / "Got it — I'll add: [summary]. Sound right?"
-  Only proceed after they say yes/confirm.
+After collecting, confirm naturally THEN call the tool:
+  "تمام، أضيفه الأحد الساعة ٣ في المكتب؟" → wait for yes → create_plan
 
-════════════════════════
-3. LEARNING & MEMORY (Your superpower)
-════════════════════════
-You learn something new about the user in EVERY conversation. This is how you get better over time.
+Date defaults (only after confirming):
+  "at 5" afternoon/evening → 17:00 | morning → 05:00
+  No end time → start + 1 hour
+  "tomorrow" → ${dayMap.tomorrow}
+  "next week" → ${dayMap["next week"]}
+  "this weekend" → ${addDays(6 - new Date(currentDate).getDay())}
 
-A) Extract & store personal facts SILENTLY (NEVER announce it):
-   → Any time the user reveals something about themselves: job, family, preferences, habits, location,
-     health, goals, relationships — call store_fact immediately.
-   → Use the context above ("WHAT I KNOW ABOUT YOU") to avoid saving duplicates.
-   → When you already know something, reference it naturally to show you remember.
-   → Example: user says "I'm meeting my manager Khalid" → store_fact: "Manager's name is Khalid"
+After a write action: confirm in plain language. Do NOT call list_plans to verify.
+One tool per step. No duplicate calls.
 
-B) Save important notes & info to Second Brain:
-   → Passwords, ideas, quotes, important numbers, birthdays → call save_memory with good tags.
-   → Briefly confirm: "حفظت" / "Saved to your second brain ✓"
 
-C) Use what you know:
-   → If the user mentions something you already have stored, acknowledge it:
-     "آه، Khalid مديرك — زين"
-   → Connect dots across conversations: "هذا ثاني اجتماع مع الفريق هالأسبوع، شكل مشغول 😄"
-   → Ask thoughtful follow-ups based on what you know about them.
-
-D) For sensitive info (IDs, passwords, financial details): call BOTH store_fact AND save_memory.
-
-════════════════════════
-4. DAILY BRIEFINGS
-════════════════════════
-When user greets you (no specific task): give a warm overview using TODAY'S SCHEDULE above.
-Do NOT call list_plans — it's already loaded. Mention the count, highlight the most important item.
-Arabic: "عندك اليوم ٣ مواعيد..." / "ما عندك شي اليوم، استرح 😄"
-
-If you know something about them (from WHAT I KNOW), weave it in naturally:
-  "صباح الخير! عندك اليوم اجتماع مع Khalid الساعة ٢ — اتوقع مشغول اليوم 😄"
-
-════════════════════════
-5. DATE / TIME DEFAULTS (only when info is confirmed)
-════════════════════════
-- "at 5" → 17:00 in afternoon/evening, 05:00 in morning
-- No end time → start + 1 hour
-- "tomorrow" → ${dayMap.tomorrow}
-- "next week" → ${dayMap["next week"]}
-- "this weekend" → ${addDays(6 - new Date(currentDate).getDay())}
-NOTE: Only apply these AFTER confirming with the user. Never assume and silently create.
-
-════════════════════════
-6. TOOL RULES
-════════════════════════
-For plan creation — follow this sequence:
-  1. Collect missing info through conversation (one question at a time)
-  2. Once you have everything, call preview_plan — this is invisible to the user, it just prepares the data
-  3. In the SAME response as preview_plan, write a natural confirmation message to the user:
-     Arabic: "تمام، أضيف [title] يوم [date] الساعة [time] في [location]؟"
-     English: "Got it — shall I add [title] on [date] at [time]?"
-  4. Wait for user to say yes / تمام / ماشي / أضفه / confirm
-  5. ONLY THEN call create_plan
-
-- NEVER call preview_plan on normal conversation messages — ONLY when about to create a plan.
-- NEVER call create_plan without first calling preview_plan in the previous step.
-- After create_plan succeeds: confirm warmly. Don't call list_plans to verify.
-- store_fact: ALWAYS silent — never mention it to the user.
-- One tool per step. No duplicate calls.
-
-════════════════════════
-7. TOOL REFERENCE
-════════════════════════
-preview_plan     → show a confirmation card to user BEFORE saving (always use this first)
-create_plan      → save to database — ONLY after user confirms the preview
-update_plan      → modify an existing plan (use list_plans first to get the ID)
-delete_plan      → remove a plan (use list_plans first to get the ID)
-mark_done        → mark a task/plan complete
-list_plans       → retrieve schedule (date_filter: today/tomorrow/this_week/upcoming/all)
-search_plans     → search plans by keyword or free text
-save_memory      → save note/fact/idea to Second Brain (visible in vault)
-search_memories  → search Second Brain by keyword or tag
-store_fact       → silently learn a personal fact about the user
-get_my_facts     → show user what you know about them
-get_timeline     → show life timeline (days_back: 7=week, 30=month)
-set_reminder     → schedule a WhatsApp or push notification for a plan
+════════════════════════════════════
+TOOL REFERENCE
+════════════════════════════════════
+create_plan     → schedule events, tasks, meetings, shopping lists
+update_plan     → modify an existing plan (use list_plans first for the ID)
+delete_plan     → remove a plan (use list_plans first for the ID)
+mark_done       → mark a task/plan complete
+list_plans      → retrieve schedule (today/tomorrow/this_week/upcoming/all)
+search_plans    → search plans by keyword
+save_memory     → save note/fact/idea to Second Brain (shows in vault)
+search_memories → search Second Brain
+store_fact      → SILENTLY learn a personal fact about the user
+get_my_facts    → show user what you know about them
+get_timeline    → life timeline (days_back: 7=week, 30=month)
+set_reminder    → schedule a WhatsApp or push notification
 `,
 
       tools: {
 
-        // ── PREVIEW PLAN (confirmation step — no DB write) ─────────────────────
-        preview_plan: tool({
-          description:
-            "Prepare a plan draft before saving. Call this ONLY when you have all required info " +
-            "and are ready to create a plan. Does NOT save to database. " +
-            "After calling this, ask the user to confirm in your text response, then wait for their yes.",
-          parameters: z.object({
-            title:      z.string(),
-            plan_date:  z.string().describe("YYYY-MM-DD"),
-            plan_time:  z.string().optional().describe("HH:MM"),
-            end_time:   z.string().optional(),
-            location:   z.string().optional(),
-            attendees:  z.array(z.string()).optional(),
-            category:   z.enum(["task","meeting","grocery","work","personal","health","finance","other"]),
-            priority:   z.enum(["low","medium","high"]).optional(),
-          }),
-          execute: async (input) => {
-            return {
-              preview: true,
-              ...input,
-              message: "Preview ready — waiting for user confirmation.",
-            }
-          },
-        }),
-
         // ── CREATE PLAN ────────────────────────────────────────────────────────
         create_plan: tool({
           description:
-            "Save a plan to the database. ONLY call this after preview_plan was shown " +
-            "AND the user explicitly confirmed (said yes/تمام/ماشي/confirm/أضفه).",
+            "Create a calendar event, meeting, task, or shopping list. " +
+            "Only call this when ALL required fields have been collected AND user has confirmed.",
           parameters: z.object({
-            title:       z.string().describe("Short, clear title"),
+            title: z.string().describe("Short, clear title"),
             description: z.string().optional().describe("Details, agenda, or notes"),
-            plan_date:   z.string().describe(`Date (YYYY-MM-DD). Today = ${currentDate}`),
-            plan_time:   z.string().optional().describe("Start time (HH:MM). Required for meetings."),
-            end_time:    z.string().optional().describe("End time (HH:MM). Default: start + 1 hour."),
-            is_all_day:  z.boolean().optional().describe("True for birthdays, holidays, all-day events."),
-            location:    z.string().optional().describe("Address, 'Online', or 'TBD'"),
-            attendees:   z.array(z.string()).optional().describe("Names or emails"),
-            category:    z.enum(["task","meeting","grocery","work","personal","health","finance","other"])
-                          .describe("Auto-detect from context"),
-            priority:    z.enum(["low","medium","high"]).optional().default("medium"),
-            recurrence:  z.enum(["none","daily","weekly","monthly","yearly"]).optional().default("none"),
+            plan_date: z.string().describe(`Date (YYYY-MM-DD). Today = ${currentDate}`),
+            plan_time: z.string().optional().describe("Start time (HH:MM). Required for meetings."),
+            end_time: z.string().optional().describe("End time (HH:MM). Default: start + 1 hour."),
+            is_all_day: z.boolean().optional().describe("True for birthdays, holidays, all-day events."),
+            location: z.string().optional().describe("Address, 'Online', or 'TBD'"),
+            attendees: z.array(z.string()).optional().describe("Names or emails"),
+            category: z.enum(["task", "meeting", "grocery", "work", "personal", "health", "finance", "other"])
+              .describe("Auto-detect from context"),
+            priority: z.enum(["low", "medium", "high"]).optional().default("medium"),
+            recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).optional().default("none"),
           }),
           execute: async (input) => {
             if (!user) return { success: false, message: "Login required" }
 
-            // Auto-calculate end time
             let endTime = input.end_time
             if (input.plan_time && !endTime) {
               const [h, m] = input.plan_time.split(":").map(Number)
@@ -357,19 +372,19 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
             const { data, error } = await supabase
               .from("plans")
               .insert({
-                user_id:     user.id,
-                title:       input.title,
+                user_id: user.id,
+                title: input.title,
                 description: input.description ?? null,
-                plan_date:   input.plan_date,
-                plan_time:   input.plan_time ?? null,
-                end_time:    endTime ?? null,
-                location:    input.location ?? null,
-                attendees:   input.attendees ?? [],
-                category:    input.category,
-                priority:    input.priority ?? "medium",
-                recurrence:  input.recurrence ?? "none",
-                is_all_day:  input.is_all_day ?? false,
-                status:      "pending",
+                plan_date: input.plan_date,
+                plan_time: input.plan_time ?? null,
+                end_time: endTime ?? null,
+                location: input.location ?? null,
+                attendees: input.attendees ?? [],
+                category: input.category,
+                priority: input.priority ?? "medium",
+                recurrence: input.recurrence ?? "none",
+                is_all_day: input.is_all_day ?? false,
+                status: "pending",
               })
               .select()
               .single()
@@ -378,13 +393,13 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
 
             // Auto-log to timeline
             serviceSupabase.from("timeline_events").insert({
-              user_id:     user.id,
-              title:       `Scheduled: ${input.title}`,
-              event_date:  input.plan_date,
+              user_id: user.id,
+              title: `Scheduled: ${input.title}`,
+              event_date: input.plan_date,
               source_type: "plan_created",
-              source_id:   data.id,
-              importance:  input.priority === "high" ? 3 : input.priority === "medium" ? 2 : 1,
-            }).then(undefined, () => {})
+              source_id: data.id,
+              importance: input.priority === "high" ? 3 : input.priority === "medium" ? 2 : 1,
+            }).then(undefined, () => { })
 
             return {
               success: true,
@@ -398,17 +413,17 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
         update_plan: tool({
           description: "Update fields on an existing plan. Use list_plans first to get the plan_id.",
           parameters: z.object({
-            plan_id:     z.string().describe("UUID of the plan"),
-            title:       z.string().optional(),
+            plan_id: z.string().describe("UUID of the plan"),
+            title: z.string().optional(),
             description: z.string().optional(),
-            plan_date:   z.string().optional(),
-            plan_time:   z.string().optional(),
-            end_time:    z.string().optional(),
-            location:    z.string().optional(),
-            attendees:   z.array(z.string()).optional(),
-            priority:    z.enum(["low","medium","high"]).optional(),
-            recurrence:  z.enum(["none","daily","weekly","monthly","yearly"]).optional(),
-            status:      z.enum(["pending","done","cancelled"]).optional(),
+            plan_date: z.string().optional(),
+            plan_time: z.string().optional(),
+            end_time: z.string().optional(),
+            location: z.string().optional(),
+            attendees: z.array(z.string()).optional(),
+            priority: z.enum(["low", "medium", "high"]).optional(),
+            recurrence: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).optional(),
+            status: z.enum(["pending", "done", "cancelled"]).optional(),
           }),
           execute: async (input) => {
             if (!user) return { success: false, message: "Login required" }
@@ -449,15 +464,14 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
         // ── LIST PLANS ─────────────────────────────────────────────────────────
         list_plans: tool({
           description:
-            "Retrieve the user's schedule. Use for searching for a specific plan before " +
-            "updating/deleting, or when asked to list plans for a non-today date. " +
-            "Today's plans are already in the system prompt — no need to call this for today's briefing.",
+            "Retrieve the user's schedule. Use when searching for a plan before updating/deleting, " +
+            "or for non-today dates. Today's plans are already in the system prompt.",
           parameters: z.object({
-            date_filter: z.enum(["today","tomorrow","this_week","upcoming","all"]),
-            category:    z.enum(["task","meeting","grocery","work","personal","health","finance","other","all"])
-                          .optional().default("all"),
-            status:      z.enum(["pending","done","cancelled","all"])
-                          .optional().default("pending"),
+            date_filter: z.enum(["today", "tomorrow", "this_week", "upcoming", "all"]),
+            category: z.enum(["task", "meeting", "grocery", "work", "personal", "health", "finance", "other", "all"])
+              .optional().default("all"),
+            status: z.enum(["pending", "done", "cancelled", "all"])
+              .optional().default("pending"),
           }),
           execute: async ({ date_filter, category, status }) => {
             if (!user) return { success: false, message: "Login required", plans: [] }
@@ -466,16 +480,16 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
               .from("plans")
               .select("*")
               .eq("user_id", user.id)
-              .order("plan_date",  { ascending: true })
-              .order("plan_time",  { ascending: true, nullsFirst: false })
+              .order("plan_date", { ascending: true })
+              .order("plan_time", { ascending: true, nullsFirst: false })
 
-            if (date_filter === "today")      query = query.eq("plan_date", currentDate)
+            if (date_filter === "today") query = query.eq("plan_date", currentDate)
             else if (date_filter === "tomorrow") query = query.eq("plan_date", addDays(1))
             else if (date_filter === "this_week") query = query.gte("plan_date", currentDate).lte("plan_date", addDays(7))
-            else if (date_filter === "upcoming")  query = query.gte("plan_date", currentDate)
+            else if (date_filter === "upcoming") query = query.gte("plan_date", currentDate)
 
             if (category && category !== "all") query = query.eq("category", category)
-            if (status   && status   !== "all") query = query.eq("status",   status)
+            if (status && status !== "all") query = query.eq("status", status)
 
             const { data, error } = await query.limit(50)
             if (error) return { success: false, message: error.message, plans: [] }
@@ -487,12 +501,12 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
         search_plans: tool({
           description:
             "Search plans by keyword, title, location, or description. " +
-            "Use when user asks 'find my meeting with Ahmed', 'do I have anything about X', etc.",
+            "Use when user asks 'find my meeting with Ahmed', 'do I have anything about X'.",
           parameters: z.object({
-            query:    z.string().describe("Search keyword or phrase"),
-            category: z.enum(["task","meeting","grocery","work","personal","health","finance","other","all"])
-                        .optional().default("all"),
-            status:   z.enum(["pending","done","cancelled","all"]).optional().default("all"),
+            query: z.string().describe("Search keyword or phrase"),
+            category: z.enum(["task", "meeting", "grocery", "work", "personal", "health", "finance", "other", "all"])
+              .optional().default("all"),
+            status: z.enum(["pending", "done", "cancelled", "all"]).optional().default("all"),
           }),
           execute: async ({ query, category, status }) => {
             if (!user) return { success: false, message: "Login required", plans: [] }
@@ -506,7 +520,7 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
               .limit(20)
 
             if (category && category !== "all") dbQuery = dbQuery.eq("category", category)
-            if (status   && status   !== "all") dbQuery = dbQuery.eq("status",   status)
+            if (status && status !== "all") dbQuery = dbQuery.eq("status", status)
 
             const { data, error } = await dbQuery
             if (error) return { success: false, message: error.message, plans: [] }
@@ -536,15 +550,12 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
 
         // ── SET REMINDER ───────────────────────────────────────────────────────
         set_reminder: tool({
-          description:
-            "Schedule a reminder for a plan or any custom time. " +
-            "Use when the user says 'remind me', 'notify me', 'alert me at', etc.",
+          description: "Schedule a reminder. Use when user says 'remind me', 'notify me', 'alert me'.",
           parameters: z.object({
-            title:      z.string().describe("Reminder title or message"),
-            remind_at:  z.string().describe("ISO datetime when to remind, e.g. 2026-03-19T09:00:00"),
-            plan_id:    z.string().optional().describe("UUID of the related plan (optional)"),
-            channel:    z.enum(["push","whatsapp","email"]).optional().default("push")
-                          .describe("Delivery channel. Default is push notification."),
+            title: z.string().describe("Reminder title or message"),
+            remind_at: z.string().describe("ISO datetime when to remind, e.g. 2026-03-21T09:00:00"),
+            plan_id: z.string().optional().describe("UUID of the related plan (optional)"),
+            channel: z.enum(["push", "whatsapp", "email"]).optional().default("push"),
           }),
           execute: async ({ title, remind_at, plan_id, channel }) => {
             if (!user) return { success: false, message: "Login required" }
@@ -552,12 +563,12 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
             const { data, error } = await supabase
               .from("reminders")
               .insert({
-                user_id:   user.id,
+                user_id: user.id,
                 title,
                 remind_at,
-                plan_id:   plan_id ?? null,
-                channel:   channel ?? "push",
-                is_sent:   false,
+                plan_id: plan_id ?? null,
+                channel: channel ?? "push",
+                is_sent: false,
               })
               .select()
               .single()
@@ -570,11 +581,7 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
               timeStyle: "short",
             })
 
-            return {
-              success: true,
-              message: `Reminder set for ${when} via ${channel ?? "push"}.`,
-              reminder: data,
-            }
+            return { success: true, message: `Reminder set for ${when} via ${channel ?? "push"}.`, reminder: data }
           },
         }),
 
@@ -582,28 +589,26 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
         save_memory: tool({
           description:
             "Save a note, fact, idea, or piece of info to the user's Second Brain. " +
-            "Use proactively when the user shares info without any time/date context.",
+            "Use proactively when the user shares info worth keeping (passwords, IDs, important numbers, quotes, ideas).",
           parameters: z.object({
-            content:     z.string().describe("The information to remember"),
-            title:       z.string().optional().describe("Short title (optional)"),
-            tags:        z.array(z.string()).describe("2-5 descriptive tags"),
-            memory_type: z.enum(["text","photo","voice"]).optional().default("text"),
+            content: z.string().describe("The information to remember"),
+            title: z.string().optional().describe("Short title (optional)"),
+            tags: z.array(z.string()).describe("2-5 descriptive tags"),
+            memory_type: z.enum(["text", "photo", "voice"]).optional().default("text"),
           }),
           execute: async ({ content, title, tags, memory_type }) => {
             if (!user) return { success: false, message: "Login required" }
 
-            const hijriNow = getHijriDate()
-
             const { data, error } = await supabase
               .from("memories")
               .insert({
-                user_id:        user.id,
+                user_id: user.id,
                 content,
-                title:          title ?? null,
+                title: title ?? null,
                 tags,
-                type:           memory_type ?? "text",
+                type: memory_type ?? "text",
                 gregorian_date: currentDate,
-                hijri_date:     hijriNow,
+                hijri_date: getHijriDate(),
               })
               .select()
               .single()
@@ -615,12 +620,10 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
 
         // ── SEARCH MEMORIES ────────────────────────────────────────────────────
         search_memories: tool({
-          description:
-            "Search the user's Second Brain for saved notes or facts. " +
-            "Use when asked: 'do you remember', 'what did I say about', 'find my note on'.",
+          description: "Search the user's Second Brain. Use when asked 'do you remember', 'find my note on'.",
           parameters: z.object({
             query: z.string().describe("Keywords or topic to search for"),
-            tag:   z.string().optional().describe("Filter by a specific tag"),
+            tag: z.string().optional().describe("Filter by a specific tag"),
           }),
           execute: async ({ query, tag }) => {
             if (!user) return { success: false, message: "Login required", memories: [] }
@@ -633,7 +636,7 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
               .limit(10)
 
             if (query) dbQuery = dbQuery.or(`content.ilike.%${query}%,title.ilike.%${query}%`)
-            if (tag)   dbQuery = dbQuery.contains("tags", [tag])
+            if (tag) dbQuery = dbQuery.contains("tags", [tag])
 
             const { data, error } = await dbQuery
             if (error) return { success: false, message: error.message, memories: [] }
@@ -644,11 +647,12 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
         // ── STORE FACT ─────────────────────────────────────────────────────────
         store_fact: tool({
           description:
-            "Silently store a personal fact about the user extracted from conversation. " +
-            "Call whenever the user reveals something personal. Do NOT announce this call.",
+            "Silently store or UPDATE a personal fact about the user. " +
+            "Call whenever the user reveals something personal — including corrections to previous facts. " +
+            "NEVER announce this call or mention it to the user.",
           parameters: z.object({
-            fact:     z.string().describe("The fact in plain language, e.g. 'Works at Aramco as a software engineer'"),
-            category: z.enum(["work","family","health","finance","preference","location","education","contact","general"]),
+            fact: z.string().describe("The fact in plain language, e.g. 'Works at Aramco as a software engineer'"),
+            category: z.enum(["work", "family", "health", "finance", "preference", "location", "education", "contact", "general"]),
           }),
           execute: async ({ fact, category }) => {
             if (!user) return { success: false, message: "Login required" }
@@ -681,12 +685,10 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
 
         // ── GET MY FACTS ───────────────────────────────────────────────────────
         get_my_facts: tool({
-          description:
-            "Retrieve all stored facts about the user. " +
-            "Use when asked: 'what do you know about me', 'tell me about myself'.",
+          description: "Retrieve all stored facts about the user. Use when asked 'what do you know about me'.",
           parameters: z.object({
-            category: z.enum(["work","family","health","finance","preference","location","education","contact","general","all"])
-                        .optional().default("all"),
+            category: z.enum(["work", "family", "health", "finance", "preference", "location", "education", "contact", "general", "all"])
+              .optional().default("all"),
           }),
           execute: async ({ category }) => {
             if (!user) return { success: false, message: "Login required", facts: [] }
@@ -708,14 +710,12 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
 
         // ── GET TIMELINE ───────────────────────────────────────────────────────
         get_timeline: tool({
-          description:
-            "Retrieve the user's life timeline. Use when asked: 'what happened last week', " +
-            "'summarize my month', 'what did I do recently'.",
+          description: "Retrieve the user's life timeline. Use when asked 'what happened last week', 'summarize my month'.",
           parameters: z.object({
-            days_back:   z.number().min(1).max(365).default(7)
-                          .describe("How many days back to look. 7=week, 30=month."),
-            source_type: z.enum(["plan_created","plan_completed","memory_saved","file_uploaded","voice_recorded","fact_learned","all"])
-                          .optional().default("all"),
+            days_back: z.number().min(1).max(365).default(7)
+              .describe("How many days back. 7=week, 30=month."),
+            source_type: z.enum(["plan_created", "plan_completed", "memory_saved", "file_uploaded", "voice_recorded", "fact_learned", "all"])
+              .optional().default("all"),
           }),
           execute: async ({ days_back, source_type }) => {
             if (!user) return { success: false, message: "Login required", events: [] }
@@ -725,8 +725,8 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
               .select("title, description, event_date, source_type, importance")
               .eq("user_id", user.id)
               .gte("event_date", addDays(-days_back))
-              .order("event_date",  { ascending: false })
-              .order("importance",  { ascending: false })
+              .order("event_date", { ascending: false })
+              .order("importance", { ascending: false })
               .limit(40)
 
             if (source_type && source_type !== "all") query = query.eq("source_type", source_type)
