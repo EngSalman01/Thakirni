@@ -263,17 +263,32 @@ If you know something about them (from WHAT I KNOW), weave it in naturally:
 NOTE: Only apply these AFTER confirming with the user. Never assume and silently create.
 
 ════════════════════════
-6. TOOL RULES
+6. TOOL RULES — MANDATORY TWO-STEP FLOW
 ════════════════════════
+🚨 YOU MUST FOLLOW THIS EXACT SEQUENCE FOR ANY PLAN CREATION:
+
+  STEP 1 → Collect all missing info through conversation (ask one question at a time)
+  STEP 2 → Call preview_plan (NOT create_plan) — this shows the user a summary card
+  STEP 3 → Wait for user to say yes / تمام / ماشي / confirm / أضفه / add it
+  STEP 4 → ONLY THEN call create_plan
+
+NEVER call create_plan directly. ALWAYS call preview_plan first.
+preview_plan does NOT save anything — it just shows the user what will be created.
+create_plan saves to the database — only call it after the user explicitly confirms.
+
+Same rule for delete_plan: always tell the user what you're about to delete and wait for confirmation.
+update_plan: tell the user what will change, wait for confirmation.
+
+Other rules:
 - One tool per step. No duplicate calls.
-- After a write tool: confirm in natural language. Don't call list_plans to verify.
-- store_fact: ALWAYS silent — never mention it, never say "I've noted that".
-- create_plan / update_plan / delete_plan: ALWAYS confirm with user before executing.
+- After create_plan succeeds: confirm warmly in natural language. Don't call list_plans to verify.
+- store_fact: ALWAYS silent — never mention it to the user.
 
 ════════════════════════
 7. TOOL REFERENCE
 ════════════════════════
-create_plan      → schedule events, tasks, meetings, shopping lists
+preview_plan     → show a confirmation card to user BEFORE saving (always use this first)
+create_plan      → save to database — ONLY after user confirms the preview
 update_plan      → modify an existing plan (use list_plans first to get the ID)
 delete_plan      → remove a plan (use list_plans first to get the ID)
 mark_done        → mark a task/plan complete
@@ -289,11 +304,36 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
 
       tools: {
 
+        // ── PREVIEW PLAN (confirmation step — no DB write) ─────────────────────
+        preview_plan: tool({
+          description:
+            "Show the user a summary of the plan about to be created. " +
+            "ALWAYS call this BEFORE create_plan. It does NOT save anything. " +
+            "After calling this, wait for the user to confirm before calling create_plan.",
+          parameters: z.object({
+            title:      z.string(),
+            plan_date:  z.string().describe("YYYY-MM-DD"),
+            plan_time:  z.string().optional().describe("HH:MM"),
+            end_time:   z.string().optional(),
+            location:   z.string().optional(),
+            attendees:  z.array(z.string()).optional(),
+            category:   z.enum(["task","meeting","grocery","work","personal","health","finance","other"]),
+            priority:   z.enum(["low","medium","high"]).optional(),
+          }),
+          execute: async (input) => {
+            return {
+              preview: true,
+              ...input,
+              message: "Preview ready — waiting for user confirmation.",
+            }
+          },
+        }),
+
         // ── CREATE PLAN ────────────────────────────────────────────────────────
         create_plan: tool({
           description:
-            "Create a calendar event, meeting, task, or shopping list. " +
-            "Only call this when ALL required fields have been collected.",
+            "Save a plan to the database. ONLY call this after preview_plan was shown " +
+            "AND the user explicitly confirmed (said yes/تمام/ماشي/confirm/أضفه).",
           parameters: z.object({
             title:       z.string().describe("Short, clear title"),
             description: z.string().optional().describe("Details, agenda, or notes"),
