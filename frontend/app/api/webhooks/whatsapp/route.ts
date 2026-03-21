@@ -149,8 +149,6 @@ async function processMessage(event: any, supabase: any) {
     const message = event.message ?? event
     const rawPhone = message.from ?? message.kapso?.phone_number ?? event.conversation?.phone_number ?? ""
     const phone = rawPhone.replace(/^\+/, "")
-    console.log("[WhatsApp DEBUG] Looking up phone:", phone)
-
     const msgType = message.type ?? "text"
 
     if (!phone) {
@@ -169,7 +167,6 @@ async function processMessage(event: any, supabase: any) {
             try {
                 const audioBuffer = await downloadKapsoMedia(mediaUrl)
                 messageText = await transcribeAudio(audioBuffer, "audio/ogg")
-                console.log(`[WhatsApp] Transcribed: "${messageText}"`)
             } catch (err: any) {
                 console.error("[WhatsApp] Transcription failed:", err?.message)
                 await sendWhatsAppMessage(phone,
@@ -188,15 +185,11 @@ async function processMessage(event: any, supabase: any) {
     if (!messageText.trim()) return
 
     // ── Look up user by phone number ────────────────────────────────────────────
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
         .from("profiles")
         .select("id, full_name, plan_tier")
         .eq("phone_number", phone)
         .single()
-
-    console.log("[WhatsApp DEBUG] phone:", phone)
-    console.log("[WhatsApp DEBUG] profile:", JSON.stringify(profile))
-    console.log("[WhatsApp DEBUG] error:", JSON.stringify(profileError))
 
     if (!profile) {
         const lang = detectLanguage(messageText)
@@ -513,7 +506,6 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
         sendWhatsAppMessage(phone, aiResponse),
     ])
 
-    console.log(`[WhatsApp] Replied to ${phone}: "${aiResponse.slice(0, 80)}..."`)
 }
 //AbuSalem
 export async function GET(req: NextRequest) {

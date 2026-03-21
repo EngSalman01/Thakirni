@@ -37,7 +37,7 @@ async function fetchGoogleEvents(): Promise<{ connected: boolean; events: Google
 }
 
 export default function CalendarPage() {
-  const { plans, isLoading, createPlan } = usePlans();
+  const { plans, isLoading } = usePlans();
   const { t, isArabic } = useLanguage();
   const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(new Date());

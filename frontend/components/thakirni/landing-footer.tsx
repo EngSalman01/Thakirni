@@ -55,7 +55,7 @@ export function LandingFooter() {
             </h5>
             <ul className="space-y-4">
               {productLinks.map(({ href, ar, en }) => (
-                <li key={href}>
+                <li key={en}>
                   <Link href={href} className="hover:text-[#2552ca] transition-colors">
                     {t(ar, en)}
                   </Link>
@@ -71,7 +71,7 @@ export function LandingFooter() {
             </h5>
             <ul className="space-y-4">
               {companyLinks.map(({ href, ar, en }) => (
-                <li key={href}>
+                <li key={en}>
                   <Link href={href} className="hover:text-[#2552ca] transition-colors">
                     {t(ar, en)}
                   </Link>
