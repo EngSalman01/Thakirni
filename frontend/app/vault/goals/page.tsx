@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -125,7 +126,10 @@ export default function GoalsPage() {
   const categoryInfo = (c: string) => CATEGORIES.find((x) => x.value === c) ?? CATEGORIES[4]
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <VaultSidebar />
+      <main className="lg:ml-72 p-4 md:p-6 transition-all duration-300">
+      <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -285,6 +289,8 @@ export default function GoalsPage() {
           })}
         </div>
       )}
+    </div>
+      </main>
     </div>
   )
 }

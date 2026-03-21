@@ -86,7 +86,7 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-background text-foreground">
       <VaultSidebar />
 
-      <main className="lg:ms-72 p-4 md:p-6 lg:p-8 transition-all duration-300">
+      <main className="lg:ml-72 p-4 md:p-6 lg:p-8 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <MobileMenuButton />

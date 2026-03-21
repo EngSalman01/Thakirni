@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -104,7 +105,10 @@ export default function MeetingsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <VaultSidebar />
+      <main className="lg:ml-72 p-4 md:p-6 transition-all duration-300">
+      <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
@@ -302,6 +306,8 @@ export default function MeetingsPage() {
           ))
         )}
       </div>
+    </div>
+      </main>
     </div>
   )
 }

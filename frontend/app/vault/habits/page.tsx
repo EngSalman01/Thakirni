@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -80,7 +81,10 @@ export default function HabitsPage() {
   const total = habits.length
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <VaultSidebar />
+      <main className="lg:ml-72 p-4 md:p-6 transition-all duration-300">
+      <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -206,6 +210,8 @@ export default function HabitsPage() {
           ))}
         </div>
       )}
+    </div>
+      </main>
     </div>
   )
 }

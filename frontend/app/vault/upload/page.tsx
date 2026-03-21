@@ -294,7 +294,7 @@ export default function UploadPage() {
     <div className="min-h-screen bg-surface">
       <VaultSidebar />
 
-      <main className="lg:me-64 p-4 py-8">
+      <main className="lg:ml-72 p-4 py-8">
         <div className="max-w-xl mx-auto">
 
           {/* Back */}

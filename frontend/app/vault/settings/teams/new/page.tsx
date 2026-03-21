@@ -61,7 +61,7 @@ function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:me-64 p-4 md:p-8">
+      <main className="lg:ml-72 p-4 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
           <div className="space-y-2">
             <Skeleton className="h-8 w-32" />
@@ -175,7 +175,7 @@ export default function NewTeamPage() {
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="lg:me-64 transition-all duration-300 p-4 md:p-8">
+      <main className="lg:ml-72 transition-all duration-300 p-4 md:p-8">
         <div className="max-w-xl mx-auto">
 
           {/* Back */}
