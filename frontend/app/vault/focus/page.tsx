@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback } from "react"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -156,7 +157,10 @@ export default function FocusPage() {
   const circumference = 2 * Math.PI * 100
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <VaultSidebar />
+      <main className="lg:ml-72 p-4 md:p-6 transition-all duration-300">
+      <div className="max-w-xl mx-auto">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
           <Timer className="w-6 h-6 text-[#2552ca]" /> وضع التركيز
@@ -261,6 +265,8 @@ export default function FocusPage() {
           </CardContent>
         </Card>
       )}
+    </div>
+      </main>
     </div>
   )
 }

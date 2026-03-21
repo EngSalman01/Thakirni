@@ -116,7 +116,7 @@ function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:me-64 p-6 md:p-8">
+      <main className="lg:ml-72 p-6 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
           <Skeleton className="h-8 w-40" />
           <Skeleton className="h-64 rounded-xl" />
@@ -228,7 +228,7 @@ export default function ChangePasswordPage() {
     return (
       <div className="min-h-screen bg-background">
         <VaultSidebar />
-        <main className="lg:me-64 p-6 md:p-8">
+        <main className="lg:ml-72 p-6 md:p-8">
           <div className="max-w-xl mx-auto">
             <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-6 gap-2">
               <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
@@ -263,7 +263,7 @@ export default function ChangePasswordPage() {
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="lg:me-64 p-6 md:p-8">
+      <main className="lg:ml-72 p-6 md:p-8">
         <div className="max-w-xl mx-auto">
 
           {/* Back */}

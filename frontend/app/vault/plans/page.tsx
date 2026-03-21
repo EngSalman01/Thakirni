@@ -35,6 +35,7 @@ export default function PlansPage() {
   const [newPlanTitle, setNewPlanTitle] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Filter plans based on active tab
   const filteredPlans = plans.filter((plan) => {
@@ -91,7 +92,7 @@ export default function PlansPage() {
     <div className="min-h-screen bg-background text-foreground">
       <VaultSidebar />
 
-      <main className="lg:me-64 p-4 lg:p-8 transition-all duration-300">
+      <main className="lg:ml-72 p-4 lg:p-8 transition-all duration-300">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex items-start gap-3">
@@ -258,9 +259,17 @@ export default function PlansPage() {
                         variant="ghost"
                         size="icon"
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10 -me-2"
-                        onClick={() => deletePlan(plan.id)}
+                        disabled={deletingId === plan.id}
+                        onClick={async () => {
+                          setDeletingId(plan.id);
+                          try { await deletePlan(plan.id); } finally { setDeletingId(null); }
+                        }}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingId === plan.id ? (
+                          <span className="w-4 h-4 border-2 border-destructive/40 border-t-destructive rounded-full animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     </motion.div>
                   ))}

@@ -282,7 +282,7 @@ export default function TributesPage() {
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="lg:me-64 transition-all duration-300">
+      <main className="lg:ml-72 transition-all duration-300">
         <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
 
           {/* Header */}

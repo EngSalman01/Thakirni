@@ -208,7 +208,12 @@ export default function PricingPage() {
 
     const priceId = getPriceId(tierId)
     if (!priceId) {
-      toast.error(t("أضف معرّف السعر في إعدادات Paddle", "Add the price ID in Paddle settings"))
+      // Price IDs not yet configured — direct user to sign up and we will contact them
+      toast.info(t(
+        "الدفع الإلكتروني قيد الإعداد — سجّل دخولك وسنتواصل معك لإتمام الاشتراك",
+        "Online payment is being set up — sign in and we will contact you to complete your subscription"
+      ))
+      setTimeout(() => router.push("/auth"), 2000)
       return
     }
     if (!paddle) {
