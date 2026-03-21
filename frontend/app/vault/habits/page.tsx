@@ -11,7 +11,7 @@ import { CheckCircle2, Circle, Flame, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import useSWR from "swr"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+const API_URL = ""
 
 const HABIT_ICONS = ["✅", "🏃", "💧", "📚", "🧘", "🍎", "💪", "☀️", "🧠", "🎯", "💤", "🙏"]
 

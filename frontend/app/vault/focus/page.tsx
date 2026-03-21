@@ -11,7 +11,7 @@ import { Play, Pause, Square, Timer, BarChart2, CheckCircle2 } from "lucide-reac
 import { toast } from "sonner"
 import useSWR from "swr"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+const API_URL = ""
 
 const SESSION_TYPES = [
   { value: "pomodoro",    label: "بومودورو 🍅",      minutes: 25, color: "#e53e3e" },

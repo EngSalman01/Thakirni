@@ -1,221 +1,125 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
+import { NextRequest } from "next/server"
+import { createClient } from "@supabase/supabase-js"
+import { syncSubscriptionToProfile } from "@/lib/services/subscription.service"
+import crypto from "crypto"
 
-function getSupabase() {
+function getServiceSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  )
 }
 
-/**
- * Verify Paddle webhook signature
- */
-function verifyPaddleWebhook(body: string, signature: string): boolean {
-  const secret = process.env.PADDLE_WEBHOOK_SECRET || "";
-  const hash = crypto
-    .createHmac("sha256", secret)
-    .update(body)
-    .digest("hex");
-
-  return hash === signature;
+function verifyPaddleSignature(body: string, signature: string): boolean {
+  const secret = process.env.PADDLE_WEBHOOK_SECRET ?? ""
+  const hash = crypto.createHmac("sha256", secret).update(body).digest("hex")
+  return hash === signature
 }
 
-/**
- * Parse Paddle webhook payload
- */
-interface PaddleWebhookData {
-  type: string;
-  data: {
-    id?: string;
-    customerId?: string;
-    subscriptionId?: string;
-    status?: string;
-    currentBillingPeriod?: {
-      endsAt: string;
-    };
-    nextBilledAt?: string;
-    pausedAt?: string;
-    cancelledAt?: string;
-    priceId?: string;
-  };
-}
-
-/**
- * Handle subscription.created event
- */
-async function handleSubscriptionCreated(
-  customerId: string,
-  subscriptionId: string,
-  data: any
-) {
-  const supabase = getSupabase();
-  const { data: userData } = await supabase
-    .from("users")
-    .select("id")
-    .eq("paddle_customer_id", customerId)
-    .single();
-
-  if (!userData) {
-    console.error(
-      "[Webhook] User not found for customer:",
-      customerId
-    );
-    return;
-  }
-
-  const nextBilledAt = data.nextBilledAt
-    ? new Date(data.nextBilledAt)
-    : null;
-
-  await supabase.from("subscriptions").upsert(
-    {
-      user_id: userData.id,
-      paddle_subscription_id: subscriptionId,
-      paddle_customer_id: customerId,
-      plan_tier: getPlanTierFromPriceId(data.priceId),
-      billing_cycle: getBillingCycleFromPriceId(data.priceId),
-      status: data.status || "active",
-      next_billing_date: nextBilledAt?.toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      onConflict: "paddle_subscription_id",
-    }
-  );
-
-  console.log(
-    "[Webhook] Subscription created:",
-    subscriptionId
-  );
-}
-
-/**
- * Handle subscription.updated event
- */
-async function handleSubscriptionUpdated(
-  subscriptionId: string,
-  data: any
-) {
-  const supabase = getSupabase();
-  const nextBilledAt = data.nextBilledAt
-    ? new Date(data.nextBilledAt)
-    : null;
-
-  await supabase
-    .from("subscriptions")
-    .update({
-      status: data.status,
-      next_billing_date: nextBilledAt?.toISOString(),
-      cancel_at_period_end: data.pausedAt ? true : false,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("paddle_subscription_id", subscriptionId);
-
-  console.log(
-    "[Webhook] Subscription updated:",
-    subscriptionId
-  );
-}
-
-/**
- * Handle subscription.cancelled event
- */
-async function handleSubscriptionCancelled(subscriptionId: string) {
-  const supabase = getSupabase();
-  await supabase
-    .from("subscriptions")
-    .update({
-      status: "cancelled",
-      cancel_at_period_end: true,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("paddle_subscription_id", subscriptionId);
-
-  console.log(
-    "[Webhook] Subscription cancelled:",
-    subscriptionId
-  );
-}
-
-/**
- * Helper to extract plan tier from price ID
- */
 function getPlanTierFromPriceId(priceId: string): string {
-  if (priceId.includes("individual")) return "individual";
-  if (priceId.includes("team")) return "team";
-  return "free";
+  const p = priceId.toLowerCase()
+  if (p.includes("team") || p === process.env.PADDLE_PRICE_TEAMS_MONTHLY || p === process.env.PADDLE_PRICE_TEAMS_ANNUAL) return "TEAMS"
+  if (p.includes("pro") || p === process.env.PADDLE_PRICE_PRO_MONTHLY || p === process.env.PADDLE_PRICE_PRO_ANNUAL) return "PRO"
+  return "FREE"
 }
 
-/**
- * Helper to extract billing cycle from price ID
- */
-function getBillingCycleFromPriceId(priceId: string): "monthly" | "annual" {
-  return priceId.includes("annual") ? "annual" : "monthly";
+function getBillingCycle(priceId: string): "monthly" | "annual" {
+  return priceId.toLowerCase().includes("annual") ? "annual" : "monthly"
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.text();
-    const signature = request.headers.get("paddle-signature") || "";
+    const body = await req.text()
+    const signature = req.headers.get("paddle-signature") ?? ""
 
-    // Verify webhook signature
-    if (!verifyPaddleWebhook(body, signature)) {
-      console.error("[Webhook] Invalid Paddle signature");
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 401 }
-      );
+    if (!verifyPaddleSignature(body, signature)) {
+      return Response.json({ error: "Invalid signature" }, { status: 401 })
     }
 
-    const payload: PaddleWebhookData = JSON.parse(body);
-    const eventType = payload.type;
-    const eventData = payload.data;
+    const payload = JSON.parse(body) as {
+      type: string
+      data: {
+        id?: string
+        customer_id?: string
+        status?: string
+        next_billed_at?: string
+        paused_at?: string
+        items?: Array<{ price?: { id: string } }>
+        custom_data?: { user_id?: string }
+      }
+    }
 
-    console.log("[Webhook] Received Paddle event:", eventType);
+    const service = getServiceSupabase()
+    const eventType = payload.type
+    const d = payload.data
+    const priceId = d.items?.[0]?.price?.id ?? ""
+    const planTier = getPlanTierFromPriceId(priceId)
+    const billingCycle = getBillingCycle(priceId)
 
     switch (eventType) {
       case "subscription.created":
-        if (eventData.customerId && eventData.subscriptionId) {
-          await handleSubscriptionCreated(
-            eventData.customerId,
-            eventData.subscriptionId,
-            eventData
-          );
+      case "subscription.activated": {
+        const customerId = d.customer_id
+        if (!customerId) break
+
+        let { data: profile } = await service.from("profiles").select("id").eq("paddle_customer_id", customerId).single()
+
+        if (!profile && d.custom_data?.user_id) {
+          const { data: p } = await service.from("profiles").select("id").eq("id", d.custom_data.user_id).single()
+          profile = p
         }
-        break;
 
-      case "subscription.updated":
-        if (eventData.subscriptionId) {
-          await handleSubscriptionUpdated(
-            eventData.subscriptionId,
-            eventData
-          );
-        }
-        break;
+        if (!profile) break
 
-      case "subscription.cancelled":
-        if (eventData.subscriptionId) {
-          await handleSubscriptionCancelled(eventData.subscriptionId);
-        }
-        break;
+        await service.from("subscriptions").upsert({
+          user_id: profile.id,
+          paddle_subscription_id: d.id,
+          paddle_customer_id: customerId,
+          plan_tier: planTier,
+          billing_cycle: billingCycle,
+          status: "active",
+          next_billing_date: d.next_billed_at ?? null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "paddle_subscription_id" })
 
-      case "transaction.completed":
-        // Optional: handle transaction completion for one-time payments
-        console.log("[Webhook] Transaction completed:", eventData.id);
-        break;
+        await syncSubscriptionToProfile(profile.id, priceId, "active")
+        break
+      }
 
-      default:
-        console.log("[Webhook] Unhandled event type:", eventType);
+      case "subscription.updated": {
+        if (!d.id) break
+        const { data: sub } = await service.from("subscriptions").select("user_id").eq("paddle_subscription_id", d.id).single()
+
+        await service.from("subscriptions").update({
+          status: d.status ?? "active",
+          next_billing_date: d.next_billed_at ?? null,
+          cancel_at_period_end: !!d.paused_at,
+          plan_tier: planTier,
+          billing_cycle: billingCycle,
+          updated_at: new Date().toISOString(),
+        }).eq("paddle_subscription_id", d.id)
+
+        if (sub?.user_id) await syncSubscriptionToProfile(sub.user_id, priceId, d.status ?? "active")
+        break
+      }
+
+      case "subscription.canceled":
+      case "subscription.cancelled": {
+        if (!d.id) break
+        const { data: sub } = await service.from("subscriptions").update({
+          status: "cancelled",
+          cancel_at_period_end: true,
+          updated_at: new Date().toISOString(),
+        }).eq("paddle_subscription_id", d.id).select("user_id").single()
+
+        if (sub?.user_id) await syncSubscriptionToProfile(sub.user_id, "", "cancelled")
+        break
+      }
     }
 
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[Webhook] Error processing webhook:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return Response.json({ success: true })
+  } catch (err) {
+    console.error("[Paddle Webhook] Error:", err)
+    return Response.json({ error: "Internal error" }, { status: 500 })
   }
 }

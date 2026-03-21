@@ -14,7 +14,7 @@ import { Target, Plus, CheckCircle2, Trash2, Wand2, Calendar } from "lucide-reac
 import { toast } from "sonner"
 import useSWR from "swr"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+const API_URL = ""
 
 const CATEGORIES = [
   { value: "career", label: "مسيرة مهنية", icon: "💼" },

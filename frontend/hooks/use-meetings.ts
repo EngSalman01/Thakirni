@@ -1,7 +1,7 @@
 import useSWR from "swr"
 import { createClient } from "@/lib/supabase/client"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001"
+const API_URL = ""
 
 async function fetcher(url: string): Promise<Record<string, unknown>[]> {
   const supabase = createClient()
