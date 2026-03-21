@@ -130,6 +130,12 @@ export default function SettingsPage() {
     notification_friday: true,
   });
   const [savingNotif, setSavingNotif] = useState<string | null>(null);
+  const [motionEnabled, setMotionEnabled] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("thakirni_motion") !== "false" : true
+  );
+  const [deepFocusEnabled, setDeepFocusEnabled] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("thakirni_deepfocus") === "true" : false
+  );
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -436,20 +442,20 @@ export default function SettingsPage() {
                 <ToggleRow
                   label={t("الحركة الأثيرية", "Ethereal Motion") as string}
                   desc={t("تحولات سلسة وتأثيرات العمق", "Smooth transitions & depth effects") as string}
-                  checked={notifs.notification_email}
+                  checked={motionEnabled}
                   onChange={() => {
-                    const next = !notifs.notification_email
-                    setNotifs((p) => ({ ...p, notification_email: next }))
+                    const next = !motionEnabled
+                    setMotionEnabled(next)
                     localStorage.setItem("thakirni_motion", String(next))
                   }}
                 />
                 <ToggleRow
                   label={t("وضع التركيز العميق", "Deep Focus Mode") as string}
                   desc={t("إخماد جميع التنبيهات غير الضرورية", "Suppress all non-critical notifications") as string}
-                  checked={notifs.notification_push}
+                  checked={deepFocusEnabled}
                   onChange={() => {
-                    const next = !notifs.notification_push
-                    setNotifs((p) => ({ ...p, notification_push: next }))
+                    const next = !deepFocusEnabled
+                    setDeepFocusEnabled(next)
                     localStorage.setItem("thakirni_deepfocus", String(next))
                   }}
                 />
