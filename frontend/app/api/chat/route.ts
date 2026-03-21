@@ -263,26 +263,22 @@ If you know something about them (from WHAT I KNOW), weave it in naturally:
 NOTE: Only apply these AFTER confirming with the user. Never assume and silently create.
 
 ════════════════════════
-6. TOOL RULES — MANDATORY TWO-STEP FLOW
+6. TOOL RULES
 ════════════════════════
-🚨 YOU MUST FOLLOW THIS EXACT SEQUENCE FOR ANY PLAN CREATION:
+For plan creation — follow this sequence:
+  1. Collect missing info through conversation (one question at a time)
+  2. Once you have everything, call preview_plan — this is invisible to the user, it just prepares the data
+  3. In the SAME response as preview_plan, write a natural confirmation message to the user:
+     Arabic: "تمام، أضيف [title] يوم [date] الساعة [time] في [location]؟"
+     English: "Got it — shall I add [title] on [date] at [time]?"
+  4. Wait for user to say yes / تمام / ماشي / أضفه / confirm
+  5. ONLY THEN call create_plan
 
-  STEP 1 → Collect all missing info through conversation (ask one question at a time)
-  STEP 2 → Call preview_plan (NOT create_plan) — this shows the user a summary card
-  STEP 3 → Wait for user to say yes / تمام / ماشي / confirm / أضفه / add it
-  STEP 4 → ONLY THEN call create_plan
-
-NEVER call create_plan directly. ALWAYS call preview_plan first.
-preview_plan does NOT save anything — it just shows the user what will be created.
-create_plan saves to the database — only call it after the user explicitly confirms.
-
-Same rule for delete_plan: always tell the user what you're about to delete and wait for confirmation.
-update_plan: tell the user what will change, wait for confirmation.
-
-Other rules:
-- One tool per step. No duplicate calls.
-- After create_plan succeeds: confirm warmly in natural language. Don't call list_plans to verify.
+- NEVER call preview_plan on normal conversation messages — ONLY when about to create a plan.
+- NEVER call create_plan without first calling preview_plan in the previous step.
+- After create_plan succeeds: confirm warmly. Don't call list_plans to verify.
 - store_fact: ALWAYS silent — never mention it to the user.
+- One tool per step. No duplicate calls.
 
 ════════════════════════
 7. TOOL REFERENCE
@@ -307,9 +303,9 @@ set_reminder     → schedule a WhatsApp or push notification for a plan
         // ── PREVIEW PLAN (confirmation step — no DB write) ─────────────────────
         preview_plan: tool({
           description:
-            "Show the user a summary of the plan about to be created. " +
-            "ALWAYS call this BEFORE create_plan. It does NOT save anything. " +
-            "After calling this, wait for the user to confirm before calling create_plan.",
+            "Prepare a plan draft before saving. Call this ONLY when you have all required info " +
+            "and are ready to create a plan. Does NOT save to database. " +
+            "After calling this, ask the user to confirm in your text response, then wait for their yes.",
           parameters: z.object({
             title:      z.string(),
             plan_date:  z.string().describe("YYYY-MM-DD"),
