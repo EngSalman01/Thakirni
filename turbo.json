@@ -3,7 +3,27 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_URL",
+        "SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "SUPABASE_JWT_SECRET",
+        "GROQ_API_KEY",
+        "GOOGLE_GENERATIVE_AI_API_KEY",
+        "RESEND_API_KEY",
+        "KAPSO_API_KEY",
+        "KAPSO_WEBHOOK_SECRET",
+        "KAPSO_PHONE_NUMBER_ID",
+        "PADDLE_API_KEY",
+        "PADDLE_WEBHOOK_SECRET",
+        "NEXT_PUBLIC_PADDLE_CLIENT_TOKEN",
+        "NEXT_PUBLIC_BACKEND_URL",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET"
+      ]
     },
     "dev": {
       "persistent": true,
