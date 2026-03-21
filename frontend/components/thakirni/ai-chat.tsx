@@ -141,9 +141,13 @@ const ToolInvocationDisplay = ({
     const result = invocation.result;
     if (!result) return null;
 
+    // Silent tools — never show UI
+    const silentTools = ["store_fact", "preview_plan", "get_timeline", "set_reminder"]
+    if (silentTools.includes(invocation.toolName)) return null;
+
     // Deduplicate plans
     const uniquePlans = result.plans
-      ? Array.from(new Map(result.plans.map((p) => [p.id, p])).values())
+      ? Array.from(new Map(result.plans.map((p: { id: string }) => [p.id, p])).values())
       : [];
 
     return (
@@ -160,8 +164,12 @@ const ToolInvocationDisplay = ({
           )}
           <span className="text-xs font-medium">
             {invocation.toolName === "create_plan"
-              ? t("إضافة خطة", "Add Plan")
-              : t("عرض الخطط", "View Plans")}
+              ? t("تمت الإضافة", "Plan Added")
+              : invocation.toolName === "delete_plan"
+              ? t("تم الحذف", "Deleted")
+              : invocation.toolName === "mark_done"
+              ? t("تم الإنجاز", "Marked Done")
+              : t("الخطط", "Plans")}
           </span>
         </div>
 
@@ -171,14 +179,14 @@ const ToolInvocationDisplay = ({
 
         {uniquePlans.length > 0 && (
           <div className="space-y-2 mt-2">
-            {uniquePlans.slice(0, 5).map((plan) => (
+            {(uniquePlans as Array<{ id: string; title: string; plan_date: string; plan_time?: string }>).slice(0, 5).map((plan) => (
               <div
                 key={plan.id}
                 className="flex items-center justify-between p-2 rounded-lg bg-background hover:bg-muted/50 transition-colors"
               >
                 <span className="text-sm font-medium">{plan.title}</span>
                 <span className="text-xs text-muted-foreground">
-                  {plan.plan_date}
+                  {plan.plan_date}{plan.plan_time ? ` ${plan.plan_time.slice(0, 5)}` : ""}
                 </span>
               </div>
             ))}
