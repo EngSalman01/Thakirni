@@ -97,7 +97,7 @@ const pricingTiers: PricingTier[] = [
       { ar: "تحليل الوثائق", en: "Document AI", included: false },
     ],
     ctaAr: "ابدأ مجاناً",
-    ctaEn: "Start Free",
+    ctaEn: "Get Started",
     popular: false,
   },
   {
@@ -118,8 +118,8 @@ const pricingTiers: PricingTier[] = [
       { ar: "٣٠٠ دقيقة تسجيل شهرياً", en: "300 min voice/month", included: true },
       { ar: "تحليلات وتقارير", en: "Analytics & reports", included: true },
     ],
-    ctaAr: "اشترك الآن",
-    ctaEn: "Subscribe Now",
+    ctaAr: "احصل على Pro",
+    ctaEn: "Get Pro",
     popular: true,
   },
   {
@@ -141,8 +141,8 @@ const pricingTiers: PricingTier[] = [
       { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes", included: true },
       { ar: "دعم فني ذو أولوية", en: "Priority support", included: true },
     ],
-    ctaAr: "ابدأ الآن",
-    ctaEn: "Get Started",
+    ctaAr: "احصل على Teams",
+    ctaEn: "Get Teams",
     popular: false,
   },
 ];
@@ -170,7 +170,7 @@ export default function PricingPage() {
   useEffect(() => {
     initializePaddle({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
-      environment: "production", // ← change to "production" when Paddle approves live account
+      environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
     }).then((p) => { if (p) setPaddle(p) })
   }, [])
 

@@ -6,21 +6,43 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { useLanguage } from '@/components/language-provider';
 import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { toast } from 'sonner';
 
 export default function NewMemoryPage() {
   const { t } = useLanguage();
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    if (!title || !content) {
-      alert(t('يرجى ملء جميع الحقول', 'Please fill all fields'));
+    if (!title.trim() || !content.trim()) {
+      toast.error(t('يرجى ملء جميع الحقول', 'Please fill all fields'));
       return;
     }
-    // TODO: Save memory to database
-    alert(t('تم حفظ الذكرى', 'Memory saved'));
-    router.back();
+    setSaving(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error(t('يجب تسجيل الدخول أولاً', 'Please sign in first'));
+        return;
+      }
+      const { error } = await supabase.from('memories').insert({
+        user_id: user.id,
+        title: title.trim(),
+        content: content.trim(),
+        tags: [],
+      });
+      if (error) throw error;
+      toast.success(t('تم حفظ الذكرى', 'Memory saved'));
+      router.back();
+    } catch (err: any) {
+      toast.error(err?.message ?? t('حدث خطأ', 'Something went wrong'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -60,9 +82,9 @@ export default function NewMemoryPage() {
             </div>
 
             <div className="flex gap-4">
-              <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-500">
+              <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-500">
                 <Plus className="w-4 h-4 me-2" />
-                {t('حفظ الذكرى', 'Save Memory')}
+                {saving ? t('جاري الحفظ...', 'Saving...') : t('حفظ الذكرى', 'Save Memory')}
               </Button>
               <Button variant="outline" onClick={() => router.back()}>
                 {t('إلغاء', 'Cancel')}

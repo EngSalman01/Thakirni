@@ -288,6 +288,7 @@ const LoadingIndicator = () => (
 // Main Component
 export function AIChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
@@ -302,12 +303,10 @@ export function AIChat() {
     },
   );
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom on every new message or while streaming
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   // Cleanup speech recognition on unmount
   useEffect(() => {
@@ -434,6 +433,8 @@ export function AIChat() {
             {isLoading && messages[messages.length - 1]?.role === "user" && (
               <LoadingIndicator />
             )}
+
+            <div ref={bottomRef} />
 
             {error && (
               <motion.div

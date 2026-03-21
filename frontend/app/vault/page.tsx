@@ -411,7 +411,6 @@ export default function VaultPage() {
             className="xl:col-span-3 space-y-8 order-2 xl:order-1"
           >
             <RecentCaptures />
-            <AIInsight />
           </motion.div>
 
           {/* ── Center: Aura visualization ── */}
@@ -432,7 +431,6 @@ export default function VaultPage() {
             className="xl:col-span-3 space-y-8 order-3"
           >
             <FocusStream />
-            <MindMetrics />
           </motion.div>
 
         </div>
