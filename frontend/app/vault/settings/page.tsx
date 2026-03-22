@@ -22,7 +22,8 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { useSubscription } from "@/hooks/use-subscription";
+import { useSubscription, type PlanTier } from "@/hooks/use-subscription";
+import { BillingModal } from "@/components/thakirni/billing-modal";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -109,7 +110,11 @@ function ToggleRow({
 export default function SettingsPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const { subscriptionType } = useSubscription();
+  const { tier, isPaid, subscription } = useSubscription();
+  const [billingOpen, setBillingOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [currentTier, setCurrentTier] = useState<PlanTier | null>(null);
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState("");
@@ -319,6 +324,25 @@ export default function SettingsPage() {
     }
   }, [notifs, t]);
 
+  // ── Cancel subscription ────────────────────────────────────────────────────
+
+  const handleCancelSubscription = useCallback(async () => {
+    setCancelling(true);
+    try {
+      const res = await fetch("/api/subscriptions/cancel", { method: "POST" });
+      if (!res.ok) throw new Error("Cancel failed");
+      toast.success(t(
+        "تم جدولة الإلغاء. ستظل الخطة نشطة حتى نهاية فترة الفوترة.",
+        "Cancellation scheduled. Your plan stays active until end of billing period."
+      ));
+      setCancelOpen(false);
+    } catch {
+      toast.error(t("فشل الإلغاء، حاول مرة أخرى", "Cancellation failed, please try again"));
+    } finally {
+      setCancelling(false);
+    }
+  }, [t]);
+
   // ── Sign out ───────────────────────────────────────────────────────────────
 
   const handleSignOut = useCallback(async () => {
@@ -340,29 +364,37 @@ export default function SettingsPage() {
 
   const isDirty = name.trim() !== origName || phone.trim() !== origPhone;
 
-  const planFeatures = subscriptionType === "team"
-    ? [
-        { ar: "كل شي غير محدود", en: "Everything unlimited" },
-        { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes" },
-        { ar: "دعم فني ذو أولوية", en: "Priority support" },
-      ]
-    : subscriptionType === "individual"
-    ? [
-        { ar: "١٠٠ خطة يومياً", en: "100 plans per day" },
-        { ar: "١٠٠٠ ذاكرة", en: "1,000 memories" },
-        { ar: "تحليلات وتقارير", en: "Analytics & reports" },
-      ]
-    : [
-        { ar: "١٠ خطط يومياً", en: "10 plans per day" },
-        { ar: "٢٥ ذاكرة", en: "25 memories" },
-        { ar: "محادثة AI أساسية", en: "Basic AI chat" },
-      ];
+  // Use resolved tier (falls back to "free" until hook resolves)
+  const resolvedTier: PlanTier = currentTier ?? tier;
+
+  const planBadge =
+    resolvedTier === "teams"
+      ? { label: "TEAMS",  bg: "#eff6ff", color: "#1d4ed8" }
+      : resolvedTier === "pro"
+      ? { label: "PRO",    bg: "#f5f3ff", color: "#7c3aed" }
+      : { label: "FREE",   bg: "#f1f5f9", color: "#64748b" };
+
+  const planFeatures =
+    resolvedTier === "teams"
+      ? [
+          { ar: "كل شيء غير محدود", en: "Everything unlimited" },
+          { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes" },
+          { ar: "دعم فني ذو أولوية", en: "Priority support" },
+        ]
+      : resolvedTier === "pro"
+      ? [
+          { ar: "١٠٠ خطة يومياً", en: "100 plans per day" },
+          { ar: "١٠٠٠ ذاكرة", en: "1,000 memories" },
+          { ar: "١٠ مشاريع", en: "10 projects" },
+          { ar: "تحليلات وتقارير", en: "Analytics & reports" },
+        ]
+      : [
+          { ar: "١٠ خطط يومياً", en: "10 plans per day" },
+          { ar: "٢٥ ذاكرة", en: "25 memories" },
+          { ar: "١ مشروع", en: "1 project" },
+          { ar: "محادثة AI أساسية", en: "Basic AI chat" },
+        ];
   const initial = name?.charAt(0)?.toUpperCase() || "U";
-  const planLabel = subscriptionType === "team"
-    ? t("المستوى 12 حكيم", "Level 12 Sage")
-    : subscriptionType === "individual"
-    ? t("المستوى الفردي", "Individual")
-    : t("المستوى المجاني", "Apprentice");
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -393,8 +425,8 @@ export default function SettingsPage() {
           </h1>
           <p className="text-xl text-slate-500 leading-relaxed max-w-2xl">
             {t(
-              "اضبط امتدادك الرقمي. قم بمعايرة مساحة عملك المعرفية لأقصى أداء وخصوصية كاملة.",
-              "Tune your digital extension. Calibrate your cognitive workspace for peak performance and total privacy."
+              "أدر حسابك وتفضيلاتك واشتراكك.",
+              "Manage your account, preferences, and subscription."
             )}
           </p>
         </section>
@@ -411,8 +443,11 @@ export default function SettingsPage() {
                   <h2 className="text-2xl font-headline font-bold text-slate-900">
                     {t("الملف الشخصي", "Profile")}
                   </h2>
-                  <span className="px-3 py-1 rounded-full bg-[#ffd8e9] text-[#3c0029] text-xs font-bold uppercase tracking-wider font-label">
-                    {planLabel}
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
+                    style={{ background: planBadge.bg, color: planBadge.color }}
+                  >
+                    {planBadge.label}
                   </span>
                 </div>
                 <div className="flex items-center gap-6 mb-8">
@@ -589,14 +624,25 @@ export default function SettingsPage() {
             {/* Subscription */}
             <SettingsCard delay={0.08} className="relative overflow-hidden group">
               <div className="relative z-10">
-                <h2 className="text-2xl font-headline font-bold mb-1 text-slate-900">
-                  {t("الاشتراك", "Subscription")}
-                </h2>
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                    {t("الاشتراك", "Subscription")}
+                  </h2>
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
+                    style={{ background: planBadge.bg, color: planBadge.color }}
+                  >
+                    {planBadge.label}
+                  </span>
+                </div>
                 <p className="text-slate-500 text-sm mb-6">
-                  {t("حالياً:", "Currently:")}{" "}
-                  <span className="text-[#2552ca] font-bold">{planLabel}</span>
+                  {resolvedTier === "free"
+                    ? t("أنت على الخطة المجانية", "You're on the Free plan")
+                    : resolvedTier === "pro"
+                    ? t("أنت على خطة برو — 29.99 ر.س / شهر", "You're on Pro — 29.99 SAR/mo")
+                    : t("أنت على خطة الفرق — 59.99 ر.س / شهر / مستخدم", "You're on Teams — 59.99 SAR/mo per user")}
                 </p>
-                <div className="space-y-4 mb-8">
+                <div className="space-y-3 mb-8">
                   {planFeatures.map(({ ar, en }) => (
                     <div key={en} className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-[#ad1d7f] shrink-0 mt-0.5" />
@@ -605,11 +651,24 @@ export default function SettingsPage() {
                   ))}
                 </div>
                 <button
-                  onClick={() => router.push("/pricing")}
+                  onClick={() => setBillingOpen(true)}
                   className="w-full py-4 rounded-full bg-white text-slate-800 font-headline font-bold shadow-sm hover:shadow-md transition-all"
                 >
                   {t("إدارة الفواتير", "Manage Billing")}
                 </button>
+                {isPaid && !subscription?.cancel_at_period_end && (
+                  <button
+                    onClick={() => setCancelOpen(true)}
+                    className="w-full mt-3 text-xs text-red-400 hover:text-red-600 transition-colors text-center"
+                  >
+                    {t("إلغاء الاشتراك", "Cancel subscription")}
+                  </button>
+                )}
+                {subscription?.cancel_at_period_end && (
+                  <p className="w-full mt-3 text-xs text-slate-400 text-center">
+                    {t("تم جدولة الإلغاء — نشط حتى نهاية فترة الفوترة", "Cancellation scheduled — active until end of billing period")}
+                  </p>
+                )}
               </div>
               <div className="absolute -top-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
                 <Sparkles className="w-40 h-40 text-[#ad1d7f]" />
@@ -740,6 +799,47 @@ export default function SettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Cancel subscription confirmation dialog */}
+      <AlertDialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("إلغاء الاشتراك", "Cancel Subscription")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                "هل أنت متأكد؟ ستفقد الوصول إلى الميزات المدفوعة في نهاية فترة الفوترة الحالية.",
+                "Are you sure? You'll lose access to paid features at the end of your current billing period."
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>{t("إبقاء الاشتراك", "Keep Subscription")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelSubscription}
+              disabled={cancelling}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {cancelling ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {t("جاري الإلغاء...", "Cancelling...")}
+                </span>
+              ) : t("نعم، إلغاء الاشتراك", "Yes, Cancel Subscription")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Billing / upgrade modal */}
+      <BillingModal
+        open={billingOpen}
+        onClose={() => setBillingOpen(false)}
+        currentTier={resolvedTier}
+        userEmail={email}
+        onUpgradeComplete={(newTier) => setCurrentTier(newTier)}
+      />
     </div>
   );
 }
