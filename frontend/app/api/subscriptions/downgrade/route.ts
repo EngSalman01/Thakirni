@@ -1,0 +1,27 @@
+import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
+
+export async function POST() {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const service = createServiceClient()
+
+  // Set plan_tier to FREE on profile
+  await service
+    .from("profiles")
+    .update({ plan_tier: "FREE", updated_at: new Date().toISOString() })
+    .eq("id", user.id)
+
+  // Also cancel any active subscriptions in DB
+  await service
+    .from("subscriptions")
+    .update({ cancel_at_period_end: true, updated_at: new Date().toISOString() })
+    .eq("user_id", user.id)
+    .eq("status", "active")
+
+  return Response.json({ success: true })
+}

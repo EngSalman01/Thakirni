@@ -121,7 +121,7 @@ export async function createPaddlePrice(
       description,
       unitPrice: {
         amount: Math.round(amountSar * 100).toString(),
-        currencyCode: "SAR",
+        currencyCode: "USD",
       },
       billingCycle,
       taxMode: "account_setting",
@@ -146,7 +146,7 @@ export async function updatePaddlePrice(
     await paddleClient.prices.update(priceId, {
       unitPrice: {
         amount: Math.round(amountSar * 100).toString(),
-        currencyCode: "SAR",
+        currencyCode: "USD",
       },
     });
     return { success: true };
