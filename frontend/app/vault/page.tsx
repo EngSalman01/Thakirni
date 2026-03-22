@@ -320,9 +320,9 @@ function AuraVisualization() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[200px] sm:max-h-[320px] lg:max-h-[360px] min-h-0 sm:min-h-[280px] lg:min-h-[280px]">
+    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[200px] sm:max-h-[300px] lg:max-h-[340px] min-h-0 sm:min-h-[240px] lg:min-h-[240px]">
       {/* Aura sphere */}
-      <div className="relative w-full max-w-[160px] sm:max-w-[300px] lg:max-w-[380px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-3 sm:mb-8 lg:mb-8 overflow-hidden">
+      <div className="relative w-full max-w-[160px] sm:max-w-[280px] lg:max-w-[340px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-2 sm:mb-4 lg:mb-4 overflow-hidden">
         {/* Core */}
         <div className="relative z-10 w-20 h-20 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
           <span className="text-white text-xl sm:text-3xl lg:text-3xl font-headline font-bold">ذ</span>
@@ -496,8 +496,8 @@ export default function VaultPage() {
       <div className="absolute top-40 right-0 w-64 h-64 lg:w-96 lg:h-96 bg-[#2552ca]/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-20 left-0 lg:left-72 w-64 h-64 lg:w-80 lg:h-80 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="pt-16 lg:pt-28 px-4 sm:px-6 pb-16 min-h-screen relative">
-        <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8 w-full">
+      <div className="pt-16 lg:pt-24 px-4 sm:px-6 pb-8 min-h-screen relative">
+        <div className="max-w-4xl mx-auto space-y-3 lg:space-y-4 w-full">
 
           {/* ── Orb: full-width row, centered ── */}
           <motion.div
@@ -510,7 +510,7 @@ export default function VaultPage() {
           </motion.div>
 
           {/* ── Cards: stacked on mobile, side by side on lg ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-6">
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -533,7 +533,7 @@ export default function VaultPage() {
         </div>
 
         {/* AI Chat section */}
-        <div className="max-w-4xl mx-auto mt-8 lg:mt-16 w-full">
+        <div className="max-w-4xl mx-auto mt-4 lg:mt-8 w-full">
           <div className="mb-6">
             <h2 className="text-2xl font-headline font-extrabold text-slate-800">
               {t("المساعد الذكي", "AI Assistant")}
