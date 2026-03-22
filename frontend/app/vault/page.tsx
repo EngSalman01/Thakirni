@@ -54,9 +54,9 @@ const TeamDashboard = dynamic(
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#fbf9f8]">
+    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72 transition-all duration-300">
+      <main className="lg:ml-72 transition-all duration-300 w-full">
         {children}
       </main>
     </div>
@@ -166,7 +166,7 @@ function RecentCaptures() {
       <h2 className="font-headline text-lg font-extrabold tracking-tight text-slate-800">
         {t("التقاطات الأخيرة", "Recent Captures")}
       </h2>
-      <div className="glass-card p-6 rounded-2xl shadow-ambient space-y-3 border border-white/40">
+      <div className="glass-card p-4 sm:p-6 rounded-2xl shadow-ambient space-y-3 border border-white/40 w-full">
         {loading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
@@ -260,7 +260,7 @@ function FocusStream() {
             <Skeleton className="h-16 rounded-2xl" />
           </div>
         ) : plans.length === 0 ? (
-          <div className="glass-card p-6 rounded-2xl border border-white/40 text-center text-slate-400 text-sm">
+          <div className="glass-card p-4 sm:p-6 rounded-2xl border border-white/40 text-center text-slate-400 text-sm w-full">
             {t("لا توجد خطط اليوم — استمتع بيومك 😊", "No plans today — enjoy your day 😊")}
           </div>
         ) : (
@@ -320,12 +320,12 @@ function AuraVisualization() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[480px] sm:max-h-none min-h-[320px] sm:min-h-[400px]">
+    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[200px] sm:max-h-[320px] lg:max-h-none min-h-0 sm:min-h-[280px] lg:min-h-[400px]" style={{ maxHeight: "clamp(200px, 30vh, 99999px)" }}>
       {/* Aura sphere */}
-      <div className="relative w-full max-w-[260px] sm:max-w-[440px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-6 sm:mb-12 overflow-hidden">
+      <div className="relative w-full max-w-[160px] sm:max-w-[300px] lg:max-w-[440px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-3 sm:mb-8 lg:mb-12 overflow-hidden">
         {/* Core */}
-        <div className="relative z-10 w-28 h-28 sm:w-52 sm:h-52 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
-          <span className="text-white text-2xl sm:text-4xl font-headline font-bold">ذ</span>
+        <div className="relative z-10 w-20 h-20 sm:w-36 sm:h-36 lg:w-52 lg:h-52 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
+          <span className="text-white text-xl sm:text-3xl lg:text-4xl font-headline font-bold">ذ</span>
         </div>
 
         {/* Orbiting nodes from real memories — hidden on mobile to prevent overflow */}
@@ -492,19 +492,19 @@ export default function VaultPage() {
     <PageShell>
       <VaultHeader />
 
-      {/* Page background blobs */}
-      <div className="absolute top-40 right-[-10%] w-96 h-96 bg-[#2552ca]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-20 left-72 w-80 h-80 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none" />
+      {/* Page background blobs — clipped by overflow-x-hidden on PageShell */}
+      <div className="absolute top-40 right-0 w-64 h-64 lg:w-96 lg:h-96 bg-[#2552ca]/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-20 left-0 lg:left-72 w-64 h-64 lg:w-80 lg:h-80 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="pt-24 lg:pt-28 px-6 pb-16 min-h-screen relative">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+      <div className="pt-16 lg:pt-28 px-4 sm:px-6 pb-16 min-h-screen relative">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4 xl:gap-8 items-start w-full">
 
           {/* ── Left column ── */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="xl:col-span-3 space-y-8 order-2 xl:order-1"
+            className="xl:col-span-3 space-y-6 xl:space-y-8 order-2 xl:order-1 w-full min-w-0"
           >
             <RecentCaptures />
           </motion.div>
@@ -514,17 +514,17 @@ export default function VaultPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="xl:col-span-6 order-1 xl:order-2"
+            className="xl:col-span-6 order-1 xl:order-2 w-full min-w-0"
           >
             <AuraVisualization />
           </motion.div>
 
           {/* ── Right column ── */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="xl:col-span-3 space-y-8 order-3"
+            className="xl:col-span-3 space-y-6 xl:space-y-8 order-3 w-full min-w-0"
           >
             <FocusStream />
           </motion.div>
@@ -532,7 +532,7 @@ export default function VaultPage() {
         </div>
 
         {/* AI Chat section */}
-        <div className="max-w-7xl mx-auto mt-16">
+        <div className="max-w-7xl mx-auto mt-8 lg:mt-16 w-full">
           <div className="mb-6">
             <h2 className="text-2xl font-headline font-extrabold text-slate-800">
               {t("المساعد الذكي", "AI Assistant")}
