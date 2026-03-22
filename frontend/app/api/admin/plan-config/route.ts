@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
+import { updatePaddlePrice } from "@/lib/paddle/service";
 
 const DEFAULT_PLANS = [
   {
@@ -113,5 +114,14 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  // Sync price to Paddle if a price ID and amount are provided
+  let paddleWarning: string | undefined;
+  if (paddlePriceId && priceSar !== undefined) {
+    const paddleResult = await updatePaddlePrice(paddlePriceId, priceSar);
+    if (!paddleResult.success) {
+      paddleWarning = paddleResult.error;
+    }
+  }
+
+  return NextResponse.json({ success: true, paddleWarning });
 }

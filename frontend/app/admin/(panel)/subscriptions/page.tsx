@@ -211,6 +211,10 @@ export default function SubscriptionsPage() {
       const d = await res.json();
       throw new Error(d.error ?? "Save failed");
     }
+    const d = await res.json();
+    if (d.paddleWarning) {
+      toast.warning(`Saved, but Paddle sync failed: ${d.paddleWarning}`);
+    }
     setPlans((prev) =>
       prev.map((p) => (p.plan_key === updated.plan_key ? updated : p))
     );
@@ -245,11 +249,11 @@ export default function SubscriptionsPage() {
       )}
 
       {/* Warning */}
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-        <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-800 font-label">
-          <strong>Note:</strong> Changing prices here updates the display only. Update the
-          Paddle dashboard manually to reflect billing changes.
+      <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <AlertTriangle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-blue-800 font-label">
+          <strong>Note:</strong> When a Paddle Price ID is set, saving a plan will automatically
+          update the price in Paddle. Leave the Price ID blank to update display only.
         </p>
       </div>
     </div>
