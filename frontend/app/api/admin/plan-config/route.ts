@@ -62,7 +62,9 @@ export async function GET() {
     .order("price_sar", { ascending: true });
 
   if (dbError) {
-    return NextResponse.json({ error: dbError.message }, { status: 500 });
+    // Table may not exist yet — seed and return defaults
+    await supabase.from("plan_config").insert(DEFAULT_PLANS).select();
+    return NextResponse.json(DEFAULT_PLANS);
   }
 
   if (!data || data.length === 0) {
