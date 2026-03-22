@@ -51,10 +51,10 @@ export function HeroSection() {
             className="space-y-8"
           >
             {/* Headline */}
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight leading-[0.9] text-slate-900 dark:text-white">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight leading-[1.3] text-slate-900 dark:text-white">
               {isArabic ? (
                 <span>
-                  أنت <span className="text-[#2552ca] italic">لست</span>
+                  أنت <span className="text-[#2552ca] italic pb-1">لست</span>
                   {" "}مصمماً لتتذكر كل شيء.
                 </span>
               ) : (
