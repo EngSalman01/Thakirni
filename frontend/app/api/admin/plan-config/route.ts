@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
-import { updatePaddlePrice } from "@/lib/paddle/service";
+import { updatePaddlePrice, createPaddlePrice } from "@/lib/paddle/service";
 
 const DEFAULT_PLANS = [
   {
@@ -89,11 +89,12 @@ export async function PUT(request: NextRequest) {
     displayName?: string;
     priceSar?: number;
     paddlePriceId?: string | null;
+    paddleProductId?: string | null;
     features?: string[];
     isActive?: boolean;
   };
 
-  const { planKey, displayName, priceSar, paddlePriceId, features, isActive } = body;
+  const { planKey, displayName, priceSar, paddlePriceId, paddleProductId, features, isActive } = body;
   if (!planKey) {
     return NextResponse.json({ error: "planKey is required" }, { status: 400 });
   }
@@ -105,6 +106,7 @@ export async function PUT(request: NextRequest) {
       display_name: displayName,
       price_sar: priceSar,
       paddle_price_id: paddlePriceId,
+      paddle_product_id: paddleProductId,
       features,
       is_active: isActive,
     })
@@ -124,4 +126,54 @@ export async function PUT(request: NextRequest) {
   }
 
   return NextResponse.json({ success: true, paddleWarning });
+}
+
+// POST /api/admin/plan-config — create a new Paddle price for a plan
+export async function POST(request: NextRequest) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const body = await request.json() as {
+    planKey: string;
+    productId: string;
+    billingInterval?: "month" | "year";
+    billingFrequency?: number;
+  };
+
+  const { planKey, productId, billingInterval = "month", billingFrequency = 1 } = body;
+  if (!planKey || !productId) {
+    return NextResponse.json({ error: "planKey and productId are required" }, { status: 400 });
+  }
+
+  // Fetch current plan to get price and display name
+  const supabase = createServiceClient();
+  const { data: plan, error: fetchError } = await supabase
+    .from("plan_config")
+    .select("price_sar, display_name")
+    .eq("plan_key", planKey)
+    .single();
+
+  if (fetchError || !plan) {
+    return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+  }
+
+  // Create price in Paddle
+  const result = await createPaddlePrice(
+    productId,
+    plan.price_sar,
+    `${plan.display_name} - ${billingInterval === "year" ? "Annual" : "Monthly"}`,
+    { frequency: billingFrequency, interval: billingInterval }
+  );
+
+  if ("error" in result) {
+    return NextResponse.json({ error: result.error }, { status: 500 });
+  }
+
+  // Save the new price ID to DB
+  await supabase
+    .from("plan_config")
+    .update({ paddle_price_id: result.priceId, paddle_product_id: productId })
+    .eq("plan_key", planKey);
+
+  return NextResponse.json({ priceId: result.priceId });
 }
