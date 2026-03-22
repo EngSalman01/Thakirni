@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/admin";
-import { createServiceClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "./_components/admin-sidebar";
 
 export default async function AdminLayout({
@@ -16,7 +15,7 @@ export default async function AdminLayout({
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    redirect("/auth");
+    redirect("/admin/login");
   }
 
   const adminStatus = await isAdmin(user.id);
@@ -24,9 +23,8 @@ export default async function AdminLayout({
     redirect("/admin/login");
   }
 
-  // Fetch profile for sidebar
-  const serviceClient = createServiceClient();
-  const { data: profile } = await serviceClient
+  // Fetch profile for sidebar using authenticated client
+  const { data: profile } = await supabase
     .from("profiles")
     .select("full_name")
     .eq("id", user.id)
