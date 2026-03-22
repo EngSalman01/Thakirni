@@ -171,8 +171,14 @@ export default function PricingPage() {
     initializePaddle({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
       environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
+      eventCallback(event) {
+        if (event.name === "checkout.completed") {
+          toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
+          setTimeout(() => router.push("/vault?subscribed=true"), 500)
+        }
+      },
     }).then((p) => { if (p) setPaddle(p) })
-  }, [])
+  }, [router, t])
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -240,8 +246,7 @@ export default function PricingPage() {
           theme: "dark",
         },
       })
-      toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
-      setTimeout(() => router.push("/vault?subscribed=true"), 500)
+      // Success is handled by eventCallback("checkout.completed") above
     } catch (err) {
       console.error("[Paddle] Checkout error:", err)
       toast.error(t("تعذّر فتح نافذة الدفع", "Could not open checkout"))
