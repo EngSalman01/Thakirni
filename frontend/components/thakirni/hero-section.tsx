@@ -68,8 +68,8 @@ export function HeroSection() {
             {/* Sub */}
             <p className="text-xl text-slate-500 font-light max-w-xl leading-relaxed">
               {t(
-                "ذكرني هو امتدادك الرقمي. مساعد ذكي يلتقط ويربط ويعيد إحياء معرفتك قبل أن تتلاشى.",
-                "Thakirni is your digital aura. An AI-powered extension of your mind that captures, connects, and resurfaces knowledge before it fades."
+                "ذكرني يحفظ مواعيدك وملاحظاتك ويساعدك تنظم حياتك — كل شي في مكان واحد. ويشتغل بعد على واتساب — ما تحتاج تنزّل شي.",
+                "Thakirni is your AI personal assistant. It remembers your plans, saves your notes, and helps you stay organised — all in one place. Also works on WhatsApp — no app needed."
               )}
             </p>
 

@@ -241,7 +241,7 @@ export function CTASection() {
             transition={{ duration: 0.7 }}
           >
             <h2 className="text-4xl md:text-6xl font-headline font-extrabold text-white mb-10 leading-tight">
-              {t("مستعد لبناء أوراك الرقمية؟", "Ready to build your digital aura?")}
+              {t("جاهز تنظم حياتك؟", "Ready to get organised?")}
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth">
@@ -250,12 +250,12 @@ export function CTASection() {
                   whileTap={{ scale: 0.97 }}
                   className="px-12 py-5 rounded-full power-gradient text-white font-bold text-xl shadow-2xl btn-glow"
                 >
-                  {t("إنشاء حساب مجاني", "Create Free Account")}
+                  {t("ابدأ مجاناً", "Get Started for Free")}
                 </motion.button>
               </Link>
             </div>
             <p className="mt-8 text-slate-500 italic">
-              {t("انضم إلى +45,000 مفكر يستخدم ذكرني.", "Join 45,000+ thinkers using Thakirni.")}
+              {t("انضم لذكرني اليوم.", "Join Thakirni today.")}
             </p>
           </motion.div>
         </div>
