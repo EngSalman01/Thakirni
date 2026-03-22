@@ -19,7 +19,9 @@ export default async function AdminLayout({
     redirect("/auth");
   }
 
+  console.error("[AdminLayout] Checking isAdmin for user.id:", user.id);
   const adminStatus = await isAdmin(user.id);
+  console.error("[AdminLayout] isAdmin returned:", adminStatus);
   if (!adminStatus) {
     redirect("/vault");
   }

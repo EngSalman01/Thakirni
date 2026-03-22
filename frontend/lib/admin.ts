@@ -11,9 +11,13 @@ export async function isAdmin(userId: string): Promise<boolean> {
       .select("is_admin")
       .eq("id", userId)
       .single();
-    if (error || !data) return false;
+    if (error || !data) {
+      console.error("[isAdmin] query error or no data:", error, data);
+      return false;
+    }
     return data.is_admin === true;
-  } catch {
+  } catch (e) {
+    console.error("[isAdmin] caught exception:", e);
     return false;
   }
 }
