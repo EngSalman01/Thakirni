@@ -19,11 +19,15 @@ export default async function AdminLayout({
     redirect("/auth");
   }
 
-  console.error("[AdminLayout] Checking isAdmin for user.id:", user.id);
   const adminStatus = await isAdmin(user.id);
-  console.error("[AdminLayout] isAdmin returned:", adminStatus);
   if (!adminStatus) {
-    redirect("/vault");
+    return (
+      <div style={{ padding: 40, fontFamily: "monospace" }}>
+        <p>DEBUG: layout ran</p>
+        <p>user.id: {user.id}</p>
+        <p>isAdmin: {String(adminStatus)}</p>
+      </div>
+    );
   }
 
   // Fetch profile for sidebar
