@@ -20,25 +20,8 @@ export default async function AdminLayout({
   }
 
   const adminStatus = await isAdmin(user.id);
-
-  // DEBUG: run raw query to expose exact failure
-  const debugClient = createServiceClient();
-  const { data: debugData, error: debugError } = await debugClient
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
   if (!adminStatus) {
-    return (
-      <div style={{ padding: 40, fontFamily: "monospace" }}>
-        <p>DEBUG: layout ran</p>
-        <p>user.id: {user.id}</p>
-        <p>isAdmin: {String(adminStatus)}</p>
-        <p>raw data: {JSON.stringify(debugData)}</p>
-        <p>raw error: {JSON.stringify(debugError)}</p>
-      </div>
-    );
+    redirect("/vault");
   }
 
   // Fetch profile for sidebar
