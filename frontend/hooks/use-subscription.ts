@@ -1,77 +1,77 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type SubscriptionType = "individual" | "team" | "company";
+export type PlanTier = "free" | "pro" | "teams";
 
-interface Subscription {
-  id: string;
-  subscription_type: SubscriptionType;
-  plan_name: string;
-  status: "active" | "inactive" | "cancelled";
-  created_at: string;
+interface ActiveSubscription {
+  paddle_subscription_id: string | null;
+  cancel_at_period_end: boolean;
+  current_period_end: string | null;
+  status: string;
 }
 
 export function useSubscription() {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [subscriptionType, setSubscriptionType] = useState<SubscriptionType>("individual");
+  const [tier, setTier] = useState<PlanTier>("free");
+  const [subscription, setSubscription] = useState<ActiveSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchSubscription() {
+    async function fetchPlan() {
       try {
-        setLoading(true);
         const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setTier("free"); setLoading(false); return; }
 
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          setSubscriptionType("individual");
-          setLoading(false);
-          return;
-        }
-
-        // Fetch user's active subscription
-        const { data, error: err } = await supabase
-          .from("subscriptions")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("status", "active")
+        // Source of truth: profiles.plan_tier
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("plan_tier")
+          .eq("id", user.id)
           .single();
 
-        if (err && err.code !== "PGRST116") {
-          // PGRST116 = no rows returned
-          throw err;
-        }
+        const raw = (profile?.plan_tier ?? "") as string;
+        setTier(normalizeTier(raw));
 
-        if (data) {
-          setSubscription(data);
-          setSubscriptionType(data.subscription_type);
-        } else {
-          // Default to individual if no subscription found
-          setSubscriptionType("individual");
-        }
+        // Also fetch active subscription for cancel/period info
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("paddle_subscription_id, cancel_at_period_end, current_period_end, status")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (sub) setSubscription(sub as ActiveSubscription);
       } catch (err) {
-        console.error("[v0] Error fetching subscription:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch subscription");
-        setSubscriptionType("individual");
+        console.error("[useSubscription]", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch plan");
+        setTier("free");
       } finally {
         setLoading(false);
       }
     }
-
-    fetchSubscription();
+    fetchPlan();
   }, []);
 
   return {
+    tier,
     subscription,
-    subscriptionType,
     loading,
     error,
-    isIndividual: subscriptionType === "individual",
-    isTeam: subscriptionType === "team",
-    isCompany: subscriptionType === "company",
+    isPro: tier === "pro",
+    isTeams: tier === "teams",
+    isFree: tier === "free",
+    isPaid: tier === "pro" || tier === "teams",
+    // legacy compat
+    subscriptionType: tier === "teams" ? "team" : tier === "pro" ? "individual" : "free",
+    isIndividual: tier === "pro",
+    isTeam: tier === "teams",
   };
+}
+
+export function normalizeTier(raw: string): PlanTier {
+  const v = (raw ?? "").toUpperCase();
+  if (v === "TEAMS" || v === "COMPANY" || v === "TEAM") return "teams";
+  if (v === "PRO" || v === "INDIVIDUAL") return "pro";
+  return "free";
 }

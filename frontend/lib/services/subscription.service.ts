@@ -71,12 +71,12 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
 export const PLAN_PRICES = {
   PRO: {
-    monthly: { usd: 30, paddlePriceId: process.env.PADDLE_PRICE_PRO_MONTHLY ?? "" },
-    annual: { usd: 288, paddlePriceId: process.env.PADDLE_PRICE_PRO_ANNUAL ?? "" },
+    monthly: { sar: 29.99, paddlePriceId: process.env.PADDLE_PRICE_PRO_MONTHLY ?? "" },
+    annual: { sar: 287.99, paddlePriceId: process.env.PADDLE_PRICE_PRO_ANNUAL ?? "" },
   },
   TEAMS: {
-    monthly: { usd: 60, paddlePriceId: process.env.PADDLE_PRICE_TEAMS_MONTHLY ?? "" },
-    annual: { usd: 576, paddlePriceId: process.env.PADDLE_PRICE_TEAMS_ANNUAL ?? "" },
+    monthly: { sar: 59.99, paddlePriceId: process.env.PADDLE_PRICE_TEAMS_MONTHLY ?? "" },
+    annual: { sar: 575.99, paddlePriceId: process.env.PADDLE_PRICE_TEAMS_ANNUAL ?? "" },
   },
 }
 
