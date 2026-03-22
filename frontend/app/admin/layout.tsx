@@ -21,7 +21,7 @@ export default async function AdminLayout({
 
   const adminStatus = await isAdmin(user.id);
   if (!adminStatus) {
-    redirect("/vault");
+    redirect("/admin/login");
   }
 
   // Fetch profile for sidebar
