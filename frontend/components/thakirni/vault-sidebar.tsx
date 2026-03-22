@@ -30,6 +30,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
+import { BrandLogo } from "@/components/thakirni/brand-logo";
 import {
   useState,
   useEffect,
@@ -296,10 +297,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <div className="flex flex-col h-full bg-[#fbf9f8]">
       {/* Logo */}
       <div className="px-8 pt-8 pb-6 flex items-center gap-3">
-        <Link href="/" onClick={onNavigate} className="flex items-center gap-2">
-          <span className="text-2xl font-bold gradient-text font-headline tracking-tight">
-            Thakirni
-          </span>
+        <Link href="/" onClick={onNavigate} className="flex items-center">
+          <BrandLogo />
         </Link>
       </div>
 
@@ -418,9 +417,9 @@ function MobileTopBar() {
   return (
     <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[#fbf9f8] border-b border-slate-200/60 flex items-center justify-between px-4 shadow-ambient">
       {/* Logo: left in LTR, right in RTL */}
-      <span className="text-lg font-bold gradient-text font-headline tracking-tight order-1 rtl:order-2">
-        Thakirni
-      </span>
+      <Link href="/" className="flex items-center order-1 rtl:order-2">
+        <BrandLogo className="h-8 w-auto" />
+      </Link>
       {/* Hamburger: right in LTR, left in RTL (drawer slides from that side) */}
       <button
         onClick={() => setOpen(true)}

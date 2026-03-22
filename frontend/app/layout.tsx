@@ -51,7 +51,8 @@ export const metadata: Metadata = {
     description: "The first AI-powered personal assistant and second brain platform in Saudi Arabia.",
     images: [
       {
-        url: "/og-image.png",   // create a 1200×630 image and place in /public
+        // TODO: replace with a proper 1200x630 OG image
+        url: "/images/logo-gradient-bg.svg",
         width: 1200,
         height: 630,
         alt: "Thakirni – Your Second Brain",
@@ -69,11 +70,8 @@ export const metadata: Metadata = {
 
   // ── Icons ──
   icons: {
-    icon: [
-      { url: "/images/icon-light-32x32.png", media: "(prefers-color-scheme: light)", type: "image/png" },
-      { url: "/images/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)", type: "image/png" },
-    ],
-    apple: "/images/apple-icon.png",
+    icon: "/favicon.svg",
+    apple: "/images/icon-96.svg",
   },
 
   // ── Misc ──

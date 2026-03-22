@@ -1,0 +1,29 @@
+<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#EC4899"/>
+    </linearGradient>
+    <linearGradient id="divider" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="iconClip">
+      <rect x="0" y="0" width="68" height="68" rx="18"/>
+    </clipPath>
+  </defs>
+  <!-- Icon background -->
+  <rect x="6" y="6" width="68" height="68" rx="18" fill="url(#iconGrad)"/>
+  <!-- Shine -->
+  <ellipse cx="18" cy="16" rx="16" ry="11" fill="white" fill-opacity="0.18" clip-path="url(#iconClip)" transform="translate(6,6)"/>
+  <!-- ذ letter -->
+  <text x="40" y="52" text-anchor="middle" font-family="'Segoe UI', 'Arial', sans-serif" font-size="34" font-weight="500" fill="white">ذ</text>
+  <!-- Divider -->
+  <rect x="88" y="22" width="1" height="36" fill="url(#divider)"/>
+  <!-- Thakirni wordmark -->
+  <text x="102" y="46" font-family="'Segoe UI', system-ui, sans-serif" font-size="27" font-weight="600" letter-spacing="-0.4" fill="#18181b">Thakirni</text>
+  <!-- Arabic subtitle -->
+  <text x="102" y="63" font-family="'Segoe UI', 'Arial', sans-serif" font-size="14" font-weight="400" fill="#9ca3af">ذكرني</text>
+</svg>
