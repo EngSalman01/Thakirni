@@ -89,7 +89,7 @@ export function useSidebar() {
 // ── Nav items config ──────────────────────────────────────────────────────────
 
 const navItems: NavItem[] = [
-  { href: "/vault", icon: Network, labelAr: "الخريطة العصبية", labelEn: "Neural Map" },
+  { href: "/vault", icon: Network, labelAr: "الخريطة العصبية", labelEn: "Neural Map", hash: "#neural-map" },
   { href: "/vault", icon: Sparkles, labelAr: "المساعد الذكي", labelEn: "AI Assistant", hash: "#ai-chat" },
   { href: "/vault/plans", icon: ListTodo, labelAr: "خططي", labelEn: "My Plans" },
   { href: "/vault/meetings", icon: Mic, labelAr: "ملخص الاجتماعات", labelEn: "Meeting Summary" },
@@ -153,11 +153,21 @@ function NavItemRow({
   onNavigate?: () => void;
 }) {
   const { isArabic } = useLanguage();
+  const pathname = usePathname();
+
+  function handleClick(e: React.MouseEvent) {
+    if (item.hash && pathname === item.href) {
+      e.preventDefault();
+      const id = item.hash.replace("#", "");
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }
+    onNavigate?.();
+  }
 
   return (
     <Link
       href={item.hash ? `${item.href}${item.hash}` : item.href}
-      onClick={onNavigate}
+      onClick={handleClick}
       className={cn(
         "flex items-center gap-3 py-3 px-6 text-sm font-semibold font-label transition-all duration-200",
         isActive
