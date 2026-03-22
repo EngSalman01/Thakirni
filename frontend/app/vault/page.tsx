@@ -501,6 +501,7 @@ export default function VaultPage() {
 
           {/* ── Orb: full-width row, centered ── */}
           <motion.div
+            id="neural-map"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7 }}
@@ -533,7 +534,7 @@ export default function VaultPage() {
         </div>
 
         {/* AI Chat section */}
-        <div className="w-full mt-4 lg:mt-8">
+        <div id="ai-chat" className="w-full mt-4 lg:mt-8">
           <div className="mb-6">
             <h2 className="text-2xl font-headline font-extrabold text-slate-800">
               {t("المساعد الذكي", "AI Assistant")}
