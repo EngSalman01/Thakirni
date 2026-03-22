@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Authenticate via the session-aware client (respects cookies)
+    const authClient = await createClient();
+    const { data: { user }, error: authError } = await authClient.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const { error: uploadError } = await supabase.storage
+    // Use service role client to bypass RLS on storage and profiles table
+    const admin = createServiceClient();
+
+    const { error: uploadError } = await admin.storage
       .from("avatars")
       .upload(path, buffer, { upsert: true, contentType: file.type });
 
@@ -35,9 +38,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
 
-    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    const { data: { publicUrl } } = admin.storage.from("avatars").getPublicUrl(path);
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await admin
       .from("profiles")
       .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
       .eq("id", user.id);
