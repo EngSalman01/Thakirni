@@ -17,7 +17,7 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Sparkles, RefreshCw, Calendar, X,
+  Sparkles, RefreshCw, Calendar, X, Camera,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -138,6 +138,8 @@ export default function SettingsPage() {
   );
 
   const abortRef = useRef<AbortController | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   // ── Fetch profile ──────────────────────────────────────────────────────────
 
@@ -222,6 +224,50 @@ export default function SettingsPage() {
       setSaving(false);
     }
   }, [name, phone, t]);
+
+  // ── Avatar upload ──────────────────────────────────────────────────────────
+
+  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(t("حجم الصورة يجب ألا يتجاوز 5 ميغابايت", "Image must be under 5MB"));
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (updateError) throw updateError;
+
+      setProfile((p) => p ? { ...p, avatar_url: publicUrl } : null);
+      toast.success(t("تم تحديث صورة الملف الشخصي", "Profile photo updated"));
+    } catch (err) {
+      console.error("[Settings] avatar upload:", err);
+      toast.error(t("فشل رفع الصورة", "Failed to upload photo"));
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }, [t]);
 
   // ── Google Calendar ─────────────────────────────────────────────────────────
 
@@ -361,16 +407,42 @@ export default function SettingsPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-6 mb-8">
-                  <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl power-gradient flex items-center justify-center text-white text-3xl font-bold font-headline shrink-0 overflow-hidden">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
-                    ) : initial}
+                  <div className="relative shrink-0">
+                    <div className="w-24 h-24 rounded-full border-4 border-white shadow-xl power-gradient flex items-center justify-center text-white text-3xl font-bold font-headline overflow-hidden">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" />
+                      ) : initial}
+                    </div>
+                    <button
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={avatarUploading}
+                      className="absolute bottom-0 end-0 w-7 h-7 rounded-full bg-[#2552ca] text-white flex items-center justify-center shadow-md hover:bg-[#1a3fa0] transition-colors disabled:opacity-50"
+                      aria-label={t("تغيير الصورة", "Change photo")}
+                    >
+                      {avatarUploading
+                        ? <span className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin" />
+                        : <Camera className="w-3.5 h-3.5" />}
+                    </button>
+                    <input
+                      ref={avatarInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-xl font-headline font-bold text-slate-900">{name || t("المستخدم", "User")}</h3>
                     <p className="text-slate-500" dir="ltr">{email}</p>
-                    <button className="text-[#2552ca] font-bold text-sm hover:underline font-label">
-                      {t("تعديل الهوية", "Edit Identity")}
+                    <button
+                      onClick={() => avatarInputRef.current?.click()}
+                      disabled={avatarUploading}
+                      className="text-[#2552ca] font-bold text-sm hover:underline font-label disabled:opacity-50 flex items-center gap-1"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      {avatarUploading
+                        ? t("جاري الرفع...", "Uploading...")
+                        : t("تغيير الصورة", "Change Photo")}
                     </button>
                   </div>
                 </div>
