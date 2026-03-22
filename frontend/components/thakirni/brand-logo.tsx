@@ -10,8 +10,9 @@ interface BrandLogoProps {
 
 export function BrandLogo({ className }: BrandLogoProps) {
   const { resolvedTheme } = useTheme()
+  // resolvedTheme is undefined on first render (SSR) — default to light
   const src =
-    resolvedTheme === "dark"
+    (resolvedTheme ?? "light") === "dark"
       ? "/images/logo-dark.svg"
       : "/images/logo-light.svg"
 
@@ -22,6 +23,7 @@ export function BrandLogo({ className }: BrandLogoProps) {
       width={180}
       height={40}
       priority
+      unoptimized
       className={cn("object-contain", className)}
     />
   )

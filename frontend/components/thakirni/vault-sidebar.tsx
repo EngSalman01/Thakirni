@@ -20,7 +20,6 @@ import {
   Waves,
   Users,
   HelpCircle,
-  RefreshCw,
   Upload,
   Mic,
   Bell,
@@ -287,11 +286,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const handleSignOut = useSignOut();
 
   const initial = profile?.full_name?.charAt(0).toUpperCase() ?? "U";
-  const planLabel = profile?.plan_tier === "COMPANY"
-    ? t("باقة الشركات", "Company Plan")
-    : profile?.plan_tier === "INDIVIDUAL"
-    ? t("باقة الأفراد", "Individual Plan")
-    : t("التركيز العميق نشط", "Deep Focus Active");
+  const planLabel =
+    profile?.plan_tier === "COMPANY"
+      ? t("باقة الشركات", "Company Plan")
+      : profile?.plan_tier === "INDIVIDUAL"
+      ? t("باقة الأفراد", "Individual Plan")
+      : null;
 
   return (
     <div className="flex flex-col h-full bg-[#fbf9f8]">
@@ -321,9 +321,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             ) : (
               <>
                 <p className="text-sm font-bold text-slate-800 font-label truncate">
-                  {profile?.full_name ?? t("المستخدم", "Cognitive Aura")}
+                  {profile?.full_name ?? t("المستخدم", "User")}
                 </p>
-                <p className="text-xs text-[#2552ca] font-semibold">{planLabel}</p>
+                {planLabel && (
+                  <p className="text-xs text-[#2552ca] font-semibold">{planLabel}</p>
+                )}
               </>
             )}
           </div>
@@ -352,11 +354,6 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Bottom actions */}
       <div className="p-6 mt-auto space-y-3">
-        <button className="w-full py-4 rounded-full power-gradient text-white font-headline font-bold text-sm shadow-lg hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
-          <RefreshCw className="w-4 h-4" />
-          {t("مزامنة الذاكرة", "Sync Mind")}
-        </button>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-100 transition-colors text-slate-500 text-sm font-semibold">
