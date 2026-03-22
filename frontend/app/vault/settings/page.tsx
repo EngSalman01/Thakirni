@@ -238,30 +238,45 @@ export default function SettingsPage() {
 
     setAvatarUploading(true);
     try {
+      // Must use the browser (anon) client — storage uploads require the user's session
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error("[Avatar] auth error:", authError);
+        throw new Error("Not authenticated");
+      }
 
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
       const path = `${user.id}/avatar.${ext}`;
 
+      // Step 1: upload to "avatars" bucket (must be public, with RLS allowing owner writes)
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(path, file, { upsert: true, contentType: file.type });
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("[Avatar] storage upload error:", uploadError.message, uploadError);
+        throw uploadError;
+      }
 
+      // Step 2: get public URL (bucket must have public access enabled)
       const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+      console.log("[Avatar] public URL:", publicUrl);
 
+      // Step 3: update profiles table — only runs after upload succeeds
       const { error: updateError } = await supabase
         .from("profiles")
         .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
         .eq("id", user.id);
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("[Avatar] profile update error:", updateError.message, updateError);
+        throw updateError;
+      }
 
       setProfile((p) => p ? { ...p, avatar_url: publicUrl } : null);
       toast.success(t("تم تحديث صورة الملف الشخصي", "Profile photo updated"));
     } catch (err) {
-      console.error("[Settings] avatar upload:", err);
+      console.error("[Avatar] upload failed:", err);
       toast.error(t("فشل رفع الصورة", "Failed to upload photo"));
     } finally {
       setAvatarUploading(false);

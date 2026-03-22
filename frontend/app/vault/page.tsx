@@ -497,7 +497,7 @@ export default function VaultPage() {
       <div className="absolute bottom-20 left-0 lg:left-72 w-64 h-64 lg:w-80 lg:h-80 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="pt-16 lg:pt-24 px-4 sm:px-6 pb-8 min-h-screen relative">
-        <div className="max-w-4xl mx-auto space-y-3 lg:space-y-4 w-full">
+        <div className="w-full space-y-3 lg:space-y-4">
 
           {/* ── Orb: full-width row, centered ── */}
           <motion.div
@@ -533,7 +533,7 @@ export default function VaultPage() {
         </div>
 
         {/* AI Chat section */}
-        <div className="max-w-4xl mx-auto mt-4 lg:mt-8 w-full">
+        <div className="w-full mt-4 lg:mt-8">
           <div className="mb-6">
             <h2 className="text-2xl font-headline font-extrabold text-slate-800">
               {t("المساعد الذكي", "AI Assistant")}
