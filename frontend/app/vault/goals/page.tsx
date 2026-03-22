@@ -128,7 +128,7 @@ export default function GoalsPage() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:ml-72 p-4 md:p-6 transition-all duration-300">
+      <main className="lg:ml-72 pt-16 p-4 md:p-6 lg:pt-4 transition-all duration-300">
       <div className="max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>

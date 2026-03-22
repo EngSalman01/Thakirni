@@ -34,7 +34,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:ml-72 transition-all duration-300 p-6">
+      <main className="lg:ml-72 transition-all duration-300 pt-16 p-6 lg:pt-6">
         {children}
       </main>
     </div>

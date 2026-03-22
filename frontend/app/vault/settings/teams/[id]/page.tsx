@@ -125,7 +125,7 @@ function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:ml-72 p-4 md:p-8">
+      <main className="lg:ml-72 pt-16 p-4 md:p-8 lg:pt-4">
         <div className="max-w-6xl mx-auto space-y-6">
           <Skeleton className="h-12 w-64" />
           <div className="grid sm:grid-cols-3 gap-4">
@@ -237,7 +237,7 @@ export default function TeamSettingsPage() {
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="lg:ml-72 transition-all duration-300 p-4 md:p-8">
+      <main className="lg:ml-72 transition-all duration-300 pt-16 p-4 md:p-8 lg:pt-4">
         <div className="max-w-6xl mx-auto space-y-6">
 
           {/* Header */}

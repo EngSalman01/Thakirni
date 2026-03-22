@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -12,6 +12,7 @@ export function LandingHeader() {
   const { t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const menuRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -19,18 +20,31 @@ export function LandingHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Close on outside tap
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [mobileOpen]);
+
   return (
     <motion.header
+      ref={menuRef}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? "h-16 shadow-ambient"
-          : "h-20"
-      } bg-white/70 backdrop-blur-xl shadow-ambient`}
+          ? "h-auto shadow-ambient"
+          : "h-auto"
+      } bg-white dark:bg-slate-900 shadow-ambient`}
     >
-      <div className="flex items-center justify-between h-full px-8 max-w-7xl mx-auto">
+      <div className={`flex items-center justify-between px-8 max-w-7xl mx-auto ${scrolled ? "h-16" : "h-20"}`}>
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <span className="text-2xl font-bold gradient-text font-headline tracking-tight">
@@ -102,7 +116,7 @@ export function LandingHeader() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden border-t border-slate-200/50 glass overflow-hidden"
+            className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden z-50"
           >
             <div className="px-8 py-5 flex flex-col gap-4">
               {[

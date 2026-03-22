@@ -92,7 +92,7 @@ export default function PlansPage() {
     <div className="min-h-screen bg-background text-foreground">
       <VaultSidebar />
 
-      <main className="lg:ml-72 p-4 lg:p-8 transition-all duration-300">
+      <main className="lg:ml-72 pt-16 p-4 lg:p-8 transition-all duration-300">
         <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
           {/* Header */}
           <div className="flex items-start gap-3">

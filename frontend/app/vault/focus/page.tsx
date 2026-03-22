@@ -159,7 +159,7 @@ export default function FocusPage() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:ml-72 p-4 md:p-6 transition-all duration-300">
+      <main className="lg:ml-72 pt-16 p-4 md:p-6 lg:pt-4 transition-all duration-300">
       <div className="max-w-xl mx-auto">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
