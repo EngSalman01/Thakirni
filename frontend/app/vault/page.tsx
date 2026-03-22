@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useSubscription } from "@/hooks/use-subscription";
 import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,16 +126,23 @@ function RecentCaptures() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { setLoading(false); return; }
-      supabase
-        .from("memories")
-        .select("id, title, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(3)
-        .then(({ data }) => { setMemories(data ?? []); setLoading(false); });
-    });
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from("memories")
+          .select("id, title, created_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+        setMemories(data ?? []);
+      } catch (err) {
+        console.error("[RecentCaptures]", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   function relativeTime(dateStr: string): string {
@@ -234,18 +242,25 @@ function FocusStream() {
   useEffect(() => {
     const supabase = createClient();
     const today = new Date().toISOString().split("T")[0];
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { setLoading(false); return; }
-      supabase
-        .from("plans")
-        .select("id, title, plan_time")
-        .eq("user_id", user.id)
-        .eq("plan_date", today)
-        .eq("status", "pending")
-        .order("plan_time", { ascending: true })
-        .limit(3)
-        .then(({ data }) => { setPlans(data ?? []); setLoading(false); });
-    });
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from("plans")
+          .select("id, title, plan_time")
+          .eq("user_id", user.id)
+          .eq("plan_date", today)
+          .eq("status", "pending")
+          .order("plan_time", { ascending: true })
+          .limit(3);
+        setPlans(data ?? []);
+      } catch (err) {
+        console.error("[FocusStream]", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   return (
@@ -307,16 +322,23 @@ function AuraVisualization() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { setLoading(false); return; }
-      supabase
-        .from("memories")
-        .select("id, title")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5)
-        .then(({ data }) => { setMemories(data ?? []); setLoading(false); });
-    });
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from("memories")
+          .select("id, title")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        setMemories(data ?? []);
+      } catch (err) {
+        console.error("[AuraVisualization]", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   return (
@@ -408,7 +430,7 @@ function VaultHeader() {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function VaultPage() {
+function VaultPageInner() {
   const { subscriptionType, loading: subscriptionLoading } = useSubscription();
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -422,18 +444,19 @@ export default function VaultPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Use maybeSingle so no error is thrown when user has no team yet
       const { data: membership } = await supabase
         .from("team_members")
         .select("team_id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
       if (!membership) return;
 
       const { data: team } = await supabase
         .from("teams")
         .select("*")
         .eq("id", membership.team_id)
-        .single();
+        .maybeSingle();
       if (!team) return;
       setCurrentTeam(team as Team);
 
@@ -443,11 +466,11 @@ export default function VaultPage() {
         .eq("team_id", team.id);
 
       setTeamMembers(
-        members?.map((m: any) => ({
+        (members ?? []).map((m: any) => ({
           id: m.user_id,
           name: m.profiles?.full_name ?? t("عضو الفريق", "Team Member"),
           avatar: m.profiles?.avatar_url ?? null,
-        })) ?? []
+        }))
       );
     } catch (err) {
       console.error("[VaultPage] fetchTeamData error:", err);
@@ -469,9 +492,9 @@ export default function VaultPage() {
     return <VaultSkeleton />;
   }
 
-  // Team dashboard
-  if (isTeamSubscription) {
-    if (!currentTeam) return <VaultSkeleton />;
+  // Team dashboard — only if team data loaded successfully
+  // If user has teams subscription but no team yet, fall through to individual dashboard
+  if (isTeamSubscription && currentTeam) {
     return (
       <PageShell>
         <VaultHeader />
@@ -487,7 +510,7 @@ export default function VaultPage() {
     );
   }
 
-  // Individual dashboard
+  // Individual dashboard (also shown when user has teams tier but no team created yet)
   return (
     <PageShell>
       <VaultHeader />
@@ -554,5 +577,13 @@ export default function VaultPage() {
         </button>
       </Link>
     </PageShell>
+  );
+}
+
+export default function VaultPage() {
+  return (
+    <ErrorBoundary>
+      <VaultPageInner />
+    </ErrorBoundary>
   );
 }
