@@ -17,7 +17,7 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Key, Fingerprint, Sparkles, RefreshCw, Calendar, X,
+  Sparkles, RefreshCw, Calendar, X,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -481,34 +481,6 @@ export default function SettingsPage() {
                 </h2>
               </div>
               <div className="space-y-4">
-                <div className="p-6 bg-white rounded-xl flex items-center gap-6">
-                  <Key className="w-8 h-8 text-[#2552ca] shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-headline font-bold text-slate-900">
-                      {t("تشفير شامل", "End-to-End Encryption")}
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {t("خرائطك العصبية مشفرة بمفاتيح خاصة تتحكم فيها وحدك.", "Your neural maps are encrypted with private keys you alone control.")}
-                    </p>
-                    <button
-                      onClick={() => router.push("/vault/settings/security/change-password")}
-                      className="mt-3 text-[#2552ca] font-bold text-sm hover:underline font-label"
-                    >
-                      {t("تغيير كلمة المرور", "Change Password")}
-                    </button>
-                  </div>
-                </div>
-                <div className="p-6 bg-white rounded-xl flex items-center gap-6">
-                  <Fingerprint className="w-8 h-8 text-[#2552ca] shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-headline font-bold text-slate-900">
-                      {t("خزنة بيومترية", "Biometric Vault")}
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {t("طلب بصمة الوجه أو الإصبع لفتح مجموعات الذاكرة الحساسة.", "Require FaceID or Fingerprint to unlock sensitive memory clusters.")}
-                    </p>
-                  </div>
-                </div>
                 <div className="p-6 bg-red-50/50 rounded-xl border border-red-200/30">
                   <h3 className="text-red-600 font-headline font-bold mb-2">
                     {t("منطقة الخطر", "Danger Zone")}
@@ -576,40 +548,31 @@ export default function SettingsPage() {
                 </h2>
               </div>
               <div className="space-y-3">
-                {/* Google Calendar */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                {/* Google Calendar — Coming Soon */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl opacity-70">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center shrink-0">
-                      <Calendar className="w-5 h-5 text-[#2552ca]" />
+                      <Calendar className="w-5 h-5 text-slate-400" />
                     </div>
                     <div>
-                      <p className="font-bold text-sm font-label text-slate-800">Google Calendar</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm font-label text-slate-800">Google Calendar</p>
+                        <span className="text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                          {t("قريباً", "Coming Soon")}
+                        </span>
+                      </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {calendarConnected
-                          ? t("متصل — مزامنة الأحداث تلقائياً", "Connected — events synced")
-                          : t("اربط التقويم لعرض أحداثك", "Connect to see your events")}
+                        {t("التكامل مع Google Calendar قيد التطوير", "Google Calendar integration coming soon")}
                       </p>
                     </div>
                   </div>
-                  {calendarConnected ? (
-                    <button
-                      onClick={handleDisconnectCalendar}
-                      disabled={calendarLoading}
-                      className="flex items-center gap-1.5 text-xs text-red-500 font-bold font-label hover:text-red-700 transition-colors"
-                    >
-                      {calendarLoading
-                        ? <Loader2 className="w-3 h-3 animate-spin" />
-                        : <X className="w-3 h-3" />}
-                      {t("قطع الاتصال", "Disconnect")}
-                    </button>
-                  ) : (
-                    <a
-                      href="/api/google-calendar/connect"
-                      className="text-xs text-[#2552ca] font-bold font-label hover:underline"
-                    >
-                      {t("ربط", "Connect")}
-                    </a>
-                  )}
+                  <button
+                    disabled
+                    title={t("تكامل Google قادم قريباً", "Google integration coming soon")}
+                    className="text-xs text-slate-400 font-bold font-label cursor-not-allowed"
+                  >
+                    {t("قريباً", "Soon")}
+                  </button>
                 </div>
 
                 {/* WhatsApp — shows status based on phone */}
@@ -666,18 +629,6 @@ export default function SettingsPage() {
               </div>
             </SettingsCard>
 
-            {/* Experimental Labs */}
-            <SettingsCard delay={0.2} className="bg-gradient-to-br from-[#2552ca] to-[#456ce4] text-white">
-              <h3 className="text-xl font-headline font-bold mb-2">
-                {t("مختبر التجريبي", "Experimental Labs")}
-              </h3>
-              <p className="text-white/80 text-sm mb-6">
-                {t("كن أول من يختبر محرك المرآة المعرفية الجديد المدعوم بالذكاء الاصطناعي.", "Be the first to test our new AI-driven Cognitive Mirroring engine.")}
-              </p>
-              <button className="px-6 py-2.5 rounded-full bg-white text-[#2552ca] font-bold text-sm font-label hover:bg-slate-50 transition-colors">
-                {t("انضم إلى النسخة التجريبية", "Join Beta")}
-              </button>
-            </SettingsCard>
           </div>
         </div>
       </main>

@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { Plus, RefreshCw, Brain, Mic, Upload, FileText, Code2, Network } from "lucide-react";
+import { Plus, Brain, Mic, Upload, FileText } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -119,11 +119,46 @@ function MindMetrics() {
 // ── Recent captures ───────────────────────────────────────────────────────────
 
 function RecentCaptures() {
-  const { t } = useLanguage();
-  const captures = [
-    { icon: Mic, label: t("مذكرة صوتية #242", "Voice Memo #242"), sub: t("منذ دقيقتين • تم التوليف", "2 mins ago • AI Synthesized"), color: "bg-[#2552ca]/10 text-[#2552ca] group-hover:bg-[#2552ca] group-hover:text-white", href: "/vault/voice-note" },
-    { icon: FileText, label: t("Project Brief.docx", "Project Brief.docx"), sub: t("منذ ساعة • رابط دلالي", "1 hour ago • Semantic Link"), color: "bg-[#ad1d7f]/10 text-[#ad1d7f] group-hover:bg-[#ad1d7f] group-hover:text-white", href: "/vault/upload" },
-    { icon: Code2, label: t("مقتطف Python AI", "Python Neural Config"), sub: t("منذ 3 ساعات • استيراد ويب", "3 hours ago • Web Clipping"), color: "bg-[#385b9b]/10 text-[#385b9b] group-hover:bg-[#385b9b] group-hover:text-white", href: "/vault" },
+  const { t, isArabic } = useLanguage();
+  const [memories, setMemories] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { setLoading(false); return; }
+      supabase
+        .from("memories")
+        .select("id, title, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(3)
+        .then(({ data }) => { setMemories(data ?? []); setLoading(false); });
+    });
+  }, []);
+
+  function relativeTime(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(mins / 60);
+    const days = Math.floor(hours / 24);
+    if (isArabic) {
+      if (mins < 1) return "للتو";
+      if (mins < 60) return `منذ ${mins} دقيقة`;
+      if (hours < 24) return `منذ ${hours} ساعة`;
+      return `منذ ${days} يوم`;
+    } else {
+      if (mins < 1) return "just now";
+      if (mins < 60) return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      return `${days}d ago`;
+    }
+  }
+
+  const iconColors = [
+    "bg-[#2552ca]/10 text-[#2552ca] group-hover:bg-[#2552ca] group-hover:text-white",
+    "bg-[#ad1d7f]/10 text-[#ad1d7f] group-hover:bg-[#ad1d7f] group-hover:text-white",
+    "bg-[#385b9b]/10 text-[#385b9b] group-hover:bg-[#385b9b] group-hover:text-white",
   ];
 
   return (
@@ -132,21 +167,32 @@ function RecentCaptures() {
         {t("التقاطات الأخيرة", "Recent Captures")}
       </h2>
       <div className="glass-card p-6 rounded-2xl shadow-ambient space-y-3 border border-white/40">
-        {captures.map(({ icon: Icon, label, sub, color, href }) => (
-          <Link
-            key={href + label}
-            href={href}
-            className="flex items-center gap-4 p-3 bg-[#f6f3f2] rounded-xl group hover:bg-white transition-all cursor-pointer"
-          >
-            <div className={`p-2 ${color} rounded-full transition-colors shrink-0`}>
-              <Icon className="w-4 h-4" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate font-label">{label as string}</p>
-              <p className="text-xs text-slate-500">{sub as string}</p>
-            </div>
-          </Link>
-        ))}
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
+          </div>
+        ) : memories.length === 0 ? (
+          <div className="text-center py-6 text-slate-400 text-sm">
+            <Brain className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p>{t("لا توجد ذكريات بعد — ابدأ محادثة مع الذكاء الاصطناعي", "No memories yet — start a conversation with the AI")}</p>
+          </div>
+        ) : (
+          memories.map(({ id, title, created_at }, i) => (
+            <Link
+              key={id}
+              href="/vault/memories"
+              className="flex items-center gap-4 p-3 bg-[#f6f3f2] rounded-xl group hover:bg-white transition-all cursor-pointer"
+            >
+              <div className={`p-2 ${iconColors[i % 3]} rounded-full transition-colors shrink-0`}>
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold truncate font-label">{title}</p>
+                <p className="text-xs text-slate-500">{relativeTime(created_at)}</p>
+              </div>
+            </Link>
+          ))
+        )}
       </div>
     </section>
   );
@@ -182,39 +228,62 @@ function AIInsight() {
 
 function FocusStream() {
   const { t } = useLanguage();
+  const [plans, setPlans] = useState<Array<{ id: string; title: string; plan_time?: string | null }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const today = new Date().toISOString().split("T")[0];
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { setLoading(false); return; }
+      supabase
+        .from("plans")
+        .select("id, title, plan_time")
+        .eq("user_id", user.id)
+        .eq("plan_date", today)
+        .eq("status", "pending")
+        .order("plan_time", { ascending: true })
+        .limit(3)
+        .then(({ data }) => { setPlans(data ?? []); setLoading(false); });
+    });
+  }, []);
+
   return (
     <section className="space-y-4">
       <h2 className="font-headline text-lg font-extrabold tracking-tight text-slate-800">
         {t("تيار التركيز", "Focus Stream")}
       </h2>
       <div className="space-y-3">
-        <div className="glass-card p-5 rounded-2xl border border-white/40">
-          <div className="flex items-start justify-between mb-3">
-            <span className="px-3 py-1 bg-[#ffd8e9] text-[#3c0029] text-[10px] font-bold rounded-full uppercase tracking-widest font-label">
-              {t("مهمة نشطة", "Active Task")}
-            </span>
-            <span className="text-xs text-slate-400">00:42:15</span>
+        {loading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-16 rounded-2xl" />
           </div>
-          <h4 className="font-headline font-bold text-sm mb-2">
-            {t("تحسين البنية العصبية", "Refining Neural Architecture")}
-          </h4>
-          <p className="text-xs text-slate-500 line-clamp-2">
-            {t("العمل على رسم خريطة المساحة الكامنة لعقد الذاكرة.", "Working on latent space mapping for cognitive memory nodes.")}
-          </p>
-          <div className="mt-3 flex -space-x-2">
-            {["bg-slate-300", "bg-slate-400", "bg-[#2552ca]"].map((c, i) => (
-              <div key={i} className={`w-6 h-6 rounded-full border-2 border-white ${c} flex items-center justify-center text-[8px] text-white font-bold`}>
-                {i === 2 ? "+4" : ""}
-              </div>
-            ))}
+        ) : plans.length === 0 ? (
+          <div className="glass-card p-6 rounded-2xl border border-white/40 text-center text-slate-400 text-sm">
+            {t("لا توجد خطط اليوم — استمتع بيومك 😊", "No plans today — enjoy your day 😊")}
           </div>
-        </div>
-        <div className="p-5 bg-[#f6f3f2] rounded-2xl opacity-60">
-          <h4 className="font-headline font-bold text-sm mb-1">
-            {t("قادم: مزامنة الذاكرة", "Upcoming: Sync Mind")}
-          </h4>
-          <p className="text-xs text-slate-500">{t("مجدول للساعة 4:00 مساءً", "Scheduled for 4:00 PM")}</p>
-        </div>
+        ) : (
+          plans.map((plan, i) => (
+            <div
+              key={plan.id}
+              className={i === 0 ? "glass-card p-5 rounded-2xl border border-white/40" : "p-5 bg-[#f6f3f2] rounded-2xl opacity-60"}
+            >
+              {i === 0 && (
+                <div className="flex items-start justify-between mb-3">
+                  <span className="px-3 py-1 bg-[#ffd8e9] text-[#3c0029] text-[10px] font-bold rounded-full uppercase tracking-widest font-label">
+                    {t("التالي", "Up Next")}
+                  </span>
+                  {plan.plan_time && <span className="text-xs text-slate-400">{plan.plan_time}</span>}
+                </div>
+              )}
+              <h4 className="font-headline font-bold text-sm">{plan.title}</h4>
+              {i > 0 && plan.plan_time && (
+                <p className="text-xs text-slate-500 mt-1">{plan.plan_time}</p>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </section>
   );
@@ -222,36 +291,60 @@ function FocusStream() {
 
 // ── Central Aura visualization ────────────────────────────────────────────────
 
+const AURA_NODE_POSITIONS = [
+  "top-10 left-10",
+  "top-1/4 right-0",
+  "bottom-10 left-1/4",
+  "bottom-1/4 right-4",
+  "top-1/2 left-2 -translate-y-1/2",
+];
+const AURA_NODE_DOTS = ["bg-[#ad1d7f]", "bg-[#2552ca]", "bg-[#385b9b]", "bg-green-500", "bg-amber-500"];
+
 function AuraVisualization() {
   const { t } = useLanguage();
+  const [memories, setMemories] = useState<Array<{ id: string; title: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { setLoading(false); return; }
+      supabase
+        .from("memories")
+        .select("id, title")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5)
+        .then(({ data }) => { setMemories(data ?? []); setLoading(false); });
+    });
+  }, []);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px]">
+    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[480px] sm:max-h-none min-h-[320px] sm:min-h-[400px]">
       {/* Aura sphere */}
-      <div className="relative w-full max-w-[440px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-12">
+      <div className="relative w-full max-w-[260px] sm:max-w-[440px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-6 sm:mb-12 overflow-hidden">
         {/* Core */}
-        <div className="relative z-10 w-52 h-52 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
-          <span className="text-white text-4xl font-headline font-bold">ذ</span>
+        <div className="relative z-10 w-28 h-28 sm:w-52 sm:h-52 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
+          <span className="text-white text-2xl sm:text-4xl font-headline font-bold">ذ</span>
         </div>
 
-        {/* Orbiting nodes */}
-        {[
-          { pos: "top-10 left-10", label: t("نظرية الكم", "Quantum Theory"), dot: "bg-[#ad1d7f]" },
-          { pos: "top-1/4 right-0", label: t("مشروع أورا", "Project Aura"), dot: "bg-[#2552ca]" },
-          { pos: "bottom-10 left-1/4", label: t("أهداف الأسبوع", "Weekly Goals"), dot: "bg-[#385b9b]" },
-        ].map(({ pos, label, dot }) => (
+        {/* Orbiting nodes from real memories — hidden on mobile to prevent overflow */}
+        {memories.map(({ id, title }, i) => (
           <div
-            key={label as string}
-            className={`absolute ${pos} p-3 glass-card rounded-xl shadow-lg border border-white/40 hover:scale-105 transition-transform cursor-pointer`}
+            key={id}
+            className={`hidden sm:block absolute ${AURA_NODE_POSITIONS[i]} p-3 glass-card rounded-xl shadow-lg border border-white/40 hover:scale-105 transition-transform cursor-pointer`}
           >
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${dot}`} />
-              <span className="text-xs font-bold font-label whitespace-nowrap">{label as string}</span>
+              <span className={`w-2 h-2 rounded-full ${AURA_NODE_DOTS[i]}`} />
+              <span className="text-xs font-bold font-label whitespace-nowrap">
+                {title.length > 25 ? title.slice(0, 25) + "…" : title}
+              </span>
             </div>
           </div>
         ))}
 
-        {/* SVG connection lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 440 440">
+        {/* SVG connection lines — hidden on mobile */}
+        <svg className="hidden sm:block absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 440 440">
           <path d="M88 88 Q 220 220 280 160" fill="none" stroke="rgba(37,82,202,0.2)" strokeWidth="2" />
           <path d="M352 176 Q 220 220 158 368" fill="none" stroke="rgba(253,101,194,0.2)" strokeWidth="2" />
         </svg>
@@ -259,12 +352,15 @@ function AuraVisualization() {
 
       {/* Label below */}
       <div className="text-center">
-        <h1 className="text-3xl font-headline font-extrabold tracking-tighter text-slate-900">
-          {t("التركيز الحالي: العمل العميق", "Current Focus: Deep Work")}
-        </h1>
-        <p className="text-slate-500 font-medium mt-1">
-          {t("تم رصد 9 اتصالات عصبية نشطة", "9 active neural connections detected")}
-        </p>
+        {!loading && memories.length === 0 ? (
+          <p className="text-slate-400 text-sm max-w-xs">
+            {t("ستظهر خريطة معرفتك هنا عند إضافة ذكريات", "Your knowledge graph will appear here as you add memories")}
+          </p>
+        ) : (
+          <p className="text-slate-500 font-medium">
+            {t(`${memories.length} ذكريات في خريطتك`, `${memories.length} memories in your map`)}
+          </p>
+        )}
       </div>
     </div>
   );

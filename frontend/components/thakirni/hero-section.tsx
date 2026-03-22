@@ -50,17 +50,6 @@ export function HeroSection() {
             transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
             className="space-y-8"
           >
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#ffd8e9] text-[#3c0029] rounded-full text-sm font-semibold tracking-wide animate-soft-pulse"
-            >
-              <span>✦</span>
-              {t("جديد: حماية الفيض المعرفي", "NEW: COGNITIVE OVERFLOW PROTECTION")}
-            </motion.div>
-
             {/* Headline */}
             <h1 className="text-6xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight leading-[0.9] text-slate-900 dark:text-white">
               {isArabic ? (
@@ -101,7 +90,7 @@ export function HeroSection() {
                   whileTap={{ scale: 0.97 }}
                   className="px-10 py-5 rounded-full bg-[#eae8e7] text-[#2552ca] font-bold text-lg hover:bg-[#e4e2e1] transition-all font-label"
                 >
-                  {t("تحدث مع Memorae", "Talk to Memorae")}
+                  {t("تحدث مع ذكرني", "Talk to Thakirni")}
                 </motion.button>
               </Link>
             </div>
@@ -142,23 +131,30 @@ export function HeroSection() {
                 </div>
               </div>
 
-              {/* Floating notification */}
+              {/* Floating notification — entry + idle bob */}
               <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-6 -left-6 bg-white p-5 rounded-xl shadow-2xl flex items-center gap-4 max-w-xs border-l-4 border-[#ad1d7f]"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, ease: "easeOut", delay: 0.7 }}
+                className="absolute -bottom-6 -left-6 max-w-xs"
               >
-                <div className="w-10 h-10 rounded-full power-gradient flex items-center justify-center shrink-0">
-                  <span className="text-white text-lg">🧠</span>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900 font-label">
-                    {t("ذاكرة متزامنة", "Memory Synced")}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {t("ملاحظاتك الآن قابلة للبحث.", "Your meeting notes are now searchable.")}
-                  </p>
-                </div>
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+                  className="bg-white p-5 rounded-xl shadow-2xl flex items-center gap-4 border-l-4 border-[#ad1d7f]"
+                >
+                  <div className="w-10 h-10 rounded-full power-gradient flex items-center justify-center shrink-0">
+                    <span className="text-white text-lg">🧠</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900 font-label">
+                      {t("تم الحفظ", "Saved")}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {t("ملاحظاتك الآن قابلة للبحث.", "Your meeting notes are now searchable.")}
+                    </p>
+                  </div>
+                </motion.div>
               </motion.div>
             </div>
           </motion.div>

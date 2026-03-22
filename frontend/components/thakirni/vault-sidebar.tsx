@@ -409,15 +409,43 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+// ── Mobile top bar ────────────────────────────────────────────────────────────
+
+function MobileTopBar() {
+  const { setOpen } = useContext(SidebarContext);
+  const { t } = useLanguage();
+
+  return (
+    <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[#fbf9f8] border-b border-slate-200/60 flex items-center justify-between px-4 shadow-ambient">
+      {/* Logo: left in LTR, right in RTL */}
+      <span className="text-lg font-bold gradient-text font-headline tracking-tight order-1 rtl:order-2">
+        Thakirni
+      </span>
+      {/* Hamburger: right in LTR, left in RTL (drawer slides from that side) */}
+      <button
+        onClick={() => setOpen(true)}
+        className="p-2 rounded-full hover:bg-slate-100 transition-colors order-2 rtl:order-1"
+        aria-label={t("فتح القائمة", "Open menu")}
+      >
+        <Menu className="w-5 h-5 text-slate-600" />
+      </button>
+    </div>
+  );
+}
+
 // ── Exported sidebar ──────────────────────────────────────────────────────────
 
 export function VaultSidebar() {
   const [open, setOpen] = useState(false);
   const [workspace, setWorkspace] = useState("personal");
+  const { isArabic } = useLanguage();
   const contextValue = useMemo(() => ({ open, setOpen, workspace, setWorkspace }), [open, workspace]);
 
   return (
     <SidebarContext.Provider value={contextValue}>
+      {/* Mobile sticky top bar — only on small screens */}
+      <MobileTopBar />
+
       {/* Desktop */}
       <aside
         className="hidden lg:flex flex-col h-screen w-72 fixed left-0 top-0 z-40 overflow-y-auto border-r border-slate-200/60"
@@ -427,9 +455,12 @@ export function VaultSidebar() {
         <SidebarContent />
       </aside>
 
-      {/* Mobile sheet */}
+      {/* Mobile drawer sheet */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72 p-0 bg-[#fbf9f8] border-r border-slate-200">
+        <SheetContent
+          side={isArabic ? "right" : "left"}
+          className="w-72 p-0 bg-[#fbf9f8] border-r border-slate-200"
+        >
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           <SidebarContent onNavigate={() => setOpen(false)} />
         </SheetContent>

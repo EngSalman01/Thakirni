@@ -26,7 +26,7 @@ function DashboardSkeleton() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:me-64 p-6">
+      <main className="lg:ml-72 p-6">
         <div className="space-y-6">
           <Skeleton className="h-12 w-1/3" />
           <div className="grid grid-cols-4 gap-4">
@@ -103,7 +103,7 @@ export default function DashboardRouter() {
     return <DashboardSkeleton />;
   }
 
-  // Individual subscription - show memory-focused dashboard (Memorae-style)
+  // Individual subscription - show Thakirni vault dashboard
   if (subscriptionType === 'individual') {
     return <VaultPage />;
   }
@@ -117,7 +117,7 @@ export default function DashboardRouter() {
         className="h-screen flex flex-col"
       >
         <VaultSidebar />
-        <main className="lg:me-64 flex-1 overflow-hidden">
+        <main className="lg:ml-72 flex-1 overflow-hidden">
           <div className="h-full overflow-auto">
             <div className="p-6">
               <TeamDashboard team={currentTeam} teamMembers={teamMembers} />
@@ -137,7 +137,7 @@ export default function DashboardRouter() {
         className="h-screen flex flex-col"
       >
         <VaultSidebar />
-        <main className="lg:me-64 flex-1 overflow-hidden">
+        <main className="lg:ml-72 flex-1 overflow-hidden">
           <div className="h-full overflow-auto">
             <div className="p-6">
               <TeamDashboard team={currentTeam} teamMembers={teamMembers} />
