@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/admin";
 import { AdminSidebar } from "./_components/admin-sidebar";
 
 export default async function AdminLayout({
@@ -18,17 +17,16 @@ export default async function AdminLayout({
     redirect("/admin/login");
   }
 
-  const adminStatus = await isAdmin(user.id);
-  if (!adminStatus) {
-    redirect("/admin/login");
-  }
-
-  // Fetch profile for sidebar using authenticated client
+  // Use authenticated client to read profile — avoids broken service role key
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name")
+    .select("is_admin, full_name")
     .eq("id", user.id)
     .single();
+
+  if (profile?.is_admin !== true) {
+    redirect("/admin/login");
+  }
 
   const fullName = profile?.full_name ?? user.email?.split("@")[0] ?? "Admin";
 
