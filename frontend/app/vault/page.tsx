@@ -320,12 +320,12 @@ function AuraVisualization() {
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[200px] sm:max-h-[320px] lg:max-h-none min-h-0 sm:min-h-[280px] lg:min-h-[400px]" style={{ maxHeight: "clamp(200px, 30vh, 99999px)" }}>
+    <div className="flex flex-col items-center justify-center overflow-hidden max-h-[200px] sm:max-h-[320px] lg:max-h-[360px] min-h-0 sm:min-h-[280px] lg:min-h-[280px]">
       {/* Aura sphere */}
-      <div className="relative w-full max-w-[160px] sm:max-w-[300px] lg:max-w-[440px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-3 sm:mb-8 lg:mb-12 overflow-hidden">
+      <div className="relative w-full max-w-[160px] sm:max-w-[300px] lg:max-w-[380px] aspect-square flex items-center justify-center aura-gradient rounded-full mb-3 sm:mb-8 lg:mb-8 overflow-hidden">
         {/* Core */}
-        <div className="relative z-10 w-20 h-20 sm:w-36 sm:h-36 lg:w-52 lg:h-52 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
-          <span className="text-white text-xl sm:text-3xl lg:text-4xl font-headline font-bold">ذ</span>
+        <div className="relative z-10 w-20 h-20 sm:w-36 sm:h-36 lg:w-48 lg:h-48 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_80px_rgba(37,82,202,0.4)] flex items-center justify-center">
+          <span className="text-white text-xl sm:text-3xl lg:text-3xl font-headline font-bold">ذ</span>
         </div>
 
         {/* Orbiting nodes from real memories — hidden on mobile to prevent overflow */}
@@ -497,42 +497,43 @@ export default function VaultPage() {
       <div className="absolute bottom-20 left-0 lg:left-72 w-64 h-64 lg:w-80 lg:h-80 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="pt-16 lg:pt-28 px-4 sm:px-6 pb-16 min-h-screen relative">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-4 xl:gap-8 items-start w-full">
+        <div className="max-w-4xl mx-auto space-y-6 lg:space-y-8 w-full">
 
-          {/* ── Left column ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="xl:col-span-3 space-y-6 xl:space-y-8 order-2 xl:order-1 w-full min-w-0"
-          >
-            <RecentCaptures />
-          </motion.div>
-
-          {/* ── Center: Aura visualization ── */}
+          {/* ── Orb: full-width row, centered ── */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="xl:col-span-6 order-1 xl:order-2 w-full min-w-0"
+            transition={{ duration: 0.7 }}
+            className="w-full"
           >
             <AuraVisualization />
           </motion.div>
 
-          {/* ── Right column ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="xl:col-span-3 space-y-6 xl:space-y-8 order-3 w-full min-w-0"
-          >
-            <FocusStream />
-          </motion.div>
+          {/* ── Cards: stacked on mobile, side by side on lg ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="w-full min-w-0 space-y-6"
+            >
+              <RecentCaptures />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="w-full min-w-0 space-y-6"
+            >
+              <FocusStream />
+            </motion.div>
+          </div>
 
         </div>
 
         {/* AI Chat section */}
-        <div className="max-w-7xl mx-auto mt-8 lg:mt-16 w-full">
+        <div className="max-w-4xl mx-auto mt-8 lg:mt-16 w-full">
           <div className="mb-6">
             <h2 className="text-2xl font-headline font-extrabold text-slate-800">
               {t("المساعد الذكي", "AI Assistant")}
