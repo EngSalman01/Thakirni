@@ -106,6 +106,35 @@ export async function cancelPaddleSubscription(
 }
 
 /**
+ * Create a new recurring price on a Paddle product.
+ * Returns the new Paddle price ID (pri_xxxx) or null on failure.
+ */
+export async function createPaddlePrice(
+  productId: string,
+  amountSar: number,
+  description: string,
+  billingCycle: { frequency: number; interval: "month" | "year" } = { frequency: 1, interval: "month" }
+): Promise<{ priceId: string } | { error: string }> {
+  try {
+    const price = await paddleClient.prices.create({
+      productId,
+      description,
+      unitPrice: {
+        amount: Math.round(amountSar * 100).toString(),
+        currencyCode: "SAR",
+      },
+      billingCycle,
+      taxMode: "account_setting",
+    });
+    return { priceId: (price as unknown as { id: string }).id };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[Paddle] Error creating price:", msg);
+    return { error: msg };
+  }
+}
+
+/**
  * Update the unit price of a Paddle price object.
  * Amount is in SAR (e.g., 30 → "3000" halalas).
  */

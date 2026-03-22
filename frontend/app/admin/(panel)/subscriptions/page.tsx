@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { Loader2, Plus, X, AlertTriangle } from "lucide-react";
+import { Loader2, Plus, X, AlertTriangle, Wand2 } from "lucide-react";
 
 interface PlanConfig {
   plan_key: string;
   display_name: string;
   price_sar: number;
   paddle_price_id: string | null;
+  paddle_product_id: string | null;
   features: string[];
   is_active: boolean;
 }
@@ -28,6 +29,8 @@ function PlanCard({
   const [plan, setPlan] = useState<PlanConfig>(initialPlan);
   const [newFeature, setNewFeature] = useState("");
   const [saving, setSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
 
   useEffect(() => {
     setPlan(initialPlan);
@@ -42,6 +45,33 @@ function PlanCard({
       toast.error(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleCreatePaddlePrice() {
+    if (!plan.paddle_product_id) {
+      toast.error("Enter a Paddle Product ID first");
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await fetch("/api/admin/plan-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planKey: plan.plan_key,
+          productId: plan.paddle_product_id,
+          billingInterval,
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error ?? "Failed to create price");
+      setPlan((p) => ({ ...p, paddle_price_id: d.priceId }));
+      toast.success(`Price created: ${d.priceId}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create price");
+    } finally {
+      setCreating(false);
     }
   }
 
@@ -110,17 +140,57 @@ function PlanCard({
         />
       </div>
 
-      {/* Paddle Price ID */}
+      {/* Paddle Product ID */}
       <div className="space-y-1">
-        <Label className="text-xs text-slate-500">Paddle Price ID</Label>
+        <Label className="text-xs text-slate-500">Paddle Product ID</Label>
         <Input
-          value={plan.paddle_price_id ?? ""}
+          value={plan.paddle_product_id ?? ""}
           onChange={(e) =>
-            setPlan((p) => ({ ...p, paddle_price_id: e.target.value || null }))
+            setPlan((p) => ({ ...p, paddle_product_id: e.target.value || null }))
           }
-          placeholder="pri_xxxx"
+          placeholder="pro_xxxx"
           className="bg-white border-0 rounded-xl"
         />
+      </div>
+
+      {/* Paddle Price ID + Create button */}
+      <div className="space-y-1">
+        <Label className="text-xs text-slate-500">Paddle Price ID</Label>
+        <div className="flex gap-2">
+          <Input
+            value={plan.paddle_price_id ?? ""}
+            onChange={(e) =>
+              setPlan((p) => ({ ...p, paddle_price_id: e.target.value || null }))
+            }
+            placeholder="pri_xxxx — or create below"
+            className="bg-white border-0 rounded-xl"
+          />
+        </div>
+        {!plan.paddle_price_id && (
+          <div className="flex items-center gap-2 pt-1">
+            <select
+              value={billingInterval}
+              onChange={(e) => setBillingInterval(e.target.value as "month" | "year")}
+              className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600"
+            >
+              <option value="month">Monthly</option>
+              <option value="year">Annual</option>
+            </select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleCreatePaddlePrice}
+              disabled={creating || !plan.paddle_product_id}
+              className="rounded-xl border-slate-200 bg-white text-xs gap-1.5"
+            >
+              {creating
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : <Wand2 className="w-3 h-3" />}
+              Create in Paddle
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Features */}
@@ -203,6 +273,7 @@ export default function SubscriptionsPage() {
         displayName: updated.display_name,
         priceSar: updated.price_sar,
         paddlePriceId: updated.paddle_price_id,
+        paddleProductId: updated.paddle_product_id,
         features: updated.features,
         isActive: updated.is_active,
       }),
