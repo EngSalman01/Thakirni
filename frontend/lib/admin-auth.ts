@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { isAdmin } from "@/lib/admin";
 import { NextResponse } from "next/server";
 
 export async function requireAdmin() {
@@ -13,8 +12,12 @@ export async function requireAdmin() {
       user: null,
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };
-  const admin = await isAdmin(user.id);
-  if (!admin)
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+  if (profile?.is_admin !== true)
     return {
       user: null,
       error: NextResponse.json({ error: "Forbidden" }, { status: 403 }),

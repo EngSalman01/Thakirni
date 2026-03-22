@@ -106,6 +106,29 @@ export async function cancelPaddleSubscription(
 }
 
 /**
+ * Update the unit price of a Paddle price object.
+ * Amount is in SAR (e.g., 30 → "3000" halalas).
+ */
+export async function updatePaddlePrice(
+  priceId: string,
+  amountSar: number
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await paddleClient.prices.update(priceId, {
+      unitPrice: {
+        amount: Math.round(amountSar * 100).toString(),
+        currencyCode: "SAR",
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[Paddle] Error updating price:", msg);
+    return { success: false, error: msg };
+  }
+}
+
+/**
  * Get the Paddle SDK client
  */
 export function getPaddleClient() {
