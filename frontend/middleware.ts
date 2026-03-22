@@ -39,9 +39,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect /admin routes — user must be logged in (admin check in layout)
-  if (pathname.startsWith("/admin") && !user) {
+  // /admin/login is the entry point and must remain publicly accessible
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login") && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth";
+    url.pathname = "/admin/login";
     return NextResponse.redirect(url);
   }
 
