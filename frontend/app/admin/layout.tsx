@@ -22,8 +22,8 @@ export default async function AdminLayout({
   const adminStatus = await isAdmin(user.id);
 
   // DEBUG: run raw query to expose exact failure
-  const serviceClient = createServiceClient();
-  const { data: debugData, error: debugError } = await serviceClient
+  const debugClient = createServiceClient();
+  const { data: debugData, error: debugError } = await debugClient
     .from("profiles")
     .select("is_admin")
     .eq("id", user.id)
