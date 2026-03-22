@@ -56,7 +56,7 @@ function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72 transition-all duration-300 w-full">
+      <main className="lg:ml-72 transition-all duration-300 min-w-0 max-w-full">
         {children}
       </main>
     </div>
@@ -496,7 +496,7 @@ export default function VaultPage() {
       <div className="absolute top-40 right-0 w-64 h-64 lg:w-96 lg:h-96 bg-[#2552ca]/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-20 left-0 lg:left-72 w-64 h-64 lg:w-80 lg:h-80 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="pt-16 lg:pt-24 px-4 sm:px-6 pb-8 min-h-screen relative">
+      <div className="pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-8 min-h-screen relative">
         <div className="w-full space-y-3 lg:space-y-4">
 
           {/* ── Orb: full-width row, centered ── */}

@@ -1,9 +1,7 @@
 "use client";
 
-import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
-import Link from "next/link";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 28 },
@@ -31,14 +29,14 @@ export function FeaturesSection() {
         >
           <h2 className="text-5xl font-headline font-bold mb-6 tracking-tight text-slate-900 dark:text-white">
             {t(
-              "قدرات خارقة لعقول لا تستطيع أن تفعل كل شيء",
-              "Superpowers for minds that can't do it all"
+              "كل اللي تحتاجه في مكان واحد",
+              "Everything you need to stay on top of your life"
             )}
           </h2>
           <p className="text-xl text-slate-500">
             {t(
-              "أدوات تدوين الملاحظات التقليدية ماتت. ذكرني يعيش حيث تحدث أفكارك.",
-              "Traditional note-taking is dead. Thakirni lives where your thoughts happen, automatically organizing chaos into actionable intelligence."
+              "أضف مواعيد، احفظ ملاحظات، وتكلم مع مساعدك الذكي — في ثواني.",
+              "Add plans, save memories, and chat with your AI assistant — in seconds."
             )}
           </p>
         </motion.div>
@@ -59,23 +57,16 @@ export function FeaturesSection() {
               <div>
                 <span className="text-4xl text-[#2552ca] mb-6 block">✦</span>
                 <h3 className="text-3xl font-headline font-bold mb-4 text-slate-900">
-                  {t("الخيط الدلالي", "Semantic Threading")}
+                  {t("المساعد الذكي", "AI Assistant")}
                 </h3>
                 <p className="text-lg text-slate-500 max-w-md">
                   {t(
-                    "ذكاؤنا الاصطناعي لا يخزن الكلمات فحسب، بل يفهم المفاهيم. يربط تلقائياً ذلك البودكاست الذي سمعته بالمقترح الذي تكتبه اليوم.",
-                    "Our AI doesn't just store words; it understands concepts. It automatically links that podcast you heard in June to the project proposal you're writing today."
+                    "تكلم ذكرني بالطبيعي وهو يضيف المواعيد ويحفظ الملاحظات. يفهمك ويتذكر كل شي قلته.",
+                    "Chat naturally to add reminders, schedule meetings, and save notes. Thakirni understands you and remembers everything you tell it."
                   )}
                 </p>
               </div>
-              <div className="mt-12 flex gap-3 flex-wrap">
-                <span className="px-4 py-2 bg-[#2552ca]/10 text-[#2552ca] rounded-full text-sm font-semibold">
-                  {t("ربط تلقائي", "Automatic Linking")}
-                </span>
-                <span className="px-4 py-2 bg-[#ad1d7f]/10 text-[#ad1d7f] rounded-full text-sm font-semibold">
-                  {t("بحث سياقي", "Contextual Search")}
-                </span>
-              </div>
+              <div className="mt-12" />
             </div>
             {/* Decorative bg element */}
             <div className="absolute right-0 bottom-0 w-1/2 translate-y-8 translate-x-8 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-40">
@@ -95,12 +86,12 @@ export function FeaturesSection() {
             <div>
               <span className="text-4xl mb-6 block">🎙️</span>
               <h3 className="text-3xl font-headline font-bold mb-4">
-                {t("التقاط محيطي", "Ambient Capture")}
+                {t("تسجيل صوتي", "Voice Notes")}
               </h3>
               <p className="text-lg opacity-90">
                 {t(
-                  "تحدث إلى ذكرني أثناء مشيك. يُحوّل ويُنظّف ويُصنّف تدفق وعيك في الوقت الفعلي.",
-                  "Talk to Thakirni as you walk. It transcribes, cleans, and categorizes your stream of consciousness in real-time."
+                  "سجّل صوتية وذكرني يحفظها لك على طول. ترجع لها متى تبي من الفولت.",
+                  "Record a voice note and Thakirni saves it instantly to your Second Brain. Access it anytime from your vault."
                 )}
               </p>
             </div>
@@ -155,20 +146,14 @@ export function FeaturesSection() {
           >
             <div>
               <h3 className="text-3xl font-headline font-bold mb-4 text-slate-900">
-                {t("لوحة المعرفة الإدراكية", "Cognitive Dashboard")}
+                {t("لوحة التحكم", "Smart Dashboard")}
               </h3>
               <p className="text-slate-500 leading-relaxed">
                 {t(
-                  "تصوّر صحة إنتاجك الذهني. اكتشف أين تتجه تركيزك وتحديد الثغرات.",
-                  "Visualize the health of your mental output. See where your focus is trending and discover blind spots in your knowledge base."
+                  "شوف مواعيدك القادمة وآخر ملاحظاتك — كل شي في شاشة وحدة تتحدث بشكل لحظي.",
+                  "See your upcoming plans, recent memories, and daily focus — all on one clean dashboard that updates in real time."
                 )}
               </p>
-              <Link href="/vault">
-                <button className="mt-8 font-bold text-[#2552ca] flex items-center gap-2 group/btn hover:gap-3 transition-all">
-                  {t("استكشاف التحليلات", "Explore Aura Analytics")}
-                  <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
-                </button>
-              </Link>
             </div>
             {/* Progress bars */}
             <div className="space-y-4">
@@ -195,6 +180,30 @@ export function FeaturesSection() {
               ))}
             </div>
           </motion.div>
+
+          {/* Card 5 — WhatsApp */}
+          <motion.div
+            custom={4}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={cardVariants}
+            className="bg-[#25d366] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-pointer"
+          >
+            <div>
+              <span className="text-4xl mb-6 block">💬</span>
+              <h3 className="text-3xl font-headline font-bold mb-4">
+                {t("يشتغل على واتساب", "Works on WhatsApp")}
+              </h3>
+              <p className="text-lg opacity-90">
+                {t(
+                  "تكلم ذكرني على واتساب وهو يتكفل بالباقي. أضف مواعيد، احفظ ملاحظات، وخلّه يذكرك — ما تحتاج تفتح التطبيق أبد.",
+                  "Chat with your Thakirni assistant directly on WhatsApp. Add plans, save notes, and get reminders — without opening the app."
+                )}
+              </p>
+            </div>
+          </motion.div>
+
         </div>
       </div>
     </section>

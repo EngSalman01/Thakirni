@@ -8,28 +8,28 @@ const steps = [
     num: "01",
     numColor: "text-[#2552ca]/20",
     borderColor: "border-[#2552ca]",
-    titleAr: "التقاط بلا احتكاك",
-    titleEn: "Capture Frictionlessly",
-    bodyAr: "سواء كانت رسالة Slack أو فكرة عابرة أو ملف PDF من 80 صفحة، أضفه إلى ذكرني. لا حاجة لوسوم.",
-    bodyEn: "Whether it's a Slack message, a thought in the shower, or an 80-page PDF, throw it into Thakirni. No tagging required.",
+    titleAr: "أضف أي شي بسرعة",
+    titleEn: "Add anything instantly",
+    bodyAr: "قول لـ ذكرني على واتساب، أو اكتب في التطبيق، أو سجّل صوتية — كل شي يتحفظ عندك في ثواني.",
+    bodyEn: "Tell the AI on WhatsApp, type it in the app, or record a voice note — your plans and memories are saved in seconds.",
   },
   {
     num: "02",
     numColor: "text-[#ad1d7f]/20",
     borderColor: "border-[#ad1d7f]",
-    titleAr: "السياق العصبي",
-    titleEn: "Neural Contextualization",
-    bodyAr: "محركنا يبني خريطة دلالية من مدخلاتك. يُجمّع الأفكار المتشابهة ويكتشف المشاعر ويُعد الملخصات.",
-    bodyEn: "Our engine builds a semantic map of your inputs. It clusters related ideas, detects sentiment, and prepares summaries.",
+    titleAr: "كل شي منظم",
+    titleEn: "Stay organised",
+    bodyAr: "مواعيدك وملاحظاتك دايم جاهزة لما تحتاجها.",
+    bodyEn: "Your plans, memories, and notes are always ready when you need them.",
   },
   {
     num: "03",
     numColor: "text-[#456ce4]/20",
     borderColor: "border-[#456ce4]",
-    titleAr: "استدعاء لا نهائي",
-    titleEn: "Infinite Recall",
-    bodyAr: "اسأل بلغة طبيعية. \"ما كانت تلك الفكرة حول الزراعة العمودية؟\" — موجودة في 0.2 ثانية.",
-    bodyEn: "Ask anything in natural language. \"What was that idea about vertical farming while listening to Lex Fridman?\" — Found in 0.2s.",
+    titleAr: "ما تنسى شي",
+    titleEn: "Never forget again",
+    bodyAr: "اسأل ذكرني عن أي شي حفظته. هو يتذكر عشانك.",
+    bodyEn: "Ask the AI anything you've saved. It remembers so you don't have to.",
   },
 ];
 
@@ -84,33 +84,8 @@ export function TrustSignals() {
           className="mt-24 flex flex-wrap items-center justify-center gap-8 text-slate-400 text-sm"
         >
           <span>
-            {t("انضم إلى +45,000 مفكر يستخدم ذكرني", "Join 45,000+ thinkers using Thakirni")}
+            {t("انضم لذكرني اليوم", "Join Thakirni today")}
           </span>
-          <div className="flex -space-x-3">
-            {[
-              "bg-[#2552ca]",
-              "bg-[#ad1d7f]",
-              "bg-[#385b9b]",
-              "bg-[#5274b6]",
-              "bg-[#fd65c2]",
-            ].map((color, i) => (
-              <div
-                key={i}
-                className={`w-9 h-9 rounded-full ${color} border-2 border-white dark:border-slate-900 flex items-center justify-center text-white text-xs font-bold`}
-              >
-                {String.fromCharCode(65 + i)}
-              </div>
-            ))}
-            <div className="w-9 h-9 rounded-full bg-slate-200 border-2 border-white dark:border-slate-900 flex items-center justify-center text-slate-600 text-xs font-bold">
-              +k
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <span key={s} className="text-yellow-400 text-base">★</span>
-            ))}
-            <span className="ml-2">{t("4.9 من 5", "4.9 / 5")}</span>
-          </div>
         </motion.div>
       </div>
     </section>

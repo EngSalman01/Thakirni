@@ -9,7 +9,6 @@ export function LandingFooter() {
   const productLinks = [
     { href: "#features", ar: "المميزات", en: "Features" },
     { href: "#", ar: "التكاملات", en: "Integrations" },
-    { href: "#", ar: "المؤسسات", en: "Enterprise" },
     { href: "/pricing", ar: "الأسعار", en: "Pricing" },
   ];
 
@@ -31,8 +30,8 @@ export function LandingFooter() {
             </div>
             <p className="max-w-xs mb-8 text-slate-500 leading-relaxed">
               {t(
-                "مصمم للمثقلين والمبدعين والطموحين. ذاكرتك، مع تعزيز من الذكاء الاصطناعي الأخلاقي.",
-                "Designed for the overwhelmed, the creative, and the ambitious. Your memory, supercharged by ethical AI."
+                "مساعدك الذكي الشخصي. يذكر كل شي عنك.",
+                "Your AI personal assistant. Remembers everything, so you don't have to."
               )}
             </p>
             <div className="flex gap-4">
@@ -84,8 +83,7 @@ export function LandingFooter() {
         {/* Bottom bar */}
         <div className="pt-8 border-t border-slate-800/30 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-sm">
-            © 2024 Thakirni AI.{" "}
-            {t("أوراك المعرفية.", "Your Cognitive Aura.")}
+            {t("© 2026 ذكرني. جميع الحقوق محفوظة.", "© 2026 Thakirni. All rights reserved.")}
           </p>
           <div className="flex gap-8 text-sm">
             <a href="#" className="hover:underline underline-offset-4 decoration-[#2552ca]">

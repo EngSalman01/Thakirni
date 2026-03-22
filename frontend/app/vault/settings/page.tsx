@@ -238,42 +238,18 @@ export default function SettingsPage() {
 
     setAvatarUploading(true);
     try {
-      // Must use the browser (anon) client — storage uploads require the user's session
-      const supabase = createClient();
+      const formData = new FormData();
+      formData.append("file", file);
 
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        console.error("[Avatar] auth error:", authError);
-        throw new Error("Not authenticated");
+      const res = await fetch("/api/avatar/upload", { method: "POST", body: formData });
+      const json = await res.json() as { url?: string; error?: string };
+
+      if (!res.ok || json.error) {
+        console.error("[Avatar] upload API error:", json.error);
+        throw new Error(json.error ?? "Upload failed");
       }
 
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const path = `${user.id}/avatar.${ext}`;
-
-      // Step 1: upload to "avatars" bucket (must be public, with RLS allowing owner writes)
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (uploadError) {
-        console.error("[Avatar] storage upload error:", uploadError.message, uploadError);
-        throw uploadError;
-      }
-
-      // Step 2: get public URL (bucket must have public access enabled)
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
-      console.log("[Avatar] public URL:", publicUrl);
-
-      // Step 3: update profiles table — only runs after upload succeeds
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-        .eq("id", user.id);
-      if (updateError) {
-        console.error("[Avatar] profile update error:", updateError.message, updateError);
-        throw updateError;
-      }
-
-      setProfile((p) => p ? { ...p, avatar_url: publicUrl } : null);
+      setProfile((p) => p ? { ...p, avatar_url: json.url ?? null } : null);
       toast.success(t("تم تحديث صورة الملف الشخصي", "Profile photo updated"));
     } catch (err) {
       console.error("[Avatar] upload failed:", err);
@@ -363,6 +339,24 @@ export default function SettingsPage() {
   if (loading) return <SettingsSkeleton />;
 
   const isDirty = name.trim() !== origName || phone.trim() !== origPhone;
+
+  const planFeatures = subscriptionType === "team"
+    ? [
+        { ar: "كل شي غير محدود", en: "Everything unlimited" },
+        { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes" },
+        { ar: "دعم فني ذو أولوية", en: "Priority support" },
+      ]
+    : subscriptionType === "individual"
+    ? [
+        { ar: "١٠٠ خطة يومياً", en: "100 plans per day" },
+        { ar: "١٠٠٠ ذاكرة", en: "1,000 memories" },
+        { ar: "تحليلات وتقارير", en: "Analytics & reports" },
+      ]
+    : [
+        { ar: "١٠ خطط يومياً", en: "10 plans per day" },
+        { ar: "٢٥ ذاكرة", en: "25 memories" },
+        { ar: "محادثة AI أساسية", en: "Basic AI chat" },
+      ];
   const initial = name?.charAt(0)?.toUpperCase() || "U";
   const planLabel = subscriptionType === "team"
     ? t("المستوى 12 حكيم", "Level 12 Sage")
@@ -415,7 +409,7 @@ export default function SettingsPage() {
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6">
                   <h2 className="text-2xl font-headline font-bold text-slate-900">
-                    {t("الملف المعرفي", "Cognitive Profile")}
+                    {t("الملف الشخصي", "Profile")}
                   </h2>
                   <span className="px-3 py-1 rounded-full bg-[#ffd8e9] text-[#3c0029] text-xs font-bold uppercase tracking-wider font-label">
                     {planLabel}
@@ -487,7 +481,7 @@ export default function SettingsPage() {
                       {t("رقم الجوال", "Phone Number")}
                       <span className="text-slate-400 text-xs ms-1">{t("(للواتساب)", "(WhatsApp)")}</span>
                     </Label>
-                    <div className="relative">
+                    <div className="relative" id="phone-field">
                       <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input
                         type="tel"
@@ -522,7 +516,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3 mb-8">
                 <span className="text-[#ad1d7f] text-xl">🎨</span>
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
-                  {t("تخصيص الأورا", "Aura Personalization")}
+                  {t("التخصيص", "Personalization")}
                 </h2>
               </div>
               <div className="space-y-4">
@@ -603,11 +597,7 @@ export default function SettingsPage() {
                   <span className="text-[#2552ca] font-bold">{planLabel}</span>
                 </p>
                 <div className="space-y-4 mb-8">
-                  {[
-                    { ar: "مزامنة عصبية غير محدودة", en: "Unlimited Neural Sync" },
-                    { ar: "استخراج المعرفة العالمية", en: "Global Knowledge Extraction" },
-                    { ar: "أولوية الحوسبة المعرفية", en: "Priority Cognitive Compute" },
-                  ].map(({ ar, en }) => (
+                  {planFeatures.map(({ ar, en }) => (
                     <div key={en} className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-[#ad1d7f] shrink-0 mt-0.5" />
                       <p className="text-sm">{t(ar, en)}</p>
@@ -671,20 +661,19 @@ export default function SettingsPage() {
                     <div>
                       <p className="font-bold text-sm font-label text-slate-800">WhatsApp</p>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {profile?.phone_number
-                          ? t("متصل — تلقّى التذكيرات عبر واتساب", "Connected — receive reminders via WhatsApp")
-                          : t("أضف رقمك في الملف الشخصي", "Add your phone number above")}
+                        {t("تلقّى تذكيرات وتحدث مع المساعد عبر واتساب", "Get reminders and chat with your assistant via WhatsApp")}
                       </p>
                     </div>
                   </div>
-                  {profile?.phone_number ? (
-                    <span className="text-xs text-green-600 font-bold px-2 py-1 bg-green-50 rounded-full">
-                      {t("مفعّل", "Active")}
-                    </span>
+                  {profile?.phone_number?.startsWith("966") ? (
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">{t("نشط", "Active")}</span>
                   ) : (
-                    <span className="text-xs text-slate-400 font-bold px-2 py-1 bg-slate-50 rounded-full">
-                      {t("غير مفعّل", "Inactive")}
-                    </span>
+                    <button
+                      onClick={() => document.getElementById("phone-field")?.scrollIntoView({ behavior: "smooth" })}
+                      className="px-3 py-1.5 rounded-full bg-[#2552ca] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+                    >
+                      {t("ربط", "Connect")}
+                    </button>
                   )}
                 </div>
               </div>
