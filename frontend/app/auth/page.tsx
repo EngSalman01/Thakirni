@@ -14,6 +14,142 @@ import Link from "next/link";
 import { useLanguage } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/client";
 
+// ── Country dial codes ─────────────────────────────────────────────────────────
+
+const COUNTRY_CODES = [
+  // Priority
+  { name: "Saudi Arabia",             dial: "966",  flag: "🇸🇦" },
+  { name: "UAE",                       dial: "971",  flag: "🇦🇪" },
+  { name: "Kuwait",                    dial: "965",  flag: "🇰🇼" },
+  { name: "Bahrain",                   dial: "973",  flag: "🇧🇭" },
+  { name: "Qatar",                     dial: "974",  flag: "🇶🇦" },
+  { name: "Oman",                      dial: "968",  flag: "🇴🇲" },
+  { name: "Jordan",                    dial: "962",  flag: "🇯🇴" },
+  { name: "Egypt",                     dial: "20",   flag: "🇪🇬" },
+  { name: "Malaysia",                  dial: "60",   flag: "🇲🇾" },
+  { name: "China",                     dial: "86",   flag: "🇨🇳" },
+  // ─────────────────────────────────────────────
+  { name: "Afghanistan",               dial: "93",   flag: "🇦🇫" },
+  { name: "Albania",                   dial: "355",  flag: "🇦🇱" },
+  { name: "Algeria",                   dial: "213",  flag: "🇩🇿" },
+  { name: "Andorra",                   dial: "376",  flag: "🇦🇩" },
+  { name: "Angola",                    dial: "244",  flag: "🇦🇴" },
+  { name: "Argentina",                 dial: "54",   flag: "🇦🇷" },
+  { name: "Armenia",                   dial: "374",  flag: "🇦🇲" },
+  { name: "Australia",                 dial: "61",   flag: "🇦🇺" },
+  { name: "Austria",                   dial: "43",   flag: "🇦🇹" },
+  { name: "Azerbaijan",                dial: "994",  flag: "🇦🇿" },
+  { name: "Bangladesh",                dial: "880",  flag: "🇧🇩" },
+  { name: "Belarus",                   dial: "375",  flag: "🇧🇾" },
+  { name: "Belgium",                   dial: "32",   flag: "🇧🇪" },
+  { name: "Bolivia",                   dial: "591",  flag: "🇧🇴" },
+  { name: "Bosnia & Herzegovina",      dial: "387",  flag: "🇧🇦" },
+  { name: "Brazil",                    dial: "55",   flag: "🇧🇷" },
+  { name: "Bulgaria",                  dial: "359",  flag: "🇧🇬" },
+  { name: "Cambodia",                  dial: "855",  flag: "🇰🇭" },
+  { name: "Cameroon",                  dial: "237",  flag: "🇨🇲" },
+  { name: "Canada",                    dial: "1",    flag: "🇨🇦" },
+  { name: "Chile",                     dial: "56",   flag: "🇨🇱" },
+  { name: "Colombia",                  dial: "57",   flag: "🇨🇴" },
+  { name: "Congo",                     dial: "242",  flag: "🇨🇬" },
+  { name: "Costa Rica",                dial: "506",  flag: "🇨🇷" },
+  { name: "Croatia",                   dial: "385",  flag: "🇭🇷" },
+  { name: "Cuba",                      dial: "53",   flag: "🇨🇺" },
+  { name: "Cyprus",                    dial: "357",  flag: "🇨🇾" },
+  { name: "Czech Republic",            dial: "420",  flag: "🇨🇿" },
+  { name: "Denmark",                   dial: "45",   flag: "🇩🇰" },
+  { name: "Ecuador",                   dial: "593",  flag: "🇪🇨" },
+  { name: "El Salvador",               dial: "503",  flag: "🇸🇻" },
+  { name: "Estonia",                   dial: "372",  flag: "🇪🇪" },
+  { name: "Ethiopia",                  dial: "251",  flag: "🇪🇹" },
+  { name: "Finland",                   dial: "358",  flag: "🇫🇮" },
+  { name: "France",                    dial: "33",   flag: "🇫🇷" },
+  { name: "Georgia",                   dial: "995",  flag: "🇬🇪" },
+  { name: "Germany",                   dial: "49",   flag: "🇩🇪" },
+  { name: "Ghana",                     dial: "233",  flag: "🇬🇭" },
+  { name: "Greece",                    dial: "30",   flag: "🇬🇷" },
+  { name: "Guatemala",                 dial: "502",  flag: "🇬🇹" },
+  { name: "Honduras",                  dial: "504",  flag: "🇭🇳" },
+  { name: "Hong Kong",                 dial: "852",  flag: "🇭🇰" },
+  { name: "Hungary",                   dial: "36",   flag: "🇭🇺" },
+  { name: "India",                     dial: "91",   flag: "🇮🇳" },
+  { name: "Indonesia",                 dial: "62",   flag: "🇮🇩" },
+  { name: "Iran",                      dial: "98",   flag: "🇮🇷" },
+  { name: "Iraq",                      dial: "964",  flag: "🇮🇶" },
+  { name: "Ireland",                   dial: "353",  flag: "🇮🇪" },
+  { name: "Israel",                    dial: "972",  flag: "🇮🇱" },
+  { name: "Italy",                     dial: "39",   flag: "🇮🇹" },
+  { name: "Japan",                     dial: "81",   flag: "🇯🇵" },
+  { name: "Kazakhstan",                dial: "7",    flag: "🇰🇿" },
+  { name: "Kenya",                     dial: "254",  flag: "🇰🇪" },
+  { name: "Kosovo",                    dial: "383",  flag: "🇽🇰" },
+  { name: "Kyrgyzstan",                dial: "996",  flag: "🇰🇬" },
+  { name: "Laos",                      dial: "856",  flag: "🇱🇦" },
+  { name: "Latvia",                    dial: "371",  flag: "🇱🇻" },
+  { name: "Lebanon",                   dial: "961",  flag: "🇱🇧" },
+  { name: "Libya",                     dial: "218",  flag: "🇱🇾" },
+  { name: "Lithuania",                 dial: "370",  flag: "🇱🇹" },
+  { name: "Luxembourg",                dial: "352",  flag: "🇱🇺" },
+  { name: "Macau",                     dial: "853",  flag: "🇲🇴" },
+  { name: "Madagascar",                dial: "261",  flag: "🇲🇬" },
+  { name: "Mauritius",                 dial: "230",  flag: "🇲🇺" },
+  { name: "Mexico",                    dial: "52",   flag: "🇲🇽" },
+  { name: "Moldova",                   dial: "373",  flag: "🇲🇩" },
+  { name: "Mongolia",                  flag: "🇲🇳",  dial: "976" },
+  { name: "Montenegro",                dial: "382",  flag: "🇲🇪" },
+  { name: "Morocco",                   dial: "212",  flag: "🇲🇦" },
+  { name: "Mozambique",                dial: "258",  flag: "🇲🇿" },
+  { name: "Myanmar",                   dial: "95",   flag: "🇲🇲" },
+  { name: "Nepal",                     dial: "977",  flag: "🇳🇵" },
+  { name: "Netherlands",               dial: "31",   flag: "🇳🇱" },
+  { name: "New Zealand",               dial: "64",   flag: "🇳🇿" },
+  { name: "Nicaragua",                 dial: "505",  flag: "🇳🇮" },
+  { name: "Nigeria",                   dial: "234",  flag: "🇳🇬" },
+  { name: "North Macedonia",           dial: "389",  flag: "🇲🇰" },
+  { name: "Norway",                    dial: "47",   flag: "🇳🇴" },
+  { name: "Pakistan",                  dial: "92",   flag: "🇵🇰" },
+  { name: "Palestine",                 dial: "970",  flag: "🇵🇸" },
+  { name: "Panama",                    dial: "507",  flag: "🇵🇦" },
+  { name: "Paraguay",                  dial: "595",  flag: "🇵🇾" },
+  { name: "Peru",                      dial: "51",   flag: "🇵🇪" },
+  { name: "Philippines",               dial: "63",   flag: "🇵🇭" },
+  { name: "Poland",                    dial: "48",   flag: "🇵🇱" },
+  { name: "Portugal",                  dial: "351",  flag: "🇵🇹" },
+  { name: "Romania",                   dial: "40",   flag: "🇷🇴" },
+  { name: "Russia",                    dial: "7",    flag: "🇷🇺" },
+  { name: "Rwanda",                    dial: "250",  flag: "🇷🇼" },
+  { name: "Serbia",                    dial: "381",  flag: "🇷🇸" },
+  { name: "Singapore",                 dial: "65",   flag: "🇸🇬" },
+  { name: "Slovakia",                  dial: "421",  flag: "🇸🇰" },
+  { name: "Slovenia",                  dial: "386",  flag: "🇸🇮" },
+  { name: "Somalia",                   dial: "252",  flag: "🇸🇴" },
+  { name: "South Africa",              dial: "27",   flag: "🇿🇦" },
+  { name: "South Korea",               dial: "82",   flag: "🇰🇷" },
+  { name: "Spain",                     dial: "34",   flag: "🇪🇸" },
+  { name: "Sri Lanka",                 dial: "94",   flag: "🇱🇰" },
+  { name: "Sudan",                     dial: "249",  flag: "🇸🇩" },
+  { name: "Sweden",                    dial: "46",   flag: "🇸🇪" },
+  { name: "Switzerland",               dial: "41",   flag: "🇨🇭" },
+  { name: "Syria",                     dial: "963",  flag: "🇸🇾" },
+  { name: "Taiwan",                    dial: "886",  flag: "🇹🇼" },
+  { name: "Tajikistan",                dial: "992",  flag: "🇹🇯" },
+  { name: "Tanzania",                  dial: "255",  flag: "🇹🇿" },
+  { name: "Thailand",                  dial: "66",   flag: "🇹🇭" },
+  { name: "Tunisia",                   dial: "216",  flag: "🇹🇳" },
+  { name: "Turkey",                    dial: "90",   flag: "🇹🇷" },
+  { name: "Turkmenistan",              dial: "993",  flag: "🇹🇲" },
+  { name: "Uganda",                    dial: "256",  flag: "🇺🇬" },
+  { name: "Ukraine",                   dial: "380",  flag: "🇺🇦" },
+  { name: "United Kingdom",            dial: "44",   flag: "🇬🇧" },
+  { name: "United States",             dial: "1",    flag: "🇺🇸" },
+  { name: "Uruguay",                   dial: "598",  flag: "🇺🇾" },
+  { name: "Uzbekistan",                dial: "998",  flag: "🇺🇿" },
+  { name: "Venezuela",                 dial: "58",   flag: "🇻🇪" },
+  { name: "Vietnam",                   dial: "84",   flag: "🇻🇳" },
+  { name: "Yemen",                     dial: "967",  flag: "🇾🇪" },
+  { name: "Zimbabwe",                  dial: "263",  flag: "🇿🇼" },
+];
+
 // ── Password strength ─────────────────────────────────────────────────────────
 
 function getPasswordStrength(password: string) {
@@ -46,6 +182,7 @@ function AuthForm() {
   const [signUpDone, setSignUpDone]     = useState(false);
   const [signUpPassword, setSignUpPassword] = useState("");
   const [phoneNumber, setPhoneNumber]   = useState("");
+  const [dialCode, setDialCode]         = useState("966");
 
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -95,11 +232,9 @@ function AuthForm() {
       return;
     }
 
-    // Normalize phone if provided
-    const rawPhone = phoneNumber.trim().replace(/\s+/g, "");
-    const normPhone = rawPhone
-      ? rawPhone.replace(/^\+/, "").replace(/^00/, "").replace(/^0/, "966")
-      : null;
+    // Normalize phone: strip leading zeros/plus then prepend selected dial code
+    const rawPhone = phoneNumber.trim().replace(/\s+/g, "").replace(/^\+?0*/, "");
+    const normPhone = rawPhone ? `${dialCode}${rawPhone}` : null;
 
     const { error } = await supabase.auth.signUp({
       email, password: pw,
@@ -341,11 +476,32 @@ function AuthForm() {
                   {t("(اختياري - للواتساب)", "(optional — WhatsApp)")}
                 </span>
               </Label>
-              <div className="relative">
-                <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="phone" type="tel" placeholder="05xxxxxxxx"
-                  className="ps-10" dir="ltr"
-                  value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+              <div className="flex gap-2" dir="ltr">
+                {/* Country code picker */}
+                <select
+                  value={dialCode}
+                  onChange={(e) => setDialCode(e.target.value)}
+                  className="shrink-0 h-10 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 cursor-pointer"
+                  style={{ minWidth: "5.5rem" }}
+                >
+                  {COUNTRY_CODES.map((c, i) => (
+                    <option key={`${c.dial}-${i}`} value={c.dial}>
+                      {c.flag} +{c.dial}
+                    </option>
+                  ))}
+                </select>
+                {/* Local number */}
+                <div className="relative flex-1">
+                  <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    name="phone"
+                    type="tel"
+                    placeholder={dialCode === "966" ? "5xxxxxxxx" : "xxxxxxxxx"}
+                    className="ps-10 w-full"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 

@@ -13,10 +13,10 @@ export function LandingFooter() {
   ];
 
   const companyLinks = [
-    { href: "#", ar: "من نحن", en: "About Us" },
+    { href: "/about",   ar: "من نحن",          en: "About Us" },
     { href: "/privacy", ar: "سياسة الخصوصية", en: "Privacy Policy" },
-    { href: "/terms", ar: "الشروط والأحكام", en: "Terms" },
-    { href: "#", ar: "تواصل معنا", en: "Contact" },
+    { href: "/terms",   ar: "الشروط والأحكام", en: "Terms" },
+    { href: "/contact", ar: "تواصل معنا",       en: "Contact" },
   ];
 
   return (
@@ -89,9 +89,9 @@ export function LandingFooter() {
             <a href="#" className="hover:underline underline-offset-4 decoration-[#2552ca]">
               Twitter
             </a>
-            <a href="#" className="hover:underline underline-offset-4 decoration-[#2552ca]">
+            <Link href="/contact" className="hover:underline underline-offset-4 decoration-[#2552ca]">
               {t("تواصل معنا", "Contact")}
-            </a>
+            </Link>
           </div>
         </div>
       </div>
