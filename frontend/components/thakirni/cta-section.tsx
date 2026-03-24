@@ -228,7 +228,7 @@ export function CTASection() {
                     whileTap={{ scale: 0.97 }}
                     disabled={loadingPlan === plan.nameEn}
                     onClick={() => handleSubscribe(plan)}
-                    className={`w-full py-4 rounded-full font-bold transition-all disabled:opacity-60 ${
+                    className={`w-full py-4 rounded-full font-bold transition-all disabled:opacity-60 cursor-pointer ${
                       plan.highlight
                         ? "power-gradient text-white shadow-xl btn-glow"
                         : "border border-white/20 text-white hover:bg-white/10"
