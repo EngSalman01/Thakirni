@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   const planMap: Record<string, string> = {
     free: "FREE",
     pro: "PRO",
-    teams: "COMPANY",
+    teams: "TEAMS",
   };
 
   const supabase = createServiceClient();

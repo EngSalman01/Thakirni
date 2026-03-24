@@ -6,8 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Plus, X, AlertTriangle, Wand2 } from "lucide-react";
+import { Loader2, Plus, X, Lock } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 interface PlanConfig {
   plan_key: string;
@@ -24,56 +32,14 @@ function PlanCard({
   onSave,
 }: {
   plan: PlanConfig;
-  onSave: (updated: PlanConfig) => Promise<void>;
+  onSave: (updated: PlanConfig) => void;
 }) {
   const [plan, setPlan] = useState<PlanConfig>(initialPlan);
   const [newFeature, setNewFeature] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [creating, setCreating] = useState(false);
-  const [billingInterval, setBillingInterval] = useState<"month" | "year">("month");
 
   useEffect(() => {
     setPlan(initialPlan);
   }, [initialPlan]);
-
-  async function handleSave() {
-    setSaving(true);
-    try {
-      await onSave(plan);
-      toast.success(`${plan.display_name} plan saved`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Save failed");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleCreatePaddlePrice() {
-    if (!plan.paddle_product_id) {
-      toast.error("Enter a Paddle Product ID first");
-      return;
-    }
-    setCreating(true);
-    try {
-      const res = await fetch("/api/admin/plan-config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planKey: plan.plan_key,
-          productId: plan.paddle_product_id,
-          billingInterval,
-        }),
-      });
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.error ?? "Failed to create price");
-      setPlan((p) => ({ ...p, paddle_price_id: d.priceId }));
-      toast.success(`Price created: ${d.priceId}`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create price");
-    } finally {
-      setCreating(false);
-    }
-  }
 
   function addFeature() {
     if (!newFeature.trim()) return;
@@ -140,59 +106,6 @@ function PlanCard({
         />
       </div>
 
-      {/* Paddle Product ID */}
-      <div className="space-y-1">
-        <Label className="text-xs text-slate-500">Paddle Product ID</Label>
-        <Input
-          value={plan.paddle_product_id ?? ""}
-          onChange={(e) =>
-            setPlan((p) => ({ ...p, paddle_product_id: e.target.value || null }))
-          }
-          placeholder="pro_xxxx"
-          className="bg-white border-0 rounded-xl"
-        />
-      </div>
-
-      {/* Paddle Price ID + Create button */}
-      <div className="space-y-1">
-        <Label className="text-xs text-slate-500">Paddle Price ID</Label>
-        <div className="flex gap-2">
-          <Input
-            value={plan.paddle_price_id ?? ""}
-            onChange={(e) =>
-              setPlan((p) => ({ ...p, paddle_price_id: e.target.value || null }))
-            }
-            placeholder="pri_xxxx — or create below"
-            className="bg-white border-0 rounded-xl"
-          />
-        </div>
-        {!plan.paddle_price_id && (
-          <div className="flex items-center gap-2 pt-1">
-            <select
-              value={billingInterval}
-              onChange={(e) => setBillingInterval(e.target.value as "month" | "year")}
-              className="text-xs bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600"
-            >
-              <option value="month">Monthly</option>
-              <option value="year">Annual</option>
-            </select>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleCreatePaddlePrice}
-              disabled={creating || !plan.paddle_product_id}
-              className="rounded-xl border-slate-200 bg-white text-xs gap-1.5"
-            >
-              {creating
-                ? <Loader2 className="w-3 h-3 animate-spin" />
-                : <Wand2 className="w-3 h-3" />}
-              Create in Paddle
-            </Button>
-          </div>
-        )}
-      </div>
-
       {/* Features */}
       <div className="space-y-2">
         <Label className="text-xs text-slate-500">Features</Label>
@@ -230,12 +143,10 @@ function PlanCard({
 
       {/* Save */}
       <Button
-        onClick={handleSave}
-        disabled={saving}
+        onClick={() => onSave(plan)}
         className="w-full rounded-xl font-label"
         style={{ backgroundColor: accent, color: "white" }}
       >
-        {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
         Save {plan.display_name} Plan
       </Button>
     </div>
@@ -245,6 +156,11 @@ function PlanCard({
 export default function SubscriptionsPage() {
   const [plans, setPlans] = useState<PlanConfig[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Password confirmation dialog
+  const [pendingPlan, setPendingPlan] = useState<PlanConfig | null>(null);
+  const [password, setPassword] = useState("");
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     async function fetchPlans() {
@@ -264,31 +180,63 @@ export default function SubscriptionsPage() {
     fetchPlans();
   }, []);
 
-  async function handleSavePlan(updated: PlanConfig) {
-    const res = await fetch("/api/admin/plan-config", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        planKey: updated.plan_key,
-        displayName: updated.display_name,
-        priceSar: updated.price_sar,
-        paddlePriceId: updated.paddle_price_id,
-        paddleProductId: updated.paddle_product_id,
-        features: updated.features,
-        isActive: updated.is_active,
-      }),
-    });
-    if (!res.ok) {
-      const d = await res.json();
-      throw new Error(d.error ?? "Save failed");
+  // Called by PlanCard — opens the password dialog instead of saving immediately
+  function requestSave(updated: PlanConfig) {
+    setPendingPlan(updated);
+    setPassword("");
+  }
+
+  async function confirmSave() {
+    if (!pendingPlan || !password) return;
+    setVerifying(true);
+
+    try {
+      // Verify admin password by re-authenticating
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) throw new Error("No session");
+
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password,
+      });
+      if (authError) {
+        toast.error("Incorrect password");
+        setVerifying(false);
+        return;
+      }
+
+      // Password verified — proceed with save
+      const res = await fetch("/api/admin/plan-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          planKey: pendingPlan.plan_key,
+          displayName: pendingPlan.display_name,
+          priceSar: pendingPlan.price_sar,
+          paddlePriceId: pendingPlan.paddle_price_id,
+          paddleProductId: pendingPlan.paddle_product_id,
+          features: pendingPlan.features,
+          isActive: pendingPlan.is_active,
+        }),
+      });
+
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error ?? "Save failed");
+      }
+
+      setPlans((prev) =>
+        prev.map((p) => (p.plan_key === pendingPlan.plan_key ? pendingPlan : p))
+      );
+      toast.success(`${pendingPlan.display_name} plan saved`);
+      setPendingPlan(null);
+      setPassword("");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setVerifying(false);
     }
-    const d = await res.json();
-    if (d.paddleWarning) {
-      toast.warning(`Saved, but Paddle sync failed: ${d.paddleWarning}`);
-    }
-    setPlans((prev) =>
-      prev.map((p) => (p.plan_key === updated.plan_key ? updated : p))
-    );
   }
 
   return (
@@ -303,7 +251,7 @@ export default function SubscriptionsPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[480px] rounded-2xl" />
+            <Skeleton key={i} className="h-[420px] rounded-2xl" />
           ))}
         </div>
       ) : plans.length === 0 ? (
@@ -314,19 +262,58 @@ export default function SubscriptionsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plans.map((plan) => (
-            <PlanCard key={plan.plan_key} plan={plan} onSave={handleSavePlan} />
+            <PlanCard key={plan.plan_key} plan={plan} onSave={requestSave} />
           ))}
         </div>
       )}
 
-      {/* Warning */}
-      <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
-        <AlertTriangle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-blue-800 font-label">
-          <strong>Note:</strong> When a Paddle Price ID is set, saving a plan will automatically
-          update the price in Paddle. Leave the Price ID blank to update display only.
-        </p>
-      </div>
+      {/* Password Confirmation Dialog */}
+      <Dialog open={!!pendingPlan} onOpenChange={(open) => { if (!open) { setPendingPlan(null); setPassword(""); } }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Lock className="w-4 h-4 text-[#2552ca]" />
+              Confirm Changes
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-slate-500 font-label">
+              Enter your admin password to save changes to the{" "}
+              <strong className="text-slate-800">{pendingPlan?.display_name}</strong> plan.
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="admin-password">Password</Label>
+              <Input
+                id="admin-password"
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && confirmSave()}
+                autoFocus
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => { setPendingPlan(null); setPassword(""); }}
+              disabled={verifying}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmSave}
+              disabled={verifying || !password}
+              className="bg-[#2552ca] hover:bg-[#1e42a0] text-white"
+            >
+              {verifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Confirm & Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
