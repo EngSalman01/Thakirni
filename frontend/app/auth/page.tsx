@@ -121,6 +121,13 @@ function AuthForm() {
 
     setSignUpDone(true);
     setIsLoading(false);
+
+    // Send welcome email (fire-and-forget — never blocks signup)
+    fetch("/api/auth/welcome", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, name }),
+    }).catch(() => {});
   };
 
   // ── Google ───────────────────────────────────────────────────────

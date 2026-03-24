@@ -1,18 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { limiters, rateLimitResponse } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  // Rate limit by IP: 5 attempts per 10 minutes
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown"
+  const rl = limiters.auth(ip)
+  if (!rl.success) return rateLimitResponse(rl.reset)
+
   try {
     const body = await request.json();
     const { email, plan, country } = body;
 
-    // Validate email
-    if (!email || !email.includes('@')) {
+    // Validate email with a proper regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
       return NextResponse.json(
         { success: false, message: 'Invalid email address' },
         { status: 400 }
       );
     }
+
+    // Sanitize plan and country to allowed values only (matches plan_type column constraint)
+    const allowedPlans = ['free', 'individual', 'company']
+    const safePlan = allowedPlans.includes(plan) ? plan : 'free'
+    const safeCountry = typeof country === 'string' && country.length === 2 ? country.toUpperCase() : 'SA'
 
     // Get Supabase admin client with service role key
     const supabaseUrl = process.env.SUPABASE_URL;
@@ -46,14 +58,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Add to waitlist
+    // Add to waitlist (columns: email, plan_type, country, status, created_at)
     const { data, error } = await supabase
       .from('waitlist')
       .insert({
         email,
-        plan: plan || 'individual',
-        country: country || 'SA',
-        joined_at: new Date().toISOString(),
+        plan_type: safePlan,
+        country: safeCountry,
         status: 'pending',
       })
       .select()

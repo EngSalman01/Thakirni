@@ -1,7 +1,17 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin-auth";
+import { limiters, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  // Only admins can create users
+  const { user: adminUser, error: adminError } = await requireAdmin();
+  if (adminError) return adminError;
+
+  // Rate-limit admin actions (60/min)
+  const rl = limiters.admin(adminUser!.id);
+  if (!rl.success) return rateLimitResponse(rl.reset);
+
   try {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

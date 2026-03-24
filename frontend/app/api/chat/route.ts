@@ -3,6 +3,7 @@ import { createGroq } from "@ai-sdk/groq"
 import { z } from "zod"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { getHijriDate, formatTodayBlock, formatFactsBlock } from "@/server/services/ai.service"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 export const maxDuration = 60
 
@@ -88,6 +89,11 @@ export async function POST(req: Request) {
     const supabase = await createClient()
     const serviceSupabase = createServiceClient()
     const { data: { user } } = await supabase.auth.getUser()
+
+    // Rate limit: 20 chat messages per minute per user (or per IP for guests)
+    const rateLimitKey = user?.id ?? (req.headers.get("x-forwarded-for") ?? "anon")
+    const rl = limiters.chat(rateLimitKey)
+    if (!rl.success) return rateLimitResponse(rl.reset)
 
     const {
       currentDate,

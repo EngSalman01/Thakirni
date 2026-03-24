@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { syncSubscriptionToProfile } from "@/lib/services/subscription.service"
+import { sendSubscriptionConfirmed, sendPaymentReceipt, sendSubscriptionCancelled, sendPaymentFailed } from "@/lib/emails"
 import crypto from "crypto"
 
 function getServiceSupabase() {
@@ -44,8 +45,9 @@ export async function POST(req: NextRequest) {
         status?: string
         next_billed_at?: string
         paused_at?: string
-        items?: Array<{ price?: { id: string } }>
+        items?: Array<{ price?: { id: string }; totals?: { total?: string; currency_code?: string } }>
         custom_data?: { user_id?: string }
+        billing_details?: { invoice_number?: string }
       }
     }
 
@@ -62,10 +64,18 @@ export async function POST(req: NextRequest) {
         const customerId = d.customer_id
         if (!customerId) break
 
-        let { data: profile } = await service.from("profiles").select("id").eq("paddle_customer_id", customerId).single()
+        let { data: profile } = await service
+          .from("profiles")
+          .select("id, full_name")
+          .eq("paddle_customer_id", customerId)
+          .maybeSingle()
 
         if (!profile && d.custom_data?.user_id) {
-          const { data: p } = await service.from("profiles").select("id").eq("id", d.custom_data.user_id).single()
+          const { data: p } = await service
+            .from("profiles")
+            .select("id, full_name")
+            .eq("id", d.custom_data.user_id)
+            .maybeSingle()
           profile = p
         }
 
@@ -76,13 +86,43 @@ export async function POST(req: NextRequest) {
           paddle_subscription_id: d.id,
           paddle_customer_id: customerId,
           plan_tier: planTier,
-          billing_cycle: billingCycle,
           status: "active",
-          next_billing_date: d.next_billed_at ?? null,
+          current_period_end: d.next_billed_at ?? null,
           updated_at: new Date().toISOString(),
         }, { onConflict: "paddle_subscription_id" })
 
         await syncSubscriptionToProfile(profile.id, priceId, "active")
+
+        // Get user email and send confirmation
+        const { data: authUser } = await service.auth.admin.getUserById(profile.id)
+        if (authUser.user?.email) {
+          const amount = d.items?.[0]?.totals?.total ?? "0"
+          const currency = d.items?.[0]?.totals?.currency_code ?? "USD"
+          const nextDate = d.next_billed_at
+            ? new Date(d.next_billed_at).toLocaleDateString("en-GB") : "—"
+          const planNameAr = planTier === "TEAMS" ? "فريق" : "برو"
+
+          sendSubscriptionConfirmed({
+            to: authUser.user.email,
+            name: profile.full_name ?? "there",
+            planName: planTier === "TEAMS" ? "Teams" : "Pro",
+            planNameAr,
+            amount,
+            currency,
+            nextBillingDate: nextDate,
+          }).catch(console.error)
+
+          sendPaymentReceipt({
+            to: authUser.user.email,
+            name: profile.full_name ?? "there",
+            planName: planTier === "TEAMS" ? "Teams" : "Pro",
+            planNameAr,
+            amount,
+            currency,
+            invoiceId: d.billing_details?.invoice_number,
+            date: new Date().toLocaleDateString("en-GB"),
+          }).catch(console.error)
+        }
         break
       }
 
@@ -107,12 +147,48 @@ export async function POST(req: NextRequest) {
       case "subscription.cancelled": {
         if (!d.id) break
         const { data: sub } = await service.from("subscriptions").update({
-          status: "cancelled",
+          status: "canceled",
           cancel_at_period_end: true,
           updated_at: new Date().toISOString(),
-        }).eq("paddle_subscription_id", d.id).select("user_id").single()
+        }).eq("paddle_subscription_id", d.id).select("user_id, plan_tier, current_period_end").maybeSingle()
 
-        if (sub?.user_id) await syncSubscriptionToProfile(sub.user_id, "", "cancelled")
+        if (sub?.user_id) {
+          await syncSubscriptionToProfile(sub.user_id, "", "canceled")
+
+          const { data: profileData } = await service.from("profiles").select("full_name").eq("id", sub.user_id).maybeSingle()
+          const { data: authUser } = await service.auth.admin.getUserById(sub.user_id)
+          if (authUser.user?.email) {
+            const accessUntil = sub.current_period_end
+              ? new Date(sub.current_period_end).toLocaleDateString("en-GB") : "—"
+            const planNameAr = sub.plan_tier === "TEAMS" ? "فريق" : "برو"
+            sendSubscriptionCancelled({
+              to: authUser.user.email,
+              name: profileData?.full_name ?? "there",
+              planName: sub.plan_tier === "TEAMS" ? "Teams" : "Pro",
+              planNameAr,
+              accessUntil,
+            }).catch(console.error)
+          }
+        }
+        break
+      }
+
+      case "subscription.payment.failed": {
+        if (!d.id) break
+        const { data: sub } = await service.from("subscriptions").select("user_id, plan_tier").eq("paddle_subscription_id", d.id).maybeSingle()
+        if (sub?.user_id) {
+          const { data: profileData } = await service.from("profiles").select("full_name").eq("id", sub.user_id).maybeSingle()
+          const { data: authUser } = await service.auth.admin.getUserById(sub.user_id)
+          if (authUser.user?.email) {
+            const planNameAr = sub.plan_tier === "TEAMS" ? "فريق" : "برو"
+            sendPaymentFailed({
+              to: authUser.user.email,
+              name: profileData?.full_name ?? "there",
+              planName: sub.plan_tier === "TEAMS" ? "Teams" : "Pro",
+              planNameAr,
+            }).catch(console.error)
+          }
+        }
         break
       }
     }

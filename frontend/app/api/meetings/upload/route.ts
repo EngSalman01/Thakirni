@@ -1,10 +1,15 @@
 import { NextRequest } from "next/server"
 import { requireAuth, checkPlanFeature } from "@/lib/api-auth"
 import { processMeetingRecording } from "@/lib/services/transcription.service"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
+
+  // Rate limit: 10 uploads per hour per user
+  const rl = limiters.upload(auth.userId)
+  if (!rl.success) return rateLimitResponse(rl.reset)
 
   const { allowed } = await checkPlanFeature(auth.userId, "meeting_summary")
   if (!allowed) {
