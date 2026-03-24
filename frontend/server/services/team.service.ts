@@ -64,7 +64,7 @@ export async function createTeam(
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("teams")
-    .insert({ ...payload, owner_id: ownerId, created_at: new Date().toISOString() })
+    .insert({ ...payload, owner_id: ownerId, plan_tier: "FREE", created_at: new Date().toISOString() })
     .select()
     .single();
 

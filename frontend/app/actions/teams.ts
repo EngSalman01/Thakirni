@@ -34,8 +34,7 @@ export async function createTeam(name: string, slug: string) {
         name,
         slug,
         owner_id: user.id,
-        tier: "starter",
-        subscription_status: "active",
+        plan_tier: "FREE",
       })
       .select()
       .single();
@@ -69,9 +68,8 @@ export async function createTeam(name: string, slug: string) {
       .insert({
         user_id: user.id,
         team_id: team.id,
-        subscription_type: "team", // Assuming team is created with team subscription
+        plan_tier: "COMPANY",
         status: "active",
-        plan_name: "Team Starter",
       });
 
     if (subscriptionError) {

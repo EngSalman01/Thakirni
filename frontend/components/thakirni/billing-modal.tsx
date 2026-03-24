@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CheckCircle2, Loader2, Tag, X } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/components/language-provider";
 import type { PlanTier } from "@/hooks/use-subscription";
@@ -78,8 +79,37 @@ interface Props {
 
 export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeComplete }: Props) {
   const { t } = useLanguage();
-  const [confirming, setConfirming] = useState<PlanTier | null>(null); // downgrade confirmation
+  const [confirming, setConfirming] = useState<PlanTier | null>(null);
   const [processing, setProcessing] = useState<PlanTier | null>(null);
+
+  // Promo code state
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ code: string; discountPercent: number } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  async function applyPromoCode(planId: "pro" | "teams") {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoLoading(true);
+    try {
+      const res = await fetch("/api/discount-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, planKey: planId }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setPromoApplied({ code: code.toUpperCase(), discountPercent: data.discountPercent });
+        toast.success(t(`تم تطبيق الكود! خصم ${data.discountPercent}%`, `Code applied! ${data.discountPercent}% off`));
+      } else {
+        toast.error(data.message ?? t("كود غير صالح", "Invalid code"));
+      }
+    } catch {
+      toast.error(t("تعذّر التحقق من الكود", "Could not validate code"));
+    } finally {
+      setPromoLoading(false);
+    }
+  }
 
   async function handleUpgrade(planId: "pro" | "teams") {
     const priceId = planId === "pro" ? PRO_MONTHLY_PRICE_ID : TEAMS_MONTHLY_PRICE_ID;
@@ -88,11 +118,20 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
     setProcessing(planId);
     try {
       const { initializePaddle } = await import("@paddle/paddle-js");
+      const appliedCode = promoApplied?.code;
       const paddle = await initializePaddle({
         token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
         environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
         eventCallback(event) {
           if (event.name === "checkout.completed") {
+            // Increment used_count for the promo code
+            if (appliedCode) {
+              fetch("/api/discount-codes/use", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: appliedCode }),
+              }).catch(() => {});
+            }
             onUpgradeComplete(planId);
             onClose();
             toast.success(t(
@@ -105,6 +144,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
       await paddle!.Checkout.open({
         items: [{ priceId, quantity: 1 }],
         customer: userEmail ? { email: userEmail } : undefined,
+        ...(appliedCode ? { discountCode: appliedCode } : {}),
         settings: { displayMode: "overlay", theme: "dark" },
       });
     } catch (err) {
@@ -168,6 +208,41 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
             </div>
           </div>
         ) : (
+          <>
+          {/* Promo code */}
+          <div className="flex gap-2 mt-3">
+            {promoApplied ? (
+              <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-xl text-sm">
+                <Tag className="w-4 h-4 text-green-600 shrink-0" />
+                <span className="text-green-700 font-medium flex-1">
+                  {promoApplied.code} — {promoApplied.discountPercent}% {t("خصم", "off")}
+                </span>
+                <button onClick={() => { setPromoApplied(null); setPromoInput(""); }} className="text-green-500 hover:text-green-700">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Input
+                  placeholder={t("كود الخصم", "Promo code")}
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === "Enter" && applyPromoCode(currentTier !== "free" ? currentTier as "pro" | "teams" : "pro")}
+                  className="rounded-xl font-mono uppercase text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyPromoCode(currentTier !== "free" ? currentTier as "pro" | "teams" : "pro")}
+                  disabled={promoLoading || !promoInput.trim()}
+                  className="rounded-xl shrink-0 px-4"
+                >
+                  {promoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : t("تطبيق", "Apply")}
+                </Button>
+              </>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
             {PLANS.map((plan) => {
               const isCurrent = plan.id === currentTier;
@@ -244,6 +319,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
               );
             })}
           </div>
+          </>
         )}
       </DialogContent>
     </Dialog>
