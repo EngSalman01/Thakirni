@@ -130,7 +130,7 @@ export default function VoiceNotePage() {
       setState('idle');
       setPermError(
         err?.name === 'NotAllowedError'
-          ? t('لم يتم السماح بالوصول للميكروفون. يرجى السماح بالوصول من إعدادات المتصفح.', 'Microphone permission denied. Please allow access in your browser settings.')
+          ? t('ما انسمح الوصول للميكروفون. لو سمحت اسمح بالوصول من إعدادات المتصفح.', 'Microphone permission denied. Please allow access in your browser settings.')
           : t('تعذّر الوصول للميكروفون', 'Could not access the microphone.'),
       );
     }

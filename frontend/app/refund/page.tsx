@@ -46,7 +46,7 @@ export default function RefundPage() {
 
         <Section title={t('١. نظرة عامة', '1. Overview')}>
           {t(
-            'نسعى جاهدين لضمان رضاك التام عن تذكرني. إذا لم تكن راضيًا عن الخدمة، يمكنك طلب استرداد وفق الشروط الموضحة في هذه السياسة.',
+            'نسعى جاهدين لضمان رضاك التام عن ذكرني. إذا ما كنت راضيًا عن الخدمة، تقدر تطلب استرداد وفق الشروط الموضحة في هذه السياسة.',
             'We strive to ensure your complete satisfaction with Thakirni. If you are not satisfied with the Service, you may request a refund under the conditions outlined in this policy.',
           )}
         </Section>
@@ -60,14 +60,14 @@ export default function RefundPage() {
 
         <Section title={t('٣. الاشتراكات المتجددة', '3. Recurring Subscriptions')}>
           {t(
-            'تسري سياسة الاسترداد لمدة ١٤ يومًا على جميع الدفعات بما فيها الاشتراكات المتجددة. يمكنك طلب استرداد أي دفعة خلال ١٤ يومًا من تاريخها.',
+            'تسري سياسة الاسترداد لمدة ١٤ يومًا على جميع الدفعات بما فيها الاشتراكات المتجددة. تقدر تطلب استرداد أي دفعة خلال ١٤ يومًا من تاريخها.',
             'The 14-day refund policy applies to all payments including recurring subscription charges. You may request a refund for any payment within 14 days of that payment date.',
           )}
         </Section>
 
         <Section title={t('٤. الإلغاء', '4. Cancellation')}>
           {t(
-            'يمكنك إلغاء اشتراكك في أي وقت من إعدادات حسابك. عند الإلغاء، ستتمكن من الاستمرار في استخدام الخدمة حتى نهاية فترة الفوترة الحالية. لن تُفرض عليك رسوم بعد ذلك.',
+            'تقدر تلغي اشتراكك في أي وقت من إعدادات حسابك. عند الإلغاء، تقدر تكمل تستخدم الخدمة حتى نهاية فترة الفوترة الحالية. ما راح تتحمّل أي رسوم بعد ذلك.',
             'You may cancel your subscription at any time from your account settings. Upon cancellation, you will retain access to the Service until the end of your current billing period. You will not be charged after that.',
           )}
         </Section>
@@ -88,7 +88,7 @@ export default function RefundPage() {
 
         <Section title={t('٧. كيفية طلب الاسترداد', '7. How to Request a Refund')}>
           {t(
-            'لطلب الاسترداد، يرجى مراسلتنا عبر البريد الإلكتروني مع ذكر: عنوان البريد الإلكتروني المرتبط بحسابك، وتاريخ الدفعة، وسبب طلب الاسترداد. سنرد على طلبك خلال ٣ أيام عمل.',
+            'لو سمحت راسلنا عبر البريد الإلكتروني مع ذكر: عنوان البريد الإلكتروني المرتبط بحسابك، وتاريخ الدفعة، وسبب طلب الاسترداد. راح نرد على طلبك خلال ٣ أيام عمل.',
             'To request a refund, please email us with: the email address associated with your account, the payment date, and the reason for your refund request. We will respond within 3 business days.',
           )}
           {' '}

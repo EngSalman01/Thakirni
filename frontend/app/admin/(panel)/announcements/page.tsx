@@ -291,9 +291,8 @@ export default function AnnouncementsPage() {
               </div>
             </div>
 
-            {/* TODO: add cron scheduling for future announcements */}
             <p className="text-xs text-slate-400 font-label">
-              Announcements are sent immediately. Scheduling support coming soon.
+              Announcements are sent immediately.
             </p>
           </div>
           <DialogFooter>

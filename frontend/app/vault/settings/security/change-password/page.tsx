@@ -243,7 +243,7 @@ export default function ChangePasswordPage() {
               </h2>
               <p className="text-sm text-muted-foreground">
                 {t(
-                  'حسابك مرتبط بـ Google. لتغيير كلمة المرور، يرجى التوجه إلى إعدادات حساب Google.',
+                  'حسابك مرتبط بـ Google. لتغيير كلمة المرور، لازم تروح إعدادات حساب Google.',
                   'Your account uses Google sign-in. To change your password, please visit your Google account settings.',
                 )}
               </p>

@@ -189,7 +189,7 @@ export function InviteMemberDialog({
                 </Label>
                 <Select
                   value={role}
-                  onValueChange={(value: any) => setRole(value)}
+                  onValueChange={(value: "member" | "admin" | "viewer") => setRole(value)}
                   disabled={isLoading}
                 >
                   <SelectTrigger id="role" className="h-11 border-border/50">

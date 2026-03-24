@@ -46,7 +46,7 @@ export default function TermsPage() {
 
         <Section title={t('١. القبول والموافقة', '1. Acceptance')}>
           {t(
-            'باستخدامك لتطبيق تذكرني (Thakirni) ("الخدمة")، فإنك توافق على الالتزام بهذه الشروط. إذا كنت لا توافق على هذه الشروط، يرجى عدم استخدام الخدمة.',
+            'باستخدامك لتطبيق تذكرني (Thakirni) ("الخدمة")، فإنك توافق على الالتزام بهذه الشروط. إذا ما كنت توافق على هذه الشروط، لا تستخدم الخدمة.',
             'By using Thakirni (تذكرني) ("the Service"), you agree to be bound by these Terms. If you do not agree, please do not use the Service.',
           )}
         </Section>
@@ -102,7 +102,7 @@ export default function TermsPage() {
 
         <Section title={t('٩. إنهاء الخدمة', '9. Termination')}>
           {t(
-            'نحتفظ بالحق في تعليق حسابك أو إنهائه في أي وقت إذا انتهكت هذه الشروط. يمكنك حذف حسابك في أي وقت من إعدادات الحساب.',
+            'نحتفظ بالحق في تعليق حسابك أو إنهائه في أي وقت إذا انتهكت هذه الشروط. تقدر تحذف حسابك في أي وقت من إعدادات الحساب.',
             'We reserve the right to suspend or terminate your account at any time if you violate these Terms. You may delete your account at any time from your account settings.',
           )}
         </Section>
@@ -123,7 +123,7 @@ export default function TermsPage() {
 
         <Section title={t('١٢. التواصل معنا', '12. Contact Us')}>
           {t(
-            'إذا كان لديك أي أسئلة حول هذه الشروط، يرجى التواصل معنا عبر البريد الإلكتروني:',
+            'إذا عندك أي أسئلة حول هذه الشروط، لو سمحت تواصل معنا عبر البريد الإلكتروني:',
             'If you have any questions about these Terms, please contact us at:',
           )}
           {' '}

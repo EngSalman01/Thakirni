@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
+import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso";
 
 export async function GET() {
   const { error } = await requireAdmin();
@@ -61,18 +62,15 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: phoneUsers } = await phoneQuery;
-    sentCount = phoneUsers?.length ?? 0;
+    const validPhones = (phoneUsers ?? []).filter((u) => u.phone_number);
 
-    // TODO: implement Kapso send logic when API credentials are configured
-    // const kapsoApiKey = process.env.KAPSO_API_KEY;
-    // const kapsoApiUrl = process.env.KAPSO_API_URL;
-    // for (const u of phoneUsers ?? []) {
-    //   await fetch(`${kapsoApiUrl}/messages`, {
-    //     method: "POST",
-    //     headers: { Authorization: `Bearer ${kapsoApiKey}`, "Content-Type": "application/json" },
-    //     body: JSON.stringify({ to: u.phone_number, message }),
-    //   });
-    // }
+    if (validPhones.length > 0 && process.env.KAPSO_API_KEY) {
+      await Promise.allSettled(
+        validPhones.map((u) => sendWhatsAppMessage(u.phone_number!, message))
+      );
+    }
+
+    sentCount = validPhones.length;
   }
 
   const { data, error: insertError } = await supabase

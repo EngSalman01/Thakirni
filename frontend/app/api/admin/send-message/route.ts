@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
+import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso";
 
 export async function POST(request: NextRequest) {
   const { error } = await requireAdmin();
@@ -34,14 +35,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // TODO: implement Kapso send logic when API credentials are configured
-  // const kapsoApiKey = process.env.KAPSO_API_KEY;
-  // const kapsoApiUrl = process.env.KAPSO_API_URL;
-  // await fetch(`${kapsoApiUrl}/messages`, {
-  //   method: "POST",
-  //   headers: { Authorization: `Bearer ${kapsoApiKey}`, "Content-Type": "application/json" },
-  //   body: JSON.stringify({ to: profile.phone_number, message }),
-  // });
+  if (!process.env.KAPSO_API_KEY) {
+    return NextResponse.json(
+      { error: "WhatsApp integration not configured (KAPSO_API_KEY missing)" },
+      { status: 503 }
+    );
+  }
+
+  try {
+    await sendWhatsAppMessage(profile.phone_number, message);
+  } catch (e) {
+    console.error("[send-message] Kapso error:", e instanceof Error ? e.message : e);
+    return NextResponse.json({ error: "Failed to send WhatsApp message" }, { status: 500 });
+  }
 
   return NextResponse.json({
     success: true,

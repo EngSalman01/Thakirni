@@ -68,9 +68,9 @@ export async function sendSubscriptionConfirmed(opts: {
       <div style="width:64px;height:64px;background:#f0fdf4;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:28px;">🎉</div>
     </td></tr>
     <tr><td style="padding:24px 40px 32px;">
-      <h1 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1e293b;text-align:right;">تم تفعيل اشتراكك بنجاح!</h1>
+      <h1 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1e293b;text-align:right;">تم تفعيل اشتراكك! 🎉</h1>
       <p style="margin:0 0 24px;font-size:15px;color:#64748b;line-height:1.7;text-align:right;">
-        أهلاً ${name}، تم تفعيل اشتراك <strong>${planNameAr}</strong> بنجاح. يمكنك الآن الاستفادة من جميع المميزات.
+        هلا ${name}، تم تفعيل اشتراك <strong>${planNameAr}</strong>. تقدر الآن تستفيد من جميع المميزات.
       </p>
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;padding:24px;margin-bottom:28px;">
         <table width="100%" cellpadding="0" cellspacing="0">
@@ -126,7 +126,7 @@ export async function sendPaymentReceipt(opts: {
     <tr><td style="padding:24px 40px 32px;">
       <h1 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1e293b;text-align:right;">إيصال الدفع</h1>
       <p style="margin:0 0 24px;font-size:15px;color:#64748b;line-height:1.7;text-align:right;">
-        شكراً ${name}، تم استلام دفعتك بنجاح.
+        هلا ${name}، تم استلام دفعتك.
       </p>
       <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:28px;">
         <table width="100%" cellpadding="0" cellspacing="0">
@@ -186,7 +186,7 @@ export async function sendSubscriptionCancelled(opts: {
         ${name}، تأسفنا لرؤيتك تغادر. تم إلغاء اشتراك <strong>${planNameAr}</strong>. ستحتفظ بوصولك حتى <strong>${accessUntil}</strong>.
       </p>
       <div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;padding:16px;margin-bottom:28px;text-align:right;">
-        <p style="margin:0;font-size:13px;color:#9f1239;">إذا غيّرت رأيك، يمكنك تجديد اشتراكك في أي وقت من إعدادات حسابك.</p>
+        <p style="margin:0;font-size:13px;color:#9f1239;">إذا غيّرت رأيك، تقدر تجدد اشتراكك في أي وقت من إعدادات حسابك.</p>
       </div>
       ${button("إعادة الاشتراك · Resubscribe", "https://thakirni.com/vault/settings")}
       <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 28px;"/>
@@ -222,7 +222,7 @@ export async function sendPaymentFailed(opts: {
     <tr><td style="padding:24px 40px 32px;">
       <h1 style="margin:0 0 12px;font-size:22px;font-weight:800;color:#1e293b;text-align:right;">فشلت عملية الدفع</h1>
       <p style="margin:0 0 24px;font-size:15px;color:#64748b;line-height:1.7;text-align:right;">
-        ${name}، لم نتمكن من تجديد اشتراك <strong>${planNameAr}</strong>. يرجى تحديث بيانات الدفع لتجنب انقطاع الخدمة.
+        هلا ${name}، ما قدرنا نجدد اشتراك <strong>${planNameAr}</strong>. لو سمحت حدّث بيانات الدفع لتجنب انقطاع الخدمة.
       </p>
       ${button("تحديث بيانات الدفع · Update Payment", "https://thakirni.com/vault/settings")}
       <hr style="border:none;border-top:1px solid #f1f5f9;margin:0 0 28px;"/>
