@@ -18,7 +18,7 @@ export default function NewMemoryPage() {
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
-      toast.error(t('يرجى ملء جميع الحقول', 'Please fill all fields'));
+      toast.error(t('لو سمحت عبّي كل الحقول', 'Please fill all fields'));
       return;
     }
     setSaving(true);

@@ -220,7 +220,7 @@ function AIInsight() {
         <span className="text-xl mb-4 block">✦</span>
         <p className="text-sm font-medium leading-relaxed mb-4">
           {t(
-            "ذكرت \"الذكاء الاصطناعي الأخلاقي\" في 3 سياقات مختلفة اليوم. هل تريد توليفها في ملاحظة بحثية؟",
+            "ذكرت \"الذكاء الاصطناعي الأخلاقي\" في 3 سياقات مختلفة اليوم. تبي نولفها في ملاحظة بحثية؟",
             "You've mentioned \"Ethical AI\" in 3 different contexts today. Would you like to synthesize these into a research note?"
           )}
         </p>

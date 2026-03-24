@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server"
 import { requireAuth } from "@/lib/api-auth"
+import type { SupabaseClient } from "@supabase/supabase-js"
 
-async function updateStreak(userId: string, habitId: string, supabase: any) {
+async function updateStreak(userId: string, habitId: string, supabase: SupabaseClient) {
   const { data: logs } = await supabase
     .from("habit_logs")
     .select("log_date")
@@ -10,7 +11,7 @@ async function updateStreak(userId: string, habitId: string, supabase: any) {
     .order("log_date", { ascending: false })
     .limit(365)
 
-  const dates = (logs ?? []).map((l: any) => l.log_date as string).sort().reverse()
+  const dates = (logs ?? []).map((l: { log_date: string }) => l.log_date).sort().reverse()
   let streak = 0
   const today = new Date().toISOString().split("T")[0]
   let current = today

@@ -90,11 +90,11 @@ const EmptyState = ({
       <Calendar className="w-7 h-7 md:w-8 md:h-8 text-emerald-500" />
     </motion.div>
     <h4 className="text-base md:text-lg font-semibold text-foreground mb-2">
-      {t("مرحباً! كيف يمكنني مساعدتك؟", "Hello! How can I help you?")}
+      {t("هلا! كيف أقدر أساعدك؟", "Hello! How can I help you?")}
     </h4>
     <p className="text-xs md:text-sm text-muted-foreground mb-6">
       {t(
-        "يمكنني مساعدتك في تنظيم مهامك، ومشترياتك، ومواعيدك",
+        "أقدر أساعدك تنظم مهامك، ومشترياتك، ومواعيدك",
         "I can help you organize tasks, groceries, and appointments",
       )}
     </p>

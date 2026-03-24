@@ -1,6 +1,8 @@
+"use client";
+
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Plus, Trash2, Shield, Mail } from "lucide-react";
+import { Users, Plus, Trash2, Shield, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLanguage } from "@/components/language-provider";
+import { toast } from "sonner";
+import { inviteMember, removeMember } from "@/app/actions/teams";
 
 interface TeamMembersTabProps {
   teamId: string;
@@ -27,17 +31,42 @@ export function TeamMembersTab({
   const [isInviting, setIsInviting] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("member");
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [removingId, setRemovingId] = useState<string | null>(null);
 
   const handleInvite = async () => {
-    if (inviteEmail.trim()) {
-      // TODO: Implement invitation logic
-      setInviteEmail("");
-      setIsInviting(false);
+    if (!inviteEmail.trim()) return;
+    setInviteLoading(true);
+    try {
+      const result = await inviteMember(teamId, inviteEmail.trim(), inviteRole as "member" | "admin");
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t(`تم إرسال الدعوة إلى ${inviteEmail}`, `Invitation sent to ${inviteEmail}`));
+        setInviteEmail("");
+        setIsInviting(false);
+      }
+    } catch {
+      toast.error(t("فشل إرسال الدعوة", "Failed to send invitation"));
+    } finally {
+      setInviteLoading(false);
     }
   };
 
   const handleRemoveMember = async (memberId: string) => {
-    // TODO: Implement remove member logic
+    setRemovingId(memberId);
+    try {
+      const result = await removeMember(teamId, memberId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t("تم إزالة العضو", "Member removed"));
+      }
+    } catch {
+      toast.error(t("فشل إزالة العضو", "Failed to remove member"));
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   return (
@@ -98,8 +127,9 @@ export function TeamMembersTab({
           <div className="flex gap-2">
             <Button
               onClick={handleInvite}
-              disabled={!inviteEmail.trim()}
+              disabled={!inviteEmail.trim() || inviteLoading}
             >
+              {inviteLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {t("Send Invite", "إرسال دعوة")}
             </Button>
             <Button
@@ -144,8 +174,11 @@ export function TeamMembersTab({
                   size="sm"
                   className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                   onClick={() => handleRemoveMember(member.id)}
+                  disabled={removingId === member.id}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  {removingId === member.id
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <Trash2 className="w-4 h-4" />}
                 </Button>
               </motion.div>
             ))}

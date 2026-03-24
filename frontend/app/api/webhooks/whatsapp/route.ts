@@ -507,7 +507,7 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
     ])
 
 }
-//AbuSalem
+
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const challenge = searchParams.get("challenge") ?? searchParams.get("hub.challenge") ?? "ok"

@@ -131,9 +131,10 @@ export async function DELETE(request: NextRequest) {
       try {
         // Find the discount by code and archive it
         const list = await paddle.discounts.list({ code: [codeRow.code] });
-        const paddleDiscount = list.data?.[0];
-        if (paddleDiscount?.id) {
-          await paddle.discounts.update(paddleDiscount.id, { status: "archived" });
+        let paddleDiscountId: string | undefined;
+        for await (const d of list) { paddleDiscountId = d.id; break; }
+        if (paddleDiscountId) {
+          await paddle.discounts.update(paddleDiscountId, { status: "archived" });
         }
       } catch (e) {
         console.error("[discount-codes] Paddle archive failed:", e instanceof Error ? e.message : e);

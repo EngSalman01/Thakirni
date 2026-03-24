@@ -51,7 +51,6 @@ export const metadata: Metadata = {
     description: "The first AI-powered personal assistant and second brain platform in Saudi Arabia.",
     images: [
       {
-        // TODO: replace with a proper 1200x630 OG image
         url: "/images/logo-gradient-bg.svg",
         width: 1200,
         height: 630,
