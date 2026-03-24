@@ -51,7 +51,7 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="md:col-span-2 bg-[#f6f3f2] rounded-2xl p-12 relative overflow-hidden group hover-lift cursor-pointer"
+            className="md:col-span-2 bg-[#f6f3f2] rounded-2xl p-12 relative overflow-hidden group hover-lift cursor-default"
           >
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div>
@@ -81,7 +81,7 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#456ce4] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-pointer"
+            className="bg-[#456ce4] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-default"
           >
             <div>
               <span className="text-4xl mb-6 block">🎙️</span>
@@ -97,15 +97,20 @@ export function FeaturesSection() {
             </div>
             {/* Waveform */}
             <div className="h-16 bg-white/10 rounded-xl flex items-center justify-center mt-8">
-              <div className="flex gap-1 items-end h-10">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <div
+              <div className="flex gap-1 items-center h-10">
+                {[10, 28, 18, 36, 14, 32, 22, 12, 26].map((maxH, i) => (
+                  <motion.div
                     key={i}
                     className="w-1.5 bg-white rounded-full"
-                    style={{
-                      animation: `wave-bar 1s ease-in-out ${i * 0.1}s infinite`,
-                      height: "8px",
+                    animate={{ height: [6, maxH, 6] }}
+                    transition={{
+                      duration: 0.8 + i * 0.07,
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      ease: "easeInOut",
+                      delay: i * 0.09,
                     }}
+                    style={{ height: 6 }}
                   />
                 ))}
               </div>
@@ -119,7 +124,7 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#f6f3f2] rounded-2xl p-12 flex flex-col items-center text-center hover-lift cursor-pointer"
+            className="bg-[#f6f3f2] rounded-2xl p-12 flex flex-col items-center text-center hover-lift cursor-default"
           >
             <div className="w-20 h-20 rounded-full bg-[#fd65c2] flex items-center justify-center mb-8 animate-soft-pulse">
               <span className="text-white text-3xl">🔒</span>
@@ -142,7 +147,7 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="md:col-span-2 bg-[#e4e2e1] rounded-2xl p-12 grid md:grid-cols-2 gap-12 items-center hover-lift cursor-pointer"
+            className="md:col-span-2 bg-[#e4e2e1] rounded-2xl p-12 grid md:grid-cols-2 gap-12 items-center hover-lift cursor-default"
           >
             <div>
               <h3 className="text-3xl font-headline font-bold mb-4 text-slate-900">
@@ -188,7 +193,7 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#25d366] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-pointer"
+            className="bg-[#25d366] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-default"
           >
             <div>
               <span className="text-4xl mb-6 block">💬</span>
