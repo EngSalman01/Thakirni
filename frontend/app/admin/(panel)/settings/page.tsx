@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useAdminConfirm, AdminConfirmDialog } from "@/components/admin/password-confirm";
 
 interface AppConfig {
   app_name: string;
@@ -31,6 +32,8 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const { confirm, dialogProps } = useAdminConfirm();
+
   useEffect(() => {
     async function fetchConfig() {
       try {
@@ -49,6 +52,8 @@ export default function AdminSettingsPage() {
   }, []);
 
   async function handleSave() {
+    const ok = await confirm("save settings");
+    if (!ok) return;
     setSaving(true);
     try {
       const entries = Object.entries(config);
@@ -149,6 +154,8 @@ export default function AdminSettingsPage() {
           Save All
         </Button>
       </div>
+
+      <AdminConfirmDialog {...dialogProps} />
 
       {/* Database Setup */}
       <div className="bg-[#f6f3f2] rounded-2xl p-6 space-y-3">

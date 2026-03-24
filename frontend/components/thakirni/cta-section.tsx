@@ -82,6 +82,18 @@ export function CTASection() {
   const router = useRouter();
   const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [livePrices, setLivePrices] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch("/api/plans")
+      .then((r) => r.json())
+      .then((data: Array<{ plan_key: string; price_sar: number }>) => {
+        const map: Record<string, number> = {};
+        data.forEach((p) => { map[p.plan_key] = p.price_sar; });
+        setLivePrices(map);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     initializePaddle({
@@ -181,7 +193,11 @@ export function CTASection() {
                       {t(plan.taglineAr, plan.taglineEn)}
                     </p>
                     <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-5xl font-bold">{plan.price}</span>
+                      <span className="text-5xl font-bold">
+                        {livePrices[plan.paddleKey ?? plan.nameEn.toLowerCase()] !== undefined
+                          ? livePrices[plan.paddleKey ?? plan.nameEn.toLowerCase()]
+                          : plan.price}
+                      </span>
                       <span className="text-slate-400 text-sm">{t("ر.س", "SAR")}</span>
                       <span className="text-slate-500 text-sm">{t(plan.periodAr, plan.periodEn)}</span>
                     </div>

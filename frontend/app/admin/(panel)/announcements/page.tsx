@@ -22,6 +22,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Plus, Loader2, Eye } from "lucide-react";
+import { useAdminConfirm, AdminConfirmDialog } from "@/components/admin/password-confirm";
 
 interface Announcement {
   id: string;
@@ -73,6 +74,8 @@ export default function AnnouncementsPage() {
   const [viewAnnouncement, setViewAnnouncement] = useState<Announcement | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const { confirm, dialogProps } = useAdminConfirm();
+
   // Form
   const [formTitle, setFormTitle] = useState("");
   const [formMessage, setFormMessage] = useState("");
@@ -100,6 +103,8 @@ export default function AnnouncementsPage() {
       toast.error("Title and message are required");
       return;
     }
+    const ok = await confirm("send this announcement");
+    if (!ok) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/admin/announcements", {
@@ -306,6 +311,8 @@ export default function AnnouncementsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AdminConfirmDialog {...dialogProps} />
 
       {/* View Dialog */}
       <Dialog open={!!viewAnnouncement} onOpenChange={(o) => !o && setViewAnnouncement(null)}>

@@ -31,6 +31,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { Plus, Loader2, RefreshCw, Info } from "lucide-react";
+import { useAdminConfirm, AdminConfirmDialog } from "@/components/admin/password-confirm";
 
 interface DiscountCode {
   id: string;
@@ -90,6 +91,8 @@ export default function DiscountsPage() {
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const { confirm, dialogProps } = useAdminConfirm();
+
   // Form state
   const [formCode, setFormCode] = useState("");
   const [formDiscount, setFormDiscount] = useState<number>(10);
@@ -118,6 +121,8 @@ export default function DiscountsPage() {
       toast.error("Code is required");
       return;
     }
+    const ok = await confirm("create discount code");
+    if (!ok) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/admin/discount-codes", {
@@ -146,6 +151,8 @@ export default function DiscountsPage() {
 
   async function handleDeactivate() {
     if (!deactivateId) return;
+    const ok = await confirm("deactivate this code");
+    if (!ok) return;
     try {
       const res = await fetch(`/api/admin/discount-codes?id=${deactivateId}`, {
         method: "DELETE",
@@ -367,6 +374,8 @@ export default function DiscountsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AdminConfirmDialog {...dialogProps} />
 
       {/* Deactivate Confirm */}
       <AlertDialog open={!!deactivateId} onOpenChange={(o) => !o && setDeactivateId(null)}>

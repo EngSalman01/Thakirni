@@ -36,6 +36,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PlanBadge } from "../_components/plan-badge";
+import { useAdminConfirm, AdminConfirmDialog } from "@/components/admin/password-confirm";
 import { toast } from "sonner";
 import {
   ChevronLeft,
@@ -110,6 +111,8 @@ export default function UsersPage() {
   // Plan updating
   const [updatingPlan, setUpdatingPlan] = useState<string | null>(null);
 
+  const { confirm, dialogProps } = useAdminConfirm();
+
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchUsers = useCallback(async () => {
@@ -147,6 +150,8 @@ export default function UsersPage() {
   }
 
   async function handleSetPlan(userId: string, newPlan: string) {
+    const ok = await confirm(`set plan to ${newPlan}`);
+    if (!ok) return;
     setUpdatingPlan(userId);
     try {
       const res = await fetch("/api/admin/set-plan", {
@@ -172,6 +177,8 @@ export default function UsersPage() {
 
   async function handleDeleteUser() {
     if (!selectedUser) return;
+    const ok = await confirm(`delete ${selectedUser.full_name ?? "this user"}`);
+    if (!ok) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/users/${selectedUser.id}`, {
@@ -192,6 +199,8 @@ export default function UsersPage() {
 
   async function handleSendMessage() {
     if (!messageUser || !messageText.trim()) return;
+    const ok = await confirm(`send message to ${messageUser.full_name ?? "user"}`);
+    if (!ok) return;
     setSendingMessage(true);
     try {
       const res = await fetch("/api/admin/send-message", {
@@ -522,6 +531,8 @@ export default function UsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AdminConfirmDialog {...dialogProps} />
 
       {/* Message Dialog */}
       <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
