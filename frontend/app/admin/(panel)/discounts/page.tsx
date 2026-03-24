@@ -138,7 +138,13 @@ export default function DiscountsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create");
-      toast.success("Discount code created");
+      if (data.paddleSynced) {
+        toast.success("Discount code created and synced to Paddle");
+      } else if (data.paddleError) {
+        toast.success("Discount code created (add to Paddle manually — sync failed)");
+      } else {
+        toast.success("Discount code created");
+      }
       setCreateOpen(false);
       resetForm();
       fetchCodes();
@@ -192,12 +198,10 @@ export default function DiscountsPage() {
         </Button>
       </div>
 
-      {/* TODO info banner */}
       <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
         <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
         <p className="text-sm text-blue-800 font-label">
-          {/* Wire discount_code to Paddle checkout */}
-          Discount codes are stored here. Wire them to the Paddle checkout flow to apply discounts at payment.
+          Codes created here are automatically synced to Paddle and validated at checkout. Users can enter codes on the pricing page or in the billing modal.
         </p>
       </div>
 

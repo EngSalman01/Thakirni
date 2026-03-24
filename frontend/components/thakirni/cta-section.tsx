@@ -8,6 +8,8 @@ import { useState, useEffect } from "react";
 import { initializePaddle, type Paddle } from "@paddle/paddle-js";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { Input } from "@/components/ui/input";
+import { Tag, X, Loader2 } from "lucide-react";
 
 const PADDLE_PRICES = {
   pro: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY ?? "",
@@ -83,6 +85,9 @@ export function CTASection() {
   const [paddle, setPaddle] = useState<Paddle | null>(null);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [livePrices, setLivePrices] = useState<Record<string, number>>({});
+  const [promoInput, setPromoInput] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ code: string; discountPercent: number } | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/plans")
@@ -102,6 +107,30 @@ export function CTASection() {
     }).then((p) => { if (p) setPaddle(p); });
   }, []);
 
+  async function applyPromoCode(planKey?: string) {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoLoading(true);
+    try {
+      const res = await fetch("/api/discount-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, planKey }),
+      });
+      const data = await res.json();
+      if (data.valid) {
+        setPromoApplied({ code: code.toUpperCase(), discountPercent: data.discountPercent });
+        toast.success(t(`تم تطبيق الكود! خصم ${data.discountPercent}%`, `Code applied! ${data.discountPercent}% off`));
+      } else {
+        toast.error(data.message ?? t("كود غير صالح", "Invalid code"));
+      }
+    } catch {
+      toast.error(t("تعذّر التحقق من الكود", "Could not validate code"));
+    } finally {
+      setPromoLoading(false);
+    }
+  }
+
   async function handleSubscribe(plan: typeof plans[0]) {
     if (plan.href) { router.push(plan.href); return; }
     if (loadingPlan) return;
@@ -120,14 +149,23 @@ export function CTASection() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    const appliedCode = promoApplied?.code;
     setLoadingPlan(plan.nameEn);
     try {
       await paddle.Checkout.open({
         items: [{ priceId, quantity: 1 }],
         customer: user?.email ? { email: user.email } : undefined,
         customData: { user_id: user?.id ?? "", plan_tier: plan.paddleKey, billing: "monthly" },
+        ...(appliedCode ? { discountCode: appliedCode } : {}),
         settings: { displayMode: "overlay", theme: "dark" },
       });
+      if (appliedCode) {
+        fetch("/api/discount-codes/use", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: appliedCode }),
+        }).catch(() => {});
+      }
       toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated!"));
       setTimeout(() => router.push("/vault?subscribed=true"), 500);
     } catch {
@@ -158,6 +196,43 @@ export function CTASection() {
               {t("ابدأ مجاناً. طوّر عندما تكون مستعداً.", "Start free. Upgrade when you're ready.")}
             </p>
           </motion.div>
+
+          {/* Promo code */}
+          <div className="flex justify-center mb-10">
+            {promoApplied ? (
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/20 rounded-full text-sm">
+                <Tag className="w-4 h-4 text-green-400 shrink-0" />
+                <span className="text-green-300 font-medium">
+                  {promoApplied.code} — {promoApplied.discountPercent}% {t("خصم", "off")}
+                </span>
+                <button
+                  onClick={() => { setPromoApplied(null); setPromoInput(""); }}
+                  className="text-white/40 hover:text-white/80 ml-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full max-w-xs">
+                <Input
+                  placeholder={t("كود الخصم", "Promo code")}
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === "Enter" && applyPromoCode()}
+                  className="rounded-full bg-white/10 border-white/20 text-white placeholder:text-white/40 font-mono uppercase text-sm"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => applyPromoCode()}
+                  disabled={promoLoading || !promoInput.trim()}
+                  className="px-4 py-2 rounded-full border border-white/20 text-white text-sm font-medium hover:bg-white/10 disabled:opacity-50 shrink-0"
+                >
+                  {promoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("تطبيق", "Apply")}
+                </motion.button>
+              </div>
+            )}
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {plans.map((plan, i) => (
