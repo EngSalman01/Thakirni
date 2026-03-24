@@ -158,7 +158,7 @@ export default function UsersPage() {
       setUsers((prev) =>
         prev.map((u) =>
           u.id === userId
-            ? { ...u, plan_tier: newPlan === "free" ? "FREE" : newPlan === "pro" ? "PRO" : "COMPANY" }
+            ? { ...u, plan_tier: newPlan === "free" ? "FREE" : newPlan === "pro" ? "PRO" : "TEAMS" }
             : u
         )
       );
