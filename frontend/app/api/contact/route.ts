@@ -22,6 +22,24 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
 
+  // Verify hCaptcha token
+  const hcaptchaSecret = process.env.HCAPTCHA_SECRET
+  if (hcaptchaSecret) {
+    const token = String(body.hcaptchaToken ?? "")
+    if (!token) {
+      return NextResponse.json({ error: "Please complete the captcha" }, { status: 400 })
+    }
+    const verify = await fetch("https://api.hcaptcha.com/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${hcaptchaSecret}&response=${token}`,
+    })
+    const result = await verify.json()
+    if (!result.success) {
+      return NextResponse.json({ error: "Captcha verification failed. Please try again." }, { status: 400 })
+    }
+  }
+
   const name    = String(body.name    ?? "").trim()
   const email   = String(body.email   ?? "").trim()
   const message = String(body.message ?? "").trim()
