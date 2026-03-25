@@ -128,6 +128,7 @@ export async function POST(req: Request) {
     let factsBlock = ""
     let todayBlock = ""
     let profileName = ""
+    let googleCalendarBlock = ""
 
     if (user) {
       const [factsRes, plansRes, profileRes] = await Promise.all([
@@ -149,7 +150,7 @@ export async function POST(req: Request) {
 
         supabase
           .from("profiles")
-          .select("full_name, preferred_language")
+          .select("full_name, preferred_language, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at")
           .eq("id", user.id)
           .single(),
       ])
@@ -157,6 +158,62 @@ export async function POST(req: Request) {
       profileName = profileRes.data?.full_name ?? ""
       factsBlock = formatFactsBlock(factsRes.data ?? [])
       todayBlock = formatTodayBlock(plansRes.data ?? [], currentDate)
+
+      // ── Fetch Google Calendar events if connected ────────────────────────────
+      let gcalToken = profileRes.data?.google_calendar_token ?? null
+      if (gcalToken) {
+        // Refresh token if expired
+        const expiresAt = profileRes.data?.google_calendar_expires_at
+        if (expiresAt && Date.now() > new Date(expiresAt).getTime() - 60_000) {
+          const refreshToken = profileRes.data?.google_calendar_refresh_token
+          if (refreshToken) {
+            try {
+              const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                  refresh_token: refreshToken,
+                  client_id: process.env.GOOGLE_CLIENT_ID ?? "",
+                  client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+                  grant_type: "refresh_token",
+                }),
+              })
+              if (refreshRes.ok) {
+                const refreshData = await refreshRes.json() as { access_token: string; expires_in: number }
+                gcalToken = refreshData.access_token
+                const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000).toISOString()
+                supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: newExpiry }).eq("id", user.id).then(undefined, () => {})
+              }
+            } catch { /* silent */ }
+          }
+        }
+
+        try {
+          const now = new Date().toISOString()
+          const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          const params = new URLSearchParams({ timeMin: now, timeMax: nextWeek, maxResults: "15", singleEvents: "true", orderBy: "startTime" })
+          const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`, {
+            headers: { Authorization: `Bearer ${gcalToken}` },
+          })
+          if (gcalRes.ok) {
+            const gcalData = await gcalRes.json() as { items?: Array<{ summary?: string; start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string }; location?: string }> }
+            const events = gcalData.items ?? []
+            if (events.length > 0) {
+              const lines = events.map(ev => {
+                const start = ev.start?.dateTime ?? ev.start?.date ?? ""
+                const end = ev.end?.dateTime ?? ev.end?.date ?? ""
+                const startStr = start ? new Date(start).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", dateStyle: "short", timeStyle: "short" }) : "All day"
+                const endStr = ev.start?.dateTime && end ? new Date(end).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", timeStyle: "short" }) : ""
+                const loc = ev.location ? ` @ ${ev.location}` : ""
+                return `  • ${ev.summary ?? "Untitled"} — ${startStr}${endStr ? ` → ${endStr}` : ""}${loc}`
+              })
+              googleCalendarBlock = `GOOGLE CALENDAR (next 7 days):\n${lines.join("\n")}`
+            } else {
+              googleCalendarBlock = "GOOGLE CALENDAR: No upcoming events in the next 7 days."
+            }
+          }
+        } catch { /* silent — don't break chat if gcal fails */ }
+      }
     }
 
     const hijriDate = getHijriDate()
@@ -209,6 +266,7 @@ Hijri: ${hijriDate}
 ━━━━━━━━━━━━━━━━━━━━
 ${todayBlock}
 ━━━━━━━━━━━━━━━━━━━━
+${googleCalendarBlock ? `${googleCalendarBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
 ${factsBlock}
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -364,6 +422,8 @@ store_fact      → SILENTLY learn a personal fact about the user
 get_my_facts    → show user what you know about them
 get_timeline    → life timeline (days_back: 7=week, 30=month)
 set_reminder    → schedule a WhatsApp or push notification
+
+NOTE: If the user has Google Calendar connected, their upcoming events are already shown above in GOOGLE CALENDAR section. Reference them naturally when relevant (e.g. briefings, scheduling conflicts).
 `,
 
       tools: {
