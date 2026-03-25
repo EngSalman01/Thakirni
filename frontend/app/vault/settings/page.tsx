@@ -17,7 +17,7 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Sparkles, RefreshCw, Calendar, X, Camera,
+  Sparkles, RefreshCw, Calendar, X, Camera, Download,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -804,6 +804,54 @@ export default function SettingsPage() {
                     loading={savingNotif === key}
                   />
                 ))}
+              </div>
+            </SettingsCard>
+
+            {/* Export Data */}
+            <SettingsCard delay={0.2}>
+              <div className="flex items-center gap-3 mb-6">
+                <Download className="w-5 h-5 text-[#2552ca]" />
+                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  {t("تصدير البيانات", "Export Data")}
+                </h2>
+              </div>
+              <p className="text-sm text-slate-500 mb-5">
+                {t(
+                  "حمّل بياناتك الشخصية في أي وقت بصيغة CSV.",
+                  "Download your personal data at any time in CSV format."
+                )}
+              </p>
+              <div className="space-y-3">
+                <a
+                  href="/api/export/plans"
+                  download
+                  className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-slate-50 transition-colors group"
+                >
+                  <div>
+                    <p className="font-bold text-sm font-label text-slate-800">
+                      {t("الخطط والمهام", "Plans & Tasks")}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {t("جميع خططك ومهامك بصيغة CSV", "All your plans and tasks as CSV")}
+                    </p>
+                  </div>
+                  <Download className="w-4 h-4 text-slate-400 group-hover:text-[#2552ca] transition-colors" />
+                </a>
+                <a
+                  href="/api/export/memories"
+                  download
+                  className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-slate-50 transition-colors group"
+                >
+                  <div>
+                    <p className="font-bold text-sm font-label text-slate-800">
+                      {t("الذكريات", "Memories")}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {t("جميع ذكرياتك المحفوظة بصيغة CSV", "All your saved memories as CSV")}
+                    </p>
+                  </div>
+                  <Download className="w-4 h-4 text-slate-400 group-hover:text-[#2552ca] transition-colors" />
+                </a>
               </div>
             </SettingsCard>
 

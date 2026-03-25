@@ -1,0 +1,14 @@
+{
+  "name": "Thakirni — ذكرني",
+  "short_name": "Thakirni",
+  "description": "Your AI-powered second brain — remember everything, plan smarter.",
+  "start_url": "/vault",
+  "display": "standalone",
+  "background_color": "#fbf9f8",
+  "theme_color": "#2552ca",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-96.svg", "sizes": "96x96", "type": "image/svg+xml" },
+    { "src": "/icon-96.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

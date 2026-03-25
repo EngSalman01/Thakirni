@@ -33,39 +33,30 @@ const beVietnamPro = Be_Vietnam_Pro({
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
 export const metadata: Metadata = {
-  title: {
-    default: "ذكرني | Thakirni",
-    template: "%s | Thakirni",   // child pages can set their own title
-  },
-  description:
-    "The first AI-powered personal assistant and second brain platform in Saudi Arabia. Organise your life, preserve your memories.",
-
-  // ── Open Graph (WhatsApp, Twitter, LinkedIn previews) ──
+  title: { default: "Thakirni — ذكرني | Your AI Second Brain", template: "%s | Thakirni" },
+  description: "Thakirni is your AI-powered second brain. Remember everything, plan smarter, and stay on top of your life — in Arabic and English.",
+  keywords: ["second brain", "productivity", "AI assistant", "Arabic", "ذكرني", "تطبيق ذكاء اصطناعي", "تنظيم"],
+  authors: [{ name: "Salman Almnaseer" }],
+  creator: "Thakirni",
+  metadataBase: new URL("https://thakirni.com"),
   openGraph: {
     type: "website",
     locale: "ar_SA",
-    alternateLocale: ["en_US"],
+    alternateLocale: "en_US",
     url: "https://thakirni.com",
-    siteName: "Thakirni | ذكرني",
-    title: "ذكرني | Thakirni",
-    description: "The first AI-powered personal assistant and second brain platform in Saudi Arabia.",
-    images: [
-      {
-        url: "/images/logo-gradient-bg.svg",
-        width: 1200,
-        height: 630,
-        alt: "Thakirni – Your Second Brain",
-      },
-    ],
+    siteName: "Thakirni",
+    title: "Thakirni — ذكرني | Your AI Second Brain",
+    description: "Your AI-powered second brain. Remember everything, plan smarter.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
-
-  // ── Twitter card ──
   twitter: {
     card: "summary_large_image",
-    title: "ذكرني | Thakirni",
-    description: "AI-powered personal assistant & second brain. Built for Saudi Arabia.",
-    images: ["/og-image.png"],
+    title: "Thakirni — ذكرني",
+    description: "Your AI-powered second brain.",
   },
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "Thakirni" },
+  formatDetection: { telephone: false },
 
   // ── Icons ──
   icons: {
@@ -83,13 +74,9 @@ export const metadata: Metadata = {
 // ── Viewport (separate export as of Next.js 14) ───────────────────────────────
 
 export const viewport: Viewport = {
+  themeColor: "#2552ca",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,   // prevents iOS auto-zoom on input focus
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f3f5f8" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f172a" },
-  ],
 }
 
 // ── Layout ────────────────────────────────────────────────────────────────────
