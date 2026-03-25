@@ -5,8 +5,11 @@ const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID ?? ""
 const APP_URL              = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
 const REDIRECT_URI         = `${APP_URL}/api/google-calendar/callback`
 const SCOPES = [
+  "openid",
+  "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/calendar.events",
   "https://www.googleapis.com/auth/calendar.readonly",
-  "https://www.googleapis.com/auth/calendar.events.readonly",
 ].join(" ")
 
 export async function GET(req: NextRequest) {
