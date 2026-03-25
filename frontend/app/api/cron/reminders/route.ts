@@ -14,10 +14,10 @@ export async function GET(req: NextRequest) {
   const supabase = createServiceClient()
   const now = new Date().toISOString()
 
-  // Fetch all due, unsent reminders with user phone number
+  // Fetch all due, unsent reminders with user phone number and language preference
   const { data: reminders, error } = await supabase
     .from("reminders")
-    .select("id, user_id, title, channel, remind_at, profiles(phone_number)")
+    .select("id, user_id, title, channel, remind_at, profiles(phone_number, preferred_language)")
     .lte("remind_at", now)
     .eq("is_sent", false)
     .limit(50)
@@ -36,20 +36,22 @@ export async function GET(req: NextRequest) {
 
   for (const reminder of reminders) {
     const profileRaw = reminder.profiles
-    const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { phone_number: string | null } | null
+    const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { phone_number: string | null; preferred_language?: string | null } | null
     const phone = profile?.phone_number
+    const isArabic = (profile?.preferred_language ?? "ar") !== "en"
 
     try {
       if ((reminder.channel === "whatsapp" || reminder.channel === "push") && phone) {
-        const reminderTime = new Date(reminder.remind_at).toLocaleString("ar-SA", {
+        const locale = isArabic ? "ar-SA" : "en-GB"
+        const reminderTime = new Date(reminder.remind_at).toLocaleString(locale, {
           timeZone: "Asia/Riyadh",
           dateStyle: "short",
           timeStyle: "short",
         })
-        await sendWhatsAppMessage(
-          phone,
-          `🔔 تذكير: ${reminder.title}\n⏰ ${reminderTime}`
-        )
+        const message = isArabic
+          ? `🔔 تذكير: ${reminder.title}\n⏰ ${reminderTime}`
+          : `🔔 Reminder: ${reminder.title}\n⏰ ${reminderTime}`
+        await sendWhatsAppMessage(phone, message)
       }
       sentIds.push(reminder.id)
       sent++

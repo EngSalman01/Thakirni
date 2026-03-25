@@ -4,6 +4,7 @@ import { generateText, tool } from "ai"
 import { z } from "zod"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/whatsapp/kapso"
+import { rateLimit } from "@/lib/rate-limit"
 
 export const maxDuration = 60
 
@@ -109,23 +110,23 @@ export async function POST(req: NextRequest) {
         return new Response("OK", { status: 200 })
     }
 
-    let payload: any
+    let payload: unknown
     try {
         payload = JSON.parse(rawBody)
     } catch {
         return new Response("Invalid JSON", { status: 400 })
     }
 
-    const events = Array.isArray(payload.data)
-        ? payload.data
+    const events = Array.isArray((payload as { data?: unknown }).data)
+        ? (payload as { data: unknown[] }).data
         : Array.isArray(payload)
             ? payload
             : [payload]
 
     try {
         await processEvents(events)
-    } catch (err: any) {
-        console.error("[WhatsApp Webhook] Processing error:", err?.message)
+    } catch (err: unknown) {
+        console.error("[WhatsApp Webhook] Processing error:", (err as Error)?.message)
     }
 
     return new Response("OK", { status: 200 })
@@ -133,42 +134,52 @@ export async function POST(req: NextRequest) {
 
 // ─── Process Events ───────────────────────────────────────────────────────────
 
-async function processEvents(events: any[]) {
+async function processEvents(events: unknown[]) {
     const supabase = createServiceClient()
 
     for (const event of events) {
         try {
             await processMessage(event, supabase)
-        } catch (err: any) {
-            console.error("[WhatsApp] Failed to process event:", err?.message)
+        } catch (err: unknown) {
+            console.error("[WhatsApp] Failed to process event:", (err as Error)?.message)
         }
     }
 }
 
-async function processMessage(event: any, supabase: any) {
-    const message = event.message ?? event
-    const rawPhone = message.from ?? message.kapso?.phone_number ?? event.conversation?.phone_number ?? ""
+async function processMessage(event: unknown, supabase: ReturnType<typeof createServiceClient>) {
+    const ev = event as Record<string, unknown>
+    const message = (ev.message ?? ev) as Record<string, unknown>
+    const conversation = ev.conversation as Record<string, unknown> | undefined
+    const kapso = message.kapso as Record<string, unknown> | undefined
+    const rawPhone = (message.from ?? kapso?.phone_number ?? conversation?.phone_number ?? "") as string
     const phone = rawPhone.replace(/^\+/, "")
-    const msgType = message.type ?? "text"
+    const msgType = (message.type ?? "text") as string
 
     if (!phone) {
         console.warn("[WhatsApp] No phone number in event")
         return
     }
 
+    // ── Rate limiting: 30 messages per minute per phone ─────────────────────────
+    const rl = rateLimit(`whatsapp:${phone}`, 30, 60_000)
+    if (!rl.success) return // silently drop, don't error
+
     // ── Get message text ────────────────────────────────────────────────────────
     let messageText = ""
 
     if (msgType === "text") {
-        messageText = message.text?.body ?? message.body ?? message.text ?? ""
+        const textObj = message.text as Record<string, unknown> | undefined
+        messageText = (textObj?.body ?? message.body ?? message.text ?? "") as string
     } else if (msgType === "audio" || msgType === "voice") {
-        const mediaUrl = message.audio?.url ?? message.voice?.url ?? message.media_url
+        const audioObj = message.audio as Record<string, unknown> | undefined
+        const voiceObj = message.voice as Record<string, unknown> | undefined
+        const mediaUrl = (audioObj?.url ?? voiceObj?.url ?? message.media_url) as string | undefined
         if (mediaUrl) {
             try {
                 const audioBuffer = await downloadKapsoMedia(mediaUrl)
                 messageText = await transcribeAudio(audioBuffer, "audio/ogg")
-            } catch (err: any) {
-                console.error("[WhatsApp] Transcription failed:", err?.message)
+            } catch (err: unknown) {
+                console.error("[WhatsApp] Transcription failed:", (err as Error)?.message)
                 await sendWhatsAppMessage(phone,
                     detectLanguage("") === "ar"
                         ? "عذراً، لم أتمكن من معالجة الرسالة الصوتية. حاول مرة أخرى أو أرسل نصاً."
@@ -187,7 +198,7 @@ async function processMessage(event: any, supabase: any) {
     // ── Look up user by phone number ────────────────────────────────────────────
     const { data: profile } = await supabase
         .from("profiles")
-        .select("id, full_name, plan_tier")
+        .select("id, full_name, plan_tier, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at, preferred_language")
         .eq("phone_number", phone)
         .single()
 
@@ -201,12 +212,14 @@ async function processMessage(event: any, supabase: any) {
         return
     }
 
-    const userId = profile.id
-    const profileName = profile.full_name ?? ""
+    const userId = profile.id as string
+    const profileName = (profile.full_name ?? "") as string
     const lang = detectLanguage(messageText)
 
     // ── Load user context ───────────────────────────────────────────────────────
-    const [factsRes, historyRes] = await Promise.all([
+    const { currentDate, currentTime, currentDayName, timeOfDay, addDays } = getSaudiTime()
+
+    const [factsRes, historyRes, todayPlansRes] = await Promise.all([
         supabase
             .from("user_facts")
             .select("fact, category")
@@ -219,6 +232,15 @@ async function processMessage(event: any, supabase: any) {
             .select("role, content")
             .eq("user_id", userId)
             .order("created_at", { ascending: false })
+            .limit(10),
+
+        supabase
+            .from("plans")
+            .select("title, plan_time, category, location")
+            .eq("user_id", userId)
+            .eq("plan_date", currentDate)
+            .eq("status", "pending")
+            .order("plan_time", { ascending: true })
             .limit(10),
     ])
 
@@ -235,8 +257,18 @@ async function processMessage(event: any, supabase: any) {
         factsBlock = `\n🧠 WHAT I KNOW ABOUT YOU:\n${lines}`
     }
 
+    let todayBlock = ""
+    if (todayPlansRes.data && todayPlansRes.data.length > 0) {
+        const planLines = todayPlansRes.data.map((p: { title: string; plan_time: string | null; category: string; location: string | null }) => {
+            const time = p.plan_time ? p.plan_time.slice(0, 5) + " " : ""
+            const loc = p.location ? ` @ ${p.location}` : ""
+            return `• ${time}${p.title}${loc} [${p.category}]`
+        }).join("\n")
+        todayBlock = `\n📅 TODAY'S PLANS:\n${planLines}`
+    }
+
     const history = historyRes.data
-        ? [...historyRes.data].reverse().map((m: any) => ({
+        ? [...historyRes.data].reverse().map((m: { role: string; content: string }) => ({
             role: m.role as "user" | "assistant",
             content: m.content,
         }))
@@ -247,8 +279,6 @@ async function processMessage(event: any, supabase: any) {
         role: "user",
         content: messageText,
     })
-
-    const { currentDate, currentTime, currentDayName, timeOfDay, addDays } = getSaudiTime()
 
     const langInstruction = lang === "ar"
         ? "⚠️ MANDATORY: Reply in ARABIC only. Never switch to English."
@@ -276,6 +306,7 @@ You are responding via WhatsApp — keep replies concise and conversational.
   Tomorrow: ${addDays(1)}
 ━━━━━━━━━━━━━━━━━━━━
 ${factsBlock}
+${todayBlock}
 
 WHATSAPP RULES — CRITICAL:
 - NO markdown: no **, no ##, no bullet "-" — WhatsApp does not render them
@@ -303,7 +334,7 @@ TASK MANAGEMENT:
 
 TOOLS AVAILABLE:
 create_plan / update_plan / delete_plan / mark_done / list_plans
-save_memory / search_memories / store_fact / get_my_facts / get_timeline
+save_memory / search_memories / store_fact / get_my_facts / get_timeline / set_reminder
 `,
 
         tools: {
@@ -345,6 +376,57 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
                         status: "pending",
                     }).select().single()
                     if (error) return { success: false, message: error.message }
+
+                    // Sync to Google Calendar
+                    if (profile.google_calendar_token) {
+                        try {
+                            let gcalToken = profile.google_calendar_token as string
+                            // Refresh if expired
+                            if (profile.google_calendar_expires_at && Date.now() > new Date(profile.google_calendar_expires_at as string).getTime() - 60_000 && profile.google_calendar_refresh_token) {
+                                const rr = await fetch("https://oauth2.googleapis.com/token", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                                    body: new URLSearchParams({ refresh_token: profile.google_calendar_refresh_token as string, client_id: process.env.GOOGLE_CLIENT_ID ?? "", client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "", grant_type: "refresh_token" }),
+                                })
+                                if (rr.ok) {
+                                    const rd = await rr.json() as { access_token: string; expires_in: number }
+                                    gcalToken = rd.access_token
+                                    supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: new Date(Date.now() + rd.expires_in * 1000).toISOString() }).eq("id", userId).then(undefined, () => {})
+                                }
+                            }
+                            const gcalEvent: Record<string, unknown> = { summary: input.title }
+                            if (input.description) gcalEvent.description = input.description
+                            if (input.location) gcalEvent.location = input.location
+                            if (input.is_all_day || !input.plan_time) {
+                                gcalEvent.start = { date: input.plan_date }
+                                gcalEvent.end = { date: input.plan_date }
+                            } else {
+                                gcalEvent.start = { dateTime: `${input.plan_date}T${input.plan_time}:00`, timeZone: "Asia/Riyadh" }
+                                gcalEvent.end = { dateTime: `${input.plan_date}T${endTime ?? input.plan_time}:00`, timeZone: "Asia/Riyadh" }
+                            }
+                            const gcalRes = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+                                method: "POST",
+                                headers: { Authorization: `Bearer ${gcalToken}`, "Content-Type": "application/json" },
+                                body: JSON.stringify(gcalEvent),
+                            })
+                            if (gcalRes.ok) {
+                                const gcalData = await gcalRes.json() as { id: string }
+                                supabase.from("plans").update({ gcal_event_id: gcalData.id }).eq("id", data.id).then(undefined, () => {})
+                            }
+                        } catch { /* silent */ }
+                    }
+
+                    // Auto WhatsApp reminder 30 min before timed events
+                    if (input.plan_time && !input.is_all_day) {
+                        try {
+                            const eventMs = new Date(`${input.plan_date}T${input.plan_time}:00`).getTime() - 3 * 60 * 60 * 1000
+                            const remindMs = eventMs - 30 * 60 * 1000
+                            if (remindMs > Date.now()) {
+                                supabase.from("reminders").insert({ user_id: userId, title: input.title, remind_at: new Date(remindMs).toISOString(), plan_id: data.id, channel: "whatsapp", is_sent: false }).then(undefined, () => {})
+                            }
+                        } catch { /* silent */ }
+                    }
+
                     return { success: true, message: `Scheduled "${input.title}" on ${input.plan_date}${input.plan_time ? " at " + input.plan_time.slice(0, 5) : ""}.` }
                 },
             }),
@@ -377,8 +459,15 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
                 description: "Delete a plan. Use list_plans first to get the plan_id.",
                 parameters: z.object({ plan_id: z.string() }),
                 execute: async ({ plan_id }) => {
+                    const { data: existing } = await supabase.from("plans").select("gcal_event_id").eq("id", plan_id).eq("user_id", userId).single()
                     const { error } = await supabase.from("plans").delete().eq("id", plan_id).eq("user_id", userId)
                     if (error) return { success: false, message: error.message }
+                    // Cancel pending reminders
+                    supabase.from("reminders").delete().eq("plan_id", plan_id).eq("is_sent", false).then(undefined, () => {})
+                    // Delete from Google Calendar
+                    if (existing?.gcal_event_id && profile.google_calendar_token) {
+                        fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.gcal_event_id as string}`, { method: "DELETE", headers: { Authorization: `Bearer ${profile.google_calendar_token as string}` } }).catch(() => {})
+                    }
                     return { success: true, message: "Plan deleted." }
                 },
             }),
@@ -491,6 +580,30 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline
                     const { data, error } = await q
                     if (error) return { success: false, message: error.message, events: [] }
                     return { success: true, events: data ?? [], count: data?.length ?? 0 }
+                },
+            }),
+
+            set_reminder: tool({
+                description: "Schedule a reminder to be sent via WhatsApp at a specific time.",
+                parameters: z.object({
+                    title: z.string().describe("Reminder message"),
+                    remind_at: z.string().describe("ISO datetime in Riyadh time e.g. 2026-03-25T15:00:00"),
+                    plan_id: z.string().optional(),
+                }),
+                execute: async ({ title, remind_at, plan_id }) => {
+                    const remindMs = new Date(remind_at).getTime() - 3 * 60 * 60 * 1000 // Riyadh to UTC
+                    if (remindMs <= Date.now()) return { success: false, message: "Reminder time is in the past." }
+                    const { error } = await supabase.from("reminders").insert({
+                        user_id: userId,
+                        title,
+                        remind_at: new Date(remindMs).toISOString(),
+                        plan_id: plan_id ?? null,
+                        channel: "whatsapp",
+                        is_sent: false,
+                    })
+                    if (error) return { success: false, message: error.message }
+                    const when = new Date(remindMs).toLocaleString(lang === "ar" ? "ar-SA" : "en-GB", { timeZone: "Asia/Riyadh", dateStyle: "short", timeStyle: "short" })
+                    return { success: true, message: `Reminder set for ${when}` }
                 },
             }),
 

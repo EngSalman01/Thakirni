@@ -9,6 +9,17 @@ export const maxDuration = 60
 
 const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
 
+// ─── Google Calendar in-memory cache (5 min TTL) ──────────────────────────────
+const gcalCache = new Map<string, { block: string; expiresAt: number }>()
+function getCachedGcal(userId: string): string | null {
+  const entry = gcalCache.get(userId)
+  if (!entry || Date.now() > entry.expiresAt) { gcalCache.delete(userId); return null }
+  return entry.block
+}
+function setCachedGcal(userId: string, block: string) {
+  gcalCache.set(userId, { block, expiresAt: Date.now() + 5 * 60 * 1000 })
+}
+
 // ─── Time helpers ─────────────────────────────────────────────────────────────
 
 function getSaudiTime() {
@@ -129,9 +140,11 @@ export async function POST(req: Request) {
     let todayBlock = ""
     let profileName = ""
     let googleCalendarBlock = ""
+    let habitsBlock = ""
+    let goalsBlock = ""
 
     if (user) {
-      const [factsRes, plansRes, profileRes] = await Promise.all([
+      const [factsRes, plansRes, profileRes, habitsRes, goalsRes] = await Promise.all([
         serviceSupabase
           .from("user_facts")
           .select("fact, category")
@@ -153,66 +166,102 @@ export async function POST(req: Request) {
           .select("full_name, preferred_language, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at")
           .eq("id", user.id)
           .single(),
+
+        // Active habits with today's completion status
+        supabase
+          .from("habits")
+          .select("name, icon, frequency, current_streak, longest_streak, habit_logs(log_date)")
+          .eq("user_id", user.id)
+          .eq("is_active", true)
+          .limit(10),
+
+        // Active goals with progress
+        supabase
+          .from("goals")
+          .select("title, category, progress, target_date, status")
+          .eq("user_id", user.id)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(5),
       ])
 
       profileName = profileRes.data?.full_name ?? ""
       factsBlock = formatFactsBlock(factsRes.data ?? [])
       todayBlock = formatTodayBlock(plansRes.data ?? [], currentDate)
 
-      // ── Fetch Google Calendar events if connected ────────────────────────────
+      // ── Habits block ────────────────────────────────────────────────────────
+      if (habitsRes.data && habitsRes.data.length > 0) {
+        const lines = habitsRes.data.map((h) => {
+          const logs = (h.habit_logs as { log_date: string }[] | null) ?? []
+          const doneToday = logs.some((l) => l.log_date === currentDate)
+          return `  ${doneToday ? "✅" : "⬜"} ${h.icon} ${h.name} (streak: ${h.current_streak}d)`
+        })
+        habitsBlock = `HABITS TODAY:\n${lines.join("\n")}`
+      }
+
+      // ── Goals block ─────────────────────────────────────────────────────────
+      if (goalsRes.data && goalsRes.data.length > 0) {
+        const lines = goalsRes.data.map((g) => {
+          const due = g.target_date ? ` — due ${g.target_date}` : ""
+          return `  • ${g.title} [${g.category}] ${g.progress}%${due}`
+        })
+        goalsBlock = `ACTIVE GOALS:\n${lines.join("\n")}`
+      }
+
+      // ── Fetch Google Calendar events if connected (with 5-min cache) ───────────
       let gcalToken = profileRes.data?.google_calendar_token ?? null
       if (gcalToken) {
-        // Refresh token if expired
-        const expiresAt = profileRes.data?.google_calendar_expires_at
-        if (expiresAt && Date.now() > new Date(expiresAt).getTime() - 60_000) {
-          const refreshToken = profileRes.data?.google_calendar_refresh_token
-          if (refreshToken) {
-            try {
-              const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({
-                  refresh_token: refreshToken,
-                  client_id: process.env.GOOGLE_CLIENT_ID ?? "",
-                  client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-                  grant_type: "refresh_token",
-                }),
-              })
-              if (refreshRes.ok) {
-                const refreshData = await refreshRes.json() as { access_token: string; expires_in: number }
-                gcalToken = refreshData.access_token
-                const newExpiry = new Date(Date.now() + refreshData.expires_in * 1000).toISOString()
-                supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: newExpiry }).eq("id", user.id).then(undefined, () => {})
-              }
-            } catch { /* silent */ }
-          }
-        }
-
-        try {
-          const now = new Date().toISOString()
-          const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          const params = new URLSearchParams({ timeMin: now, timeMax: nextWeek, maxResults: "15", singleEvents: "true", orderBy: "startTime" })
-          const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`, {
-            headers: { Authorization: `Bearer ${gcalToken}` },
-          })
-          if (gcalRes.ok) {
-            const gcalData = await gcalRes.json() as { items?: Array<{ summary?: string; start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string }; location?: string }> }
-            const events = gcalData.items ?? []
-            if (events.length > 0) {
-              const lines = events.map(ev => {
-                const start = ev.start?.dateTime ?? ev.start?.date ?? ""
-                const end = ev.end?.dateTime ?? ev.end?.date ?? ""
-                const startStr = start ? new Date(start).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", dateStyle: "short", timeStyle: "short" }) : "All day"
-                const endStr = ev.start?.dateTime && end ? new Date(end).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", timeStyle: "short" }) : ""
-                const loc = ev.location ? ` @ ${ev.location}` : ""
-                return `  • ${ev.summary ?? "Untitled"} — ${startStr}${endStr ? ` → ${endStr}` : ""}${loc}`
-              })
-              googleCalendarBlock = `GOOGLE CALENDAR (next 7 days):\n${lines.join("\n")}`
-            } else {
-              googleCalendarBlock = "GOOGLE CALENDAR: No upcoming events in the next 7 days."
+        const cached = getCachedGcal(user.id)
+        if (cached !== null) {
+          googleCalendarBlock = cached
+        } else {
+          // Refresh token if expired
+          const expiresAt = profileRes.data?.google_calendar_expires_at
+          if (expiresAt && Date.now() > new Date(expiresAt).getTime() - 60_000) {
+            const refreshToken = profileRes.data?.google_calendar_refresh_token
+            if (refreshToken) {
+              try {
+                const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                  body: new URLSearchParams({ refresh_token: refreshToken, client_id: process.env.GOOGLE_CLIENT_ID ?? "", client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "", grant_type: "refresh_token" }),
+                })
+                if (refreshRes.ok) {
+                  const refreshData = await refreshRes.json() as { access_token: string; expires_in: number }
+                  gcalToken = refreshData.access_token
+                  supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: new Date(Date.now() + refreshData.expires_in * 1000).toISOString() }).eq("id", user.id).then(undefined, () => {})
+                }
+              } catch { /* silent */ }
             }
           }
-        } catch { /* silent — don't break chat if gcal fails */ }
+
+          try {
+            const nowIso = new Date().toISOString()
+            const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+            const params = new URLSearchParams({ timeMin: nowIso, timeMax: nextWeek, maxResults: "15", singleEvents: "true", orderBy: "startTime" })
+            const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`, {
+              headers: { Authorization: `Bearer ${gcalToken}` },
+            })
+            if (gcalRes.ok) {
+              const gcalData = await gcalRes.json() as { items?: Array<{ summary?: string; start?: { dateTime?: string; date?: string }; end?: { dateTime?: string; date?: string }; location?: string }> }
+              const events = gcalData.items ?? []
+              if (events.length > 0) {
+                const lines = events.map(ev => {
+                  const start = ev.start?.dateTime ?? ev.start?.date ?? ""
+                  const end = ev.end?.dateTime ?? ev.end?.date ?? ""
+                  const startStr = start ? new Date(start).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", dateStyle: "short", timeStyle: "short" }) : "All day"
+                  const endStr = ev.start?.dateTime && end ? new Date(end).toLocaleString("en-GB", { timeZone: "Asia/Riyadh", timeStyle: "short" }) : ""
+                  const loc = ev.location ? ` @ ${ev.location}` : ""
+                  return `  • ${ev.summary ?? "Untitled"} — ${startStr}${endStr ? ` → ${endStr}` : ""}${loc}`
+                })
+                googleCalendarBlock = `GOOGLE CALENDAR (next 7 days):\n${lines.join("\n")}`
+              } else {
+                googleCalendarBlock = "GOOGLE CALENDAR: No upcoming events in the next 7 days."
+              }
+              setCachedGcal(user.id, googleCalendarBlock)
+            }
+          } catch { /* silent */ }
+        }
       }
     }
 
@@ -232,6 +281,51 @@ export async function POST(req: Request) {
         })
         .then(undefined, (err: unknown) =>
           console.error("[Thakirni] Failed to save user message:", err))
+    }
+
+    // ── Google Calendar token helper ──────────────────────────────────────────
+    const getGcalToken = async (): Promise<string | null> => {
+      if (!user) return null
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at")
+        .eq("id", user.id)
+        .single()
+      if (!prof?.google_calendar_token) return null
+      let token = prof.google_calendar_token
+      if (prof.google_calendar_expires_at && Date.now() > new Date(prof.google_calendar_expires_at).getTime() - 60_000 && prof.google_calendar_refresh_token) {
+        try {
+          const rr = await fetch("https://oauth2.googleapis.com/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ refresh_token: prof.google_calendar_refresh_token, client_id: process.env.GOOGLE_CLIENT_ID ?? "", client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "", grant_type: "refresh_token" }),
+          })
+          if (rr.ok) {
+            const rd = await rr.json() as { access_token: string; expires_in: number }
+            token = rd.access_token
+            supabase.from("profiles").update({ google_calendar_token: token, google_calendar_expires_at: new Date(Date.now() + rd.expires_in * 1000).toISOString() }).eq("id", user.id).then(undefined, () => {})
+          }
+        } catch { /* silent */ }
+      }
+      return token
+    }
+
+    // Build a Google Calendar event body from plan fields
+    const buildGcalEvent = (fields: { title?: string; description?: string; location?: string; plan_date?: string; plan_time?: string; end_time?: string; is_all_day?: boolean }) => {
+      const ev: Record<string, unknown> = {}
+      if (fields.title) ev.summary = fields.title
+      if (fields.description) ev.description = fields.description
+      if (fields.location) ev.location = fields.location
+      if (fields.plan_date) {
+        if (fields.is_all_day || !fields.plan_time) {
+          ev.start = { date: fields.plan_date }
+          ev.end = { date: fields.plan_date }
+        } else {
+          ev.start = { dateTime: `${fields.plan_date}T${fields.plan_time}:00`, timeZone: "Asia/Riyadh" }
+          ev.end = { dateTime: `${fields.plan_date}T${fields.end_time ?? fields.plan_time}:00`, timeZone: "Asia/Riyadh" }
+        }
+      }
+      return ev
     }
 
     // ── Stream ────────────────────────────────────────────────────────────────
@@ -267,6 +361,8 @@ Hijri: ${hijriDate}
 ${todayBlock}
 ━━━━━━━━━━━━━━━━━━━━
 ${googleCalendarBlock ? `${googleCalendarBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
+${habitsBlock ? `${habitsBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
+${goalsBlock ? `${goalsBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
 ${factsBlock}
 ━━━━━━━━━━━━━━━━━━━━
 
@@ -400,6 +496,22 @@ For GROCERY: just need the items list.
 After collecting everything: confirm naturally → wait for yes → THEN call the tool.
 After a write action: confirm in plain language. Do NOT call list_plans to verify.
 
+CONFLICT DETECTION — before calling create_plan for a timed meeting:
+  • Check TODAY'S SCHEDULE and GOOGLE CALENDAR above for overlapping times
+  • If conflict found → warn the user BEFORE confirming: "heads up, you already have [X] at that time — still want to add it?"
+  • Let the user decide — don't block them
+
+REMINDER PREFERENCES:
+  • Default auto-reminder: 30 minutes before any timed plan
+  • If user says "remind me 1 hour before" or "remind me the day before" → call set_reminder with their preferred time instead of the default
+  • If user says "no reminder" → skip the auto-reminder (just note it)
+
+HABITS & GOALS AWARENESS:
+  • HABITS TODAY section shows which habits are done (✅) or pending (⬜) today
+  • ACTIVE GOALS section shows current goals and progress
+  • When relevant, connect plans to goals: "this fits your [goal] goal!"
+  • Encourage habit completion naturally: if it's evening and habits are pending, mention it warmly
+
 Date resolution (always use DAY → DATE LOOKUP above):
   "at 5" afternoon/evening → 17:00 | morning → 05:00
   No end time → start + 1 hour
@@ -424,6 +536,7 @@ get_timeline    → life timeline (days_back: 7=week, 30=month)
 set_reminder    → schedule a WhatsApp or push notification
 
 NOTE: If the user has Google Calendar connected, their upcoming events are already shown above in GOOGLE CALENDAR section. Reference them naturally when relevant (e.g. briefings, scheduling conflicts).
+NOTE: Habits and goals are already loaded above — use them naturally without calling any tool for them.
 `,
 
       tools: {
@@ -490,6 +603,42 @@ NOTE: If the user has Google Calendar connected, their upcoming events are alrea
               importance: input.priority === "high" ? 3 : input.priority === "medium" ? 2 : 1,
             }).then(undefined, () => { })
 
+            // Sync to Google Calendar
+            try {
+              const gcalToken = await getGcalToken()
+              if (gcalToken) {
+                const gcalRes = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${gcalToken}`, "Content-Type": "application/json" },
+                  body: JSON.stringify(buildGcalEvent({ title: input.title, description: input.description, location: input.location, plan_date: input.plan_date, plan_time: input.plan_time, end_time: endTime ?? undefined, is_all_day: input.is_all_day })),
+                })
+                if (gcalRes.ok) {
+                  const gcalData = await gcalRes.json() as { id: string }
+                  supabase.from("plans").update({ gcal_event_id: gcalData.id }).eq("id", data.id).then(undefined, () => {})
+                }
+              }
+            } catch { /* silent */ }
+
+            // Auto-schedule WhatsApp reminder 30 min before (only for timed events in the future)
+            if (input.plan_time && !input.is_all_day) {
+              try {
+                const eventMs = new Date(`${input.plan_date}T${input.plan_time}:00`).getTime() - 5 * 60 * 60 * 1000 // convert Riyadh (+3) to UTC
+                const remindMs = eventMs - 30 * 60 * 1000
+                if (remindMs > Date.now()) {
+                  const { data: prof } = await supabase.from("profiles").select("phone_number").eq("id", user.id).single()
+                  const channel = prof?.phone_number ? "whatsapp" : "push"
+                  supabase.from("reminders").insert({
+                    user_id: user.id,
+                    title: input.title,
+                    remind_at: new Date(remindMs).toISOString(),
+                    plan_id: data.id,
+                    channel,
+                    is_sent: false,
+                  }).then(undefined, () => {})
+                }
+              } catch { /* silent */ }
+            }
+
             return {
               success: true,
               message: `Scheduled "${input.title}" on ${input.plan_date}${input.plan_time ? " at " + input.plan_time.slice(0, 5) : ""}.`,
@@ -517,17 +666,27 @@ NOTE: If the user has Google Calendar connected, their upcoming events are alrea
           execute: async (input) => {
             if (!user) return { success: false, message: "Login required" }
             const { plan_id, ...fields } = input
-            const updates = Object.fromEntries(
-              Object.entries(fields).filter(([, v]) => v !== undefined)
-            )
-            const { data, error } = await supabase
-              .from("plans")
-              .update(updates)
-              .eq("id", plan_id)
-              .eq("user_id", user.id)
-              .select()
-              .single()
+            // Fetch existing plan first (need gcal_event_id + current values for gcal patch)
+            const { data: existing } = await supabase.from("plans").select("*").eq("id", plan_id).eq("user_id", user.id).single()
+            const updates = Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined))
+            const { data, error } = await supabase.from("plans").update(updates).eq("id", plan_id).eq("user_id", user.id).select().single()
             if (error) return { success: false, message: error.message }
+
+            // Sync update to Google Calendar
+            if (existing?.gcal_event_id) {
+              try {
+                const gcalToken = await getGcalToken()
+                if (gcalToken) {
+                  const merged = { ...existing, ...updates }
+                  await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.gcal_event_id}`, {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${gcalToken}`, "Content-Type": "application/json" },
+                    body: JSON.stringify(buildGcalEvent({ title: merged.title, description: merged.description, location: merged.location, plan_date: merged.plan_date, plan_time: merged.plan_time, end_time: merged.end_time, is_all_day: merged.is_all_day })),
+                  })
+                }
+              } catch { /* silent */ }
+            }
+
             return { success: true, message: "Plan updated.", plan: data }
           },
         }),
@@ -540,12 +699,27 @@ NOTE: If the user has Google Calendar connected, their upcoming events are alrea
           }),
           execute: async ({ plan_id }) => {
             if (!user) return { success: false, message: "Login required" }
-            const { error } = await supabase
-              .from("plans")
-              .delete()
-              .eq("id", plan_id)
-              .eq("user_id", user.id)
+            // Fetch gcal_event_id before deleting
+            const { data: existing } = await supabase.from("plans").select("gcal_event_id").eq("id", plan_id).eq("user_id", user.id).single()
+            const { error } = await supabase.from("plans").delete().eq("id", plan_id).eq("user_id", user.id)
             if (error) return { success: false, message: error.message }
+
+            // Cancel any unsent reminders for this plan
+            supabase.from("reminders").delete().eq("plan_id", plan_id).eq("is_sent", false).then(undefined, () => {})
+
+            // Delete from Google Calendar
+            if (existing?.gcal_event_id) {
+              try {
+                const gcalToken = await getGcalToken()
+                if (gcalToken) {
+                  await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.gcal_event_id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${gcalToken}` },
+                  })
+                }
+              } catch { /* silent */ }
+            }
+
             return { success: true, message: "Plan deleted." }
           },
         }),
@@ -644,6 +818,7 @@ NOTE: If the user has Google Calendar connected, their upcoming events are alrea
           }),
           execute: async ({ plan_id }) => {
             if (!user) return { success: false, message: "Login required" }
+            const { data: existing } = await supabase.from("plans").select("gcal_event_id, title").eq("id", plan_id).eq("user_id", user.id).single()
             const { data, error } = await supabase
               .from("plans")
               .update({ status: "done", completed_at: new Date().toISOString() })
@@ -652,6 +827,21 @@ NOTE: If the user has Google Calendar connected, their upcoming events are alrea
               .select()
               .single()
             if (error) return { success: false, message: error.message }
+
+            // Update Google Calendar event title to show it's done
+            if (existing?.gcal_event_id) {
+              try {
+                const gcalToken = await getGcalToken()
+                if (gcalToken) {
+                  await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.gcal_event_id}`, {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${gcalToken}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ summary: `✅ ${existing.title}` }),
+                  })
+                }
+              } catch { /* silent */ }
+            }
+
             return { success: true, message: "Marked as done ✅", plan: data }
           },
         }),
