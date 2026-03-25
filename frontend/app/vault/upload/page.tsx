@@ -8,37 +8,25 @@ import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import {
   ArrowLeft, Upload, X, FileText, ImageIcon,
-  FileVideo, FileAudio, File, CheckCircle2, AlertCircle,
+  FileVideo, FileAudio, File, CheckCircle2, AlertCircle, Sparkles,
 } from 'lucide-react';
 import { useLanguage } from '@/components/language-provider';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
-
-// ── Constants ─────────────────────────────────────────────────────────────────
+import { VaultSidebar, MobileMenuButton } from '@/components/thakirni/vault-sidebar';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageToggle } from '@/components/language-toggle';
 
 const MAX_FILE_SIZE_MB = 25;
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
-
-const ACCEPT_STRING = [
-  'image/*', 'audio/*', 'video/*', 'application/pdf', 'text/*',
-].join(',');
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+const ACCEPT_STRING = ['image/*', 'audio/*', 'video/*', 'application/pdf', 'text/*'].join(',');
 
 type UploadStatus = 'pending' | 'uploading' | 'done' | 'error';
-
 interface FileItem {
-  id: string;
-  file: File;
-  preview: string | null;   // object URL for images
-  progress: number;           // 0-100
-  status: UploadStatus;
-  error?: string;
+  id: string; file: File; preview: string | null;
+  progress: number; status: UploadStatus; error?: string;
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function fileIcon(file: File): React.ElementType {
   if (file.type.startsWith('image/')) return ImageIcon;
@@ -54,66 +42,101 @@ function formatSize(bytes: number): string {
   return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 }
 
-function uniqueId(): string {
-  return Math.random().toString(36).slice(2, 9);
+function uniqueId(): string { return Math.random().toString(36).slice(2, 9); }
+
+function ParticleLayer() {
+  useEffect(() => {
+    const container = document.getElementById('upload-particles');
+    if (!container || container.childElementCount > 0) return;
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('div');
+      p.style.cssText = `
+        position:absolute;width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;
+        border-radius:50%;opacity:${0.06 + Math.random() * 0.12};
+        left:${Math.random() * 100}%;top:${Math.random() * 100}%;
+        background:${Math.random() > 0.5 ? '#2552ca' : '#ad1d7f'};
+        --drift-x:${(Math.random() - 0.5) * 120}px;--drift-y:${(Math.random() - 0.5) * 120}px;
+        animation:particle-drift ${8 + Math.random() * 12}s ease-in-out infinite;
+        animation-delay:${-Math.random() * 15}s;pointer-events:none;
+      `;
+      container.appendChild(p);
+    }
+  }, []);
+  return <div id="upload-particles" className="absolute inset-0 overflow-hidden pointer-events-none" />;
 }
 
-// ── File Row ──────────────────────────────────────────────────────────────────
-
-function FileRow({
-  item,
-  onRemove,
-}: {
-  item: FileItem;
-  onRemove: (id: string) => void;
-}) {
-  const Icon = fileIcon(item.file);
-
+function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -8 }}
-      className="flex items-center gap-3 p-3 rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-ambient"
-    >
-      {/* Thumbnail or icon */}
-      <div className="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 overflow-hidden">
-        {item.preview
-          ? <img src={item.preview} alt="" className="w-full h-full object-cover" />
-          : <Icon className="w-5 h-5 text-on-surface-variant" />
-        }
+    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.8 }}
+      className="relative bg-[#e4e2e1] rounded-3xl p-8 overflow-hidden">
+      {/* Grid bg */}
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: 'linear-gradient(#2552ca 1px,transparent 1px),linear-gradient(90deg,#2552ca 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
+
+      {/* Floating file cards */}
+      <div className="relative space-y-3">
+        {[
+          { icon: '🖼️', name: 'memory-photo.jpg', size: '2.4 MB', color: 'from-[#2552ca] to-[#456ce4]', done: true },
+          { icon: '🎵', name: 'voice-note.mp3', size: '1.1 MB', color: 'from-[#ad1d7f] to-[#fd65c2]', done: true },
+          { icon: '📄', name: 'notes.pdf', size: '340 KB', color: 'from-[#385b9b] to-[#2552ca]', done: false, progress: 65 },
+        ].map((f, i) => (
+          <motion.div key={i} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.15 }}
+            className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-card">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center text-lg`}>{f.icon}</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800 truncate">{f.name}</p>
+              <p className="text-xs text-slate-500">{f.size}</p>
+              {!f.done && f.progress && (
+                <div className="mt-1 h-1.5 bg-[#e4e2e1] rounded-full overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${f.progress}%` }} transition={{ delay: 0.8, duration: 0.6 }}
+                    className="h-full power-gradient rounded-full" />
+                </div>
+              )}
+            </div>
+            {f.done && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
+          </motion.div>
+        ))}
       </div>
 
-      {/* Info */}
+      {/* Floating badge */}
+      <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute -top-3 -right-3 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
+        <Sparkles className="w-4 h-4 text-[#ad1d7f]" />
+        <span className="text-xs font-bold text-slate-900">{t('محفوظ في ذاكرتك', 'Saved to memory')}</span>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function FileRow({ item, onRemove }: { item: FileItem; onRemove: (id: string) => void }) {
+  const Icon = fileIcon(item.file);
+  return (
+    <motion.div layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -8 }}
+      className="flex items-center gap-3 p-4 rounded-2xl border border-[#e4e2e1] bg-white shadow-card hover-lift">
+      <div className="w-11 h-11 rounded-xl power-gradient flex items-center justify-center shrink-0 overflow-hidden">
+        {item.preview
+          ? <img src={item.preview} alt="" className="w-full h-full object-cover" />
+          : <Icon className="w-5 h-5 text-white" />}
+      </div>
       <div className="flex-1 min-w-0 space-y-1">
-        <p className="text-sm font-medium text-on-surface truncate">{item.file.name}</p>
+        <p className="text-sm font-bold text-slate-800 truncate">{item.file.name}</p>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-on-surface-variant">{formatSize(item.file.size)}</span>
-          {item.status === 'uploading' && (
-            <Progress value={item.progress} className="h-1 flex-1" />
-          )}
+          <span className="text-xs text-slate-500">{formatSize(item.file.size)}</span>
+          {item.status === 'uploading' && <Progress value={item.progress} className="h-1.5 flex-1" />}
           {item.status === 'done' && (
-            <span className="text-xs text-primary flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> Done
+            <span className="text-xs text-green-600 font-bold flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> {item.status === 'done' ? 'Done' : ''}
             </span>
           )}
           {item.status === 'error' && (
-            <span className="text-xs text-error flex items-center gap-1">
+            <span className="text-xs text-red-500 font-bold flex items-center gap-1">
               <AlertCircle className="w-3 h-3" /> {item.error}
             </span>
           )}
         </div>
       </div>
-
-      {/* Remove — hidden while uploading */}
       {item.status !== 'uploading' && (
-        <Button
-          size="icon"
-          variant="ghost"
-          className="shrink-0 h-7 w-7 rounded-full text-on-surface-variant hover:text-error hover:bg-error-container/20"
-          onClick={() => onRemove(item.id)}
-        >
+        <Button size="icon" variant="ghost" className="shrink-0 h-8 w-8 rounded-full text-slate-400 hover:text-red-500" onClick={() => onRemove(item.id)}>
           <X className="w-4 h-4" />
         </Button>
       )}
@@ -121,324 +144,233 @@ function FileRow({
   );
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
-
 export default function UploadPage() {
   const { t } = useLanguage();
   const router = useRouter();
-
   const [items, setItems] = useState<FileItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [description, setDescription] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-
   const inputRef = useRef<HTMLInputElement>(null);
-  // Keep a ref to the latest items so the cleanup effect always sees current previews
   const itemsRef = useRef<FileItem[]>(items);
   useEffect(() => { itemsRef.current = items; }, [items]);
-
-  // Revoke ALL preview URLs on unmount using the ref (avoids stale closure)
-  useEffect(() => {
-    return () => {
-      itemsRef.current.forEach((i) => {
-        if (i.preview) URL.revokeObjectURL(i.preview);
-      });
-    };
-  }, []);
-
-  // ── Add files ──────────────────────────────────────────────────────────────
+  useEffect(() => { return () => { itemsRef.current.forEach((i) => { if (i.preview) URL.revokeObjectURL(i.preview); }); }; }, []);
 
   const addFiles = useCallback((raw: File[]) => {
     const validated: FileItem[] = [];
-
     for (const file of raw) {
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(
-          t(
-            `"${file.name}" أكبر من ${MAX_FILE_SIZE_MB} ميغابايت`,
-            `"${file.name}" exceeds the ${MAX_FILE_SIZE_MB} MB limit`,
-          ),
-        );
-        continue;
-      }
-      // Prevent duplicates by name + size
-      const exists = itemsRef.current.some(
-        (i) => i.file.name === file.name && i.file.size === file.size,
-      );
+      if (file.size > MAX_FILE_SIZE) { toast.error(t(`"${file.name}" أكبر من ${MAX_FILE_SIZE_MB} ميغابايت`, `"${file.name}" exceeds the ${MAX_FILE_SIZE_MB} MB limit`)); continue; }
+      const exists = itemsRef.current.some((i) => i.file.name === file.name && i.file.size === file.size);
       if (exists) continue;
-
-      validated.push({
-        id: uniqueId(),
-        file,
-        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
-        progress: 0,
-        status: 'pending',
-      });
+      validated.push({ id: uniqueId(), file, preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null, progress: 0, status: 'pending' });
     }
-
     if (validated.length) setItems((prev) => [...prev, ...validated]);
   }, [t]);
 
-  // ── Drag handlers ──────────────────────────────────────────────────────────
-
   const onDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
   const onDragLeave = () => setIsDragging(false);
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    addFiles(Array.from(e.dataTransfer.files));
-  };
-
-  // ── Remove file ────────────────────────────────────────────────────────────
+  const onDrop = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); addFiles(Array.from(e.dataTransfer.files)); };
 
   const removeFile = useCallback((id: string) => {
-    setItems((prev) => {
-      const item = prev.find((i) => i.id === id);
-      if (item?.preview) URL.revokeObjectURL(item.preview);
-      return prev.filter((i) => i.id !== id);
-    });
+    setItems((prev) => { const item = prev.find((i) => i.id === id); if (item?.preview) URL.revokeObjectURL(item.preview); return prev.filter((i) => i.id !== id); });
   }, []);
-
-  // ── Upload ─────────────────────────────────────────────────────────────────
 
   const handleUpload = useCallback(async () => {
     const pending = itemsRef.current.filter((i) => i.status === 'pending');
     if (!pending.length) return;
-
     setIsUploading(true);
-
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error(t('يجب تسجيل الدخول أولاً', 'You must be signed in.'));
-        return;
-      }
-
+      if (!user) { toast.error(t('يجب تسجيل الدخول أولاً', 'You must be signed in.')); return; }
       let successCount = 0;
-
       for (const item of pending) {
-        setItems((prev) =>
-          prev.map((i) => i.id === item.id ? { ...i, status: 'uploading', progress: 10 } : i),
-        );
-
+        setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'uploading', progress: 10 } : i));
         try {
           const ext = item.file.name.split('.').pop() ?? 'bin';
           const path = `uploads/${user.id}/${Date.now()}-${uniqueId()}.${ext}`;
-
-          const { error: uploadErr } = await supabase.storage
-            .from('memories')
-            .upload(path, item.file, { contentType: item.file.type, upsert: false });
-
+          const { error: uploadErr } = await supabase.storage.from('memories').upload(path, item.file, { contentType: item.file.type, upsert: false });
           if (uploadErr) throw uploadErr;
-
-          setItems((prev) =>
-            prev.map((i) => i.id === item.id ? { ...i, progress: 70 } : i),
-          );
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('memories')
-            .getPublicUrl(path);
-
+          setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, progress: 70 } : i));
+          const { data: { publicUrl } } = supabase.storage.from('memories').getPublicUrl(path);
           const { error: dbErr } = await supabase.from('memories').insert({
-            user_id: user.id,
-            content: description || item.file.name,
+            user_id: user.id, content: description || item.file.name,
             tags: [item.file.type.split('/')[0], 'upload'],
             type: item.file.type.startsWith('image/') ? 'image' : 'file',
-            file_url: publicUrl,
-            file_name: item.file.name,
-            file_size: item.file.size,
-            mime_type: item.file.type,
+            file_url: publicUrl, file_name: item.file.name, file_size: item.file.size, mime_type: item.file.type,
           });
-
           if (dbErr) throw dbErr;
-
-          setItems((prev) =>
-            prev.map((i) => i.id === item.id ? { ...i, status: 'done', progress: 100 } : i),
-          );
+          setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'done', progress: 100 } : i));
           successCount++;
-        } catch (err: any) {
-          console.error('[Upload] file error:', err);
-          setItems((prev) =>
-            prev.map((i) =>
-              i.id === item.id
-                ? { ...i, status: 'error', error: err?.message ?? t('فشل', 'Failed') }
-                : i,
-            ),
-          );
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : t('فشل', 'Failed');
+          setItems((prev) => prev.map((i) => i.id === item.id ? { ...i, status: 'error', error: msg } : i));
         }
       }
-
       if (successCount > 0) {
-        toast.success(
-          t(
-            `تم رفع ${successCount} ملف بنجاح ✅`,
-            `${successCount} file${successCount > 1 ? 's' : ''} uploaded ✅`,
-          ),
-        );
+        toast.success(t(`تم رفع ${successCount} ملف بنجاح ✅`, `${successCount} file${successCount > 1 ? 's' : ''} uploaded ✅`));
         setTimeout(() => router.push('/vault'), 1200);
       }
-    } finally {
-      setIsUploading(false);
-    }
+    } finally { setIsUploading(false); }
   }, [description, t, router]);
 
-  // ── Derived ────────────────────────────────────────────────────────────────
-
   const pendingCount = items.filter((i) => i.status === 'pending').length;
-  const hasItems = items.length > 0;
-
-  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
 
-      <main className="lg:ml-72 pt-16 px-4 pb-8 lg:pt-8">
-        <div className="max-w-xl mx-auto">
+      {/* Fixed header */}
+      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
+        <div className="flex items-center gap-3">
+          <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-[#f6f3f2] flex items-center justify-center hover:bg-[#e4e2e1] transition-colors">
+            <ArrowLeft className="w-4 h-4 text-slate-600 rtl:rotate-180" />
+          </button>
+          <span className="text-xl font-headline font-extrabold gradient-text">{t('رفع ذكريات', 'Upload Memories')}</span>
+        </div>
+        <div className="flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
+      </header>
 
-          {/* Back */}
-          <div className="flex items-center gap-3 mb-8">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}
-              className="rounded-full hover:bg-surface-container-high">
-              <ArrowLeft className="w-5 h-5 rtl:rotate-180" />
-            </Button>
-            <h1 className="text-2xl font-headline font-bold text-on-surface">
-              {t('رفع ملفات', 'Upload Files')}
-            </h1>
-          </div>
+      <main className="lg:ml-72 transition-all duration-300">
+        {/* Mobile header */}
+        <div className="flex items-center gap-3 p-4 lg:hidden">
+          <MobileMenuButton />
+          <span className="text-lg font-headline font-extrabold gradient-text">{t('رفع ذكريات', 'Upload Memories')}</span>
+          <div className="ms-auto flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
+        </div>
 
-          <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/20">
-            <div className="mb-6">
-              <h2 className="text-lg font-headline font-bold text-on-surface mb-1">
-                {t('رفع صور أو ملفات', 'Upload Photos or Files')}
-              </h2>
-              <p className="text-sm text-on-surface-variant">
+        {/* ═══ HERO ═══ */}
+        <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">
+          <ParticleLayer />
+          <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left copy */}
+            <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Upload className="w-4 h-4 text-[#2552ca]" />
+                <span className="text-sm font-label font-medium text-slate-700">{t(`حتى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`, `Up to ${MAX_FILE_SIZE_MB} MB per file`)}</span>
+              </motion.div>
+
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
+                <span className="text-slate-900">{t('أضف', 'Capture')}</span>{' '}
+                <span className="gradient-text">{t('ذكرياتك', 'Memories')}</span>
+                <br />
+                <span className="text-slate-900">{t('هنا', 'Here')}</span>
+              </h1>
+
+              <p className="text-xl text-slate-600 font-body mb-10 leading-relaxed max-w-lg">
                 {t(
-                  `الحد الأقصى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`,
-                  `Up to ${MAX_FILE_SIZE_MB} MB per file`,
+                  'ارفع صوراً وملفات وصوتيات وPDF لتُضاف إلى خريطة ذاكرتك وتصبح قابلة للبحث.',
+                  'Upload photos, files, audio clips, and PDFs to your memory map — fully searchable and always accessible.'
                 )}
               </p>
-            </div>
 
-            <div className="space-y-5">
+              <div className="flex flex-wrap items-center gap-4">
+                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => inputRef.current?.click()}
+                  className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl power-gradient text-white font-bold text-lg btn-glow shadow-lg">
+                  <Upload className="w-5 h-5" />
+                  {t('اختر ملفات', 'Choose Files')}
+                </motion.button>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <span className="w-2 h-2 rounded-full bg-[#2552ca]" />
+                  {t('صور، فيديو، صوت، PDF', 'Images, video, audio, PDF')}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right visual */}
+            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}>
+              <UploadVisual t={t} />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ═══ UPLOAD ZONE ═══ */}
+        <section className="px-8 pb-24">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-8">
 
               {/* Drop zone */}
-              <div
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDrop={onDrop}
-                onClick={() => inputRef.current?.click()}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.6 }}
+                onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} onClick={() => inputRef.current?.click()}
                 className={cn(
-                  'border-2 border-dashed rounded-xl p-10 text-center cursor-pointer',
-                  'transition-colors duration-200 select-none',
-                  isDragging
-                    ? 'border-primary bg-primary/5'
-                    : 'border-outline-variant hover:border-primary/50 hover:bg-surface-container-low',
-                )}
-              >
-                <motion.div
-                  animate={{ scale: isDragging ? 1.08 : 1 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="flex flex-col items-center gap-3"
-                >
-                  <div className={cn(
-                    'w-14 h-14 rounded-full flex items-center justify-center transition-colors',
-                    isDragging ? 'bg-primary/15' : 'bg-surface-container-high',
-                  )}>
-                    <Upload className={cn(
-                      'w-6 h-6 transition-colors',
-                      isDragging ? 'text-primary' : 'text-on-surface-variant',
-                    )} />
+                  'bg-[#f6f3f2] rounded-2xl p-12 text-center cursor-pointer relative overflow-hidden group hover-lift border-2 border-dashed transition-all duration-200',
+                  isDragging ? 'border-[#2552ca] bg-[#dce1ff]/30' : 'border-[#e4e2e1] hover:border-[#2552ca]/40'
+                )}>
+                {/* Decorative corner */}
+                <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-[#2552ca]/8 to-transparent rounded-tl-3xl pointer-events-none" />
+
+                <motion.div animate={{ scale: isDragging ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  className="flex flex-col items-center gap-4 relative z-10">
+                  <div className={cn('w-20 h-20 rounded-3xl flex items-center justify-center transition-colors', isDragging ? 'power-gradient' : 'bg-[#e4e2e1]')}>
+                    <Upload className={cn('w-8 h-8 transition-colors', isDragging ? 'text-white' : 'text-slate-400')} />
                   </div>
-                  <p className="text-sm text-on-surface-variant">
-                    {isDragging
-                      ? t('أفلت الملفات هنا', 'Drop files here')
-                      : t('اسحب الملفات هنا أو انقر للاختيار', 'Drag files here or click to select')
-                    }
-                  </p>
-                  <p className="text-xs text-on-surface-variant/60">
-                    {t('صور، فيديو، صوت، PDF', 'Images, video, audio, PDF')}
-                  </p>
+                  <div>
+                    <p className="text-2xl font-headline font-bold text-slate-900 mb-2">
+                      {isDragging ? t('أفلت الملفات هنا', 'Drop files here') : t('اسحب الملفات هنا', 'Drag files here')}
+                    </p>
+                    <p className="text-slate-500">{t('أو انقر للاختيار', 'or click to select')}</p>
+                  </div>
                 </motion.div>
+                <input ref={inputRef} type="file" multiple accept={ACCEPT_STRING} className="hidden"
+                  onChange={(e) => { if (e.target.files) addFiles(Array.from(e.target.files)); e.target.value = ''; }} />
+              </motion.div>
 
-                <input
-                  ref={inputRef}
-                  type="file"
-                  multiple
-                  accept={ACCEPT_STRING}
-                  className="hidden"
-                  onChange={(e) => {
-                    if (e.target.files) addFiles(Array.from(e.target.files));
-                    e.target.value = '';
-                  }}
-                />
-              </div>
+              {/* File list + actions */}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.6, delay: 0.05 }}
+                className="bg-[#f6f3f2] rounded-2xl p-10 flex flex-col">
+                <h2 className="text-2xl font-headline font-bold text-slate-900 mb-6">
+                  {t('الملفات المحددة', 'Selected Files')}
+                  {items.length > 0 && <span className="ms-2 text-base font-normal text-slate-500">({items.length})</span>}
+                </h2>
 
-              {/* File list */}
-              <AnimatePresence mode="popLayout">
-                {hasItems && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="space-y-2"
-                  >
-                    {items.map((item) => (
-                      <FileRow key={item.id} item={item} onRemove={removeFile} />
-                    ))}
-                  </motion.div>
+                {items.length === 0 ? (
+                  <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-[#e4e2e1] flex items-center justify-center mb-4">
+                      <File className="w-8 h-8 text-slate-400" />
+                    </div>
+                    <p className="text-slate-500">{t('لا توجد ملفات محددة بعد', 'No files selected yet')}</p>
+                  </div>
+                ) : (
+                  <div className="flex-1 space-y-3 mb-6">
+                    <AnimatePresence mode="popLayout">
+                      {items.map((item) => <FileRow key={item.id} item={item} onRemove={removeFile} />)}
+                    </AnimatePresence>
+                  </div>
                 )}
-              </AnimatePresence>
 
-              {/* Description */}
-              <AnimatePresence>
-                {hasItems && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-1.5"
-                  >
-                    <label className="text-sm font-medium text-on-surface">
-                      {t('وصف (اختياري)', 'Description (optional)')}
-                    </label>
-                    <Input
-                      placeholder={t('أضف وصفاً لهذه الملفات...', 'Add a description for these files...')}
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="bg-surface-container-low border-outline-variant/50 rounded-xl focus-visible:ring-primary/40"
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-1">
-                <Button
-                  onClick={handleUpload}
-                  disabled={!pendingCount || isUploading}
-                  className="flex-1 gap-2 power-gradient text-white font-bold rounded-full shadow-ambient"
-                >
-                  {isUploading
-                    ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    : <Upload className="w-4 h-4" />
-                  }
-                  {isUploading
-                    ? t('جاري الرفع...', 'Uploading...')
-                    : pendingCount > 0
-                      ? t(`رفع ${pendingCount} ملف`, `Upload ${pendingCount} file${pendingCount > 1 ? 's' : ''}`)
-                      : t('رفع', 'Upload')
-                  }
-                </Button>
-                <Button variant="outline" onClick={() => router.back()} disabled={isUploading}
-                  className="rounded-full border-outline-variant/50 hover:bg-surface-container-high">
-                  {t('إلغاء', 'Cancel')}
-                </Button>
-              </div>
-
+                <AnimatePresence>
+                  {items.length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 mt-auto">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-bold text-slate-700 font-label">{t('وصف (اختياري)', 'Description (optional)')}</label>
+                        <Input
+                          placeholder={t('أضف وصفاً لهذه الملفات...', 'Add a description...')}
+                          value={description} onChange={(e) => setDescription(e.target.value)}
+                          className="rounded-xl bg-white border-[#e4e2e1] focus-visible:ring-[#2552ca]/40" />
+                      </div>
+                      <div className="flex gap-3">
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                          onClick={handleUpload} disabled={!pendingCount || isUploading}
+                          className="flex-1 py-4 rounded-2xl power-gradient text-white font-bold btn-glow disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                          {isUploading
+                            ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{t('جاري الرفع...', 'Uploading...')}</>
+                            : <><Upload className="w-4 h-4" />{pendingCount > 0 ? t(`رفع ${pendingCount} ملف`, `Upload ${pendingCount} file${pendingCount > 1 ? 's' : ''}`) : t('رفع', 'Upload')}</>
+                          }
+                        </motion.button>
+                        <Button variant="outline" onClick={() => router.back()} disabled={isUploading}
+                          className="rounded-2xl border-[#e4e2e1] hover:bg-white px-6">
+                          {t('إلغاء', 'Cancel')}
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   );

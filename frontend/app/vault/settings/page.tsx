@@ -66,9 +66,9 @@ function SettingsCard({
 
 function SettingsSkeleton() {
   return (
-    <div className="min-h-screen bg-[#fbf9f8]">
+    <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20">
+      <main className="lg:ml-72 pt-32 px-8 pb-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
           {[7, 5, 7, 5].map((span, i) => (
             <Skeleton key={i} className={`h-64 rounded-2xl md:col-span-${span}`} />
@@ -453,15 +453,16 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8]">
+    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
 
-      {/* Top header */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex">
-        <div>
-          <h1 className="text-xl font-headline font-bold text-slate-900">
-            {t("الإعدادات", "Settings")}
-          </h1>
+      {/* Fixed header */}
+      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl power-gradient flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
+            <Crown className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-headline font-extrabold gradient-text">{t("الإعدادات", "Settings")}</span>
         </div>
         <div className="flex items-center gap-3">
           <MobileMenuButton />
@@ -470,21 +471,90 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main className="lg:ml-72 pt-24 lg:pt-28 px-6 lg:px-12 pb-20">
+      <main className="lg:ml-72 transition-all duration-300">
+        {/* Mobile header */}
+        <div className="flex items-center gap-3 p-4 lg:hidden">
+          <MobileMenuButton />
+          <span className="text-lg font-headline font-extrabold gradient-text">{t("الإعدادات", "Settings")}</span>
+          <div className="ms-auto flex items-center gap-2"><LanguageToggle /><ThemeToggle /></div>
+        </div>
 
-        {/* Page header */}
-        <section className="mb-12 max-w-5xl mx-auto">
-          <h1 className="text-5xl lg:text-6xl font-headline font-extrabold tracking-tight mb-4 text-slate-900">
-            {t("الإعدادات", "Settings")}
-          </h1>
-          <p className="text-xl text-slate-500 leading-relaxed max-w-2xl">
-            {t(
-              "أدر حسابك وتفضيلاتك واشتراكك.",
-              "Manage your account, preferences, and subscription."
-            )}
-          </p>
+        {/* ═══ HERO ═══ */}
+        <section className="relative pt-32 pb-16 px-8 hero-mesh overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} style={{
+                position: 'absolute', borderRadius: '50%',
+                width: `${4 + Math.random() * 6}px`, height: `${4 + Math.random() * 6}px`,
+                left: `${(i / 12) * 100}%`, top: `${Math.random() * 100}%`,
+                background: i % 2 === 0 ? '#2552ca' : '#ad1d7f', opacity: 0.08,
+              }} />
+            ))}
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left copy */}
+            <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Crown className="w-4 h-4 text-[#2552ca]" />
+                <span className="text-sm font-label font-medium text-slate-700" style={{ background: planBadge.bg, color: planBadge.color, padding: '2px 10px', borderRadius: '999px', fontWeight: 700 }}>{planBadge.label}</span>
+              </motion.div>
+
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
+                <span className="text-slate-900">{t("إعدادات", "Your")}</span>{" "}
+                <span className="gradient-text">{t("حسابك", "Account")}</span>
+              </h1>
+
+              <p className="text-xl text-slate-600 font-body mb-10 leading-relaxed max-w-lg">
+                {t("أدر ملفك الشخصي واشتراكك وتفضيلاتك وأمان حسابك من مكان واحد.", "Manage your profile, subscription, preferences, and account security all in one place.")}
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                {[
+                  { icon: '👤', label: t('الملف الشخصي', 'Profile'), color: 'bg-[#dce1ff] text-[#2552ca]' },
+                  { icon: '🔔', label: t('الإشعارات', 'Notifications'), color: 'bg-[#ffd8e9] text-[#ad1d7f]' },
+                  { icon: '🔒', label: t('الأمان', 'Security'), color: 'bg-emerald-50 text-emerald-700' },
+                  { icon: '📊', label: t('الاشتراك', 'Subscription'), color: 'bg-amber-50 text-amber-700' },
+                ].map(({ icon, label, color }) => (
+                  <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
+                    <span>{icon}</span> <span>{label as string}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Right — profile preview card */}
+            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
+              className="bg-white rounded-3xl shadow-2xl p-8 border border-[#e4e2e1] relative">
+              <div className="flex items-center gap-5 mb-8">
+                <div className="w-20 h-20 rounded-2xl power-gradient flex items-center justify-center text-white text-3xl font-bold font-headline overflow-hidden shrink-0">
+                  {profile?.avatar_url ? <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" /> : initial}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-headline font-bold text-slate-900">{name || t('المستخدم', 'User')}</h3>
+                  <p className="text-slate-500 text-sm" dir="ltr">{email}</p>
+                  <span className="mt-1 inline-block px-3 py-0.5 rounded-full text-xs font-bold" style={{ background: planBadge.bg, color: planBadge.color }}>{planBadge.label}</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {planFeatures.slice(0, 3).map(({ ar, en }) => (
+                  <div key={en} className="flex items-center gap-3 p-3 bg-[#f6f3f2] rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-[#ad1d7f] shrink-0" />
+                    <p className="text-sm font-label text-slate-700">{t(ar, en)}</p>
+                  </div>
+                ))}
+              </div>
+              <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-[#2552ca]" />
+                <span className="text-xs font-bold text-slate-900">{t('محمي', 'Secured')}</span>
+              </motion.div>
+            </motion.div>
+          </div>
         </section>
 
+        <div className="px-8 pb-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
 
           {/* ── Left column ── */}
@@ -1003,6 +1073,7 @@ export default function SettingsPage() {
 
           </div>
         </div>
+        </div>{/* end px-8 pb-20 */}
       </main>
 
       {/* Sign out dialog */}
