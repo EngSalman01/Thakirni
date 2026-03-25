@@ -29,10 +29,16 @@ export async function POST(req: NextRequest) {
     if (!token) {
       return NextResponse.json({ error: "Please complete the captcha" }, { status: 400 })
     }
+    const params = new URLSearchParams({
+      secret:   hcaptchaSecret,
+      response: token,
+      remoteip: ip,
+      sitekey:  process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY ?? "",
+    })
     const verify = await fetch("https://api.hcaptcha.com/siteverify", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${hcaptchaSecret}&response=${token}`,
+      body: params.toString(),
     })
     const result = await verify.json()
     if (!result.success) {

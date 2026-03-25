@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useRef } from "react";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -183,6 +184,8 @@ function AuthForm() {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [phoneNumber, setPhoneNumber]   = useState("");
   const [dialCode, setDialCode]         = useState("966");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captchaRef                      = useRef<HCaptcha>(null);
 
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -239,6 +242,7 @@ function AuthForm() {
     const { error } = await supabase.auth.signUp({
       email, password: pw,
       options: {
+        captchaToken: captchaToken || undefined,
         data: {
           full_name: name,
           avatar_url: "",
@@ -247,6 +251,8 @@ function AuthForm() {
       },
     });
     if (error) {
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken("");
       setErrors({ form: error.message.includes("already registered")
         ? t("هذا الإيميل مسجل قبل كذا، سجّل دخولك", "This email is already registered. Try signing in.")
         : error.message });
@@ -544,8 +550,18 @@ function AuthForm() {
               {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
             </div>
 
+            <div className="flex justify-center">
+              <HCaptcha
+                ref={captchaRef}
+                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+                onVerify={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken("")}
+                size="normal"
+              />
+            </div>
+
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-              type="submit" disabled={isLoading}
+              type="submit" disabled={isLoading || !captchaToken}
               className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60 mt-2"
               style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", boxShadow: "0 4px 20px rgba(37,82,202,0.35)" }}
             >
