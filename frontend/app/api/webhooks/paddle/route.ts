@@ -11,10 +11,23 @@ function getServiceSupabase() {
   )
 }
 
-function verifyPaddleSignature(body: string, signature: string): boolean {
+function verifyPaddleSignature(body: string, signatureHeader: string): boolean {
   const secret = process.env.PADDLE_WEBHOOK_SECRET ?? ""
-  const hash = crypto.createHmac("sha256", secret).update(body).digest("hex")
-  return hash === signature
+  if (!secret || !signatureHeader) return false
+
+  // Parse ts=...;h1=... format from Paddle-Signature header
+  const parts = Object.fromEntries(
+    signatureHeader.split(";").map((p) => p.split("=") as [string, string])
+  )
+  const ts = parts["ts"]
+  const h1 = parts["h1"]
+  if (!ts || !h1) return false
+
+  // Paddle signs: "timestamp:body"
+  const signed = `${ts}:${body}`
+  const expected = crypto.createHmac("sha256", secret).update(signed).digest("hex")
+
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(h1))
 }
 
 function getPlanTierFromPriceId(priceId: string): string {

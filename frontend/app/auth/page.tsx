@@ -421,7 +421,7 @@ function AuthForm() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">{t("كلمة المرور", "Password")}</Label>
-                <Link href="/auth/forgot-password"
+                <Link href="/auth/reset-password"
                   className="text-xs hover:underline" style={{ color: "#2552ca" }}>
                   {t("نسيت كلمة المرور؟", "Forgot password?")}
                 </Link>
