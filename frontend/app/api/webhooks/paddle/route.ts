@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      case "subscription.payment.failed": {
+      case "transaction.payment_failed": {
         if (!d.id) break
         const { data: sub } = await service.from("subscriptions").select("user_id, plan_tier").eq("paddle_subscription_id", d.id).maybeSingle()
         if (sub?.user_id) {
