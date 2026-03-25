@@ -14,10 +14,10 @@ export async function GET(req: NextRequest) {
   const supabase = createServiceClient()
   const now = new Date().toISOString()
 
-  // Fetch all due, unsent reminders with user phone number and language preference
+  // Fetch all due, unsent reminders
   const { data: reminders, error } = await supabase
     .from("reminders")
-    .select("id, user_id, title, channel, remind_at, profiles(phone_number, preferred_language)")
+    .select("id, user_id, title, channel, remind_at")
     .lte("remind_at", now)
     .eq("is_sent", false)
     .limit(50)
@@ -31,12 +31,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ sent: 0 })
   }
 
+  // Fetch profiles for all reminder owners in one query
+  const userIds = [...new Set(reminders.map((r) => r.user_id))]
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, phone_number, preferred_language")
+    .in("id", userIds)
+
+  const profileMap = new Map(
+    (profiles ?? []).map((p) => [p.id, p])
+  )
+
   let sent = 0
   const sentIds: string[] = []
 
   for (const reminder of reminders) {
-    const profileRaw = reminder.profiles
-    const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { phone_number: string | null; preferred_language?: string | null } | null
+    const profile = profileMap.get(reminder.user_id) ?? null
     const phone = profile?.phone_number
     const isArabic = (profile?.preferred_language ?? "ar") !== "en"
 

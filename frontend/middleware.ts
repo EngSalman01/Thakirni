@@ -2,6 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Skip entirely for cron endpoints — they authenticate via CRON_SECRET header
+  if (pathname.startsWith("/api/cron")) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -25,12 +32,6 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  const { pathname } = request.nextUrl;
-
-  // Skip auth check for cron endpoints — they authenticate via CRON_SECRET header
-  if (pathname.startsWith("/api/cron")) {
-    return NextResponse.next();
-  }
 
   const {
     data: { user },
