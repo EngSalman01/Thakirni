@@ -208,8 +208,49 @@ function RecentCaptures() {
 
 // ── AI Insight card ───────────────────────────────────────────────────────────
 
+interface InsightData {
+  ar: string;
+  en: string;
+  type: "overdue" | "memory" | "habit" | "plan" | "empty";
+}
+
+const INSIGHT_BUTTON: Record<
+  InsightData["type"],
+  { ar: string; en: string; href: string }
+> = {
+  overdue: { ar: "عرض الخطط", en: "View Plans", href: "/vault/plans" },
+  plan:    { ar: "عرض الخطط", en: "View Plans", href: "/vault/plans" },
+  memory:  { ar: "عرض الذكريات", en: "View Memories", href: "/vault/new-memory" },
+  habit:   { ar: "عرض العادات", en: "View Habits", href: "/vault/habits" },
+  empty:   { ar: "عرض الخطط", en: "View Plans", href: "/vault/plans" },
+};
+
 function AIInsight() {
   const { t } = useLanguage();
+  const [data, setData] = useState<InsightData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/vault/insights");
+        if (!res.ok) throw new Error("Failed to fetch insights");
+        const json = (await res.json()) as InsightData;
+        setData(json);
+      } catch (err) {
+        console.error("[AIInsight]", err);
+        setData(null);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const btn = data ? INSIGHT_BUTTON[data.type] : INSIGHT_BUTTON.empty;
+  const insightText = data
+    ? t(data.ar, data.en)
+    : t("ابدأ يومك بتسجيل ذكرى أو إنشاء خطة", "Start your day by capturing a memory or creating a plan");
+
   return (
     <section className="space-y-4">
       <h2 className="font-headline text-lg font-extrabold tracking-tight text-slate-800">
@@ -218,15 +259,19 @@ function AIInsight() {
       <div className="bg-[#2552ca] p-6 rounded-2xl text-white shadow-xl relative overflow-hidden group">
         <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-white/10 rounded-full blur-2xl" />
         <span className="text-xl mb-4 block">✦</span>
-        <p className="text-sm font-medium leading-relaxed mb-4">
-          {t(
-            "ذكرت \"الذكاء الاصطناعي الأخلاقي\" في 3 سياقات مختلفة اليوم. تبي نولفها في ملاحظة بحثية؟",
-            "You've mentioned \"Ethical AI\" in 3 different contexts today. Would you like to synthesize these into a research note?"
-          )}
-        </p>
-        <button className="w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-sm font-bold transition-all">
-          {t("مراجعة الاتصال", "Review Connection")}
-        </button>
+        {loading ? (
+          <div className="space-y-3 mb-4">
+            <Skeleton className="h-4 w-full bg-white/20 rounded" />
+            <Skeleton className="h-4 w-3/4 bg-white/20 rounded" />
+          </div>
+        ) : (
+          <p className="text-sm font-medium leading-relaxed mb-4">{insightText}</p>
+        )}
+        <Link href={btn.href}>
+          <button className="w-full py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-sm font-bold transition-all">
+            {t(btn.ar, btn.en)}
+          </button>
+        </Link>
       </div>
     </section>
   );
@@ -551,6 +596,7 @@ function VaultPageInner() {
               className="w-full min-w-0 space-y-6"
             >
               <FocusStream />
+              <AIInsight />
             </motion.div>
           </div>
 
