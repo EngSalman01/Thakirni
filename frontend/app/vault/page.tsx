@@ -80,10 +80,10 @@ function VaultSkeleton() {
 // ── Central Memory Map orb ─────────────────────────────────────────────────────
 
 const ORBITAL_NODES = [
-  { pos: "top-0 left-1/2 -translate-x-1/2 -translate-y-5", label: "AI", bg: "from-[#2552ca] to-[#456ce4]" },
-  { pos: "bottom-0 left-1/2 -translate-x-1/2 translate-y-5",  label: "⚡", bg: "from-[#ad1d7f] to-[#fd65c2]" },
-  { pos: "left-0 top-1/2 -translate-y-1/2 -translate-x-5",    label: "📄", bg: "from-[#385b9b] to-[#2552ca]" },
-  { pos: "right-0 top-1/2 -translate-y-1/2 translate-x-5",    label: "🎙️", bg: "from-[#ad1d7f] to-[#385b9b]" },
+  { pos: "top-0 left-1/2 -translate-x-1/2 -translate-y-5", label: "AI", color: "text-[#2552ca]" },
+  { pos: "bottom-0 left-1/2 -translate-x-1/2 translate-y-5",  label: "⚡", color: "text-[#ad1d7f]" },
+  { pos: "left-0 top-1/2 -translate-y-1/2 -translate-x-5",    label: "📄", color: "text-slate-600" },
+  { pos: "right-0 top-1/2 -translate-y-1/2 translate-x-5",    label: "🎙️", color: "text-slate-600" },
 ];
 
 function MemoryMapOrb() {
@@ -142,13 +142,13 @@ function MemoryMapOrb() {
         </motion.div>
 
         {/* Fixed orbital positions */}
-        {ORBITAL_NODES.map(({ pos, label, bg }) => (
+        {ORBITAL_NODES.map(({ pos, label, color }) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className={`absolute ${pos} w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${bg} shadow-lg flex items-center justify-center text-sm sm:text-base font-bold text-white`}
+            className={`absolute ${pos} w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-sm sm:text-base font-bold ${color}`}
           >
             {label}
           </motion.div>
@@ -637,8 +637,8 @@ function VaultPageInner() {
       <ParticleLayer />
 
       {/* Background blobs */}
-      <div className="fixed top-40 right-0 w-80 h-80 bg-[#2552ca]/6 rounded-full blur-[120px] pointer-events-none z-0" />
-      <div className="fixed bottom-20 left-72 w-72 h-72 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none z-0" />
+      <div className="absolute top-40 right-0 w-80 h-80 bg-[#2552ca]/6 rounded-full blur-[120px] pointer-events-none z-0" />
+      <div className="absolute bottom-20 left-0 w-72 h-72 bg-[#ad1d7f]/5 rounded-full blur-[100px] pointer-events-none z-0" />
 
       <div className="relative z-10 pt-16 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-16">
 

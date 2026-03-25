@@ -25,6 +25,8 @@ import {
   VaultSidebar,
   MobileMenuButton,
 } from "@/components/thakirni/vault-sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
@@ -120,31 +122,46 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
 
-      <main className="lg:ml-72 pt-16 p-4 lg:p-8 transition-all duration-300">
-        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
-          {/* Header */}
-          <div className="flex items-start gap-3">
-            <MobileMenuButton />
-            <div className="flex flex-col gap-1">
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent text-balance">
-                {t("خططي ومكالماتي", "My Plans & Tasks")}
-              </h1>
-              <p className="text-sm md:text-base text-muted-foreground">
-                {t(
-                  "نظم يومك، وتابع مهامك، ولا تنسى مقاضيك",
-                  "Organize your day, track tasks, and never forget groceries",
-                )}
-              </p>
+      {/* Fixed glassmorphism header — desktop */}
+      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#456ce4] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
+            <ListTodo className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <span className="text-xl font-headline font-extrabold gradient-text">{t("خططي", "My Plans")}</span>
+            <p className="text-xs text-slate-500">{t("نظّم مهامك اليوم", "Organise your tasks today")}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <MobileMenuButton /><ThemeToggle /><LanguageToggle />
+        </div>
+      </header>
+
+      <main className="lg:ml-72 pt-4 lg:pt-24 p-4 lg:p-8 transition-all duration-300">
+        {/* Mobile header */}
+        <div className="flex items-center gap-3 mb-6 lg:hidden">
+          <MobileMenuButton />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#456ce4] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
+              <ListTodo className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-lg font-headline font-extrabold gradient-text">{t("خططي", "My Plans")}</span>
+              <p className="text-xs text-slate-500">{t("نظّم مهامك اليوم", "Organise your tasks today")}</p>
             </div>
           </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
 
           {/* Input Area */}
           <form
             onSubmit={handleAddPlan}
-            className="flex gap-4 p-4 bg-muted/30 border border-border rounded-xl backdrop-blur-sm"
+            className="flex gap-4 p-4 glass-card rounded-2xl border border-white/40 shadow-ambient"
           >
             <Input
               value={newPlanTitle}
@@ -161,17 +178,23 @@ export default function PlansPage() {
                     ? "Add new meeting..."
                     : "Add new task...",
               )}
-              className="flex-1 bg-background border-muted-foreground/20"
+              className="flex-1 bg-white/80 border-white/50"
               disabled={isAdding}
             />
-            <Button disabled={!newPlanTitle.trim() || isAdding}>
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={!newPlanTitle.trim() || isAdding}
+              className="flex items-center gap-2 px-4 py-2 rounded-full power-gradient text-white text-sm font-bold btn-glow disabled:opacity-50 disabled:pointer-events-none"
+            >
               {isAdding ? (
                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <Plus className="w-5 h-5" />
               )}
-              <span className="hidden sm:inline ms-2">{t("إضافة", "Add")}</span>
-            </Button>
+              <span className="hidden sm:inline">{t("إضافة", "Add")}</span>
+            </motion.button>
           </form>
 
           {/* Tabs & List */}
@@ -234,12 +257,12 @@ export default function PlansPage() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       layout
                       className={cn(
-                        "group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
+                        "group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover-lift",
                         selectedIds.has(plan.id)
-                          ? "bg-primary/5 border-primary/40 ring-1 ring-primary/20"
+                          ? "bg-[#2552ca]/5 border-[#2552ca]/40 ring-1 ring-[#2552ca]/20"
                           : plan.status === "completed"
-                            ? "bg-muted/50 border-transparent opacity-60"
-                            : "bg-card border-border hover:border-primary/50 hover:shadow-sm",
+                            ? "bg-white/60 border-[#e4e2e1] opacity-60"
+                            : "bg-white border-[#e4e2e1] shadow-ambient",
                       )}
                     >
                       {/* Bulk-select checkbox — visible on hover or when any item is selected */}
