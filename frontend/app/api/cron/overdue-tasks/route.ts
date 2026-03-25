@@ -4,15 +4,6 @@ import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
 
 export const maxDuration = 60
 
-interface OverduePlan {
-  user_id: string
-  title: string
-  profiles: {
-    phone_number: string | null
-    preferred_language: string | null
-  } | null
-}
-
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -25,10 +16,10 @@ export async function GET(req: NextRequest) {
   const now = new Date()
   const todayRiyadh = now.toLocaleDateString("en-CA", { timeZone: "Asia/Riyadh" }) // YYYY-MM-DD
 
-  // Fetch all pending plans strictly before today (overdue), joined with profile info
+  // Fetch all pending plans strictly before today (overdue)
   const { data: overduePlans, error } = await supabase
     .from("plans")
-    .select("user_id, title, profiles(phone_number, preferred_language)")
+    .select("user_id, title")
     .eq("status", "pending")
     .lt("plan_date", todayRiyadh)
     .limit(500)
@@ -42,18 +33,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ notified: 0 })
   }
 
+  // Fetch profiles for all affected users in one query
+  const userIds = [...new Set(overduePlans.map((p) => p.user_id))]
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, phone_number, preferred_language")
+    .in("id", userIds)
+
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
+
   // Group by user_id
   const byUser = new Map<
     string,
     { phone: string; isArabic: boolean; titles: string[] }
   >()
 
-  for (const plan of overduePlans as unknown as OverduePlan[]) {
-    const profileRaw = plan.profiles
-    const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as {
-      phone_number: string | null
-      preferred_language: string | null
-    } | null
+  for (const plan of overduePlans) {
+    const profile = profileMap.get(plan.user_id)
 
     if (!profile?.phone_number) continue
 
