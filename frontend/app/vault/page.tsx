@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -15,9 +13,6 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { Plus, Upload, Sparkles, ArrowRight, Network } from "lucide-react";
 import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
-
-interface Team { id: string; name: string; [key: string]: unknown; }
-interface TeamMember { id: string; name: string; avatar?: string | null; }
 
 // ── Particles ─────────────────────────────────────────────────────────────────
 
@@ -40,11 +35,6 @@ function ParticleLayer() {
   }, []);
   return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none z-0" />;
 }
-
-const TeamDashboard = dynamic(
-  () => import("@/components/dashboards/team-dashboard").then((m) => ({ default: m.TeamDashboard })),
-  { ssr: false }
-);
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -368,47 +358,11 @@ function AIInsight() {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 function VaultPageInner() {
-  const { subscriptionType, loading: subscriptionLoading } = useSubscription();
-  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
+  const { loading: subscriptionLoading } = useSubscription();
   const { t } = useLanguage();
   const stats = useStats();
 
-  const fetchTeamData = useCallback(async () => {
-    setIsLoadingTeam(true);
-    try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: membership } = await supabase.from("team_members").select("team_id").eq("user_id", user.id).maybeSingle();
-      if (!membership) return;
-      const { data: team } = await supabase.from("teams").select("*").eq("id", membership.team_id).maybeSingle();
-      if (!team) return;
-      setCurrentTeam(team as Team);
-      const { data: members } = await supabase.from("team_members").select("user_id, profiles(full_name, avatar_url)").eq("team_id", team.id);
-      setTeamMembers((members ?? []).map((m: any) => ({ id: m.user_id, name: m.profiles?.full_name ?? t("عضو الفريق", "Team Member"), avatar: m.profiles?.avatar_url ?? null })));
-    } catch (err) { console.error("[VaultPage]", err); }
-    finally { setIsLoadingTeam(false); }
-  }, [t]);
-
-  useEffect(() => {
-    if (subscriptionType === "team" || subscriptionType === "company") fetchTeamData();
-  }, [subscriptionType, fetchTeamData]);
-
-  const isTeam = subscriptionType === "team" || subscriptionType === "company";
-  if (subscriptionLoading || (isTeam && isLoadingTeam)) return <VaultSkeleton />;
-
-  if (isTeam && currentTeam) {
-    return (
-      <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
-        <VaultSidebar />
-        <main className="lg:ml-72">
-          <TeamDashboard team={currentTeam} teamMembers={teamMembers.map((m) => ({ ...m, avatar: m.avatar ?? undefined }))} />
-        </main>
-      </div>
-    );
-  }
+  if (subscriptionLoading) return <VaultSkeleton />;
 
   const quickLinks = [
     { href: "/vault/plans",    emoji: "📋", ar: "خططي",       en: "Plans",     from: "from-[#2552ca]",   to: "to-[#456ce4]" },
