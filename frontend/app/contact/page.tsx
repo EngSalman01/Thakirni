@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { LandingHeader } from "@/components/thakirni/landing-header";
 import { LandingFooter } from "@/components/thakirni/landing-footer";
 import { useLanguage } from "@/components/language-provider";
@@ -19,12 +20,14 @@ const FADE_UP = {
 
 export default function ContactPage() {
   const { t } = useLanguage();
-  const [name, setName]       = useState("");
-  const [email, setEmail]     = useState("");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [done, setDone]       = useState(false);
-  const [error, setError]     = useState("");
+  const [name, setName]               = useState("");
+  const [email, setEmail]             = useState("");
+  const [message, setMessage]         = useState("");
+  const [hcaptchaToken, setHcaptchaToken] = useState("");
+  const [loading, setLoading]         = useState(false);
+  const [done, setDone]               = useState(false);
+  const [error, setError]             = useState("");
+  const captchaRef                    = useRef<HCaptcha>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,13 +37,15 @@ export default function ContactPage() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, hcaptchaToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to send");
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      captchaRef.current?.resetCaptcha();
+      setHcaptchaToken("");
     } finally {
       setLoading(false);
     }
@@ -195,6 +200,16 @@ export default function ContactPage() {
                     />
                   </div>
 
+                  {/* hCaptcha */}
+                  <div className="flex justify-center">
+                    <HCaptcha
+                      ref={captchaRef}
+                      sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+                      onVerify={(token) => setHcaptchaToken(token)}
+                      onExpire={() => setHcaptchaToken("")}
+                    />
+                  </div>
+
                   {/* Error */}
                   {error && (
                     <p className="text-sm text-red-500 font-label bg-red-50 px-4 py-3 rounded-xl">
@@ -205,7 +220,7 @@ export default function ContactPage() {
                   {/* Submit */}
                   <motion.button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || !hcaptchaToken}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full py-3.5 rounded-xl text-white font-bold font-label disabled:opacity-60 transition-opacity"
