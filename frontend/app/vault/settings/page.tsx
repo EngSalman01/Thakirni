@@ -128,6 +128,8 @@ export default function SettingsPage() {
   const [signingOut, setSigningOut] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const [whatsappConnectOpen, setWhatsappConnectOpen] = useState(false);
+  const [whatsappInstructionsOpen, setWhatsappInstructionsOpen] = useState(false);
 
   const [notifs, setNotifs] = useState({
     notification_email: true,
@@ -684,52 +686,87 @@ export default function SettingsPage() {
                 </h2>
               </div>
               <div className="space-y-3">
-                {/* Google Calendar — Coming Soon */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl opacity-70">
+                {/* Google Calendar */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center shrink-0">
-                      <Calendar className="w-5 h-5 text-slate-400" />
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="4" width="18" height="17" rx="2" stroke="#4285F4" strokeWidth="1.5"/>
+                        <path d="M3 9h18" stroke="#4285F4" strokeWidth="1.5"/>
+                        <path d="M8 2v3M16 2v3" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
+                        <circle cx="12" cy="15" r="2" fill="#34A853"/>
+                      </svg>
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-bold text-sm font-label text-slate-800">Google Calendar</p>
-                        <span className="text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                          {t("قريباً", "Coming Soon")}
-                        </span>
+                        {calendarConnected && (
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                            {t("مرتبط", "Connected")}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {t("التكامل مع Google Calendar قيد التطوير", "Google Calendar integration coming soon")}
+                        {calendarConnected
+                          ? t("أحداث Google Calendar تظهر في تقويمك", "Google Calendar events appear in your calendar")
+                          : t("اربط تقويم Google لتظهر مواعيدك تلقائياً", "Connect to see your Google events automatically")}
                       </p>
                     </div>
                   </div>
-                  <button
-                    disabled
-                    title={t("تكامل Google قادم قريباً", "Google integration coming soon")}
-                    className="text-xs text-slate-400 font-bold font-label cursor-not-allowed"
-                  >
-                    {t("قريباً", "Soon")}
-                  </button>
+                  {calendarConnected ? (
+                    <button
+                      onClick={async () => {
+                        await fetch("/api/google-calendar/events", { method: "DELETE" });
+                        setCalendarConnected(false);
+                        toast.success(t("تم إلغاء ربط Google Calendar", "Google Calendar disconnected"));
+                      }}
+                      className="px-3 py-1.5 rounded-full border border-red-200 text-red-500 text-xs font-bold hover:bg-red-50 transition-colors"
+                    >
+                      {t("إلغاء الربط", "Disconnect")}
+                    </button>
+                  ) : (
+                    <a
+                      href="/api/google-calendar/connect"
+                      className="px-3 py-1.5 rounded-full bg-[#4285F4] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+                    >
+                      {t("ربط", "Connect")}
+                    </a>
+                  )}
                 </div>
 
-                {/* WhatsApp — shows status based on phone */}
+                {/* WhatsApp */}
                 <div className="flex items-center justify-between p-4 bg-white rounded-xl">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center text-lg shrink-0">
-                      💬
+                    <div className="w-10 h-10 bg-[#25D366]/10 rounded-lg flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#25D366">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
                     </div>
                     <div>
-                      <p className="font-bold text-sm font-label text-slate-800">WhatsApp</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm font-label text-slate-800">WhatsApp</p>
+                        {profile?.phone_number && (
+                          <span className="text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                            {t("نشط", "Active")}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        {t("تلقّى تذكيرات وتحدث مع المساعد عبر واتساب", "Get reminders and chat with your assistant via WhatsApp")}
+                        {t("تحدث مع مساعدك الذكي وتلقّى تذكيرات عبر واتساب", "Chat with your AI assistant and get reminders via WhatsApp")}
                       </p>
                     </div>
                   </div>
-                  {profile?.phone_number?.startsWith("966") ? (
-                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">{t("نشط", "Active")}</span>
+                  {profile?.phone_number ? (
+                    <button
+                      onClick={() => setWhatsappInstructionsOpen(true)}
+                      className="px-3 py-1.5 rounded-full bg-[#25D366] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+                    >
+                      {t("كيف أستخدمه؟", "How to use")}
+                    </button>
                   ) : (
                     <button
-                      onClick={() => document.getElementById("phone-field")?.scrollIntoView({ behavior: "smooth" })}
-                      className="px-3 py-1.5 rounded-full bg-[#2552ca] text-white text-xs font-bold hover:opacity-90 transition-opacity"
+                      onClick={() => setWhatsappConnectOpen(true)}
+                      className="px-3 py-1.5 rounded-full bg-[#25D366] text-white text-xs font-bold hover:opacity-90 transition-opacity"
                     >
                       {t("ربط", "Connect")}
                     </button>
@@ -840,6 +877,117 @@ export default function SettingsPage() {
         userEmail={email}
         onUpgradeComplete={(newTier) => setCurrentTier(newTier)}
       />
+
+      {/* WhatsApp Connect dialog */}
+      <AlertDialog open={whatsappConnectOpen} onOpenChange={setWhatsappConnectOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="#25D366">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              {t("ربط واتساب", "Connect WhatsApp")}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 text-sm text-slate-600">
+                <p>
+                  {t(
+                    "بربط واتساب ستتمكن من التحدث مع مساعدك الذكي وتلقّي التذكيرات مباشرةً عبر تطبيق واتساب.",
+                    "By connecting WhatsApp you can chat with your AI assistant and receive reminders directly in WhatsApp."
+                  )}
+                </p>
+                <p>
+                  {t(
+                    "لربط واتساب، أضف رقم هاتفك في حقل الجوال في ملفك الشخصي ثم أرسل رسالة إلى الرقم المخصص.",
+                    "To connect, add your phone number in the profile section below, then send a message to the dedicated number."
+                  )}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("لاحقاً", "Later")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setWhatsappConnectOpen(false);
+                // Scroll to phone field
+                setTimeout(() => {
+                  document.getElementById("phone-field")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 100);
+              }}
+              className="bg-[#25D366] hover:bg-[#1ebe5d] text-white"
+            >
+              {t("أضف رقم الجوال", "Add Phone Number")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* WhatsApp Instructions dialog */}
+      <AlertDialog open={whatsappInstructionsOpen} onOpenChange={setWhatsappInstructionsOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="#25D366">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              {t("كيف تستخدم واتساب", "How to Use WhatsApp")}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 text-sm text-slate-600">
+                <p className="font-semibold text-slate-800">
+                  {t("ابدأ محادثتك مع المساعد الذكي عبر واتساب:", "Start chatting with your AI assistant on WhatsApp:")}
+                </p>
+                <ol className="space-y-3 list-none">
+                  <li className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+                    <span>
+                      {t(
+                        "احفظ رقم ذاكرني في هاتفك:",
+                        "Save the Thakirni number in your contacts:"
+                      )}
+                      {" "}
+                      <span className="font-bold text-slate-900 font-mono" dir="ltr">+966 55 475 1681</span>
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+                    <span>
+                      {t(
+                        'أرسل رسالة "مرحبا" أو "hi" لبدء المحادثة.',
+                        'Send "hi" or "مرحبا" to start the conversation.'
+                      )}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+                    <span>
+                      {t(
+                        "يمكنك إضافة ذكريات، إنشاء خطط يومية، وتلقّي التذكيرات مباشرةً في واتساب.",
+                        "You can add memories, create daily plans, and receive reminders directly in WhatsApp."
+                      )}
+                    </span>
+                  </li>
+                </ol>
+                <div className="p-3 bg-[#25D366]/10 rounded-xl text-[#1a9e4e] text-xs font-medium">
+                  {t(
+                    "تأكد من أن رقمك المسجل في ملفك الشخصي هو نفسه رقم واتساب.",
+                    "Make sure the phone number in your profile matches your WhatsApp number."
+                  )}
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => setWhatsappInstructionsOpen(false)}
+              className="bg-[#25D366] hover:bg-[#1ebe5d] text-white"
+            >
+              {t("فهمت", "Got it")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
