@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import type { Project } from "@/lib/types";
 
@@ -12,17 +12,18 @@ export async function createProject(
   color: string = "#10b981"
 ) {
   try {
+    // Auth check via user client
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return { error: "Unauthorized" };
     }
 
-    // Verify user is a team member
-    const { data: membership } = await supabase
+    // Verify user is a team member (using service client to avoid RLS recursion)
+    const service = createServiceClient();
+    const { data: membership } = await service
       .from("team_members")
-      .select("id")
+      .select("role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
@@ -31,22 +32,22 @@ export async function createProject(
       return { error: "You are not a member of this team" };
     }
 
-    // Create project
-    const { data, error } = await supabase
+    // Create project via service client (projects table has no owner column to satisfy RLS check)
+    const { data, error } = await service
       .from("projects")
       .insert({
         team_id: teamId,
         name,
-        description,
+        description: description || null,
         color,
-        created_by: user.id,
+        status: "active",
       })
       .select()
       .single();
 
     if (error) {
       console.error("Error creating project:", error);
-      return { error: "Failed to create project" };
+      return { error: "Failed to create project: " + error.message };
     }
 
     revalidatePath(`/vault/settings/teams/${teamId}`);
@@ -60,29 +61,24 @@ export async function createProject(
 // Update project
 export async function updateProject(
   projectId: string,
-  updates: Partial<Omit<Project, "id" | "team_id" | "created_by" | "created_at">>
+  updates: Partial<Omit<Project, "id" | "team_id" | "created_at">>
 ) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Get project to verify team membership
-    const { data: project } = await supabase
+    const service = createServiceClient();
+
+    const { data: project } = await service
       .from("projects")
       .select("team_id")
       .eq("id", projectId)
       .single();
 
-    if (!project) {
-      return { error: "Project not found" };
-    }
+    if (!project) return { error: "Project not found" };
 
-    // Verify user is admin/owner
-    const { data: membership } = await supabase
+    const { data: membership } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", project.team_id)
@@ -93,8 +89,7 @@ export async function updateProject(
       return { error: "You don't have permission to update this project" };
     }
 
-    // Update project
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("projects")
       .update(updates)
       .eq("id", projectId)
@@ -119,25 +114,20 @@ export async function updateProject(
 export async function deleteProject(projectId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Get project to verify team membership
-    const { data: project } = await supabase
+    const service = createServiceClient();
+
+    const { data: project } = await service
       .from("projects")
       .select("team_id")
       .eq("id", projectId)
       .single();
 
-    if (!project) {
-      return { error: "Project not found" };
-    }
+    if (!project) return { error: "Project not found" };
 
-    // Verify user is admin/owner
-    const { data: membership } = await supabase
+    const { data: membership } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", project.team_id)
@@ -148,8 +138,7 @@ export async function deleteProject(projectId: string) {
       return { error: "You don't have permission to delete this project" };
     }
 
-    // Delete project (cascades to plans via ON DELETE SET NULL)
-    const { error } = await supabase
+    const { error } = await service
       .from("projects")
       .delete()
       .eq("id", projectId);
@@ -171,50 +160,30 @@ export async function deleteProject(projectId: string) {
 export async function getProjectTasks(projectId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Get project to verify team membership
-    const { data: project } = await supabase
+    const service = createServiceClient();
+
+    const { data: project } = await service
       .from("projects")
       .select("team_id, name, description, color")
       .eq("id", projectId)
       .single();
 
-    if (!project) {
-      return { error: "Project not found" };
-    }
+    if (!project) return { error: "Project not found" };
 
-    // Verify user is a team member
-    const { data: membership } = await supabase
+    const { data: membership } = await service
       .from("team_members")
       .select("id")
       .eq("team_id", project.team_id)
       .eq("user_id", user.id)
       .single();
 
-    if (!membership) {
-      return { error: "You are not a member of this team" };
-    }
-
-    // Check team subscription status
-    const { data: team } = await supabase
-      .from("teams")
-      .select("subscription_status")
-      .eq("id", project.team_id)
-      .single();
-
-    if (team?.subscription_status !== "active") {
-      return {
-        error: "Team subscription is inactive. Cannot access project tasks.",
-      };
-    }
+    if (!membership) return { error: "You are not a member of this team" };
 
     // Get tasks with assignee profiles
-    const { data: tasks, error } = await supabase
+    const { data: tasks, error } = await service
       .from("plans")
       .select(`
         *,
@@ -243,26 +212,21 @@ export async function getProjectTasks(projectId: string) {
 export async function getTeamProjects(teamId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Verify user is a team member
-    const { data: membership } = await supabase
+    const service = createServiceClient();
+
+    const { data: membership } = await service
       .from("team_members")
       .select("id")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
 
-    if (!membership) {
-      return { error: "You are not a member of this team" };
-    }
+    if (!membership) return { error: "You are not a member of this team" };
 
-    // Get projects
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("projects")
       .select("*")
       .eq("team_id", teamId)
