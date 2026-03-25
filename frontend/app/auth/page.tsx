@@ -184,8 +184,10 @@ function AuthForm() {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [phoneNumber, setPhoneNumber]   = useState("");
   const [dialCode, setDialCode]         = useState("966");
-  const [captchaToken, setCaptchaToken] = useState("");
-  const captchaRef                      = useRef<HCaptcha>(null);
+  const [captchaToken, setCaptchaToken]         = useState("");
+  const captchaRef                              = useRef<HCaptcha>(null);
+  const [signInCaptchaToken, setSignInCaptchaToken] = useState("");
+  const signInCaptchaRef                        = useRef<HCaptcha>(null);
 
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -202,8 +204,13 @@ function AuthForm() {
     const fd    = new FormData(e.currentTarget);
     const email = (fd.get("email") as string).trim().toLowerCase();
     const pw    = fd.get("password") as string;
-    const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
+    const { error } = await supabase.auth.signInWithPassword({
+      email, password: pw,
+      options: { captchaToken: signInCaptchaToken || undefined },
+    });
     if (error) {
+      signInCaptchaRef.current?.resetCaptcha();
+      setSignInCaptchaToken("");
       setErrors({ form: error.message.includes("Invalid login credentials")
         ? t("البريد أو كلمة المرور غلط، حاول مرة ثانية", "Incorrect email or password.")
         : error.message });
@@ -430,8 +437,18 @@ function AuthForm() {
               </div>
             </div>
 
+            <div className="flex justify-center">
+              <HCaptcha
+                ref={signInCaptchaRef}
+                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+                onVerify={(token) => setSignInCaptchaToken(token)}
+                onExpire={() => setSignInCaptchaToken("")}
+                size="normal"
+              />
+            </div>
+
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-              type="submit" disabled={isLoading}
+              type="submit" disabled={isLoading || !signInCaptchaToken}
               className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60"
               style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", boxShadow: "0 4px 20px rgba(37,82,202,0.35)" }}
             >
