@@ -161,162 +161,137 @@ export default function FocusPage() {
 
   const timeDisplay = `${String(Math.floor(timeLeft / 60)).padStart(2, "0")}:${String(timeLeft % 60).padStart(2, "0")}`
 
+
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
+      <main className="lg:ml-72">
 
-      {/* Fixed glassmorphism header — desktop */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#385b9b] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-            <Timer className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-xl font-headline font-extrabold gradient-text">{t("وضع التركيز", "Focus Mode")}</span>
-            <p className="text-xs text-slate-500">{t("استخدم تقنية بومودورو", "Use the Pomodoro technique")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <ThemeToggle /><LanguageToggle />
-        </div>
-      </header>
+        {/* ── HERO: Timer as centerpiece ── */}
+        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-[#2552ca]/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#ad1d7f]/6 rounded-full blur-[80px] pointer-events-none" />
 
-      <main className="lg:ml-72 pt-4 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-16 transition-all duration-300">
-        {/* Mobile header */}
-        <div className="flex items-center gap-3 mb-6 lg:hidden">
-          <MobileMenuButton />
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#385b9b] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-              <Timer className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="text-lg font-headline font-extrabold gradient-text">{t("وضع التركيز", "Focus Mode")}</span>
-              <p className="text-xs text-slate-500">{t("استخدم تقنية بومودورو", "Use the Pomodoro technique")}</p>
-            </div>
-          </div>
-        </div>
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
 
-        <div className="max-w-xl mx-auto space-y-6">
+              {/* Copy */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
+                <div className="flex items-center gap-3 lg:hidden">
+                  <MobileMenuButton /><div className="flex-1" /><ThemeToggle /><LanguageToggle />
+                </div>
+                <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
+                <div>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                    {t("وضع ", "Focus")}{" "}<span className="gradient-text">{t("التركيز", "Mode")}</span>
+                  </h1>
+                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                    {t("استخدم تقنية بومودورو لتحقيق إنتاجية أعمق وتركيز أكبر.", "Use the Pomodoro technique for deeper productivity and greater focus.")}
+                  </p>
+                </div>
 
-          {/* Session type pills */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            {SESSION_TYPES.map((st) => (
-              <button
-                key={st.value}
-                disabled={isRunning}
-                onClick={() => {
-                  setSessionType(st.value)
-                  setTimeLeft(st.minutes * 60)
-                  setTotalTime(st.minutes * 60)
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-                  sessionType === st.value
-                    ? "power-gradient text-white border-transparent shadow-lg"
-                    : "bg-white border-[#e4e2e1] text-slate-600 hover:border-[#2552ca]/40"
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {isArabic ? st.label : st.labelEn}
-              </button>
-            ))}
-          </div>
+                {/* Session type selector */}
+                <div className="flex flex-wrap gap-2">
+                  {SESSION_TYPES.map(st => (
+                    <button key={st.value} disabled={isRunning} onClick={() => { setSessionType(st.value); setTimeLeft(st.minutes * 60); setTotalTime(st.minutes * 60) }}
+                      className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${sessionType === st.value ? "power-gradient text-white border-transparent shadow-lg" : "bg-white border-[#e4e2e1] text-slate-600 hover:border-[#2552ca]/40"} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                      {isArabic ? st.label : st.labelEn}
+                    </button>
+                  ))}
+                </div>
 
-          {/* Timer circle — dark rich background */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="glass-card rounded-2xl border border-white/40 shadow-card overflow-hidden"
-          >
-            <div className="bg-gradient-to-br from-[#0a1628] via-[#1a2040] to-[#2552ca]/30 p-8 flex flex-col items-center">
-              {/* Timer SVG ring */}
-              <div className="relative w-56 h-56 mb-6">
-                <svg className="w-56 h-56 -rotate-90" viewBox="0 0 220 220">
-                  <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-                  <circle
-                    cx="110" cy="110" r="100" fill="none"
-                    stroke={selectedType.color}
-                    strokeWidth="8"
-                    strokeDasharray={`${(progress / 100) * circumference} ${circumference}`}
-                    strokeLinecap="round"
-                    style={{ transition: "stroke-dasharray 1s linear" }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-5xl font-headline font-extrabold gradient-text">{timeDisplay}</span>
-                  <span className="text-sm text-white/60 mt-1">{isArabic ? selectedType.label : selectedType.labelEn}</span>
-                  {isPaused && (
-                    <Badge variant="outline" className="mt-2 text-xs border-white/30 text-white/80 bg-white/10">
-                      {t("متوقف مؤقتاً", "Paused")}
-                    </Badge>
+                {/* Stats */}
+                {stats && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { value: (stats as any).totalSessions ?? 0,  label: t("جلسة هذا الأسبوع", "Sessions"), color: "text-[#2552ca]" },
+                      { value: (stats as any).totalMinutes ?? 0,    label: t("دقيقة", "Minutes"),            color: "text-[#ad1d7f]" },
+                      { value: (stats as any).avgMinutes ?? 0,      label: t("متوسط/جلسة", "Avg/session"),  color: "text-emerald-600" },
+                    ].map(({ value, label, color }) => (
+                      <div key={label as string} className="bg-white rounded-2xl border border-[#e4e2e1] p-4 text-center shadow-ambient hover-lift">
+                        <p className={`text-2xl font-headline font-extrabold ${color}`}>{value}</p>
+                        <p className="text-xs text-slate-500 mt-1">{label as string}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Right: Timer */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
+                className="flex justify-center">
+                <div className="relative bg-gradient-to-br from-[#0a1628] via-[#1a2040] to-[#2552ca]/40 rounded-2xl p-12 shadow-card w-full max-w-sm">
+                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#fd65c2]/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[#2552ca]/20 rounded-full blur-xl pointer-events-none" />
+
+                  {/* Timer ring */}
+                  <div className="relative w-56 h-56 mx-auto mb-8">
+                    <svg className="w-56 h-56 -rotate-90" viewBox="0 0 220 220">
+                      <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+                      <circle cx="110" cy="110" r="100" fill="none" stroke={selectedType.color} strokeWidth="8"
+                        strokeDasharray={`${(progress / 100) * circumference} ${circumference}`}
+                        strokeLinecap="round" style={{ transition: "stroke-dasharray 1s linear" }} />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-5xl font-headline font-extrabold gradient-text">{timeDisplay}</span>
+                      <span className="text-sm text-white/50 mt-1">{isArabic ? selectedType.label : selectedType.labelEn}</span>
+                      {isPaused && <span className="mt-2 px-2 py-0.5 rounded-full bg-white/10 text-white/70 text-xs">{t("متوقف مؤقتاً", "Paused")}</span>}
+                    </div>
+                  </div>
+
+                  {!isRunning ? (
+                    <div className="space-y-3">
+                      <Input placeholder={t("هدف الجلسة؟ (اختياري)", "Session goal? (optional)")} value={goal} onChange={e => setGoal(e.target.value)}
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40" />
+                      <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={startSession}
+                        className="w-full h-12 rounded-xl power-gradient text-white font-bold text-base flex items-center justify-center gap-2 btn-glow">
+                        <Play className="w-5 h-5" /> {t("ابدأ الجلسة", "Start Session")}
+                      </motion.button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-3">
+                      <Button variant="outline" className="flex-1 gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20" onClick={togglePause}>
+                        {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                        {isPaused ? t("استمرار", "Resume") : t("إيقاف مؤقت", "Pause")}
+                      </Button>
+                      <Button variant="destructive" className="flex-1 gap-2" onClick={abandonSession}>
+                        <Square className="w-4 h-4" /> {t("إنهاء", "Stop")}
+                      </Button>
+                      <Button className="flex-1 gap-2 text-white" style={{ background: "#38a169" }} onClick={handleComplete}>
+                        <CheckCircle2 className="w-4 h-4" /> {t("مكتمل", "Done")}
+                      </Button>
+                    </div>
                   )}
                 </div>
-              </div>
-
-              {!isRunning ? (
-                <div className="w-full space-y-3">
-                  <Input
-                    placeholder={t("ما هو هدفك في هذه الجلسة؟ (اختياري)", "What's your session goal? (optional)")}
-                    value={goal}
-                    onChange={(e) => setGoal(e.target.value)}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-white/40"
-                  />
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={startSession}
-                    className="w-full h-12 rounded-xl power-gradient text-white font-bold text-base flex items-center justify-center gap-2 btn-glow"
-                  >
-                    <Play className="w-5 h-5" /> {t("ابدأ الجلسة", "Start Session")}
-                  </motion.button>
-                </div>
-              ) : (
-                <div className="flex gap-3 w-full">
-                  <Button variant="outline" className="flex-1 gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20" onClick={togglePause}>
-                    {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                    {isPaused ? t("استمرار", "Resume") : t("إيقاف مؤقت", "Pause")}
-                  </Button>
-                  <Button variant="destructive" className="flex-1 gap-2" onClick={abandonSession}>
-                    <Square className="w-4 h-4" /> {t("إنهاء", "Stop")}
-                  </Button>
-                  <Button className="flex-1 gap-2 text-white" onClick={handleComplete} style={{ background: "#38a169" }}>
-                    <CheckCircle2 className="w-4 h-4" /> {t("مكتمل", "Done")}
-                  </Button>
-                </div>
-              )}
+              </motion.div>
             </div>
-          </motion.div>
+          </div>
+        </section>
 
-          {/* Weekly stats */}
-          {stats && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <BarChart2 className="w-5 h-5 text-[#2552ca]" />
-                <h2 className="font-headline font-bold text-slate-900">{t("إحصائيات الأسبوع", "Weekly Stats")}</h2>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: stats.totalSessions as number ?? 0, label: t("جلسة", "Sessions"), color: "text-[#2552ca]" },
-                  { value: stats.totalMinutes as number ?? 0, label: t("دقيقة", "Minutes"), color: "text-[#ad1d7f]" },
-                  { value: stats.avgMinutes as number ?? 0, label: t("متوسط/جلسة", "Avg/session"), color: "text-[#fd65c2]" },
-                ].map(({ value, label, color }, i) => (
-                  <motion.div
-                    key={label}
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.25 + i * 0.07 }}
-                    className="bg-white rounded-2xl border border-[#e4e2e1] shadow-ambient hover-lift p-4 text-center"
-                  >
-                    <p className={`text-2xl font-headline font-extrabold ${color}`}>{value}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
+        {/* ── Info cards ── */}
+        <section className="pb-24 px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { emoji: "🍅", title: t("بومودورو", "Pomodoro"), desc: t("25 دقيقة تركيز مكثف ثم استراحة قصيرة", "25 minutes of focused work, then a short break"), color: "bg-[#f6f3f2]", textColor: "text-slate-900" },
+                { emoji: "☕", title: t("استراحة", "Short Break"), desc: t("5 دقائق للراحة وإعادة الشحن قبل الجلسة التالية", "5 minutes to rest and recharge before the next session"), color: "bg-[#2552ca]", textColor: "text-white" },
+                { emoji: "🔱", title: t("عمل عميق", "Deep Work"), desc: t("50 دقيقة للمهام المعقدة التي تحتاج تركيزاً عالياً", "50 minutes for complex tasks requiring deep concentration"), color: "bg-[#f6f3f2]", textColor: "text-slate-900" },
+              ].map(({ emoji, title, desc, color, textColor }, i) => (
+                <motion.div key={title as string}
+                  custom={i} initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.7, delay: i * 0.1, ease: [0.2,1,0.3,1] }}
+                  className={`${color} rounded-2xl p-12 relative overflow-hidden hover-lift cursor-default`}>
+                  <span className="text-4xl mb-6 block">{emoji}</span>
+                  <h3 className={`text-2xl font-headline font-bold mb-3 ${textColor}`}>{title as string}</h3>
+                  <p className={`${textColor === "text-white" ? "text-white/80" : "text-slate-500"} text-base`}>{desc as string}</p>
+                  {i === 1 && <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#fd65c2]/20 rounded-full blur-2xl pointer-events-none" />}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   )

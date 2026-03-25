@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -16,8 +16,23 @@ import useSWR from "swr"
 import { motion } from "framer-motion"
 
 const API_URL = ""
+const HABIT_ICONS = ["✅","🏃","💧","📚","🧘","🍎","💪","☀️","🧠","🎯","💤","🙏"]
 
-const HABIT_ICONS = ["✅", "🏃", "💧", "📚", "🧘", "🍎", "💪", "☀️", "🧠", "🎯", "💤", "🙏"]
+function ParticleLayer() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const ps: HTMLDivElement[] = [];
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement("div");
+      const s = Math.random()*6+3, d = Math.random()*20+10, dl = Math.random()*-20;
+      p.style.cssText = `position:absolute;width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:rgba(173,29,127,0.08);border-radius:50%;filter:blur(1px);--drift-x:${(Math.random()-0.5)*160}px;--drift-y:${(Math.random()-0.5)*160}px;animation:particle-drift ${d}s linear ${dl}s infinite;pointer-events:none;`;
+      el.appendChild(p); ps.push(p);
+    }
+    return () => ps.forEach(p => p.remove());
+  }, []);
+  return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none z-0" />;
+}
 
 async function fetchHabits() {
   const supabase = createClient()
@@ -43,38 +58,23 @@ export default function HabitsPage() {
 
   async function createHabit(e: React.FormEvent) {
     e.preventDefault()
-    const session = await getSession()
-    if (!session) return
+    const session = await getSession(); if (!session) return
     const res = await fetch(`${API_URL}/api/habits`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(form)
     })
-    if (res.ok) {
-      toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉"))
-      setOpen(false)
-      setForm({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" })
-      mutate()
-    } else {
-      toast.error(t("حدث خطأ", "An error occurred"))
-    }
+    if (res.ok) { toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉")); setOpen(false); setForm({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" }); mutate() }
+    else toast.error(t("حدث خطأ", "An error occurred"))
   }
 
   async function toggleHabit(id: string, completedToday: boolean) {
-    const session = await getSession()
-    if (!session) return
-    const endpoint = completedToday ? "uncomplete" : "complete"
-    await fetch(`${API_URL}/api/habits/${id}/${endpoint}`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    if (!completedToday) toast.success(t("أحسنت! العادة مكتملة 🔥", "Great job! Habit completed 🔥"))
+    const session = await getSession(); if (!session) return
+    const url = completedToday ? `${API_URL}/api/habits/${id}/uncomplete` : `${API_URL}/api/habits/${id}/complete`
+    await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
     mutate()
   }
 
   async function deleteHabit(id: string) {
-    const session = await getSession()
-    if (!session) return
+    const session = await getSession(); if (!session) return
     await fetch(`${API_URL}/api/habits/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
     toast.success(t("تم حذف العادة", "Habit deleted"))
     mutate()
@@ -83,192 +83,204 @@ export default function HabitsPage() {
   const completedCount = habits.filter((h: Record<string, unknown>) => h.completed_today).length
   const total = habits.length
 
+  const NewHabitDialog = () => (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+          className="flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold text-sm btn-glow">
+          <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
+        </motion.button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
+        <form onSubmit={createHabit} className="space-y-4">
+          <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
+            <div className="flex flex-wrap gap-2">
+              {HABIT_ICONS.map(icon => (
+                <button key={icon} type="button" onClick={() => setForm({...form, icon})}
+                  className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-[#2552ca] bg-[#2552ca]/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
+              ))}
+            </div>
+          </div>
+          <Select value={form.frequency} onValueChange={v => setForm({...form, frequency: v})}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
+              <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إضافة العادة", "Add Habit")}</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
+      <main className="lg:ml-72">
 
-      {/* Fixed glassmorphism header — desktop */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ad1d7f] to-[#fd65c2] flex items-center justify-center shadow-lg shadow-[#ad1d7f]/30">
-            <Flame className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-xl font-headline font-extrabold gradient-text">{t("عاداتي", "My Habits")}</span>
-            <p className="text-xs text-slate-500">{t("تتبع عاداتك اليومية", "Track your daily habits")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full power-gradient text-white text-sm font-bold btn-glow"
-              >
-                <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
-              </motion.button>
-            </DialogTrigger>
-            <DialogContent className="max-w-sm">
-              <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
-              <form onSubmit={createHabit} className="space-y-4">
-                <Input
-                  placeholder={t("اسم العادة (مثال: أشرب الماء)", "Habit name (e.g. Drink water)")}
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  required
-                />
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {HABIT_ICONS.map((icon) => (
-                      <button
-                        key={icon} type="button"
-                        className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-[#2552ca] bg-[#2552ca]/10" : "border-transparent hover:border-muted"}`}
-                        onClick={() => setForm({ ...form, icon })}
-                      >
-                        {icon}
-                      </button>
-                    ))}
-                  </div>
+        {/* ── HERO ── */}
+        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
+          <ParticleLayer />
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-[#ad1d7f]/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#2552ca]/5 rounded-full blur-[80px] pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
+                <div className="flex items-center gap-3 lg:hidden">
+                  <MobileMenuButton /><div className="flex-1" /><ThemeToggle /><LanguageToggle />
                 </div>
-                <Select value={form.frequency} onValueChange={(v) => setForm({ ...form, frequency: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
-                    <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg, #2552ca, #fd65c2)" }}>
-                  {t("إضافة العادة", "Add Habit")}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-          <ThemeToggle /><LanguageToggle />
-        </div>
-      </header>
+                <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
+                <div>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                    {t("عاداتي ", "My ")}<span className="gradient-text">{t("اليومية", "Habits")}</span>
+                  </h1>
+                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                    {t("الاتساق هو سر النجاح. تتبع عاداتك اليومية وابنِ حياتك.", "Consistency is the secret to success. Track your habits and build your life.")}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { value: completedCount, label: t("مكتملة اليوم", "Done today"),  color: "bg-emerald-50 text-emerald-700" },
+                    { value: total - completedCount, label: t("متبقية", "Remaining"), color: "bg-amber-50 text-amber-700" },
+                    { value: total, label: t("مجموع العادات", "Total habits"),          color: "bg-[#ffd8e9] text-[#ad1d7f]" },
+                  ].map(({ value, label, color }) => (
+                    <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
+                      <span className="text-xl font-headline font-extrabold">{value}</span>
+                      <span className="opacity-80">{label as string}</span>
+                    </div>
+                  ))}
+                </div>
+                <NewHabitDialog />
+              </motion.div>
 
-      <main className="lg:ml-72 pt-4 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-16 transition-all duration-300">
-        {/* Mobile header */}
-        <div className="flex items-center justify-between mb-6 lg:hidden">
-          <div className="flex items-center gap-3">
-            <MobileMenuButton />
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ad1d7f] to-[#fd65c2] flex items-center justify-center shadow-lg shadow-[#ad1d7f]/30">
-                <Flame className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="text-lg font-headline font-extrabold gradient-text">{t("عاداتي", "My Habits")}</span>
-                <p className="text-xs text-slate-500">{t("تتبع عاداتك اليومية", "Track your daily habits")}</p>
-              </div>
+              {/* Right: progress ring */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
+                className="hidden lg:flex justify-center">
+                <div className="relative bg-white rounded-2xl p-12 shadow-card hover-lift flex flex-col items-center">
+                  <div className="relative w-48 h-48 mb-6">
+                    <svg className="w-48 h-48 -rotate-90" viewBox="0 0 192 192">
+                      <circle cx="96" cy="96" r="80" fill="none" stroke="#f0eded" strokeWidth="12" />
+                      <circle cx="96" cy="96" r="80" fill="none" stroke="url(#ring-grad)" strokeWidth="12"
+                        strokeDasharray={`${total > 0 ? (completedCount / total) * 502.7 : 0} 502.7`} strokeLinecap="round" />
+                      <defs>
+                        <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#2552ca" /><stop offset="100%" stopColor="#fd65c2" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="text-4xl font-headline font-extrabold gradient-text">{total > 0 ? Math.round((completedCount/total)*100) : 0}%</span>
+                      <span className="text-sm text-slate-500">{t("مكتمل", "complete")}</span>
+                    </div>
+                  </div>
+                  <p className="font-headline font-bold text-slate-900 text-center">
+                    {completedCount === total && total > 0 ? t("أنجزت كل عاداتك! 🔥", "All habits done! 🔥") : t(`${completedCount} من ${total}`, `${completedCount} of ${total}`)}
+                  </p>
+                </div>
+              </motion.div>
             </div>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full power-gradient text-white text-xs font-bold btn-glow"
-              >
-                <Plus className="w-3.5 h-3.5" />{t("جديدة", "New")}
-              </motion.button>
-            </DialogTrigger>
-          </Dialog>
-        </div>
+        </section>
 
-        <div className="max-w-2xl mx-auto">
-
-          {/* Progress ring card */}
-          {total > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-2xl border border-white/40 shadow-ambient p-5 mb-6 flex items-center gap-4"
-            >
-              <div className="relative w-16 h-16 shrink-0">
-                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" strokeWidth="6" className="text-muted/20" />
-                  <circle
-                    cx="32" cy="32" r="28" fill="none" stroke="url(#grad)" strokeWidth="6"
-                    strokeDasharray={`${(completedCount / total) * 175.9} 175.9`}
-                    strokeLinecap="round"
-                  />
-                  <defs>
-                    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#2552ca" />
-                      <stop offset="100%" stopColor="#fd65c2" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-slate-700">
-                  {completedCount}/{total}
-                </span>
-              </div>
-              <div>
-                <p className="font-headline font-bold text-slate-900">
-                  {completedCount === total && total > 0
-                    ? t("أنجزت كل عاداتك اليوم! 🔥", "All habits done today! 🔥")
-                    : t(`${total - completedCount} عادة متبقية اليوم`, `${total - completedCount} habit${total - completedCount !== 1 ? "s" : ""} remaining today`)}
-                </p>
-                <p className="text-sm text-slate-500">{t("استمر في الاتساق يبني النجاح", "Consistency builds success")}</p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Habits list */}
-          {habits.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-2xl border border-white/40 shadow-ambient p-16 text-center"
-            >
-              <Flame className="w-12 h-12 mx-auto mb-3 text-[#ad1d7f]/30" />
-              <p className="font-headline font-bold text-slate-700">{t("لا يوجد عادات بعد", "No habits yet")}</p>
-              <p className="text-sm text-slate-500">{t("أضف عادتك الأولى!", "Add your first habit!")}</p>
-            </motion.div>
-          ) : (
-            <div className="space-y-3">
-              {habits.map((h: Record<string, unknown>, i) => (
-                <motion.div
-                  key={h.id as string}
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08 }}
-                  className={`relative bg-white rounded-2xl border border-[#e4e2e1] shadow-ambient hover-lift overflow-hidden group cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
-                  onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}
-                >
-                  {/* Decorative color stripe at top */}
-                  <div className="h-1 w-full" style={{ background: (h.color as string) || '#2552ca' }} />
-                  <div className="flex items-center gap-4 p-4">
-                    <span className="text-2xl shrink-0">{h.icon as string}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-headline font-bold text-slate-800 ${h.completed_today ? "line-through text-slate-400" : ""}`}>
+        {/* ── HABITS BENTO ── */}
+        <section className="pb-24 px-8">
+          <div className="max-w-7xl mx-auto">
+            {habits.length === 0 ? (
+              <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-[#f6f3f2] rounded-2xl p-24 text-center hover-lift">
+                <Flame className="w-16 h-16 mx-auto mb-4 text-[#ad1d7f]/30" />
+                <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا يوجد عادات بعد", "No habits yet")}</h2>
+                <p className="text-slate-500 mb-8">{t("أضف عادتك الأولى وابدأ رحلتك!", "Add your first habit and start your journey!")}</p>
+                <NewHabitDialog />
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {habits.map((h: Record<string, unknown>, i) => (
+                  <motion.div key={h.id as string}
+                    custom={i} initial={{ opacity: 0, y: 28 }}
+                    whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
+                    className={`relative bg-[#f6f3f2] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
+                    onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}>
+                    {/* Color stripe */}
+                    <div className="h-2 w-full" style={{ background: (h.color as string) || "#2552ca" }} />
+                    <div className="p-10">
+                      <div className="flex items-start justify-between mb-4">
+                        <span className="text-5xl">{h.icon as string}</span>
+                        <div className="flex items-center gap-2">
+                          {h.completed_today
+                            ? <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+                            : <Circle className="w-7 h-7 text-slate-300" />}
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                            onClick={e => { e.stopPropagation(); deleteHabit(h.id as string) }}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <h3 className={`text-xl font-headline font-bold mb-3 ${h.completed_today ? "line-through text-slate-400" : "text-slate-900"}`}>
                         {h.name as string}
-                      </p>
+                      </h3>
                       {(h.current_streak as number) > 0 && (
-                        <span className="inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 power-gradient text-white rounded-full text-xs font-bold">
-                          <Flame className="w-3 h-3" />
-                          {t(`${h.current_streak as number} يوم متتالي`, `${h.current_streak as number} day streak`)}
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 power-gradient text-white rounded-full text-sm font-bold">
+                          <Flame className="w-3.5 h-3.5" />
+                          {t(`${h.current_streak} يوم 🔥`, `${h.current_streak} day streak 🔥`)}
                         </span>
                       )}
                     </div>
-                    {h.completed_today
-                      ? <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
-                      : <Circle className="w-6 h-6 text-muted-foreground flex-shrink-0" />
-                    }
-                    <Button
-                      variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
-                      onClick={(e) => { e.stopPropagation(); deleteHabit(h.id as string) }}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
+                    {/* Decorative blob */}
+                    <div className="absolute right-0 bottom-0 w-1/2 translate-y-6 translate-x-6 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-20 pointer-events-none">
+                      <div className="w-full h-24 rounded-tl-2xl" style={{ background: `linear-gradient(135deg, ${(h.color as string)||"#2552ca"}40, transparent)` }} />
+                    </div>
+                  </motion.div>
+                ))}
+
+                {/* Add new habit card */}
+                <motion.div custom={habits.length} initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.7, delay: habits.length * 0.08, ease: [0.2,1,0.3,1] }}>
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger asChild>
+                      <button className="w-full h-full min-h-[200px] bg-white border-2 border-dashed border-[#e4e2e1] rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-[#2552ca]/50 hover:bg-[#f6f3f2] transition-all group">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Plus className="w-7 h-7 text-[#2552ca]" />
+                        </div>
+                        <span className="font-headline font-bold text-slate-600">{t("أضف عادة", "Add habit")}</span>
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-sm">
+                      <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
+                      <form onSubmit={createHabit} className="space-y-4">
+                        <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+                        <div>
+                          <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {HABIT_ICONS.map(icon => (
+                              <button key={icon} type="button" onClick={() => setForm({...form, icon})}
+                                className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-[#2552ca] bg-[#2552ca]/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
+                            ))}
+                          </div>
+                        </div>
+                        <Select value={form.frequency} onValueChange={v => setForm({...form, frequency: v})}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
+                            <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إضافة العادة", "Add Habit")}</Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   )

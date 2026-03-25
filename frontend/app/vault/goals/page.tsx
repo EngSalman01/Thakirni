@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useLanguage } from "@/components/language-provider"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -19,14 +20,30 @@ import { motion } from "framer-motion"
 const API_URL = ""
 
 const CATEGORIES = [
-  { value: "career", label: "مسيرة مهنية", labelEn: "Career", icon: "💼" },
-  { value: "health", label: "صحة ولياقة", labelEn: "Health & Fitness", icon: "❤️" },
-  { value: "finance", label: "مالي", labelEn: "Finance", icon: "💰" },
-  { value: "education", label: "تعليم", labelEn: "Education", icon: "🎓" },
-  { value: "personal", label: "شخصي", labelEn: "Personal", icon: "🌟" },
-  { value: "relationships", label: "علاقات", labelEn: "Relationships", icon: "👥" },
-  { value: "other", label: "أخرى", labelEn: "Other", icon: "📌" },
+  { value: "career",        labelAr: "مسيرة مهنية",  labelEn: "Career",        icon: "💼" },
+  { value: "health",        labelAr: "صحة ولياقة",   labelEn: "Health",        icon: "❤️" },
+  { value: "finance",       labelAr: "مالي",         labelEn: "Finance",       icon: "💰" },
+  { value: "education",     labelAr: "تعليم",        labelEn: "Education",     icon: "🎓" },
+  { value: "personal",      labelAr: "شخصي",         labelEn: "Personal",      icon: "🌟" },
+  { value: "relationships", labelAr: "علاقات",       labelEn: "Relationships", icon: "👥" },
+  { value: "other",         labelAr: "أخرى",         labelEn: "Other",         icon: "📌" },
 ]
+
+function ParticleLayer() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const ps: HTMLDivElement[] = [];
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement("div");
+      const s = Math.random()*6+3, d = Math.random()*20+10, dl = Math.random()*-20;
+      p.style.cssText = `position:absolute;width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:rgba(56,91,155,0.08);border-radius:50%;filter:blur(1px);--drift-x:${(Math.random()-0.5)*160}px;--drift-y:${(Math.random()-0.5)*160}px;animation:particle-drift ${d}s linear ${dl}s infinite;pointer-events:none;`;
+      el.appendChild(p); ps.push(p);
+    }
+    return () => ps.forEach(p => p.remove());
+  }, []);
+  return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none z-0" />;
+}
 
 async function fetchGoals() {
   const supabase = createClient()
@@ -46,45 +63,30 @@ export default function GoalsPage() {
   const [form, setForm] = useState({ title: "", description: "", category: "personal", target_date: "" })
   const [suggestedMilestones, setSuggestedMilestones] = useState<{ title: string }[]>([])
 
-  async function createGoal(e: React.FormEvent) {
-    e.preventDefault()
+  async function getSession() {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    return session
+  }
 
-    const body = {
-      ...form,
-      milestones: suggestedMilestones,
-    }
-
+  async function createGoal(e: React.FormEvent) {
+    e.preventDefault()
+    const session = await getSession(); if (!session) return
     const res = await fetch(`${API_URL}/api/goals`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, milestones: suggestedMilestones })
     })
-
-    if (res.ok) {
-      toast.success(t("تم إنشاء الهدف! 🎯", "Goal created! 🎯"))
-      setOpen(false)
-      setForm({ title: "", description: "", category: "personal", target_date: "" })
-      setSuggestedMilestones([])
-      mutate()
-    } else {
-      toast.error(t("حدث خطأ", "An error occurred"))
-    }
+    if (res.ok) { toast.success(t("تم إنشاء الهدف! 🎯", "Goal created! 🎯")); setOpen(false); setForm({ title: "", description: "", category: "personal", target_date: "" }); setSuggestedMilestones([]); mutate() }
+    else toast.error(t("حدث خطأ", "An error occurred"))
   }
 
   async function suggestMilestones() {
     if (!form.title) { toast.error(t("اكتب عنوان الهدف أولاً", "Enter a goal title first")); return }
     setAiLoading(true)
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) { setAiLoading(false); return }
-
+    const session = await getSession(); if (!session) { setAiLoading(false); return }
     const res = await fetch(`${API_URL}/api/goals/ai-suggest`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, language: isArabic ? "ar" : "en" }),
+      method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, language: isArabic ? "ar" : "en" })
     })
     const d = await res.json() as { milestones?: { title: string }[] }
     setSuggestedMilestones(d.milestones ?? [])
@@ -93,262 +95,233 @@ export default function GoalsPage() {
   }
 
   async function updateProgress(id: string, progress: number) {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    const session = await getSession(); if (!session) return
     await fetch(`${API_URL}/api/goals/${id}/progress`, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ progress }),
+      method: "PATCH", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ progress })
     })
     mutate()
   }
 
   async function completeMilestone(goalId: string, milestoneId: string) {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-    await fetch(`${API_URL}/api/goals/${goalId}/milestones/${milestoneId}/complete`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    toast.success(t("خطوة مكتملة! 🎉", "Milestone completed! 🎉"))
-    mutate()
+    const session = await getSession(); if (!session) return
+    await fetch(`${API_URL}/api/goals/${goalId}/milestones/${milestoneId}/complete`, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
+    toast.success(t("خطوة مكتملة! 🎉", "Milestone completed! 🎉")); mutate()
   }
 
   async function deleteGoal(id: string) {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    const session = await getSession(); if (!session) return
     await fetch(`${API_URL}/api/goals/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
-    toast.success(t("تم حذف الهدف", "Goal deleted"))
-    mutate()
+    toast.success(t("تم حذف الهدف", "Goal deleted")); mutate()
   }
 
-  const categoryInfo = (c: string) => CATEGORIES.find((x) => x.value === c) ?? CATEGORIES[4]
+  const categoryInfo = (c: string) => CATEGORIES.find(x => x.value === c) ?? CATEGORIES[4]
+  const avgProgress = goals.length ? Math.round(goals.reduce((s, g: any) => s + (g.progress || 0), 0) / goals.length) : 0
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
+      <main className="lg:ml-72">
 
-      {/* Fixed glassmorphism header — desktop */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#385b9b] to-[#2552ca] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-            <Target className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-xl font-headline font-extrabold gradient-text">{t("أهدافي", "My Goals")}</span>
-            <p className="text-xs text-slate-500">{t("تتبع أهدافك الكبيرة خطوة بخطوة", "Track your big goals step by step")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 px-4 py-2 rounded-full power-gradient text-white text-sm font-bold btn-glow"
-              >
-                <Plus className="w-4 h-4" />{t("هدف جديد", "New Goal")}
-              </motion.button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle>{t("إنشاء هدف جديد", "Create New Goal")}</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={createGoal} className="space-y-4">
-                <Input
-                  placeholder={t("ما هو هدفك؟", "What is your goal?")}
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  required
-                />
-                <Textarea
-                  placeholder={t("وصف الهدف (اختياري)", "Goal description (optional)")}
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  rows={2}
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>{c.icon} {isArabic ? c.label : c.labelEn}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="date"
-                    value={form.target_date}
-                    onChange={(e) => setForm({ ...form, target_date: e.target.value })}
-                    placeholder={t("التاريخ المستهدف", "Target date")}
-                  />
+        {/* ── HERO ── */}
+        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
+          <ParticleLayer />
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-[#385b9b]/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#2552ca]/5 rounded-full blur-[80px] pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
+                <div className="flex items-center gap-3 lg:hidden">
+                  <MobileMenuButton /><div className="flex-1" /><ThemeToggle /><LanguageToggle />
                 </div>
-
-                <Button type="button" variant="outline" className="w-full gap-2" onClick={suggestMilestones} disabled={aiLoading}>
-                  <Wand2 className="w-4 h-4" />
-                  {aiLoading ? t("جاري الاقتراح...", "Suggesting...") : t("اقترح خطوات بالذكاء الاصطناعي ✨", "Suggest milestones with AI ✨")}
-                </Button>
-
-                {suggestedMilestones.length > 0 && (
-                  <div className="bg-muted/50 rounded-lg p-3 space-y-1.5">
-                    <p className="text-sm font-medium">{t("الخطوات المقترحة:", "Suggested milestones:")}</p>
-                    {suggestedMilestones.map((m, i) => (
-                      <div key={i} className="text-sm text-muted-foreground flex items-center gap-2">
-                        <span className="text-[#2552ca]">{i + 1}.</span> {m.title}
+                <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
+                <div>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                    {t("أهدافي ", "My ")}<span className="gradient-text">{t("الكبيرة", "Goals")}</span>
+                  </h1>
+                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                    {t("حوّل أحلامك إلى خطط قابلة للتنفيذ خطوة بخطوة.", "Turn your dreams into actionable plans, step by step.")}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { value: goals.length,                       label: t("أهداف نشطة", "Active goals"),  color: "bg-[#dce1ff] text-[#2552ca]" },
+                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-[#ffd8e9] text-[#ad1d7f]" },
+                    { value: goals.filter((g:any) => g.progress >= 100).length, label: t("مكتملة", "Completed"), color: "bg-emerald-50 text-emerald-700" },
+                  ].map(({ value, label, color }) => (
+                    <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
+                      <span className="text-xl font-headline font-extrabold">{value}</span>
+                      <span className="opacity-80">{label as string}</span>
+                    </div>
+                  ))}
+                </div>
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                      className="flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold text-sm btn-glow">
+                      <Plus className="w-4 h-4" />{t("هدف جديد", "New Goal")}
+                    </motion.button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader><DialogTitle>{t("إضافة هدف جديد", "Add New Goal")}</DialogTitle></DialogHeader>
+                    <form onSubmit={createGoal} className="space-y-4">
+                      <Input placeholder={t("عنوان الهدف", "Goal title")} value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
+                      <Textarea placeholder={t("وصف الهدف (اختياري)", "Goal description (optional)")} value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Select value={form.category} onValueChange={v => setForm({...form, category: v})}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.icon} {isArabic ? c.labelAr : c.labelEn}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Input type="date" value={form.target_date} onChange={e => setForm({...form, target_date: e.target.value})} />
                       </div>
-                    ))}
-                  </div>
-                )}
-
-                <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg, #2552ca, #fd65c2)" }}>
-                  {t("إنشاء الهدف 🎯", "Create Goal 🎯")}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-          <ThemeToggle /><LanguageToggle />
-        </div>
-      </header>
-
-      <main className="lg:ml-72 pt-4 lg:pt-24 px-4 sm:px-6 lg:px-8 pb-16 transition-all duration-300">
-        {/* Mobile header */}
-        <div className="flex items-center justify-between mb-6 lg:hidden">
-          <div className="flex items-center gap-3">
-            <MobileMenuButton />
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#385b9b] to-[#2552ca] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-                <Target className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <span className="text-lg font-headline font-extrabold gradient-text">{t("أهدافي", "My Goals")}</span>
-                <p className="text-xs text-slate-500">{t("تتبع أهدافك الكبيرة", "Track your big goals")}</p>
-              </div>
-            </div>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full power-gradient text-white text-xs font-bold btn-glow"
-              >
-                <Plus className="w-3.5 h-3.5" />{t("جديد", "New")}
-              </motion.button>
-            </DialogTrigger>
-          </Dialog>
-        </div>
-
-        <div className="max-w-4xl mx-auto">
-
-          {goals.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-card rounded-2xl border border-white/40 shadow-ambient p-16 text-center"
-            >
-              <Target className="w-16 h-16 mx-auto mb-4 text-[#2552ca]/30" />
-              <p className="text-lg font-headline font-bold text-slate-700">{t("لا يوجد أهداف بعد", "No goals yet")}</p>
-              <p className="text-sm text-slate-500">{t("ابدأ بإضافة هدفك الأول", "Start by adding your first goal")}</p>
-            </motion.div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {goals.map((g: Record<string, unknown>, idx) => {
-                const cat = categoryInfo(g.category as string)
-                const milestones = (g.goal_milestones as Record<string, unknown>[] | undefined) ?? []
-                const progress = g.progress as number ?? 0
-
-                return (
-                  <motion.div
-                    key={g.id as string}
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.07 }}
-                    className="bg-white rounded-2xl border border-[#e4e2e1] shadow-ambient hover-lift overflow-hidden"
-                  >
-                    {/* Top gradient strip */}
-                    <div className="h-1 w-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2]" />
-                    <div className="p-5 space-y-3">
-
-                      {/* Header row */}
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{cat.icon}</span>
-                          <div>
-                            <p className="font-headline font-bold text-slate-900 text-sm leading-tight">{g.title as string}</p>
-                            <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f0eded] text-slate-500 border border-[#e4e2e1]">
-                              {isArabic ? cat.label : cat.labelEn}
-                            </span>
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0" onClick={() => deleteGoal(g.id as string)}>
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-
-                      {/* Progress bar */}
-                      <div>
-                        <div className="flex justify-between text-xs text-slate-500 mb-1.5">
-                          <span>{t("التقدم", "Progress")}</span>
-                          <span className="font-bold text-[#2552ca]">{progress}%</span>
-                        </div>
-                        <div className="h-2 bg-[#f0eded] rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2] transition-all duration-700"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Target date */}
-                      {!!g.target_date && (() => {
-                        const dateStr = new Date(String(g.target_date)).toLocaleDateString(isArabic ? "ar-SA" : "en-US")
-                        return (
-                          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{t("الهدف: ", "Target: ") + dateStr}</span>
-                          </div>
-                        )
-                      })()}
-
-                      {/* Milestones */}
-                      {milestones.length > 0 && (
-                        <div className="space-y-1.5 pt-1">
-                          {milestones.map((m: Record<string, unknown>) => (
-                            <div
-                              key={m.id as string}
-                              className={`flex items-center gap-2 text-xs p-2 rounded-xl cursor-pointer transition-colors ${m.is_completed ? "opacity-50 line-through text-slate-400" : "hover:bg-[#f6f3f2] text-slate-700"}`}
-                              onClick={() => !m.is_completed && completeMilestone(g.id as string, m.id as string)}
-                            >
-                              <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 ${m.is_completed ? "text-green-500" : "text-slate-300"}`} />
-                              {m.title as string}
+                      <Button type="button" variant="outline" className="w-full gap-2" onClick={suggestMilestones} disabled={aiLoading}>
+                        <Wand2 className="w-4 h-4" />{aiLoading ? t("جاري الاقتراح...", "Suggesting...") : t("اقترح خطوات بالذكاء الاصطناعي", "AI Suggest Milestones")}
+                      </Button>
+                      {suggestedMilestones.length > 0 && (
+                        <div className="bg-[#f6f3f2] rounded-xl p-3 space-y-1.5">
+                          <p className="text-xs font-bold text-slate-600 mb-2">{t("خطوات مقترحة:", "Suggested milestones:")}</p>
+                          {suggestedMilestones.map((m, i) => (
+                            <div key={i} className="flex items-center gap-2 text-sm text-slate-700">
+                              <span className="w-5 h-5 rounded-full bg-[#dce1ff] text-[#2552ca] flex items-center justify-center text-xs font-bold">{i+1}</span>
+                              {m.title}
                             </div>
                           ))}
                         </div>
                       )}
+                      <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إنشاء الهدف", "Create Goal")}</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </motion.div>
 
-                      {/* Quick progress update */}
-                      <div className="flex gap-1 pt-1">
-                        {[25, 50, 75, 100].map((p) => (
-                          <button
-                            key={p}
-                            className={`flex-1 h-7 text-xs rounded-lg border transition-all font-bold ${progress >= p ? "bg-[#2552ca]/10 border-[#2552ca]/30 text-[#2552ca]" : "border-[#e4e2e1] text-slate-400 hover:border-[#2552ca]/40 hover:text-[#2552ca]"}`}
-                            onClick={() => updateProgress(g.id as string, p)}
-                            disabled={progress >= p}
-                          >
-                            {p}%
-                          </button>
-                        ))}
+              {/* Right: animated progress bars */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
+                className="hidden lg:block">
+                <div className="bg-[#e4e2e1] rounded-2xl p-10 shadow-card hover-lift space-y-5">
+                  <h3 className="text-xl font-headline font-bold text-slate-900 mb-6">{t("تقدم الأهداف", "Goal Progress")}</h3>
+                  {[
+                    { label: t("التركيز", "Focus"),    color: "bg-[#2552ca]", width: "75%" },
+                    { label: t("الاتساق", "Consistency"), color: "bg-[#ad1d7f]", width: "50%" },
+                    { label: t("الإنجاز", "Achievement"), color: "bg-[#456ce4]", width: "83%" },
+                  ].map(({ label, color, width }) => (
+                    <div key={label as string}>
+                      <div className="flex justify-between mb-2">
+                        <span className="text-sm font-bold text-slate-700">{label as string}</span>
+                        <span className="text-sm text-slate-500">{width}</span>
+                      </div>
+                      <div className="h-3 w-full bg-white/60 rounded-full overflow-hidden">
+                        <motion.div initial={{ width: 0 }} whileInView={{ width }} viewport={{ once: true }}
+                          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                          className={`h-full ${color} rounded-full`} />
                       </div>
                     </div>
-                  </motion.div>
-                )
-              })}
+                  ))}
+                </div>
+              </motion.div>
             </div>
-          )}
-        </div>
+          </div>
+        </section>
+
+        {/* ── GOALS BENTO ── */}
+        <section className="pb-24 px-8">
+          <div className="max-w-7xl mx-auto">
+            {goals.length === 0 ? (
+              <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-[#f6f3f2] rounded-2xl p-24 text-center hover-lift">
+                <Target className="w-16 h-16 mx-auto mb-4 text-[#385b9b]/30" />
+                <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا توجد أهداف بعد", "No goals yet")}</h2>
+                <p className="text-slate-500 mb-8">{t("أنشئ هدفك الأول وابدأ رحلتك نحو النجاح!", "Create your first goal and start your journey to success!")}</p>
+                <Dialog open={open} onOpenChange={setOpen}>
+                  <DialogTrigger asChild>
+                    <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold btn-glow">
+                      <Plus className="w-4 h-4" />{t("هدف جديد", "New Goal")}
+                    </motion.button>
+                  </DialogTrigger>
+                </Dialog>
+              </motion.div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {goals.map((goal: any, i) => {
+                  const cat = categoryInfo(goal.category)
+                  const progress = goal.progress || 0
+                  const milestones = goal.milestones || []
+                  const completedMilestones = milestones.filter((m: any) => m.completed).length
+                  return (
+                    <motion.div key={goal.id}
+                      custom={i} initial={{ opacity: 0, y: 28 }}
+                      whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
+                      className="relative bg-[#f6f3f2] rounded-2xl overflow-hidden group hover-lift">
+                      {/* Color stripe */}
+                      <div className="h-2 w-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2]" />
+                      <div className="p-10">
+                        <div className="flex items-start justify-between mb-4">
+                          <span className="text-4xl">{cat.icon}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-white text-slate-600">
+                              {isArabic ? cat.labelAr : cat.labelEn}
+                            </span>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                              onClick={() => deleteGoal(goal.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                        <h3 className="text-xl font-headline font-bold text-slate-900 mb-2">{goal.title}</h3>
+                        {goal.description && <p className="text-sm text-slate-500 mb-4 line-clamp-2">{goal.description}</p>}
+
+                        {/* Progress */}
+                        <div className="mb-4">
+                          <div className="flex justify-between text-xs font-bold text-slate-600 mb-2">
+                            <span>{t("التقدم", "Progress")}</span><span>{progress}%</span>
+                          </div>
+                          <div className="h-2.5 bg-white/80 rounded-full overflow-hidden">
+                            <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="h-full rounded-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2]" />
+                          </div>
+                        </div>
+
+                        {/* Progress slider */}
+                        <input type="range" min={0} max={100} value={progress} onChange={e => updateProgress(goal.id, parseInt(e.target.value))}
+                          className="w-full h-1 mb-4 accent-[#2552ca]" />
+
+                        {/* Milestones */}
+                        {milestones.length > 0 && (
+                          <div className="space-y-1.5 mt-4 border-t border-white/60 pt-4">
+                            <p className="text-xs font-bold text-slate-500 mb-2">{t(`${completedMilestones}/${milestones.length} خطوة`, `${completedMilestones}/${milestones.length} steps`)}</p>
+                            {milestones.slice(0,3).map((m: any) => (
+                              <div key={m.id} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer hover:text-slate-800"
+                                onClick={() => !m.completed && completeMilestone(goal.id, m.id)}>
+                                {m.completed ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <div className="w-4 h-4 rounded-full border-2 border-slate-300 shrink-0" />}
+                                <span className={m.completed ? "line-through opacity-50" : ""}>{m.title}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Target date */}
+                        {goal.target_date && (
+                          <div className="flex items-center gap-1.5 mt-4 text-xs text-slate-400">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{new Date(goal.target_date).toLocaleDateString(isArabic ? "ar-SA" : "en-US", { year: "numeric", month: "short", day: "numeric" })}</span>
+                          </div>
+                        )}
+                      </div>
+                      {/* Decorative */}
+                      <div className="absolute right-0 bottom-0 w-1/2 translate-y-6 translate-x-6 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-20 pointer-events-none">
+                        <div className="w-full h-24 bg-gradient-to-tl from-[#2552ca]/30 to-[#fd65c2]/20 rounded-tl-2xl" />
+                      </div>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   )

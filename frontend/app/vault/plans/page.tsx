@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
@@ -8,32 +8,34 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Calendar,
-  CheckCircle2,
-  Circle,
-  Plus,
-  Trash2,
-  AlertCircle,
-  ShoppingBag,
-  Briefcase,
-  ListTodo,
-} from "lucide-react";
+import { Calendar, CheckCircle2, Plus, Trash2, ShoppingBag, Briefcase, ListTodo } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import {
-  VaultSidebar,
-  MobileMenuButton,
-} from "@/components/thakirni/vault-sidebar";
+import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
 
+function ParticleLayer() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const ps: HTMLDivElement[] = [];
+    for (let i = 0; i < 14; i++) {
+      const p = document.createElement("div");
+      const s = Math.random() * 6 + 3, d = Math.random() * 20 + 10, dl = Math.random() * -20;
+      p.style.cssText = `position:absolute;width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:rgba(37,82,202,0.10);border-radius:50%;filter:blur(1px);--drift-x:${(Math.random()-0.5)*160}px;--drift-y:${(Math.random()-0.5)*160}px;animation:particle-drift ${d}s linear ${dl}s infinite;pointer-events:none;`;
+      el.appendChild(p); ps.push(p);
+    }
+    return () => ps.forEach(p => p.remove());
+  }, []);
+  return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none z-0" />;
+}
+
 export default function PlansPage() {
-  const { plans, isLoading, addPlan, updatePlanStatus, deletePlan, refetch, error } =
-    usePlans();
+  const { plans, isLoading, addPlan, updatePlanStatus, deletePlan, refetch, error } = usePlans();
   const { t, isArabic } = useLanguage();
   const [newPlanTitle, setNewPlanTitle] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -42,323 +44,225 @@ export default function PlansPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  };
+  const toggleSelect = (id: string) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const handleBulkDelete = async () => {
     if (!selectedIds.size) return;
     setBulkDeleting(true);
     try {
-      const res = await fetch("/api/plans/bulk-delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: Array.from(selectedIds) }),
-      });
-      if (!res.ok) throw new Error("Bulk delete failed");
-      // Remove deleted plans from local state via refetch
-      await refetch();
-      setSelectedIds(new Set());
-    } catch (err) {
-      console.error("Bulk delete error:", err);
-    } finally {
-      setBulkDeleting(false);
-    }
+      await fetch("/api/plans/bulk-delete", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: Array.from(selectedIds) }) });
+      await refetch(); setSelectedIds(new Set());
+    } catch (err) { console.error(err); }
+    finally { setBulkDeleting(false); }
   };
 
-  // Filter plans based on active tab
-  const filteredPlans = plans.filter((plan) => {
-    if (activeTab === "all") return true;
-    return plan.category === activeTab;
-  });
+  const filteredPlans = plans.filter(p => activeTab === "all" || p.category === activeTab);
 
   const handleAddPlan = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPlanTitle.trim()) return;
-
     setIsAdding(true);
     try {
-      // Determine category based on active tab, default to 'task' if 'all'
-      const category =
-        activeTab === "all"
-          ? "task"
-          : (activeTab as "task" | "grocery" | "meeting");
-
-      await addPlan({
-        title: newPlanTitle,
-        category: category,
-        status: "pending",
-        is_recurring: false,
-        priority: "medium",
-        reminder_date: new Date().toISOString(), // Default to today for sorting
-      });
+      await addPlan({ title: newPlanTitle, category: activeTab === "all" ? "task" : (activeTab as "task"|"grocery"|"meeting"), status: "pending", is_recurring: false, priority: "medium", reminder_date: new Date().toISOString() });
       setNewPlanTitle("");
-    } catch (err) {
-      console.error("Failed to add plan", err);
-    } finally {
-      setIsAdding(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setIsAdding(false); }
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "grocery":
-        return <ShoppingBag className="w-4 h-4 text-emerald-500" />;
-      case "meeting":
-        return <Briefcase className="w-4 h-4 text-blue-500" />;
-      default:
-        return <ListTodo className="w-4 h-4 text-amber-500" />;
-    }
+  const getCategoryIcon = (cat: string) => {
+    if (cat === "grocery") return <ShoppingBag className="w-4 h-4 text-emerald-500" />;
+    if (cat === "meeting") return <Briefcase className="w-4 h-4 text-[#2552ca]" />;
+    return <ListTodo className="w-4 h-4 text-amber-500" />;
   };
 
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return format(date, "PPP", { locale: isArabic ? arSA : enUS });
-  };
+  const formatDate = (d: string | null | undefined) => d ? format(new Date(d), "PPP", { locale: isArabic ? arSA : enUS }) : "";
+
+  const completedCount = plans.filter(p => p.status === "completed").length;
+  const pendingCount = plans.filter(p => p.status === "pending").length;
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
+      <main className="lg:ml-72">
 
-      {/* Fixed glassmorphism header — desktop */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#456ce4] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-            <ListTodo className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-xl font-headline font-extrabold gradient-text">{t("خططي", "My Plans")}</span>
-            <p className="text-xs text-slate-500">{t("نظّم مهامك اليوم", "Organise your tasks today")}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <MobileMenuButton /><ThemeToggle /><LanguageToggle />
-        </div>
-      </header>
+        {/* ── HERO ── */}
+        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
+          <ParticleLayer />
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-[#2552ca]/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#ad1d7f]/6 rounded-full blur-[80px] pointer-events-none" />
 
-      <main className="lg:ml-72 pt-4 lg:pt-24 p-4 lg:p-8 transition-all duration-300">
-        {/* Mobile header */}
-        <div className="flex items-center gap-3 mb-6 lg:hidden">
-          <MobileMenuButton />
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#456ce4] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-              <ListTodo className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="text-lg font-headline font-extrabold gradient-text">{t("خططي", "My Plans")}</span>
-              <p className="text-xs text-slate-500">{t("نظّم مهامك اليوم", "Organise your tasks today")}</p>
-            </div>
-          </div>
-        </div>
+          <div className="max-w-7xl mx-auto relative z-10">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
 
-        <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
-
-          {/* Input Area */}
-          <form
-            onSubmit={handleAddPlan}
-            className="flex gap-4 p-4 glass-card rounded-2xl border border-white/40 shadow-ambient"
-          >
-            <Input
-              value={newPlanTitle}
-              onChange={(e) => setNewPlanTitle(e.target.value)}
-              placeholder={t(
-                activeTab === "grocery"
-                  ? "أضف سلعة جديدة..."
-                  : activeTab === "meeting"
-                    ? "أضف اجتماعاً جديداً..."
-                    : "أضف مهمة جديدة...",
-                activeTab === "grocery"
-                  ? "Add new item..."
-                  : activeTab === "meeting"
-                    ? "Add new meeting..."
-                    : "Add new task...",
-              )}
-              className="flex-1 bg-white/80 border-white/50"
-              disabled={isAdding}
-            />
-            <motion.button
-              type="submit"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              disabled={!newPlanTitle.trim() || isAdding}
-              className="flex items-center gap-2 px-4 py-2 rounded-full power-gradient text-white text-sm font-bold btn-glow disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {isAdding ? (
-                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <Plus className="w-5 h-5" />
-              )}
-              <span className="hidden sm:inline">{t("إضافة", "Add")}</span>
-            </motion.button>
-          </form>
-
-          {/* Tabs & List */}
-          <Tabs
-            defaultValue="all"
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-4 lg:w-[400px]">
-              <TabsTrigger value="all">{t("الكل", "All")}</TabsTrigger>
-              <TabsTrigger value="task">{t("مهام", "Tasks")}</TabsTrigger>
-              <TabsTrigger value="grocery">
-                {t("مقاضي", "Groceries")}
-              </TabsTrigger>
-              <TabsTrigger value="meeting">
-                {t("اجتماعات", "Meetings")}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value={activeTab} className="mt-6 space-y-4">
-              {isLoading ? (
-                // Loading Skeletons
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card"
-                  >
-                    <Skeleton className="w-5 h-5 rounded-full" />
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-1/3" />
-                      <Skeleton className="h-3 w-1/4" />
-                    </div>
-                  </div>
-                ))
-              ) : filteredPlans.length === 0 ? (
-                // Empty State
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-8 h-8 text-muted-foreground/50" />
-                  </div>
-                  <h3 className="text-lg font-medium text-foreground">
-                    {t("لا توجد خطط هنا", "No plans here yet")}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t(
-                      "أضف مهامك الجديدة لتبدأ يومك بإنتاجية",
-                      "Add your new tasks to start your day productively",
-                    )}
+              {/* Copy */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
+                <div className="flex items-center gap-3 lg:hidden">
+                  <MobileMenuButton /><div className="flex-1" /><ThemeToggle /><LanguageToggle />
+                </div>
+                <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
+                <div>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                    {t("خططي ", "My ")}<span className="gradient-text">{t("ومهامي", "Plans")}</span>
+                  </h1>
+                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                    {t("نظّم يومك، تابع مهامك، ولا تنسى مقاضيك.", "Organise your day, track your tasks, and never forget your groceries.")}
                   </p>
                 </div>
-              ) : (
-                // Plans List
-                <AnimatePresence mode="popLayout">
-                  {filteredPlans.map((plan) => (
-                    <motion.div
-                      key={plan.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      layout
-                      className={cn(
-                        "group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200 hover-lift",
-                        selectedIds.has(plan.id)
-                          ? "bg-[#2552ca]/5 border-[#2552ca]/40 ring-1 ring-[#2552ca]/20"
-                          : plan.status === "completed"
-                            ? "bg-white/60 border-[#e4e2e1] opacity-60"
-                            : "bg-white border-[#e4e2e1] shadow-ambient",
-                      )}
-                    >
-                      {/* Bulk-select checkbox — visible on hover or when any item is selected */}
-                      <div
-                        className={cn(
-                          "absolute top-3 right-3 transition-opacity",
-                          selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-                        )}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedIds.has(plan.id)}
-                          onChange={() => toggleSelect(plan.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer"
-                          aria-label={t("تحديد", "Select")}
-                        />
+                {/* Stat pills */}
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { value: pendingCount,   label: t("معلّق", "Pending"),   color: "bg-amber-50 text-amber-700" },
+                    { value: completedCount, label: t("مكتمل", "Completed"), color: "bg-emerald-50 text-emerald-700" },
+                    { value: plans.length,   label: t("الكل", "Total"),      color: "bg-[#dce1ff] text-[#2552ca]" },
+                  ].map(({ value, label, color }) => (
+                    <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
+                      <span className="text-xl font-headline font-extrabold">{value}</span>
+                      <span className="opacity-80">{label as string}</span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Right: animated plan previews */}
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
+                className="hidden lg:block relative">
+                <div className="bg-white rounded-2xl p-8 shadow-card hover-lift space-y-3">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#456ce4] flex items-center justify-center">
+                      <ListTodo className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="font-headline font-bold text-slate-900">{t("قائمة اليوم", "Today's List")}</span>
+                  </div>
+                  {[
+                    { color: "bg-[#2552ca]", label: t("مراجعة التقرير الأسبوعي", "Review weekly report"), done: true },
+                    { color: "bg-[#ad1d7f]", label: t("اجتماع الفريق الساعة 3", "Team meeting at 3pm"), done: false },
+                    { color: "bg-emerald-500", label: t("شراء مقاضي الأسبوع", "Buy weekly groceries"), done: false },
+                  ].map(({ color, label, done }, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
+                      className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-[#f6f3f2]"}`}>
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${done ? "bg-emerald-500 border-emerald-500" : `border-slate-300`}`}>
+                        {done && <CheckCircle2 className="w-3 h-3 text-white" />}
                       </div>
-
-                      <Checkbox
-                        checked={plan.status === "completed"}
-                        onCheckedChange={(checked) =>
-                          updatePlanStatus(
-                            plan.id,
-                            checked ? "completed" : "pending",
-                          )
-                        }
-                        className="mt-1"
-                      />
-
-                      <div className="flex-1 min-w-0 grid gap-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={cn(
-                              "font-medium truncate transition-all",
-                              plan.status === "completed"
-                                ? "line-through text-muted-foreground"
-                                : "text-foreground",
-                            )}
-                          >
-                            {plan.title}
-                          </span>
-                          <span className="inline-flex px-2 py-0.5 rounded-full bg-muted text-[10px] items-center gap-1">
-                            {getCategoryIcon(plan.category || "task")}
-                            <span className="uppercase opacity-70">
-                              {t(
-                                plan.category || "task",
-                                (plan.category || "task").toUpperCase(),
-                              )}
-                            </span>
-                          </span>
-                        </div>
-                        {plan.reminder_date && (
-                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{formatDate(plan.reminder_date)}</span>
-                          </div>
-                        )}
-                        {plan.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-1">
-                            {plan.description}
-                          </p>
-                        )}
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10 -me-2"
-                        disabled={deletingId === plan.id}
-                        onClick={async () => {
-                          setDeletingId(plan.id);
-                          try { await deletePlan(plan.id); } finally { setDeletingId(null); }
-                        }}
-                      >
-                        {deletingId === plan.id ? (
-                          <span className="w-4 h-4 border-2 border-destructive/40 border-t-destructive rounded-full animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </Button>
+                      <span className={`text-sm font-medium ${done ? "line-through text-slate-400" : "text-slate-700"}`}>{label as string}</span>
+                      <span className={`ms-auto w-2.5 h-2.5 rounded-full ${color}`} />
                     </motion.div>
                   ))}
-                </AnimatePresence>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
+                </div>
+                {/* Floating badge */}
+                <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -bottom-4 -right-4 bg-gradient-to-br from-[#2552ca] to-[#fd65c2] text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold">
+                  {t("منجز 67٪", "67% done")} ✓
+                </motion.div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
 
-      <BulkActionBar
-        selectedCount={selectedIds.size}
-        onDelete={handleBulkDelete}
-        onClear={() => setSelectedIds(new Set())}
-        deleting={bulkDeleting}
-      />
+        {/* ── MAIN CONTENT ── */}
+        <section className="pb-24 px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+              {/* Add form — feature card */}
+              <motion.div custom={0} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ duration: 0.7, ease: [0.2,1,0.3,1] }}
+                className="bg-[#2552ca] text-white rounded-2xl p-10 relative overflow-hidden hover-lift">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#fd65c2]/20 rounded-full blur-2xl pointer-events-none" />
+                <span className="text-4xl mb-6 block">✦</span>
+                <h2 className="text-2xl font-headline font-bold mb-2">{t("أضف مهمة جديدة", "Add New Task")}</h2>
+                <p className="text-white/70 mb-8">{t("سجّل مهمتك بسرعة", "Quickly log your next task")}</p>
+                <form onSubmit={handleAddPlan} className="space-y-4">
+                  <Input
+                    value={newPlanTitle} onChange={e => setNewPlanTitle(e.target.value)}
+                    placeholder={t(activeTab === "grocery" ? "أضف سلعة..." : activeTab === "meeting" ? "أضف اجتماعاً..." : "أضف مهمة...",
+                                   activeTab === "grocery" ? "Add item..." : activeTab === "meeting" ? "Add meeting..." : "Add task...")}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/50"
+                    disabled={isAdding}
+                  />
+                  <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} disabled={!newPlanTitle.trim() || isAdding}
+                    className="w-full py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40">
+                    {isAdding ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {t("إضافة", "Add")}
+                  </motion.button>
+                </form>
+              </motion.div>
+
+              {/* Plans list — wide feature card */}
+              <motion.div custom={1} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.2,1,0.3,1] }}
+                className="lg:col-span-2 bg-[#f6f3f2] rounded-2xl p-10 relative overflow-hidden hover-lift group">
+                <div className="absolute right-0 bottom-0 w-1/3 translate-y-8 translate-x-8 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-30 pointer-events-none">
+                  <div className="w-full h-48 bg-gradient-to-tl from-[#2552ca]/20 to-[#fd65c2]/20 rounded-tl-2xl" />
+                </div>
+                <span className="text-4xl text-[#2552ca] mb-6 block">📋</span>
+                <h2 className="text-2xl font-headline font-bold mb-8 text-slate-900">{t("قائمة المهام", "Task List")}</h2>
+
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/70 backdrop-blur-sm">
+                    <TabsTrigger value="all">{t("الكل", "All")}</TabsTrigger>
+                    <TabsTrigger value="task">{t("مهام", "Tasks")}</TabsTrigger>
+                    <TabsTrigger value="grocery">{t("مقاضي", "Groceries")}</TabsTrigger>
+                    <TabsTrigger value="meeting">{t("اجتماعات", "Meetings")}</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value={activeTab} className="space-y-3">
+                    {isLoading ? (
+                      [1,2,3].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)
+                    ) : filteredPlans.length === 0 ? (
+                      <div className="text-center py-16">
+                        <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] rounded-full flex items-center justify-center">
+                          <CheckCircle2 className="w-10 h-10 text-[#2552ca]/40" />
+                        </div>
+                        <h3 className="text-xl font-headline font-bold text-slate-700">{t("لا توجد مهام هنا", "No tasks here yet")}</h3>
+                        <p className="text-slate-500 mt-2">{t("أضف مهمة جديدة لتبدأ", "Add a new task to get started")}</p>
+                      </div>
+                    ) : (
+                      <AnimatePresence mode="popLayout">
+                        {filteredPlans.map(plan => (
+                          <motion.div key={plan.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} layout
+                            className={cn("group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200",
+                              selectedIds.has(plan.id) ? "bg-[#2552ca]/5 border-[#2552ca]/30 ring-1 ring-[#2552ca]/20"
+                              : plan.status === "completed" ? "bg-white/40 border-white/60 opacity-50"
+                              : "bg-white border-[#e4e2e1] shadow-ambient hover:shadow-card hover:-translate-y-0.5")}>
+                            <div className={cn("absolute top-3 right-3 transition-opacity", selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
+                              <input type="checkbox" checked={selectedIds.has(plan.id)} onChange={() => toggleSelect(plan.id)} onClick={e => e.stopPropagation()}
+                                className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer" />
+                            </div>
+                            <Checkbox checked={plan.status === "completed"} onCheckedChange={c => updatePlanStatus(plan.id, c ? "completed" : "pending")} className="mt-1" />
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className={cn("font-semibold truncate", plan.status === "completed" ? "line-through text-slate-400" : "text-slate-800")}>
+                                  {plan.title}
+                                </span>
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#f0eded] text-[10px] font-bold text-slate-600">
+                                  {getCategoryIcon(plan.category || "task")}
+                                  {t(plan.category || "task", (plan.category || "task").toUpperCase())}
+                                </span>
+                              </div>
+                              {plan.reminder_date && (
+                                <div className="flex items-center gap-1 text-xs text-slate-400">
+                                  <Calendar className="w-3 h-3" /><span>{formatDate(plan.reminder_date)}</span>
+                                </div>
+                              )}
+                            </div>
+                            <Button variant="ghost" size="icon" disabled={deletingId === plan.id}
+                              className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 hover:bg-red-50 -me-2"
+                              onClick={async () => { setDeletingId(plan.id); try { await deletePlan(plan.id); } finally { setDeletingId(null); } }}>
+                              {deletingId === plan.id ? <span className="w-4 h-4 border-2 border-red-300 border-t-red-500 rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                            </Button>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        <BulkActionBar selectedCount={selectedIds.size} onDelete={handleBulkDelete} onClear={() => setSelectedIds(new Set())} deleting={bulkDeleting} />
+      </main>
     </div>
   );
 }
