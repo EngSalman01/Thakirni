@@ -161,7 +161,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     }
 
     // ── Rate limiting: 30 messages per minute per phone ─────────────────────────
-    const rl = rateLimit(`whatsapp:${phone}`, 30, 60_000)
+    const rl = await rateLimit(`whatsapp:${phone}`, 30, 60_000)
     if (!rl.success) return // silently drop, don't error
 
     // ── Get message text ────────────────────────────────────────────────────────

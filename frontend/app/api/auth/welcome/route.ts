@@ -4,7 +4,7 @@ import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") ?? "unknown"
-  const rl = limiters.auth(ip)
+  const rl = await limiters.auth(ip)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
   try {

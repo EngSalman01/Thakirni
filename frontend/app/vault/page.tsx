@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { Plus, Brain, Mic, Upload, FileText } from "lucide-react";
+import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -123,27 +124,58 @@ function RecentCaptures() {
   const { t, isArabic } = useLanguage();
   const [memories, setMemories] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const fetchMemories = useCallback(async () => {
+    const supabase = createClient();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("memories")
+        .select("id, title, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(3);
+      setMemories(data ?? []);
+    } catch (err) {
+      console.error("[RecentCaptures]", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const supabase = createClient();
-    (async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase
-          .from("memories")
-          .select("id, title, created_at")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(3);
-        setMemories(data ?? []);
-      } catch (err) {
-        console.error("[RecentCaptures]", err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    fetchMemories();
+  }, [fetchMemories]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.size) return;
+    setBulkDeleting(true);
+    try {
+      const res = await fetch("/api/memories/bulk-delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      if (!res.ok) throw new Error("Bulk delete failed");
+      setSelectedIds(new Set());
+      await fetchMemories();
+    } catch (err) {
+      console.error("[RecentCaptures] bulk delete error:", err);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   function relativeTime(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -186,22 +218,49 @@ function RecentCaptures() {
           </div>
         ) : (
           memories.map(({ id, title, created_at }, i) => (
-            <Link
+            <div
               key={id}
-              href="/vault/memories"
-              className="flex items-center gap-4 p-3 bg-[#f6f3f2] rounded-xl group hover:bg-white transition-all cursor-pointer"
+              className={`relative flex items-center gap-4 p-3 rounded-xl group transition-all cursor-pointer ${
+                selectedIds.has(id)
+                  ? "bg-[#2552ca]/10 ring-1 ring-[#2552ca]/30"
+                  : "bg-[#f6f3f2] hover:bg-white"
+              }`}
             >
-              <div className={`p-2 ${iconColors[i % 3]} rounded-full transition-colors shrink-0`}>
-                <FileText className="w-4 h-4" />
+              {/* Bulk-select checkbox */}
+              <div
+                className={`absolute top-3 right-3 transition-opacity ${
+                  selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(id)}
+                  onChange={() => toggleSelect(id)}
+                  className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer"
+                  aria-label={t("تحديد", "Select")}
+                />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold truncate font-label">{title}</p>
-                <p className="text-xs text-slate-500">{relativeTime(created_at)}</p>
-              </div>
-            </Link>
+
+              <Link href="/vault/new-memory" className="flex items-center gap-4 flex-1 min-w-0">
+                <div className={`p-2 ${iconColors[i % 3]} rounded-full transition-colors shrink-0`}>
+                  <FileText className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0 pr-6">
+                  <p className="text-sm font-bold truncate font-label">{title}</p>
+                  <p className="text-xs text-slate-500">{relativeTime(created_at)}</p>
+                </div>
+              </Link>
+            </div>
           ))
         )}
       </div>
+
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds(new Set())}
+        deleting={bulkDeleting}
+      />
     </section>
   );
 }

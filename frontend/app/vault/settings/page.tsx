@@ -17,7 +17,7 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Sparkles, RefreshCw, Calendar, X, Camera, Download,
+  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -126,6 +126,9 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [calendarConnected, setCalendarConnected] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [whatsappConnectOpen, setWhatsappConnectOpen] = useState(false);
@@ -143,6 +146,8 @@ export default function SettingsPage() {
   const [deepFocusEnabled, setDeepFocusEnabled] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("thakirni_deepfocus") === "true" : false
   );
+
+  const [exportingPdf, setExportingPdf] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -361,6 +366,53 @@ export default function SettingsPage() {
       setSigningOut(false); setSignOutOpen(false);
     }
   }, [router, t]);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== "DELETE") return;
+    setDeleting(true);
+    try {
+      const res = await fetch("/api/user/delete-account", { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+      toast.success(t("تم حذف حسابك بنجاح", "Account deleted successfully"));
+      router.push("/");
+    } catch {
+      toast.error(t("فشل حذف الحساب", "Failed to delete account"));
+      setDeleting(false);
+    }
+  };
+
+  async function handleExportPDF(type: "memories" | "plans" | "habits" | "goals") {
+    setExportingPdf(type);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      let items: unknown[] = [];
+      if (type === "memories") {
+        const { data } = await supabase.from("memories").select("title, content, category, created_at").eq("user_id", user.id).order("created_at", { ascending: false });
+        items = data ?? [];
+      } else if (type === "plans") {
+        const { data } = await supabase.from("plans").select("title, plan_date, plan_time, status, category").eq("user_id", user.id).order("plan_date", { ascending: false });
+        items = data ?? [];
+      } else if (type === "habits") {
+        const { data } = await supabase.from("habits").select("title, category, frequency, current_streak").eq("user_id", user.id);
+        items = data ?? [];
+      } else if (type === "goals") {
+        const { data } = await supabase.from("goals").select("title, status, deadline, progress_pct").eq("user_id", user.id);
+        items = data ?? [];
+      }
+
+      const { exportToPDF } = await import("@/lib/export-pdf");
+      exportToPDF({ type, items: items as never, userName: name || undefined });
+      toast.success(t("تم تصدير PDF", "PDF exported"));
+    } catch (err) {
+      toast.error(t("فشل تصدير PDF", "PDF export failed"));
+      console.error(err);
+    } finally {
+      setExportingPdf(null);
+    }
+  }
 
   if (loading) return <SettingsSkeleton />;
 
@@ -614,6 +666,13 @@ export default function SettingsPage() {
                       <LogOut className="w-4 h-4" />
                       {t("تسجيل الخروج من كل الأجهزة", "Sign Out All Devices")}
                     </button>
+                    <button
+                      onClick={() => { setDeleteOpen(true); setDeleteConfirm(""); }}
+                      className="px-5 py-2.5 rounded-full bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors font-label flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t("حذف الحساب", "Delete Account")}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -817,41 +876,128 @@ export default function SettingsPage() {
               </div>
               <p className="text-sm text-slate-500 mb-5">
                 {t(
-                  "حمّل بياناتك الشخصية في أي وقت بصيغة CSV.",
-                  "Download your personal data at any time in CSV format."
+                  "حمّل بياناتك الشخصية في أي وقت بصيغة CSV أو PDF.",
+                  "Download your personal data at any time in CSV or PDF format."
                 )}
               </p>
               <div className="space-y-3">
-                <a
-                  href="/api/export/plans"
-                  download
-                  className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-slate-50 transition-colors group"
-                >
-                  <div>
+                {/* Plans & Tasks */}
+                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                  <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm font-label text-slate-800">
                       {t("الخطط والمهام", "Plans & Tasks")}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {t("جميع خططك ومهامك بصيغة CSV", "All your plans and tasks as CSV")}
+                      {t("جميع خططك ومهامك", "All your plans and tasks")}
                     </p>
                   </div>
-                  <Download className="w-4 h-4 text-slate-400 group-hover:text-[#2552ca] transition-colors" />
-                </a>
-                <a
-                  href="/api/export/memories"
-                  download
-                  className="flex items-center justify-between p-4 bg-white rounded-xl hover:bg-slate-50 transition-colors group"
-                >
-                  <div>
+                  <a
+                    href="/api/export/plans"
+                    download
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+                    title={t("تحميل CSV", "Download CSV")}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    CSV
+                  </a>
+                  <button
+                    onClick={() => handleExportPDF("plans")}
+                    disabled={exportingPdf === "plans"}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    title={t("تحميل PDF", "Download PDF")}
+                  >
+                    {exportingPdf === "plans" ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3.5 h-3.5" />
+                    )}
+                    PDF
+                  </button>
+                </div>
+
+                {/* Memories */}
+                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                  <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm font-label text-slate-800">
                       {t("الذكريات", "Memories")}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {t("جميع ذكرياتك المحفوظة بصيغة CSV", "All your saved memories as CSV")}
+                      {t("جميع ذكرياتك المحفوظة", "All your saved memories")}
                     </p>
                   </div>
-                  <Download className="w-4 h-4 text-slate-400 group-hover:text-[#2552ca] transition-colors" />
-                </a>
+                  <a
+                    href="/api/export/memories"
+                    download
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+                    title={t("تحميل CSV", "Download CSV")}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    CSV
+                  </a>
+                  <button
+                    onClick={() => handleExportPDF("memories")}
+                    disabled={exportingPdf === "memories"}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    title={t("تحميل PDF", "Download PDF")}
+                  >
+                    {exportingPdf === "memories" ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3.5 h-3.5" />
+                    )}
+                    PDF
+                  </button>
+                </div>
+
+                {/* Habits */}
+                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm font-label text-slate-800">
+                      {t("العادات", "Habits")}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {t("جميع عاداتك وسلاسلك", "All your habits and streaks")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleExportPDF("habits")}
+                    disabled={exportingPdf === "habits"}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    title={t("تحميل PDF", "Download PDF")}
+                  >
+                    {exportingPdf === "habits" ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3.5 h-3.5" />
+                    )}
+                    PDF
+                  </button>
+                </div>
+
+                {/* Goals */}
+                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm font-label text-slate-800">
+                      {t("الأهداف", "Goals")}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {t("جميع أهدافك وتقدمها", "All your goals and progress")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleExportPDF("goals")}
+                    disabled={exportingPdf === "goals"}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    title={t("تحميل PDF", "Download PDF")}
+                  >
+                    {exportingPdf === "goals" ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <FileDown className="w-3.5 h-3.5" />
+                    )}
+                    PDF
+                  </button>
+                </div>
               </div>
             </SettingsCard>
 
@@ -886,6 +1032,48 @@ export default function SettingsPage() {
                   {t("جاري الخروج...", "Signing out...")}
                 </span>
               ) : t("تسجيل الخروج", "Sign Out")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete account dialog */}
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600">
+              {t("حذف الحساب نهائياً؟", "Delete Account Permanently?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                "سيتم حذف جميع بياناتك نهائياً: الذكريات، الخطط، العادات، الأهداف، والتسجيلات. هذا الإجراء لا يمكن التراجع عنه.",
+                "All your data will be permanently deleted: memories, plans, habits, goals, and recordings. This cannot be undone."
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Label htmlFor="delete-confirm" className="text-sm text-slate-600">
+              {t('اكتب "DELETE" للتأكيد', 'Type "DELETE" to confirm')}
+            </Label>
+            <Input
+              id="delete-confirm"
+              className="mt-2"
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder="DELETE"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>
+              {t("إلغاء", "Cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== "DELETE" || deleting}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {t("حذف حسابي نهائياً", "Delete My Account")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

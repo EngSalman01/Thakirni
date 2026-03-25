@@ -4,6 +4,7 @@ import { z } from "zod"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { getHijriDate, formatTodayBlock, formatFactsBlock } from "@/server/services/ai.service"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
+import { trackEvent } from "@/lib/analytics"
 
 export const maxDuration = 60
 
@@ -103,7 +104,7 @@ export async function POST(req: Request) {
 
     // Rate limit: 20 chat messages per minute per user (or per IP for guests)
     const rateLimitKey = user?.id ?? (req.headers.get("x-forwarded-for") ?? "anon")
-    const rl = limiters.chat(rateLimitKey)
+    const rl = await limiters.chat(rateLimitKey)
     if (!rl.success) return rateLimitResponse(rl.reset)
 
     const {
@@ -1048,6 +1049,7 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
       }, // end tools
     })
 
+    trackEvent("search_performed", { type: "chat" })
     return result.toDataStreamResponse()
 
   } catch (error: unknown) {
