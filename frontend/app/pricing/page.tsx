@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { Check, X, Sparkles, User, Zap, Users, Shield } from "lucide-react";
@@ -161,6 +161,11 @@ const trustBadges = [
 export default function PricingPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const routerRef = useRef(router);
+  const tRef = useRef(t);
+  routerRef.current = router;
+  tRef.current = t;
+
   const [isAnnual, setIsAnnual] = useState(false);
   const [isLoading, setIsLoading] = useState<TierId | null>(null);
   const [paddle, setPaddle] = useState<Paddle | null>(null);
@@ -173,12 +178,13 @@ export default function PricingPage() {
       environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
       eventCallback(event) {
         if (event.name === "checkout.completed") {
-          toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
-          setTimeout(() => router.push("/vault?subscribed=true"), 500)
+          toast.success(tRef.current("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
+          setTimeout(() => routerRef.current.push("/vault?subscribed=true"), 500)
         }
       },
     }).then((p) => { if (p) setPaddle(p) })
-  }, [router, t])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
