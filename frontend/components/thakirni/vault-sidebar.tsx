@@ -69,7 +69,6 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   labelAr: string;
   labelEn: string;
-  hash?: string;
 }
 
 interface SidebarContextType {
@@ -91,8 +90,8 @@ export function useSidebar() {
 // ── Nav items config ──────────────────────────────────────────────────────────
 
 const navItems: NavItem[] = [
-  { href: "/vault", icon: Network, labelAr: "الخريطة العصبية", labelEn: "Neural Map", hash: "#neural-map" },
-  { href: "/vault", icon: Sparkles, labelAr: "المساعد الذكي", labelEn: "AI Assistant", hash: "#ai-chat" },
+  { href: "/vault", icon: Network, labelAr: "خريطة الذاكرة", labelEn: "Memory Map" },
+  { href: "/vault/assistant", icon: Sparkles, labelAr: "المساعد الذكي", labelEn: "AI Assistant" },
   { href: "/vault/plans", icon: ListTodo, labelAr: "خططي", labelEn: "My Plans" },
   { href: "/vault/meetings", icon: Mic, labelAr: "ملخص الاجتماعات", labelEn: "Meeting Summary" },
   { href: "/vault/goals", icon: Target, labelAr: "أهدافي", labelEn: "My Goals" },
@@ -156,21 +155,11 @@ function NavItemRow({
   onNavigate?: () => void;
 }) {
   const { isArabic } = useLanguage();
-  const pathname = usePathname();
-
-  function handleClick(e: React.MouseEvent) {
-    if (item.hash && pathname === item.href) {
-      e.preventDefault();
-      const id = item.hash.replace("#", "");
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    }
-    onNavigate?.();
-  }
 
   return (
     <Link
-      href={item.hash ? `${item.href}${item.hash}` : item.href}
-      onClick={handleClick}
+      href={item.href}
+      onClick={onNavigate}
       className={cn(
         "flex items-center gap-3 py-3 px-6 text-sm font-semibold font-label transition-all duration-200",
         isActive
@@ -225,9 +214,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Navigation */}
       <nav className="flex-1 flex flex-col" aria-label="Main navigation">
         {navItems.map((item, idx) => {
-          const isActive = item.hash
-            ? pathname === "/vault"
-            : pathname === item.href;
+          const isActive = pathname === item.href;
           return (
             <NavItemRow
               key={`${item.href}-${idx}`}

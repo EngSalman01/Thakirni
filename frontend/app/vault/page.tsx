@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { Plus, Brain, Mic, Upload, FileText } from "lucide-react";
+import { Plus, Brain, Mic, Upload } from "lucide-react";
 import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -31,21 +31,6 @@ interface TeamMember {
 }
 
 // ── Dynamic imports ───────────────────────────────────────────────────────────
-
-const AIChat = dynamic(
-  () => import("@/components/thakirni/ai-chat").then((m) => ({ default: m.AIChat })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="h-[300px] bg-[#f6f3f2] rounded-2xl flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Brain className="w-8 h-8 animate-pulse text-[#2552ca]" />
-          <span className="text-sm font-label">Loading assistant...</span>
-        </div>
-      </div>
-    ),
-  }
-);
 
 const TeamDashboard = dynamic(
   () => import("@/components/dashboards/team-dashboard").then((m) => ({ default: m.TeamDashboard })),
@@ -214,7 +199,7 @@ function RecentCaptures() {
         ) : memories.length === 0 ? (
           <div className="text-center py-6 text-slate-400 text-sm">
             <Brain className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p>{t("لا توجد ذكريات بعد — ابدأ محادثة مع الذكاء الاصطناعي", "No memories yet — start a conversation with the AI")}</p>
+            <p>{t("لا توجد ذكريات بعد — ابدأ محادثة مع المساعد الذكي", "No memories yet — try the AI Assistant")}</p>
           </div>
         ) : (
           memories.map(({ id, title, created_at }, i) => (
@@ -480,7 +465,7 @@ function AuraVisualization() {
       <div className="text-center">
         {!loading && memories.length === 0 ? (
           <p className="text-slate-400 text-sm max-w-xs">
-            {t("ستظهر خريطة معرفتك هنا عند إضافة ذكريات", "Your knowledge graph will appear here as you add memories")}
+            {t("ستظهر خريطة ذاكرتك هنا عند إضافة ذكريات", "Your memory map will appear here as you add memories")}
           </p>
         ) : (
           <p className="text-slate-500 font-medium">
@@ -508,7 +493,7 @@ function VaultHeader() {
     <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex">
       <div className="flex items-center gap-3">
         <span className="text-xl font-bold text-slate-900 font-headline">
-          {t("الخريطة العصبية", "Neural Map")}
+          {t("خريطة الذاكرة", "Memory Map")}
         </span>
       </div>
       <div className="flex items-center gap-3">
@@ -661,18 +646,6 @@ function VaultPageInner() {
 
         </div>
 
-        {/* AI Chat section */}
-        <div id="ai-chat" className="w-full mt-4 lg:mt-8">
-          <div className="mb-6">
-            <h2 className="text-2xl font-headline font-extrabold text-slate-800">
-              {t("المساعد الذكي", "AI Assistant")}
-            </h2>
-            <p className="text-slate-500 mt-1">
-              {t("تحدث مع ذكرياتك واحصل على رؤى.", "Chat with your memories and get insights.")}
-            </p>
-          </div>
-          <AIChat />
-        </div>
       </div>
 
       {/* FAB */}
