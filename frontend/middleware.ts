@@ -25,11 +25,16 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  const { pathname } = request.nextUrl;
+
+  // Skip auth check for cron endpoints — they authenticate via CRON_SECRET header
+  if (pathname.startsWith("/api/cron")) {
+    return NextResponse.next();
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
 
   // Protect /vault routes
   if (pathname.startsWith("/vault") && !user) {
