@@ -13,7 +13,7 @@ interface Profile {
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization")
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader?.toLowerCase() !== `bearer ${process.env.CRON_SECRET?.toLowerCase()}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
