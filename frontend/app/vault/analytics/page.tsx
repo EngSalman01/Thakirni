@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar"
+import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLanguage } from "@/components/language-provider"
 import { createClient } from "@/lib/supabase/client"
@@ -37,7 +39,7 @@ function StatCard({ icon: Icon, label, value, color, delay = 0 }: {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
-      className="bg-[#f6f3f2] rounded-2xl p-6 flex items-center gap-4"
+      className="bg-white rounded-2xl border border-[#e4e2e1] shadow-ambient hover-lift p-6 flex items-center gap-4"
     >
       <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}18` }}>
         <Icon className="w-6 h-6" style={{ color }} />
@@ -134,7 +136,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fbf9f8]">
+      <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
         <VaultSidebar />
         <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20">
           <div className="max-w-5xl mx-auto space-y-6">
@@ -146,24 +148,41 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8]">
+    <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20">
-        <MobileMenuButton />
-        <div className="max-w-5xl mx-auto space-y-8">
 
-          {/* Header */}
-          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}>
-            <div className="flex items-center gap-3 mb-2">
-              <TrendingUp className="w-6 h-6 text-[#2552ca]" />
-              <h1 className="text-3xl font-headline font-bold text-slate-900">
-                {t("التحليلات", "Analytics")}
-              </h1>
+      {/* Fixed glassmorphism header — desktop */}
+      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#385b9b] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <span className="text-xl font-headline font-extrabold gradient-text">{t("التحليلات", "Analytics")}</span>
+            <p className="text-xs text-slate-500">{t("آخر 14 يوم", "Last 14 days")}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <MobileMenuButton /><ThemeToggle /><LanguageToggle />
+        </div>
+      </header>
+
+      <main className="lg:ml-72 pt-4 lg:pt-24 px-6 lg:px-12 pb-20 transition-all duration-300">
+        {/* Mobile header */}
+        <div className="flex items-center gap-3 mb-6 lg:hidden">
+          <MobileMenuButton />
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2552ca] to-[#385b9b] flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
+              <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <p className="text-slate-500 font-label text-sm">
-              {t("آخر 14 يوم", "Last 14 days")}
-            </p>
-          </motion.div>
+            <div>
+              <span className="text-lg font-headline font-extrabold gradient-text">{t("التحليلات", "Analytics")}</span>
+              <p className="text-xs text-slate-500">{t("آخر 14 يوم", "Last 14 days")}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto space-y-8">
 
           {/* Stat cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -174,7 +193,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Plans chart */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#f6f3f2] rounded-2xl p-6">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="glass-card rounded-2xl border border-white/40 shadow-ambient p-6">
             <h2 className="text-lg font-headline font-bold text-slate-900 mb-6">
               {t("إنجاز الخطط اليومي", "Daily Plan Completion")}
             </h2>
@@ -191,7 +210,7 @@ export default function AnalyticsPage() {
           </motion.div>
 
           {/* Memories chart */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="bg-[#f6f3f2] rounded-2xl p-6">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="glass-card rounded-2xl border border-white/40 shadow-ambient p-6">
             <h2 className="text-lg font-headline font-bold text-slate-900 mb-6">
               {t("إضافة الذكريات", "Memory Activity")}
             </h2>
@@ -215,7 +234,7 @@ export default function AnalyticsPage() {
           {/* Habits + Goals row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Habits */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#f6f3f2] rounded-2xl p-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card rounded-2xl border border-white/40 shadow-ambient p-6">
               <h2 className="text-lg font-headline font-bold text-slate-900 mb-6">
                 {t("أداء العادات", "Habit Performance")}
               </h2>
@@ -239,7 +258,7 @@ export default function AnalyticsPage() {
             </motion.div>
 
             {/* Goals */}
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-[#f6f3f2] rounded-2xl p-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="glass-card rounded-2xl border border-white/40 shadow-ambient p-6">
               <h2 className="text-lg font-headline font-bold text-slate-900 mb-4">
                 {t("تقدم الأهداف", "Goals Progress")}
               </h2>
@@ -253,10 +272,10 @@ export default function AnalyticsPage() {
                         <span className="text-xs font-label text-slate-700 truncate flex-1 me-2">{g.title}</span>
                         <span className="text-xs font-bold text-slate-500 shrink-0">{g.progress}%</span>
                       </div>
-                      <div className="h-2 bg-white rounded-full overflow-hidden">
+                      <div className="h-2 bg-[#e4e2e1] rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${g.progress}%`, backgroundColor: g.status === "completed" ? "#10b981" : "#2552ca" }}
+                          className="h-full rounded-full transition-all duration-700 bg-gradient-to-r from-[#2552ca] to-[#fd65c2]"
+                          style={{ width: `${g.progress}%` }}
                         />
                       </div>
                     </div>
