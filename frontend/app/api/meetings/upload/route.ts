@@ -2,13 +2,14 @@ import { NextRequest } from "next/server"
 import { requireAuth, checkPlanFeature } from "@/lib/api-auth"
 import { processMeetingRecording } from "@/lib/services/transcription.service"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
+import { trackEvent } from "@/lib/analytics"
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
   // Rate limit: 10 uploads per hour per user
-  const rl = limiters.upload(auth.userId)
+  const rl = await limiters.upload(auth.userId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
   const { allowed } = await checkPlanFeature(auth.userId, "meeting_summary")
@@ -56,6 +57,8 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) return Response.json({ error: "Failed to save meeting" }, { status: 500 })
+
+    trackEvent("meeting_uploaded")
 
     auth.service.from("timeline_events").insert({
       user_id: auth.userId,

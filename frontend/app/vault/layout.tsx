@@ -1,5 +1,8 @@
 import React from "react"
 import type { Metadata } from "next"
+import { ThemeSync } from "@/components/theme-sync"
+import { CommandPalette } from "@/components/thakirni/command-palette"
+import { UserIdentify } from "@/components/user-identify"
 
 export const dynamic = "force-dynamic"
 
@@ -15,5 +18,12 @@ export default function VaultLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return (
+    <>
+      <ThemeSync />
+      <UserIdentify />
+      <CommandPalette />
+      {children}
+    </>
+  )
 }

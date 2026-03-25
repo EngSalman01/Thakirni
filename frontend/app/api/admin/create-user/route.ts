@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (adminError) return adminError;
 
   // Rate-limit admin actions (60/min)
-  const rl = limiters.admin(adminUser!.id);
+  const rl = await limiters.admin(adminUser!.id);
   if (!rl.success) return rateLimitResponse(rl.reset);
 
   try {

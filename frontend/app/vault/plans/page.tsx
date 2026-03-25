@@ -25,17 +25,48 @@ import {
   VaultSidebar,
   MobileMenuButton,
 } from "@/components/thakirni/vault-sidebar";
+import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
 
 export default function PlansPage() {
-  const { plans, isLoading, addPlan, updatePlanStatus, deletePlan, error } =
+  const { plans, isLoading, addPlan, updatePlanStatus, deletePlan, refetch, error } =
     usePlans();
   const { t, isArabic } = useLanguage();
   const [newPlanTitle, setNewPlanTitle] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.size) return;
+    setBulkDeleting(true);
+    try {
+      const res = await fetch("/api/plans/bulk-delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selectedIds) }),
+      });
+      if (!res.ok) throw new Error("Bulk delete failed");
+      // Remove deleted plans from local state via refetch
+      await refetch();
+      setSelectedIds(new Set());
+    } catch (err) {
+      console.error("Bulk delete error:", err);
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   // Filter plans based on active tab
   const filteredPlans = plans.filter((plan) => {
@@ -203,12 +234,31 @@ export default function PlansPage() {
                       exit={{ opacity: 0, scale: 0.95 }}
                       layout
                       className={cn(
-                        "group flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
-                        plan.status === "completed"
-                          ? "bg-muted/50 border-transparent opacity-60"
-                          : "bg-card border-border hover:border-primary/50 hover:shadow-sm",
+                        "group relative flex items-start gap-4 p-4 rounded-xl border transition-all duration-200",
+                        selectedIds.has(plan.id)
+                          ? "bg-primary/5 border-primary/40 ring-1 ring-primary/20"
+                          : plan.status === "completed"
+                            ? "bg-muted/50 border-transparent opacity-60"
+                            : "bg-card border-border hover:border-primary/50 hover:shadow-sm",
                       )}
                     >
+                      {/* Bulk-select checkbox — visible on hover or when any item is selected */}
+                      <div
+                        className={cn(
+                          "absolute top-3 right-3 transition-opacity",
+                          selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(plan.id)}
+                          onChange={() => toggleSelect(plan.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer"
+                          aria-label={t("تحديد", "Select")}
+                        />
+                      </div>
+
                       <Checkbox
                         checked={plan.status === "completed"}
                         onCheckedChange={(checked) =>
@@ -279,6 +329,13 @@ export default function PlansPage() {
           </Tabs>
         </div>
       </main>
+
+      <BulkActionBar
+        selectedCount={selectedIds.size}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds(new Set())}
+        deleting={bulkDeleting}
+      />
     </div>
   );
 }

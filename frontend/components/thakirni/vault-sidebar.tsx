@@ -23,9 +23,11 @@ import {
   Flame,
   Timer,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
+import { GlobalSearch } from "@/components/thakirni/global-search";
 import {
   useState,
   useEffect,
@@ -95,6 +97,7 @@ const navItems: NavItem[] = [
   { href: "/vault/meetings", icon: Mic, labelAr: "ملخص الاجتماعات", labelEn: "Meeting Summary" },
   { href: "/vault/goals", icon: Target, labelAr: "أهدافي", labelEn: "My Goals" },
   { href: "/vault/habits", icon: Flame, labelAr: "عاداتي", labelEn: "Habits" },
+  { href: "/vault/analytics", icon: TrendingUp, labelAr: "التحليلات", labelEn: "Analytics" },
   { href: "/vault/focus", icon: Timer, labelAr: "التركيز", labelEn: "Focus Mode" },
   { href: "/vault/upload", icon: Waves, labelAr: "الذكريات", labelEn: "Memories" },
   { href: "/vault/settings/teams/new", icon: Users, labelAr: "الفرق", labelEn: "Teams" },
@@ -212,6 +215,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <Link href="/" onClick={onNavigate} className="flex items-center">
           <BrandLogo />
         </Link>
+      </div>
+
+      {/* Global search */}
+      <div className="px-4 mb-2">
+        <GlobalSearch />
       </div>
 
       {/* Navigation */}
