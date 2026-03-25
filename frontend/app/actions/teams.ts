@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { Resend } from "resend";
@@ -9,15 +9,18 @@ import type { Team, TeamMember, TeamRole } from "@/lib/types";
 // Team creation
 export async function createTeam(name: string, slug: string) {
   try {
+    // Verify auth via user client (cookie-based)
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return { error: "Unauthorized" };
     }
 
+    // Use service client for writes to bypass RLS (we've already verified auth above)
+    const service = createServiceClient();
+
     // Check if slug is already taken
-    const { data: existingTeam } = await supabase
+    const { data: existingTeam } = await service
       .from("teams")
       .select("id")
       .eq("slug", slug)
@@ -28,7 +31,7 @@ export async function createTeam(name: string, slug: string) {
     }
 
     // Create team
-    const { data: team, error: teamError } = await supabase
+    const { data: team, error: teamError } = await service
       .from("teams")
       .insert({
         name,
@@ -41,12 +44,11 @@ export async function createTeam(name: string, slug: string) {
 
     if (teamError) {
       console.error("Error creating team:", teamError);
-      console.error("Team data attempted:", { name, slug, owner_id: user.id });
       return { error: `Failed to create team: ${teamError.message}` };
     }
 
     // Add creator as owner in team_members
-    const { error: memberError } = await supabase
+    const { error: memberError } = await service
       .from("team_members")
       .insert({
         team_id: team.id,
@@ -56,14 +58,13 @@ export async function createTeam(name: string, slug: string) {
 
     if (memberError) {
       console.error("Error adding team owner:", memberError);
-      console.error("Member data attempted:", { team_id: team.id, user_id: user.id, role: "owner" });
       // Rollback team creation
-      await supabase.from("teams").delete().eq("id", team.id);
+      await service.from("teams").delete().eq("id", team.id);
       return { error: `Failed to set up team ownership: ${memberError.message}` };
     }
 
     // Create team subscription record for the user
-    const { error: subscriptionError } = await supabase
+    const { error: subscriptionError } = await service
       .from("subscriptions")
       .insert({
         user_id: user.id,
