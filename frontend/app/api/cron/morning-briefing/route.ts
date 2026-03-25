@@ -212,7 +212,7 @@ export async function GET(req: NextRequest) {
 
       let message: string
       if (isArabic) {
-        message = `صباح الخير ${name}! 🌅\n\nيومك اليوم:\n${allLines.join("\n")}\n\nيوم مبارك! 😊`
+        message = `صباح الخير ${name}! 🌅\n\nاليوم عندك:\n${allLines.join("\n")}\n\nيومك سعيد! 😊`
       } else {
         message = `Good morning ${name}! 🌅\n\nYour day:\n${allLines.join("\n")}\n\nHave a great day! 😊`
       }
