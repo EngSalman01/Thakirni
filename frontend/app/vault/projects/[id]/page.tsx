@@ -1,6 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import { ProjectView } from "@/components/thakirni/project-view";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Share2, Settings } from "lucide-react";
@@ -11,41 +11,51 @@ export default async function ProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  // Verify auth
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/auth");
+
+  const service = createServiceClient();
 
   // 1. Fetch Project Details
-  const { data: project, error: projError } = await supabase
+  const { data: project, error: projError } = await service
     .from("projects")
     .select("*, teams(name, slug)")
     .eq("id", id)
     .single();
 
-  if (projError || !project) {
-    return notFound();
-  }
+  if (projError || !project) return notFound();
+
+  // Verify user is a team member
+  const { data: membership } = await service
+    .from("team_members")
+    .select("id")
+    .eq("team_id", project.team_id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!membership) return notFound();
 
   // 2. Fetch Tasks (Plans) with Assignee Profile
-  // Note: We use the foreign key relationship to profiles
-  const { data: tasks, error: taskError } = await supabase
+  const { data: tasks } = await service
     .from("plans")
-    .select(
-      `
-      id, 
-      title, 
-      status, 
-      priority, 
+    .select(`
+      id,
+      title,
+      status,
+      priority,
       plan_date,
       assigned_to,
       assignee:profiles!assigned_to(full_name, avatar_url)
-    `,
-    )
+    `)
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
   // Transform data to match our component types safely
   const safeTasks = (tasks || []).map((t) => ({
     ...t,
-    // Handle the case where assignee might be returned as an array or object depending on Supabase version
     assignee: Array.isArray(t.assignee) ? t.assignee[0] : t.assignee,
   }));
 
@@ -99,8 +109,8 @@ export default async function ProjectPage({
       {/* === MAIN CONTENT (CLIENT COMPONENT) === */}
       <div className="flex-1 overflow-hidden">
         {/* We pass the server-fetched data to the client component */}
-        {/* @ts-ignore - Supabase type inference can be tricky, ignoring strict check for demo */}
-        <ProjectView tasks={safeTasks} projectId={params.id} />
+        {/* @ts-ignore */}
+        <ProjectView tasks={safeTasks} projectId={id} />
       </div>
     </div>
   );

@@ -209,14 +209,12 @@ export async function inviteMember(teamId: string, email: string, role: TeamRole
 export async function removeMember(teamId: string, userId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Check if user is admin/owner
-    const { data: membership } = await supabase
+    const service = createServiceClient();
+
+    const { data: membership } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
@@ -227,20 +225,16 @@ export async function removeMember(teamId: string, userId: string) {
       return { error: "You don't have permission to remove members" };
     }
 
-    // Prevent removing the owner
-    const { data: targetMember } = await supabase
+    const { data: targetMember } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", userId)
       .single();
 
-    if (targetMember?.role === "owner") {
-      return { error: "Cannot remove team owner" };
-    }
+    if (targetMember?.role === "owner") return { error: "Cannot remove team owner" };
 
-    // Remove member
-    const { error } = await supabase
+    const { error } = await service
       .from("team_members")
       .delete()
       .eq("team_id", teamId)
@@ -260,21 +254,15 @@ export async function removeMember(teamId: string, userId: string) {
 }
 
 // Update member role
-export async function updateMemberRole(
-  teamId: string,
-  userId: string,
-  role: TeamRole
-) {
+export async function updateMemberRole(teamId: string, userId: string, role: TeamRole) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Only owners can change roles
-    const { data: membership } = await supabase
+    const service = createServiceClient();
+
+    const { data: membership } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
@@ -285,20 +273,16 @@ export async function updateMemberRole(
       return { error: "Only team owners can change member roles" };
     }
 
-    // Prevent changing owner role
-    const { data: targetMember } = await supabase
+    const { data: targetMember } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", userId)
       .single();
 
-    if (targetMember?.role === "owner") {
-      return { error: "Cannot change owner role" };
-    }
+    if (targetMember?.role === "owner") return { error: "Cannot change owner role" };
 
-    // Update role
-    const { error } = await supabase
+    const { error } = await service
       .from("team_members")
       .update({ role })
       .eq("team_id", teamId)
@@ -321,31 +305,23 @@ export async function updateMemberRole(
 export async function getTeamMembers(teamId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Verify user is a member and get team info
-    const { data: membership } = await supabase
+    const service = createServiceClient();
+
+    const { data: membership } = await service
       .from("team_members")
       .select("id, role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
 
-    if (!membership) {
-      return { error: "You are not a member of this team" };
-    }
+    if (!membership) return { error: "You are not a member of this team" };
 
-    // Get members with profiles
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("team_members")
-      .select(`
-        *,
-        profile:profiles(*)
-      `)
+      .select(`*, profile:profiles(id, full_name, avatar_url, email)`)
       .eq("team_id", teamId)
       .order("joined_at", { ascending: true });
 
@@ -365,26 +341,21 @@ export async function getTeamMembers(teamId: string) {
 export async function getTeamDetails(teamId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Verify user is a member and get their role
-    const { data: membership } = await supabase
+    const service = createServiceClient();
+
+    const { data: membership } = await service
       .from("team_members")
       .select("role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
 
-    if (!membership) {
-      return { error: "You are not a member of this team" };
-    }
+    if (!membership) return { error: "You are not a member of this team" };
 
-    // Get team details
-    const { data: team, error } = await supabase
+    const { data: team, error } = await service
       .from("teams")
       .select("*")
       .eq("id", teamId)
@@ -406,19 +377,14 @@ export async function getTeamDetails(teamId: string) {
 export async function getUserTeams() {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    const { data, error } = await supabase
+    const service = createServiceClient();
+
+    const { data, error } = await service
       .from("team_members")
-      .select(`
-        team_id,
-        role,
-        team:teams(*)
-      `)
+      .select(`team_id, role, team:teams(*)`)
       .eq("user_id", user.id);
 
     if (error) {
@@ -432,31 +398,33 @@ export async function getUserTeams() {
     return { error: "An unexpected error occurred" };
   }
 }
+
 // Get team by slug
 export async function getTeamBySlug(slug: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    const { data: team, error } = await supabase
+    const service = createServiceClient();
+
+    // Verify membership first
+    const { data: team, error } = await service
       .from("teams")
       .select("*")
       .eq("slug", slug)
       .single();
 
-    if (error) {
-      console.error("Error fetching team by slug:", error);
-      return { error: "Team not found" };
-    }
+    if (error || !team) return { error: "Team not found" };
 
-    // specific check: implies user must be a member or owner to see it?
-    // The RLS policy "View my teams" handles this (owner or member)
-    // checking if we can select it essentially checks permission via RLS
-    // but explicit check is good for returning specific error
+    const { data: membership } = await service
+      .from("team_members")
+      .select("id")
+      .eq("team_id", team.id)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!membership) return { error: "You are not a member of this team" };
 
     return { data: team };
   } catch (error) {
@@ -469,33 +437,25 @@ export async function getTeamBySlug(slug: string) {
 export async function getTeamTasks(teamId: string) {
   try {
     const supabase = await createClient();
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return { error: "Unauthorized" };
-    }
+    if (authError || !user) return { error: "Unauthorized" };
 
-    // Verify membership
-    const { data: membership, error: memError } = await supabase
+    const service = createServiceClient();
+
+    const { data: membership } = await service
       .from("team_members")
       .select("id, role")
       .eq("team_id", teamId)
       .eq("user_id", user.id)
       .single();
 
-    if (memError || !membership) {
-      console.error(`[TeamTasks] Membership check failed for User ${user.id} Team ${teamId}`, memError);
-      return { error: "You are not a member of this team" };
-    }
+    if (!membership) return { error: "You are not a member of this team" };
 
-    const { data, error } = await supabase
+    const { data, error } = await service
       .from("plans")
-      .select(`
-        *,
-        assignee:profiles!assigned_to(full_name, avatar_url)
-      `)
+      .select(`*, assignee:profiles!assigned_to(full_name, avatar_url)`)
       .eq("team_id", teamId)
-      .eq("category", "task") // Only tasks for now
+      .eq("category", "task")
       .order("created_at", { ascending: false });
 
     if (error) {

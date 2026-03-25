@@ -44,7 +44,7 @@ interface Team {
   id: string;
   name: string;
   slug: string;
-  tier: string;
+  plan_tier: string;
   subscription_status: SubscriptionStatus;
   created_at: string;
 }
@@ -70,15 +70,15 @@ interface Project {
 // ── Tier config ───────────────────────────────────────────────────────────────
 
 const TIER_LABELS: Record<string, { ar: string; en: string }> = {
-  starter: { ar: "المبتدئ", en: "Starter" },
-  pro: { ar: "الاحترافي", en: "Professional" },
-  enterprise: { ar: "المؤسسات", en: "Enterprise" },
+  FREE: { ar: "المجاني", en: "Free" },
+  INDIVIDUAL: { ar: "الفردي", en: "Individual" },
+  COMPANY: { ar: "الشركات", en: "Company" },
 };
 
 const TIER_MEMBER_LIMIT: Record<string, number | null> = {
-  starter: 5,
-  pro: 20,
-  enterprise: null,   // unlimited
+  FREE: 5,
+  INDIVIDUAL: 10,
+  COMPANY: null, // unlimited
 };
 
 // ── Role badge ────────────────────────────────────────────────────────────────
@@ -227,8 +227,8 @@ export default function TeamSettingsPage() {
   if (loading) return <PageSkeleton />;
   if (!team) return null;
 
-  const tierLabel = t(TIER_LABELS[team.tier]?.ar ?? team.tier, TIER_LABELS[team.tier]?.en ?? team.tier);
-  const memberLimit = TIER_MEMBER_LIMIT[team.tier];
+  const tierLabel = t(TIER_LABELS[team.plan_tier]?.ar ?? team.plan_tier, TIER_LABELS[team.plan_tier]?.en ?? team.plan_tier);
+  const memberLimit = TIER_MEMBER_LIMIT[team.plan_tier] ?? null;
   const canManage = userRole === "owner" || userRole === "admin";
 
   // ── Render ─────────────────────────────────────────────────────────────────
