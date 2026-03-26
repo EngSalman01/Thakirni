@@ -31,9 +31,10 @@ export function trackEvent(name: EventName, data?: EventData) {
     })
 
     // Also capture as a custom metric
-    Sentry.metrics?.increment(`thakirni.${name}`, 1, {
-      tags: data as Record<string, string | number | boolean> | undefined,
-    })
+    ;(Sentry as unknown as { metrics?: { increment: (key: string, value: number, opts?: object) => void } })
+      .metrics?.increment(`thakirni.${name}`, 1, {
+        tags: data as Record<string, string | number | boolean> | undefined,
+      })
   } catch {
     // Never let analytics crash the app
   }
