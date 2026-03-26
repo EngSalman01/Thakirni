@@ -192,9 +192,17 @@ function AuthForm() {
   const { t, isArabic } = useLanguage();
   const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next");
+  const urlError = searchParams.get("error");
   const router  = useRouter();
   const supabase = createClient();
   const strength = getPasswordStrength(signUpPassword);
+
+  // Show error from OAuth callback (e.g. Google login failed)
+  React.useEffect(() => {
+    if (urlError === "callback_failed") {
+      setErrors({ form: t("فشل تسجيل الدخول بجوجل، حاول مرة أخرى", "Google sign-in failed. Please try again.") });
+    }
+  }, [urlError]);
 
   // ── Sign In ──────────────────────────────────────────────────────
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
