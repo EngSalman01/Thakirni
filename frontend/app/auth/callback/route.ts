@@ -3,10 +3,21 @@ import { createServerClient } from "@supabase/ssr"
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
+  console.log("[auth/callback] incoming URL params:", Object.fromEntries(searchParams.entries()))
   const code = searchParams.get("code")
   const nextRaw = searchParams.get("next") ?? "/vault"
   // Allow relative paths only — prevent open redirect via external URLs
   const next = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/vault"
+
+  // Supabase / OAuth provider returned an error instead of a code
+  const oauthError = searchParams.get("error")
+  const oauthErrorDesc = searchParams.get("error_description")
+  if (oauthError) {
+    console.error("[auth/callback] OAuth error from provider:", oauthError, oauthErrorDesc)
+    return NextResponse.redirect(
+      `${origin}/auth?error=callback_failed&reason=${encodeURIComponent(oauthErrorDesc ?? oauthError)}`
+    )
+  }
 
   if (code) {
     // Build the redirect response first so we can attach cookies to it directly.
