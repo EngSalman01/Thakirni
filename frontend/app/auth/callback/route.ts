@@ -3,7 +3,6 @@ import { createServerClient } from "@supabase/ssr"
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
-  console.log("[auth/callback] incoming URL params:", Object.fromEntries(searchParams.entries()))
   const code = searchParams.get("code")
   const nextRaw = searchParams.get("next") ?? "/vault"
   // Allow relative paths only — prevent open redirect via external URLs
