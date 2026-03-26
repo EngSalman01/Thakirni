@@ -59,7 +59,7 @@ function PasswordField({
 
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>{label} <span className="text-red-500">*</span></Label>
       <div className="relative">
         <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input

@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
   const { data: goal, error } = await auth.supabase
     .from("goals")
-    .insert({ user_id: auth.userId, ...goalData, progress: 0, status: "active" })
+    .insert({ user_id: auth.userId, ...goalData, target_date: goalData.target_date || null, progress: 0, status: "active" })
     .select()
     .single()
 

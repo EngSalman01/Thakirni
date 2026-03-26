@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">البريد الإلكتروني</Label>
+              <Label className="text-sm font-medium">البريد الإلكتروني <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="email" type="email" placeholder="admin@example.com"
@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">كلمة المرور</Label>
+              <Label className="text-sm font-medium">كلمة المرور <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="password" type={showPw ? "text" : "password"}

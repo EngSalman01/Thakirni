@@ -8,7 +8,7 @@ import { LanguageToggle } from "@/components/language-toggle"
 import { useLanguage } from "@/components/language-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle2, Circle, Flame, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -95,40 +95,6 @@ export default function HabitsPage() {
   const completedCount = habits.filter((h: Record<string, unknown>) => h.completed_today).length
   const total = habits.length
 
-  const NewHabitDialog = () => (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-          className="flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold text-sm btn-glow">
-          <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
-        </motion.button>
-      </DialogTrigger>
-      <DialogContent className="max-w-sm">
-        <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
-        <form onSubmit={createHabit} className="space-y-4">
-          <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
-          <div>
-            <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
-            <div className="flex flex-wrap gap-2">
-              {HABIT_ICONS.map(icon => (
-                <button key={icon} type="button" onClick={() => setForm({...form, icon})}
-                  className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-[#2552ca] bg-[#2552ca]/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
-              ))}
-            </div>
-          </div>
-          <Select value={form.frequency} onValueChange={v => setForm({...form, frequency: v})}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
-              <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إضافة العادة", "Add Habit")}</Button>
-        </form>
-      </DialogContent>
-    </Dialog>
-  )
-
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
@@ -167,7 +133,11 @@ export default function HabitsPage() {
                     </div>
                   ))}
                 </div>
-                <NewHabitDialog />
+                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => setOpen(true)}
+                  className="flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold text-sm btn-glow">
+                  <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
+                </motion.button>
               </motion.div>
 
               {/* Right: progress ring */}
@@ -230,7 +200,11 @@ export default function HabitsPage() {
                 <Flame className="w-16 h-16 mx-auto mb-4 text-[#ad1d7f]/30" />
                 <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا يوجد عادات بعد", "No habits yet")}</h2>
                 <p className="text-slate-500 mb-8">{t("أضف عادتك الأولى وابدأ رحلتك!", "Add your first habit and start your journey!")}</p>
-                <NewHabitDialog />
+                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
+                  onClick={() => setOpen(true)}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold btn-glow">
+                  <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
+                </motion.button>
               </motion.div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -277,44 +251,50 @@ export default function HabitsPage() {
                 <motion.div custom={habits.length} initial={{ opacity: 0, y: 28 }}
                   whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.7, delay: habits.length * 0.08, ease: [0.2,1,0.3,1] }}>
-                  <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger asChild>
-                      <button className="w-full h-full min-h-[200px] bg-white border-2 border-dashed border-[#e4e2e1] rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-[#2552ca]/50 hover:bg-[#f6f3f2] transition-all group">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <Plus className="w-7 h-7 text-[#2552ca]" />
-                        </div>
-                        <span className="font-headline font-bold text-slate-600">{t("أضف عادة", "Add habit")}</span>
-                      </button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-sm">
-                      <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
-                      <form onSubmit={createHabit} className="space-y-4">
-                        <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {HABIT_ICONS.map(icon => (
-                              <button key={icon} type="button" onClick={() => setForm({...form, icon})}
-                                className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-[#2552ca] bg-[#2552ca]/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
-                            ))}
-                          </div>
-                        </div>
-                        <Select value={form.frequency} onValueChange={v => setForm({...form, frequency: v})}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
-                            <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إضافة العادة", "Add Habit")}</Button>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                  <button onClick={() => setOpen(true)}
+                    className="w-full h-full min-h-[200px] bg-white border-2 border-dashed border-[#e4e2e1] rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-[#2552ca]/50 hover:bg-[#f6f3f2] transition-all group">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Plus className="w-7 h-7 text-[#2552ca]" />
+                    </div>
+                    <span className="font-headline font-bold text-slate-600">{t("أضف عادة", "Add habit")}</span>
+                  </button>
                 </motion.div>
               </div>
             )}
           </div>
         </section>
+
+        {/* Single dialog instance — stable in the tree, never remounted */}
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
+            <form onSubmit={createHabit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">
+                  {t("اسم العادة", "Habit name")} <span className="text-red-500">*</span>
+                </label>
+                <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
+                <div className="flex flex-wrap gap-2">
+                  {HABIT_ICONS.map(icon => (
+                    <button key={icon} type="button" onClick={() => setForm({...form, icon})}
+                      className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-[#2552ca] bg-[#2552ca]/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
+                  ))}
+                </div>
+              </div>
+              <Select value={form.frequency} onValueChange={v => setForm({...form, frequency: v})}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
+                  <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إضافة العادة", "Add Habit")}</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   )

@@ -189,16 +189,36 @@ export default function GoalsPage() {
                   <DialogContent className="max-w-md">
                     <DialogHeader><DialogTitle>{t("إضافة هدف جديد", "Add New Goal")}</DialogTitle></DialogHeader>
                     <form onSubmit={createGoal} className="space-y-4">
-                      <Input placeholder={t("عنوان الهدف", "Goal title")} value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
-                      <Textarea placeholder={t("وصف الهدف (اختياري)", "Goal description (optional)")} value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">
+                          {t("عنوان الهدف", "Goal title")} <span className="text-red-500">*</span>
+                        </label>
+                        <Input placeholder={t("عنوان الهدف", "Goal title")} value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-slate-700">
+                          {t("وصف الهدف", "Description")} <span className="text-slate-400 text-xs font-normal">{t("(اختياري)", "(optional)")}</span>
+                        </label>
+                        <Textarea placeholder={t("وصف الهدف (اختياري)", "Goal description (optional)")} value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
+                      </div>
                       <div className="grid grid-cols-2 gap-3">
-                        <Select value={form.category} onValueChange={v => setForm({...form, category: v})}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.icon} {isArabic ? c.labelAr : c.labelEn}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <Input type="date" value={form.target_date} onChange={e => setForm({...form, target_date: e.target.value})} />
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-slate-700">
+                            {t("الفئة", "Category")} <span className="text-red-500">*</span>
+                          </label>
+                          <Select value={form.category} onValueChange={v => setForm({...form, category: v})}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.icon} {isArabic ? c.labelAr : c.labelEn}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium text-slate-700">
+                            {t("تاريخ الهدف", "Target date")} <span className="text-slate-400 text-xs font-normal">{t("(اختياري)", "(optional)")}</span>
+                          </label>
+                          <Input type="date" value={form.target_date} onChange={e => setForm({...form, target_date: e.target.value})} />
+                        </div>
                       </div>
                       <Button type="button" variant="outline" className="w-full gap-2" onClick={suggestMilestones} disabled={aiLoading}>
                         <Wand2 className="w-4 h-4" />{aiLoading ? t("جاري الاقتراح...", "Suggesting...") : t("اقترح خطوات بالذكاء الاصطناعي", "AI Suggest Milestones")}
@@ -300,7 +320,7 @@ export default function GoalsPage() {
                   const cat = categoryInfo(goal.category)
                   const progress = goal.progress || 0
                   const milestones = (goal.goal_milestones as unknown[]) || []
-                  const completedMilestones = milestones.filter((m: any) => m.completed).length
+                  const completedMilestones = milestones.filter((m: any) => m.is_completed).length
                   return (
                     <motion.div key={goal.id}
                       custom={i} initial={{ opacity: 0, y: 28 }}
@@ -347,9 +367,9 @@ export default function GoalsPage() {
                             <p className="text-xs font-bold text-slate-500 mb-2">{t(`${completedMilestones}/${milestones.length} خطوة`, `${completedMilestones}/${milestones.length} steps`)}</p>
                             {milestones.slice(0,3).map((m: any) => (
                               <div key={m.id} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer hover:text-slate-800"
-                                onClick={() => !m.completed && completeMilestone(goal.id, m.id)}>
-                                {m.completed ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <div className="w-4 h-4 rounded-full border-2 border-slate-300 shrink-0" />}
-                                <span className={m.completed ? "line-through opacity-50" : ""}>{m.title}</span>
+                                onClick={() => !m.is_completed && completeMilestone(goal.id, m.id)}>
+                                {m.is_completed ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <div className="w-4 h-4 rounded-full border-2 border-slate-300 shrink-0" />}
+                                <span className={m.is_completed ? "line-through opacity-50" : ""}>{m.title}</span>
                               </div>
                             ))}
                           </div>

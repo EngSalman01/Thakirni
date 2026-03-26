@@ -114,7 +114,7 @@ export function CreateProjectDialog({
                 className="text-sm font-medium flex items-center gap-2"
               >
                 <Sparkles className="w-4 h-4 text-purple-500" />
-                Project Name
+                Project Name <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"

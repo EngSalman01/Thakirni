@@ -213,7 +213,7 @@ export default function ResetPasswordPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label className="text-sm font-medium">
-                      {t("البريد الإلكتروني", "Email")}
+                      {t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

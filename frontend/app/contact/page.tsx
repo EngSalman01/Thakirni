@@ -153,7 +153,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <Label className="font-label font-semibold flex items-center gap-2 text-foreground">
                       <User className="w-4 h-4" style={{ color: "#2552ca" }} />
-                      {t("الاسم", "Name")}
+                      {t("الاسم", "Name")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       value={name}
@@ -169,7 +169,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <Label className="font-label font-semibold flex items-center gap-2 text-foreground">
                       <Mail className="w-4 h-4" style={{ color: "#2552ca" }} />
-                      {t("البريد الإلكتروني", "Email")}
+                      {t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       type="email"
@@ -187,7 +187,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <Label className="font-label font-semibold flex items-center gap-2 text-foreground">
                       <MessageSquare className="w-4 h-4" style={{ color: "#2552ca" }} />
-                      {t("الرسالة", "Message")}
+                      {t("الرسالة", "Message")} <span className="text-red-500">*</span>
                     </Label>
                     <Textarea
                       value={message}
