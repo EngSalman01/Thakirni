@@ -293,10 +293,14 @@ function AuthForm() {
   // ── Google ───────────────────────────────────────────────────────
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${location.origin}/auth/callback?next=${nextUrl || "/vault"}` },
+      options: { redirectTo: `${location.origin}/auth/callback` },
     });
+    if (error) {
+      setErrors({ form: error.message });
+      setIsGoogleLoading(false);
+    }
   };
 
   // ── Email confirm screen ─────────────────────────────────────────
