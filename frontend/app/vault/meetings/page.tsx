@@ -390,10 +390,10 @@ export default function MeetingsPage() {
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === "completed" ? "bg-green-100 text-green-700" : "bg-[#e4e2e1] text-slate-500"}`}>
                             {m.status === "completed" ? t("مكتمل", "Completed") : t("جاري...", "Processing...")}
                           </span>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400 hover:text-red-500" onClick={() => handleDelete(m.id)}>
+                          <Button variant="ghost" size="icon" aria-label="Delete meeting" className="h-9 w-9 text-slate-400 hover:text-red-500" onClick={() => handleDelete(m.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-400" onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}>
+                          <Button variant="ghost" size="icon" aria-label="Toggle details" className="h-9 w-9 text-slate-400" onClick={() => setExpandedId(expandedId === m.id ? null : m.id)}>
                             {expandedId === m.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                           </Button>
                         </div>

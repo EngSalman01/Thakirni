@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
   const { data, error } = await auth.supabase
     .from("focus_sessions")
     .select("*")
+    .eq("user_id", auth.userId)
     .order("started_at", { ascending: false })
     .limit(limit)
 

@@ -6,7 +6,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (auth instanceof Response) return auth
   const { id } = await params
   const { progress } = await req.json() as { progress: number }
-  const status = progress >= 100 ? "completed" : "active"
+  const status = progress >= 100 ? "done" : "active"
 
   const { data, error } = await auth.supabase
     .from("goals")

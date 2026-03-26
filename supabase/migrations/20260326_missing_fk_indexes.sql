@@ -16,8 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_team_invitations_team ON public.team_invitations(
 -- Lookup: team_invitations by email (for invite acceptance)
 CREATE INDEX IF NOT EXISTS idx_team_invitations_email ON public.team_invitations(email);
 
--- FK: whatsapp_messages.connection_id → whatsapp_connections.id
-CREATE INDEX IF NOT EXISTS idx_wa_messages_connection ON public.whatsapp_messages(connection_id);
+-- NOTE: whatsapp_messages does not have a connection_id column — index removed
 
 -- Lookup: whatsapp_connections by user_id
 CREATE INDEX IF NOT EXISTS idx_wa_connections_user ON public.whatsapp_connections(user_id);

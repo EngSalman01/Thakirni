@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const total = milestones.length
     const done = milestones.filter((m) => m.is_completed).length
     const progress = total > 0 ? Math.round((done / total) * 100) : 0
-    const status = progress >= 100 ? "completed" : "active"
+    const status = progress >= 100 ? "done" : "active"
     await auth.supabase.from("goals").update({ progress, status }).eq("id", id).eq("user_id", auth.userId)
   }
 

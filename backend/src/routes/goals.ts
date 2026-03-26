@@ -81,7 +81,7 @@ goalsRouter.patch("/:id/progress", async (c) => {
   const { id } = c.req.param()
   const { progress } = await c.req.json() as { progress: number }
 
-  const status = progress >= 100 ? "completed" : "active"
+  const status = progress >= 100 ? "done" : "active"
 
   const { data, error } = await supabase
     .from("goals")
@@ -118,7 +118,7 @@ goalsRouter.post("/:id/milestones/:mid/complete", async (c) => {
     const total = milestones.length
     const done = milestones.filter((m) => m.is_completed).length
     const progress = total > 0 ? Math.round((done / total) * 100) : 0
-    const status = progress >= 100 ? "completed" : "active"
+    const status = progress >= 100 ? "done" : "active"
     await supabase.from("goals").update({ progress, status }).eq("id", id).eq("user_id", userId)
   }
 

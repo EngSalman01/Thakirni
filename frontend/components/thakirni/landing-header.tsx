@@ -61,10 +61,10 @@ export function LandingHeader() {
             {t("المميزات", "Features")}
           </Link>
           <Link
-            href="/pricing"
+            href="/help"
             className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
           >
-            {t("الأسعار", "Pricing")}
+            {t("مركز المساعدة", "Help Center")}
           </Link>
           <Link
             href="#process"
@@ -121,7 +121,7 @@ export function LandingHeader() {
             <div className="px-8 py-5 flex flex-col gap-4">
               {[
                 { href: "#features", ar: "المميزات", en: "Features" },
-                { href: "/pricing", ar: "الأسعار", en: "Pricing" },
+                { href: "/help", ar: "مركز المساعدة", en: "Help Center" },
                 { href: "#process", ar: "كيف يعمل", en: "How It Works" },
               ].map(({ href, ar, en }) => (
                 <Link

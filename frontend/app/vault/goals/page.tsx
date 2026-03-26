@@ -247,9 +247,9 @@ export default function GoalsPage() {
                   <h3 className="text-xl font-headline font-bold text-slate-900 mb-6">{t("تقدم الأهداف", "Goal Progress")}</h3>
                   {goals.length === 0
                     ? <p className="text-sm text-slate-500 text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>
-                    : (goals as Array<{ id?: string; title: string; progress?: number; progress_pct?: number }>).slice(0, 3).map((goal, i) => {
+                    : (goals as Array<{ id?: string; title: string; progress?: number }>).slice(0, 3).map((goal, i) => {
                         const barColors = ["bg-[#2552ca]", "bg-[#ad1d7f]", "bg-[#456ce4]"];
-                        const pct = Math.min(100, Math.round(goal.progress ?? goal.progress_pct ?? 0));
+                        const pct = Math.min(100, Math.round(goal.progress ?? 0));
                         return (
                           <div key={goal.id ?? i}>
                             <div className="flex justify-between mb-2">
@@ -336,7 +336,7 @@ export default function GoalsPage() {
                             <span className="text-xs font-bold px-3 py-1 rounded-full bg-white text-slate-600">
                               {isArabic ? cat.labelAr : cat.labelEn}
                             </span>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                            <Button variant="ghost" size="icon" aria-label="Delete goal" className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
                               onClick={() => deleteGoal(goal.id)}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </Button>

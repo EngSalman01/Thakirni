@@ -24,7 +24,7 @@ interface Plan {
 }
 
 interface Habit {
-  title: string
+  name: string
   category: string
   frequency: string
   current_streak?: number
@@ -33,8 +33,8 @@ interface Habit {
 interface Goal {
   title: string
   status: string
-  deadline?: string | null
-  progress_pct?: number
+  target_date?: string | null
+  progress?: number
 }
 
 type ExportData =
@@ -109,9 +109,9 @@ export function exportToPDF(data: ExportData) {
   } else if (data.type === "habits") {
     autoTable(doc, {
       startY: 52,
-      head: [["Title", "Category", "Frequency", "Current Streak"]],
+      head: [["Name", "Category", "Frequency", "Current Streak"]],
       body: (data.items as Habit[]).map(h => [
-        h.title,
+        h.name,
         h.category ?? "—",
         h.frequency ?? "daily",
         `${h.current_streak ?? 0} days`,
@@ -123,12 +123,12 @@ export function exportToPDF(data: ExportData) {
   } else if (data.type === "goals") {
     autoTable(doc, {
       startY: 52,
-      head: [["Title", "Status", "Deadline", "Progress"]],
+      head: [["Title", "Status", "Target Date", "Progress"]],
       body: (data.items as Goal[]).map(g => [
         g.title,
         g.status,
-        g.deadline ? new Date(g.deadline).toLocaleDateString("en-GB") : "—",
-        `${g.progress_pct ?? 0}%`,
+        g.target_date ? new Date(g.target_date).toLocaleDateString("en-GB") : "—",
+        `${g.progress ?? 0}%`,
       ]),
       styles: { fontSize: 8, cellPadding: 3 },
       headStyles: { fillColor: [16, 185, 129], textColor: 255, fontStyle: "bold" },
