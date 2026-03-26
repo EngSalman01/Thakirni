@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? ""
+const APP_URL          = process.env.NEXT_PUBLIC_APP_URL ?? "https://thakirni.com"
+const REDIRECT_URI     = `${APP_URL}/api/google-calendar/callback`
 const SCOPES = [
   "openid",
   "https://www.googleapis.com/auth/userinfo.email",
@@ -16,7 +18,6 @@ export async function GET(req: NextRequest) {
   }
 
   const { origin } = new URL(req.url)
-  const redirectUri = `${origin}/api/google-calendar/callback`
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
   const params = new URLSearchParams({
     client_id:     GOOGLE_CLIENT_ID,
-    redirect_uri:  redirectUri,
+    redirect_uri:  REDIRECT_URI,
     response_type: "code",
     scope:         SCOPES,
     access_type:   "offline",
