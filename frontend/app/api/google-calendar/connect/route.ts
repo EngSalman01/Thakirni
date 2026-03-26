@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID ?? ""
-const APP_URL              = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-const REDIRECT_URI         = `${APP_URL}/api/google-calendar/callback`
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? ""
 const SCOPES = [
   "openid",
   "https://www.googleapis.com/auth/userinfo.email",
@@ -17,20 +15,23 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Google Client ID not configured" }, { status: 500 })
   }
 
+  const { origin } = new URL(req.url)
+  const redirectUri = `${origin}/api/google-calendar/callback`
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
-    return NextResponse.redirect(`${APP_URL}/auth`)
+    return NextResponse.redirect(`${origin}/auth`)
   }
 
   const params = new URLSearchParams({
     client_id:     GOOGLE_CLIENT_ID,
-    redirect_uri:  REDIRECT_URI,
+    redirect_uri:  redirectUri,
     response_type: "code",
     scope:         SCOPES,
     access_type:   "offline",
     prompt:        "consent",
-    state:         user.id,   // use user id as CSRF state
+    state:         user.id,
   })
 
   return NextResponse.redirect(
