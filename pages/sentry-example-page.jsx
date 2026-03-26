@@ -51,7 +51,7 @@ export default function Page() {
           <a
             target="_blank"
             rel="noopener"
-            href="https://thakirni.sentry.io/issues/?project=4511103305515008"
+            href="https://thakirni-fs.sentry.io/issues/?project=4511110835666944"
           >
             Issues Page
           </a>

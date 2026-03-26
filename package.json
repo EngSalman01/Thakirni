@@ -19,6 +19,6 @@
   },
   "packageManager": "pnpm@10.28.2",
   "dependencies": {
-    "@sentry/nextjs": "^10.45.0"
+    "@sentry/nextjs": "^10"
   }
 }
