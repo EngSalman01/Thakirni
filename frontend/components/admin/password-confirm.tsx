@@ -50,7 +50,9 @@ export function useAdminConfirm() {
       });
 
       if (error) {
-        toast.error("Incorrect password");
+        console.error("[AdminConfirm] signInWithPassword error:", error.message, error.status)
+        const isRateLimit = error.status === 429 || error.message?.toLowerCase().includes("rate")
+        toast.error(isRateLimit ? "Too many attempts — wait a moment and try again" : "Incorrect password")
         setVerifying(false);
         return;
       }
