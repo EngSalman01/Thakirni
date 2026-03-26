@@ -45,7 +45,8 @@ export function usePlans(): UsePlansReturn {
         .from('plans')
         .select('*')
         .eq('user_id', user.id)
-        .order('reminder_date', { ascending: true })
+        .order('plan_date', { ascending: false })
+        .order('created_at', { ascending: false })
       
       if (error) throw error
       
@@ -128,9 +129,8 @@ export function usePlans(): UsePlansReturn {
     pendingGroceries: plans.filter(p => p.category === 'grocery' && p.status === 'pending').length,
     upcomingMeetings: plans.filter(p => p.category === 'meeting' && p.status === 'pending').length,
     todayReminders: plans.filter(p => {
-        if (!p.reminder_date) return false
-        // Simple string comparison for now, assuming ISO dates
-        return p.reminder_date.startsWith(today)
+        if (!p.plan_date) return false
+        return p.plan_date.startsWith(today)
     }).length
   }
 
@@ -138,10 +138,9 @@ export function usePlans(): UsePlansReturn {
   const nextUp = plans
     .filter(p => p.status === 'pending' && (p.category === 'task' || p.category === 'meeting'))
     .sort((a, b) => {
-      // Sort by date if available, otherwise push to end
-      if (a.reminder_date && b.reminder_date) return a.reminder_date.localeCompare(b.reminder_date)
-      if (a.reminder_date) return -1
-      if (b.reminder_date) return 1
+      if (a.plan_date && b.plan_date) return a.plan_date.localeCompare(b.plan_date)
+      if (a.plan_date) return -1
+      if (b.plan_date) return 1
       return 0
     })
     .slice(0, 3)

@@ -66,7 +66,7 @@ export default function PlansPage() {
     if (!newPlanTitle.trim()) return;
     setIsAdding(true);
     try {
-      await addPlan({ title: newPlanTitle, category: activeTab === "all" ? "task" : (activeTab as "task"|"grocery"|"meeting"), status: "pending", is_recurring: false, priority: "medium", reminder_date: new Date().toISOString() });
+      await addPlan({ title: newPlanTitle, category: activeTab === "all" ? "task" : (activeTab as "task"|"grocery"|"meeting"), status: "pending", priority: "medium", plan_date: new Date().toISOString().split("T")[0] });
       setNewPlanTitle("");
     } catch (err) {
       console.error("[Plans] add plan error:", err);
@@ -82,7 +82,7 @@ export default function PlansPage() {
 
   const formatDate = (d: string | null | undefined) => d ? format(new Date(d), "PPP", { locale: isArabic ? arSA : enUS }) : "";
 
-  const completedCount = plans.filter(p => p.status === "completed").length;
+  const completedCount = plans.filter(p => p.status === "done").length;
   const pendingCount = plans.filter(p => p.status === "pending").length;
 
   return (
@@ -144,7 +144,7 @@ export default function PlansPage() {
                     ? <p className="text-sm text-slate-400 text-center py-4">{t("لا خطط بعد — أضف مهمتك الأولى!", "No plans yet — add your first task!")}</p>
                     : plans.slice(0, 3).map((plan, i) => {
                         const catColor = plan.category === "grocery" ? "bg-emerald-500" : plan.category === "meeting" ? "bg-[#ad1d7f]" : "bg-[#2552ca]";
-                        const done = plan.status === "completed";
+                        const done = plan.status === "done";
                         return (
                           <motion.div key={plan.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
                             className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-[#f6f3f2]"}`}>
@@ -234,16 +234,16 @@ export default function PlansPage() {
                           <motion.div key={plan.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} layout
                             className={cn("group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200",
                               selectedIds.has(plan.id) ? "bg-[#2552ca]/5 border-[#2552ca]/30 ring-1 ring-[#2552ca]/20"
-                              : plan.status === "completed" ? "bg-white/40 border-white/60 opacity-50"
+                              : plan.status === "done" ? "bg-white/40 border-white/60 opacity-50"
                               : "bg-white border-[#e4e2e1] shadow-ambient hover:shadow-card hover:-translate-y-0.5")}>
                             <div className={cn("absolute top-3 right-3 transition-opacity", selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                               <input type="checkbox" checked={selectedIds.has(plan.id)} onChange={() => toggleSelect(plan.id)} onClick={e => e.stopPropagation()}
                                 className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer" />
                             </div>
-                            <Checkbox checked={plan.status === "completed"} onCheckedChange={c => updatePlanStatus(plan.id, c ? "completed" : "pending")} className="mt-1" />
+                            <Checkbox checked={plan.status === "done"} onCheckedChange={c => updatePlanStatus(plan.id, c ? "done" : "pending")} className="mt-1" />
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className={cn("font-semibold truncate", plan.status === "completed" ? "line-through text-slate-400" : "text-slate-800")}>
+                                <span className={cn("font-semibold truncate", plan.status === "done" ? "line-through text-slate-400" : "text-slate-800")}>
                                   {plan.title}
                                 </span>
                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#f0eded] text-[10px] font-bold text-slate-600">
@@ -251,9 +251,9 @@ export default function PlansPage() {
                                   {t(plan.category || "task", (plan.category || "task").toUpperCase())}
                                 </span>
                               </div>
-                              {plan.reminder_date && (
+                              {plan.plan_date && (
                                 <div className="flex items-center gap-1 text-xs text-slate-400">
-                                  <Calendar className="w-3 h-3" /><span>{formatDate(plan.reminder_date)}</span>
+                                  <Calendar className="w-3 h-3" /><span>{formatDate(plan.plan_date)}</span>
                                 </div>
                               )}
                             </div>

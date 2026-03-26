@@ -20,12 +20,14 @@ export interface Plan {
   user_id: string;
   title: string;
   description?: string | null;
-  category?: 'task' | 'grocery' | 'meeting' | 'general';
+  category?: 'task' | 'grocery' | 'meeting' | 'work' | 'personal' | 'health' | 'finance' | 'other';
   location?: string | null;
-  reminder_date?: string | null; // ISO date/time string
-  is_recurring: boolean;
-  recurrence_pattern?: 'daily' | 'weekly' | 'monthly' | 'yearly' | null;
-  status: 'pending' | 'completed' | 'cancelled';
+  plan_date?: string | null;
+  plan_time?: string | null;
+  end_time?: string | null;
+  is_all_day?: boolean;
+  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';
+  status: 'pending' | 'done' | 'cancelled';
   priority: 'low' | 'medium' | 'high';
   created_at: string;
   updated_at: string;

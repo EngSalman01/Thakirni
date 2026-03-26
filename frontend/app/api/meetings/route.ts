@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await auth.supabase
     .from("meetings")
-    .select("id, title, duration_seconds, speaker_count, language, summary, key_points, action_items, status, created_at")
+    .select("id, title, duration_seconds, speaker_count, language, summary, key_points, action_items, speakers, transcript, status, created_at")
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1)
 

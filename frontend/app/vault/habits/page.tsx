@@ -39,13 +39,13 @@ async function fetchHabits() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return []
   const res = await fetch(`/api/habits`, { headers: { Authorization: `Bearer ${session.access_token}` } })
-  if (!res.ok) return []
+  if (!res.ok) throw new Error(`Failed to fetch habits: ${res.status}`)
   const d = await res.json() as { habits?: Record<string, unknown>[] }
   return d.habits ?? []
 }
 
 export default function HabitsPage() {
-  const { data: habits = [], mutate, isLoading: habitsLoading } = useSWR(`/api/habits`, fetchHabits, { refreshInterval: 60000 })
+  const { data: habits = [], mutate, isLoading: habitsLoading, error: habitsError } = useSWR(`/api/habits`, fetchHabits, { refreshInterval: 60000 })
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" })
@@ -202,7 +202,15 @@ export default function HabitsPage() {
         {/* ── HABITS BENTO ── */}
         <section className="pb-24 px-8">
           <div className="max-w-7xl mx-auto">
-            {habitsLoading ? (
+            {habitsError ? (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-red-50 border border-red-200 rounded-2xl p-10 text-center">
+                <p className="text-red-600 font-semibold mb-3">{t("فشل تحميل العادات", "Failed to load habits")}</p>
+                <button onClick={() => mutate()} className="px-4 py-2 rounded-full border border-red-300 text-red-600 text-sm hover:bg-red-50">
+                  {t("إعادة المحاولة", "Retry")}
+                </button>
+              </motion.div>
+            ) : habitsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3, 4, 5, 6].map(i => (
                   <div key={i} className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
