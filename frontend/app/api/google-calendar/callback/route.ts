@@ -13,14 +13,20 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get("error")
 
   if (error || !code || !state) {
-    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
+    console.error("[gcal/callback] missing params — error:", error, "code:", !!code, "state:", !!state)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error&reason=missing_params`)
   }
 
   // Verify the state matches the authenticated user (prevents CSRF)
   const supabaseCheck = await createClient()
   const { data: { user: authUser } } = await supabaseCheck.auth.getUser()
-  if (!authUser || authUser.id !== state) {
-    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
+  if (!authUser) {
+    console.error("[gcal/callback] no authenticated user in session")
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error&reason=no_session`)
+  }
+  if (authUser.id !== state) {
+    console.error("[gcal/callback] state mismatch — authUser:", authUser.id, "state:", state)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error&reason=state_mismatch`)
   }
 
   // Exchange code for tokens
@@ -37,7 +43,9 @@ export async function GET(req: NextRequest) {
   })
 
   if (!tokenRes.ok) {
-    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
+    const errBody = await tokenRes.text()
+    console.error("[gcal/callback] token exchange failed:", tokenRes.status, errBody)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error&reason=token_exchange`)
   }
 
   const tokens = await tokenRes.json() as {
