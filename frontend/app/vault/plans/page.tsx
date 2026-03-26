@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, CheckCircle2, Plus, Trash2, ShoppingBag, Briefcase, ListTodo } from "lucide-react";
+import { Calendar, CheckCircle2, Plus, Trash2, ShoppingBag, Briefcase, ListTodo, CalendarPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -42,6 +42,8 @@ export default function PlansPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [isAdding, setIsAdding] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pushingId, setPushingId] = useState<string | null>(null);
+  const [pushedIds, setPushedIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
@@ -57,6 +59,33 @@ export default function PlansPage() {
       console.error("[Plans] bulk delete error:", err);
       toast.error(t("فشل حذف الخطط", "Failed to delete plans"));
     } finally { setBulkDeleting(false); }
+  };
+
+  const pushToCalendar = async (plan: typeof plans[number]) => {
+    setPushingId(plan.id);
+    try {
+      const res = await fetch("/api/google-calendar/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: plan.title, date: plan.plan_date ?? undefined }),
+      });
+      if (res.status === 403) {
+        toast.error(t("اربط Google Calendar أولاً من الإعدادات", "Connect Google Calendar first in Settings"), {
+          action: { label: t("الإعدادات", "Settings"), onClick: () => window.location.href = "/vault/settings" },
+        });
+        return;
+      }
+      if (!res.ok) throw new Error("failed");
+      const { event } = await res.json() as { event: { htmlLink: string } };
+      setPushedIds(prev => new Set(prev).add(plan.id));
+      toast.success(t("تمت الإضافة إلى Google Calendar", "Added to Google Calendar"), {
+        action: event?.htmlLink ? { label: t("عرض", "View"), onClick: () => window.open(event.htmlLink, "_blank") } : undefined,
+      });
+    } catch {
+      toast.error(t("فشل الإضافة إلى Google Calendar", "Failed to add to Google Calendar"));
+    } finally {
+      setPushingId(null);
+    }
   };
 
   const filteredPlans = plans.filter(p => activeTab === "all" || p.category === activeTab);
@@ -262,6 +291,16 @@ export default function PlansPage() {
                                 </div>
                               )}
                             </div>
+                            <Button variant="ghost" size="icon" disabled={pushingId === plan.id}
+                              title={t("إضافة إلى Google Calendar", "Add to Google Calendar")}
+                              className="opacity-0 group-hover:opacity-100 text-[#4285F4] hover:text-[#4285F4] hover:bg-blue-50"
+                              onClick={() => pushToCalendar(plan)}>
+                              {pushingId === plan.id
+                                ? <span className="w-4 h-4 border-2 border-blue-300 border-t-[#4285F4] rounded-full animate-spin" />
+                                : pushedIds.has(plan.id)
+                                  ? <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                  : <CalendarPlus className="w-4 h-4" />}
+                            </Button>
                             <Button variant="ghost" size="icon" disabled={deletingId === plan.id}
                               className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 hover:bg-red-50 -me-2"
                               onClick={async () => { setDeletingId(plan.id); try { await deletePlan(plan.id); } finally { setDeletingId(null); } }}>
