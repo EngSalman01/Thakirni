@@ -468,21 +468,23 @@ ERRORS
 TOOLS
 ════════════════════
 
-create_plan  
-update_plan  
-delete_plan  
-mark_done  
-list_plans  
-save_memory  
-search_memories  
-store_fact  
-get_my_facts  
-set_reminder  
+create_plan
+update_plan
+delete_plan → يحتاج UUID، استخدم search_plans أو list_plans أول
+mark_done → يحتاج UUID، استخدم search_plans أو list_plans أول
+list_plans
+search_plans → للبحث عن خطة باسمها وتحصل على UUID
+save_memory
+search_memories
+store_fact
+get_my_facts
+set_reminder
 
 RULE:
 → لا تقول اسم التول
 → لا تطلع JSON
 → بس رد زي انسان طبيعي
+→ إذا المستخدم قال احذف/عدّل شي باسمه → استخدم search_plans أول تحصل على ID
 
 `,
 
@@ -605,8 +607,8 @@ RULE:
             }),
 
             delete_plan: tool({
-                description: "Delete a plan. Use list_plans first to get the plan_id.",
-                parameters: z.object({ plan_id: z.string() }),
+                description: "Delete a plan by its UUID. ALWAYS call search_plans or list_plans first to get the real plan_id — never pass a title or name as the plan_id.",
+                parameters: z.object({ plan_id: z.string().describe("UUID from list_plans or search_plans — never a title") }),
                 execute: async ({ plan_id }) => {
                     const { data: existing } = await supabase.from("plans").select("gcal_event_id").eq("id", plan_id).eq("user_id", userId).single()
                     const { error } = await supabase.from("plans").delete().eq("id", plan_id).eq("user_id", userId)
@@ -648,6 +650,23 @@ RULE:
                     if (category && category !== "all") query = query.eq("category", category)
                     if (status && status !== "all") query = query.eq("status", status)
                     const { data, error } = await query
+                    if (error) return { success: false, message: error.message, plans: [] }
+                    return { success: true, plans: data ?? [], count: data?.length ?? 0 }
+                },
+            }),
+
+            search_plans: tool({
+                description: "Search plans by keyword/title. Use this when the user refers to a plan by name (e.g. 'delete testing', 'update my meeting with Ahmed') to find its UUID before calling delete_plan or update_plan.",
+                parameters: z.object({
+                    query: z.string().describe("Keyword or title to search for"),
+                    status: z.enum(["pending", "done", "cancelled", "all"]).optional().default("all"),
+                }),
+                execute: async ({ query, status }) => {
+                    let q = supabase.from("plans").select("*").eq("user_id", userId)
+                        .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+                        .order("plan_date", { ascending: false }).limit(10)
+                    if (status && status !== "all") q = q.eq("status", status)
+                    const { data, error } = await q
                     if (error) return { success: false, message: error.message, plans: [] }
                     return { success: true, plans: data ?? [], count: data?.length ?? 0 }
                 },
