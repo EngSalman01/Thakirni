@@ -54,7 +54,7 @@ function MeetingVisual({ t, latestMeeting }: {
   t: (a: string, b: string) => string;
   latestMeeting?: Record<string, unknown> | null;
 }) {
-  type Meeting = { title?: string; duration_seconds?: number; speaker_count?: number; action_items?: Array<{ text?: string; done?: boolean }> };
+  type Meeting = { title?: string; duration_seconds?: number; speaker_count?: number; action_items?: string[] };
   const meeting = latestMeeting as Meeting | null | undefined;
 
   function fmtDuration(secs: number) {
@@ -111,10 +111,8 @@ function MeetingVisual({ t, latestMeeting }: {
             <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("مهام للمتابعة", "Action Items")}</p>
             {meeting.action_items.slice(0, 3).map((item, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
-                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${item.done ? "power-gradient text-white" : "border-2 border-[#e4e2e1]"}`}>
-                  {item.done && "✓"}
-                </div>
-                {item.text ?? t("مهمة", "Task")}
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] border-2 border-[#e4e2e1]" />
+                {item}
               </div>
             ))}
           </div>

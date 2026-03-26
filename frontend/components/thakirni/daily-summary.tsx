@@ -19,7 +19,7 @@ export function DailySummary() {
     // Filter for today's plans
     const today = new Date().toISOString().split("T")[0];
     const todaysPlans = plans.filter(
-      (p) => p.reminder_date && p.reminder_date.startsWith(today),
+      (p) => p.plan_date && p.plan_date.startsWith(today),
     );
 
     if (todaysPlans.length === 0) {
@@ -58,10 +58,10 @@ export function DailySummary() {
 
         // Find first event time
         const firstEvent = todaysPlans.sort((a, b) =>
-          (a.reminder_date || "").localeCompare(b.reminder_date || ""),
+          (a.plan_date || "").localeCompare(b.plan_date || ""),
         )[0];
-        if (firstEvent && firstEvent.reminder_date) {
-          const timeStr = new Date(firstEvent.reminder_date).toLocaleTimeString(
+        if (firstEvent && firstEvent.plan_date) {
+          const timeStr = new Date(firstEvent.plan_date).toLocaleTimeString(
             [],
             { hour: "2-digit", minute: "2-digit" },
           );

@@ -54,8 +54,8 @@ export default function CalendarPage() {
   // Plans for selected date
   const selectedDateStr = date ? date.toISOString().split("T")[0] : "";
   const selectedPlans = plans.filter((p) => {
-    if (!p.reminder_date) return false;
-    return p.reminder_date.startsWith(selectedDateStr);
+    if (!p.plan_date) return false;
+    return p.plan_date.startsWith(selectedDateStr);
   });
 
   // Google Calendar events for selected date
@@ -67,8 +67,8 @@ export default function CalendarPage() {
   // Dates that have plans (for calendar dots)
   const datesWithPlans = new Set(
     plans
-      .filter((p) => p.reminder_date)
-      .map((p) => p.reminder_date!.split("T")[0]),
+      .filter((p) => p.plan_date)
+      .map((p) => p.plan_date!.split("T")[0]),
   );
 
   // Dates that have Google events
@@ -254,12 +254,12 @@ export default function CalendarPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className={`font-medium truncate ${plan.status === "completed" ? "line-through text-muted-foreground" : ""}`}>
+                        <h3 className={`font-medium truncate ${plan.status === "done" ? "line-through text-muted-foreground" : ""}`}>
                           {plan.title}
                         </h3>
-                        {plan.reminder_date && (
+                        {plan.plan_date && (
                           <p className="text-xs text-muted-foreground mt-1">
-                            {format(new Date(plan.reminder_date), "p", { locale: isArabic ? arSA : enUS })}
+                            {format(new Date(plan.plan_date), "p", { locale: isArabic ? arSA : enUS })}
                           </p>
                         )}
                       </div>

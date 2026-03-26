@@ -57,8 +57,8 @@ export function IndividualDashboard() {
       type: "reminder" as const,
       content: p.title,
       timestamp: new Date(p.created_at).toLocaleString(),
-      dueDate: p.reminder_date || undefined,
-      completed: p.status === "completed",
+      dueDate: p.plan_date || undefined,
+      completed: p.status === "done",
       tags: [],
     })),
   ];
@@ -77,7 +77,6 @@ export function IndividualDashboard() {
           category: "task",
           status: "pending",
           priority: "medium",
-          is_recurring: false,
         });
         toast.success("Captured successfully!");
         setQuickCapture("");

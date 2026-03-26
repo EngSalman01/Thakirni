@@ -49,13 +49,13 @@ async function fetchGoals() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return []
   const res = await fetch(`/api/goals`, { headers: { Authorization: `Bearer ${session.access_token}` } })
-  if (!res.ok) return []
+  if (!res.ok) throw new Error(`Failed to fetch goals: ${res.status}`)
   const d = await res.json() as { goals?: Record<string, unknown>[] }
   return d.goals ?? []
 }
 
 export default function GoalsPage() {
-  const { data: goals = [], mutate, isLoading: goalsLoading } = useSWR(`/api/goals`, fetchGoals)
+  const { data: goals = [], mutate, isLoading: goalsLoading, error: goalsError } = useSWR(`/api/goals`, fetchGoals)
   const { t, isArabic } = useLanguage()
   const [open, setOpen] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
@@ -254,7 +254,15 @@ export default function GoalsPage() {
         {/* ── GOALS BENTO ── */}
         <section className="pb-24 px-8">
           <div className="max-w-7xl mx-auto">
-            {goalsLoading ? (
+            {goalsError ? (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-red-50 border border-red-200 rounded-2xl p-10 text-center">
+                <p className="text-red-600 font-semibold mb-3">{t("فشل تحميل الأهداف", "Failed to load goals")}</p>
+                <button onClick={() => mutate()} className="px-4 py-2 rounded-full border border-red-300 text-red-600 text-sm hover:bg-red-50">
+                  {t("إعادة المحاولة", "Retry")}
+                </button>
+              </motion.div>
+            ) : goalsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
@@ -291,7 +299,7 @@ export default function GoalsPage() {
                 {goals.map((goal: any, i) => {
                   const cat = categoryInfo(goal.category)
                   const progress = goal.progress || 0
-                  const milestones = goal.milestones || []
+                  const milestones = (goal.goal_milestones as unknown[]) || []
                   const completedMilestones = milestones.filter((m: any) => m.completed).length
                   return (
                     <motion.div key={goal.id}

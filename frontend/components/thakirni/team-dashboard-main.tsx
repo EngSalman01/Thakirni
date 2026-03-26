@@ -83,7 +83,7 @@ export function TeamDashboardMain() {
       id: `plan-${idx}`,
       type: "task" as const,
       title:
-        plan.status === "completed" ? "Task Completed" : "New Task Created",
+        plan.status === "done" ? "Task Completed" : "New Task Created",
       description: plan.title,
       timestamp: new Date(plan.created_at).toLocaleString(),
       user: "You",
@@ -91,15 +91,15 @@ export function TeamDashboardMain() {
   ];
 
   const upcomingTasks = plans
-    .filter((p) => p.status !== "completed" && p.status !== "cancelled")
+    .filter((p) => p.status !== "done" && p.status !== "cancelled")
     .slice(0, 3)
     .map((p) => ({
       id: p.id,
       title: p.title,
       project: p.category === "meeting" ? "Meetings" : "Tasks",
       priority: p.priority,
-      dueDate: p.reminder_date
-        ? new Date(p.reminder_date).toLocaleDateString()
+      dueDate: p.plan_date
+        ? new Date(p.plan_date).toLocaleDateString()
         : "No date",
       assignee: "You",
     }));
@@ -129,7 +129,6 @@ export function TeamDashboardMain() {
           category: "task",
           status: "pending",
           priority: "medium",
-          is_recurring: false,
         });
         toast.success("Captured successfully!");
         setCaptureInput("");
