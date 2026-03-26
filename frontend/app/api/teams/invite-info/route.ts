@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({
-    teamName: (invite.teams as { name: string } | null)?.name ?? "Unknown Team",
+    teamName: (invite.teams as unknown as { name: string } | null)?.name ?? "Unknown Team",
     role: invite.role,
     status: invite.status,
     expiresAt: invite.expires_at,
