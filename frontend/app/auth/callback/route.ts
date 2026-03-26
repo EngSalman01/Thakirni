@@ -33,6 +33,11 @@ export async function GET(req: NextRequest) {
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
+    if (error) {
+      console.error("[auth/callback] exchangeCodeForSession error:", error.message, error)
+      return NextResponse.redirect(`${origin}/auth?error=callback_failed&reason=${encodeURIComponent(error.message)}`)
+    }
+
     if (!error && data.user) {
       // Send welcome email for brand-new Google signups (created_at ≈ now)
       const createdAt = new Date(data.user.created_at).getTime()

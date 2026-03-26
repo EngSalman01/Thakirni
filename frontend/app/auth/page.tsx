@@ -200,7 +200,11 @@ function AuthForm() {
   // Show error from OAuth callback (e.g. Google login failed)
   React.useEffect(() => {
     if (urlError === "callback_failed") {
-      setErrors({ form: t("فشل تسجيل الدخول بجوجل، حاول مرة أخرى", "Google sign-in failed. Please try again.") });
+      const reason = searchParams.get("reason");
+      const msg = reason
+        ? `Google sign-in failed: ${reason}`
+        : t("فشل تسجيل الدخول بجوجل، حاول مرة أخرى", "Google sign-in failed. Please try again.");
+      setErrors({ form: msg });
     }
   }, [urlError]);
 
