@@ -54,17 +54,19 @@ export default function CalendarPage() {
   })
   const gcalError = gcalSWRError || gcal?.error
 
-  // Plans for selected date
-  const selectedDateStr = date ? date.toISOString().split("T")[0] : "";
+  // Plans for selected date — use local YYYY-MM-DD to avoid UTC shift
+  const selectedDateStr = date ? format(date, "yyyy-MM-dd") : "";
   const selectedPlans = plans.filter((p) => {
     if (!p.plan_date) return false;
     return p.plan_date.startsWith(selectedDateStr);
   });
 
   // Google Calendar events for selected date
+  // GCal dateTime can be "2026-03-26T10:00:00+03:00" — extract just the date part before the T
   const selectedGoogleEvents = (gcal?.events ?? []).filter((e) => {
-    const start = e.start?.dateTime ?? e.start?.date ?? ""
-    return start.startsWith(selectedDateStr)
+    const raw = e.start?.dateTime ?? e.start?.date ?? ""
+    const eventDate = raw.split("T")[0]
+    return eventDate === selectedDateStr
   })
 
   // Dates that have plans (for calendar dots)
@@ -74,11 +76,11 @@ export default function CalendarPage() {
       .map((p) => p.plan_date!.split("T")[0]),
   );
 
-  // Dates that have Google events
+  // Dates that have Google events — extract just YYYY-MM-DD before the T
   const datesWithGoogleEvents = new Set(
     (gcal?.events ?? []).map((e) => {
-      const start = e.start?.dateTime ?? e.start?.date ?? ""
-      return start.split("T")[0]
+      const raw = e.start?.dateTime ?? e.start?.date ?? ""
+      return raw.split("T")[0]
     }).filter(Boolean)
   )
 

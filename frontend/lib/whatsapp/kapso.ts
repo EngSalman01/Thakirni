@@ -8,11 +8,12 @@ function getClient() {
 }
 
 export async function sendWhatsAppMessage(phone: string, text: string): Promise<void> {
-    await getClient().messages.sendText({
+    const result = await getClient().messages.sendText({
         phoneNumberId: process.env.KAPSO_PHONE_NUMBER_ID!,
         to: phone,
         body: text,
     })
+    console.log(`[Kapso] sendText to ${phone}:`, JSON.stringify(result))
 }
 
 export async function downloadKapsoMedia(mediaUrl: string): Promise<Buffer> {

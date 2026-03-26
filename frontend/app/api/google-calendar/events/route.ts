@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (!profile?.google_calendar_token) {
+    console.log("[gcal/events] no token for user", user.id)
     return NextResponse.json({ connected: false, events: [] })
   }
 
@@ -44,15 +45,24 @@ export async function GET(req: NextRequest) {
   // Refresh token if expired or close to expiry
   if (profile.google_calendar_expires_at) {
     const expiresAt = new Date(profile.google_calendar_expires_at).getTime()
-    if (Date.now() > expiresAt - 60_000 && profile.google_calendar_refresh_token) {
-      const newToken = await refreshAccessToken(profile.google_calendar_refresh_token)
-      if (newToken) {
-        accessToken = newToken
-        const newExpiry = new Date(Date.now() + 3600 * 1000).toISOString()
-        await supabase
-          .from("profiles")
-          .update({ google_calendar_token: newToken, google_calendar_expires_at: newExpiry })
-          .eq("id", user.id)
+    if (Date.now() > expiresAt - 60_000) {
+      if (profile.google_calendar_refresh_token) {
+        console.log("[gcal/events] refreshing expired token for user", user.id)
+        const newToken = await refreshAccessToken(profile.google_calendar_refresh_token)
+        if (newToken) {
+          accessToken = newToken
+          const newExpiry = new Date(Date.now() + 3600 * 1000).toISOString()
+          await supabase
+            .from("profiles")
+            .update({ google_calendar_token: newToken, google_calendar_expires_at: newExpiry })
+            .eq("id", user.id)
+        } else {
+          console.error("[gcal/events] token refresh failed for user", user.id)
+          return NextResponse.json({ connected: false, events: [], error: "token_expired" })
+        }
+      } else {
+        console.error("[gcal/events] no refresh token for user", user.id)
+        return NextResponse.json({ connected: false, events: [], error: "no_refresh_token" })
       }
     }
   }
@@ -65,6 +75,8 @@ export async function GET(req: NextRequest) {
     { headers }
   )
   if (!calListRes.ok) {
+    const body = await calListRes.text()
+    console.error("[gcal/events] calendarList failed:", calListRes.status, body)
     return NextResponse.json({ connected: true, events: [], error: "Failed to fetch calendar list" })
   }
 
@@ -77,14 +89,16 @@ export async function GET(req: NextRequest) {
   }
   const calList = await calListRes.json() as { items?: CalendarListEntry[] }
   const calendars = (calList.items ?? []).filter(c => c.selected !== false)
+  console.log("[gcal/events] fetching from", calendars.length, "calendars for user", user.id)
 
-  // Fetch events from all calendars in parallel (next 30 days)
-  const now     = new Date().toISOString()
-  const in30Days = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  // Fetch events from start of today through next 60 days
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  const in60Days = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString()
   const qp = new URLSearchParams({
-    timeMin:      now,
-    timeMax:      in30Days,
-    maxResults:   "15",
+    timeMin:      todayStart.toISOString(),
+    timeMax:      in60Days,
+    maxResults:   "50",
     singleEvents: "true",
     orderBy:      "startTime",
   })
@@ -114,6 +128,7 @@ export async function GET(req: NextRequest) {
       return aStart.localeCompare(bStart)
     })
 
+  console.log("[gcal/events] returning", allEvents.length, "events for user", user.id)
   return NextResponse.json({ connected: true, events: allEvents })
 }
 
