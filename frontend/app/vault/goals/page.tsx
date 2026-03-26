@@ -13,11 +13,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Target, Plus, CheckCircle2, Trash2, Wand2, Calendar } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import useSWR from "swr"
 import { motion } from "framer-motion"
-
-const API_URL = ""
 
 const CATEGORIES = [
   { value: "career",        labelAr: "مسيرة مهنية",  labelEn: "Career",        icon: "💼" },
@@ -49,14 +48,14 @@ async function fetchGoals() {
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return []
-  const res = await fetch(`${API_URL}/api/goals`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+  const res = await fetch(`/api/goals`, { headers: { Authorization: `Bearer ${session.access_token}` } })
   if (!res.ok) return []
   const d = await res.json() as { goals?: Record<string, unknown>[] }
   return d.goals ?? []
 }
 
 export default function GoalsPage() {
-  const { data: goals = [], mutate } = useSWR(`${API_URL}/api/goals`, fetchGoals)
+  const { data: goals = [], mutate, isLoading: goalsLoading } = useSWR(`/api/goals`, fetchGoals)
   const { t, isArabic } = useLanguage()
   const [open, setOpen] = useState(false)
   const [aiLoading, setAiLoading] = useState(false)
@@ -72,7 +71,7 @@ export default function GoalsPage() {
   async function createGoal(e: React.FormEvent) {
     e.preventDefault()
     const session = await getSession(); if (!session) return
-    const res = await fetch(`${API_URL}/api/goals`, {
+    const res = await fetch(`/api/goals`, {
       method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, milestones: suggestedMilestones })
     })
@@ -83,39 +82,64 @@ export default function GoalsPage() {
   async function suggestMilestones() {
     if (!form.title) { toast.error(t("اكتب عنوان الهدف أولاً", "Enter a goal title first")); return }
     setAiLoading(true)
-    const session = await getSession(); if (!session) { setAiLoading(false); return }
-    const res = await fetch(`${API_URL}/api/goals/ai-suggest`, {
-      method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, language: isArabic ? "ar" : "en" })
-    })
-    const d = await res.json() as { milestones?: { title: string }[] }
-    setSuggestedMilestones(d.milestones ?? [])
-    setAiLoading(false)
-    toast.success(t("اقترح الذكاء الاصطناعي خطواتك! ✨", "AI suggested your milestones! ✨"))
+    try {
+      const session = await getSession(); if (!session) return
+      const res = await fetch(`/api/goals/ai-suggest`, {
+        method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, language: isArabic ? "ar" : "en" })
+      })
+      if (!res.ok) throw new Error(await res.text())
+      const d = await res.json() as { milestones?: { title: string }[] }
+      setSuggestedMilestones(d.milestones ?? [])
+      toast.success(t("اقترح الذكاء الاصطناعي خطواتك! ✨", "AI suggested your milestones! ✨"))
+    } catch (err) {
+      console.error("[Goals] suggestMilestones error:", err)
+      toast.error(t("فشل اقتراح الخطوات", "Failed to suggest milestones"))
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   async function updateProgress(id: string, progress: number) {
     const session = await getSession(); if (!session) return
-    await fetch(`${API_URL}/api/goals/${id}/progress`, {
-      method: "PATCH", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ progress })
-    })
-    mutate()
+    try {
+      const res = await fetch(`/api/goals/${id}/progress`, {
+        method: "PATCH", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ progress })
+      })
+      if (!res.ok) throw new Error(await res.text())
+      mutate()
+    } catch (err) {
+      console.error("[Goals] updateProgress error:", err)
+      toast.error(t("فشل تحديث التقدم", "Failed to update progress"))
+    }
   }
 
   async function completeMilestone(goalId: string, milestoneId: string) {
     const session = await getSession(); if (!session) return
-    await fetch(`${API_URL}/api/goals/${goalId}/milestones/${milestoneId}/complete`, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
-    toast.success(t("خطوة مكتملة! 🎉", "Milestone completed! 🎉")); mutate()
+    try {
+      const res = await fetch(`/api/goals/${goalId}/milestones/${milestoneId}/complete`, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
+      if (!res.ok) throw new Error(await res.text())
+      toast.success(t("خطوة مكتملة! 🎉", "Milestone completed! 🎉")); mutate()
+    } catch (err) {
+      console.error("[Goals] completeMilestone error:", err)
+      toast.error(t("فشل إكمال الخطوة", "Failed to complete milestone"))
+    }
   }
 
   async function deleteGoal(id: string) {
     const session = await getSession(); if (!session) return
-    await fetch(`${API_URL}/api/goals/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
-    toast.success(t("تم حذف الهدف", "Goal deleted")); mutate()
+    try {
+      const res = await fetch(`/api/goals/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
+      if (!res.ok) throw new Error(await res.text())
+      toast.success(t("تم حذف الهدف", "Goal deleted")); mutate()
+    } catch (err) {
+      console.error("[Goals] deleteGoal error:", err)
+      toast.error(t("فشل حذف الهدف", "Failed to delete goal"))
+    }
   }
 
   const categoryInfo = (c: string) => CATEGORIES.find(x => x.value === c) ?? CATEGORIES[4]
-  const avgProgress = goals.length ? Math.round(goals.reduce((s, g: any) => s + (g.progress || 0), 0) / goals.length) : 0
+  const avgProgress = goals.length ? Math.round(goals.reduce((s, g) => s + ((g as Record<string, unknown>).progress as number || 0), 0) / goals.length) : 0
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
@@ -196,28 +220,31 @@ export default function GoalsPage() {
                 </Dialog>
               </motion.div>
 
-              {/* Right: animated progress bars */}
+              {/* Right: real goal progress */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
                 className="hidden lg:block">
                 <div className="bg-[#e4e2e1] rounded-2xl p-10 shadow-card hover-lift space-y-5">
                   <h3 className="text-xl font-headline font-bold text-slate-900 mb-6">{t("تقدم الأهداف", "Goal Progress")}</h3>
-                  {[
-                    { label: t("التركيز", "Focus"),    color: "bg-[#2552ca]", width: "75%" },
-                    { label: t("الاتساق", "Consistency"), color: "bg-[#ad1d7f]", width: "50%" },
-                    { label: t("الإنجاز", "Achievement"), color: "bg-[#456ce4]", width: "83%" },
-                  ].map(({ label, color, width }) => (
-                    <div key={label as string}>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm font-bold text-slate-700">{label as string}</span>
-                        <span className="text-sm text-slate-500">{width}</span>
-                      </div>
-                      <div className="h-3 w-full bg-white/60 rounded-full overflow-hidden">
-                        <motion.div initial={{ width: 0 }} whileInView={{ width }} viewport={{ once: true }}
-                          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-                          className={`h-full ${color} rounded-full`} />
-                      </div>
-                    </div>
-                  ))}
+                  {goals.length === 0
+                    ? <p className="text-sm text-slate-500 text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>
+                    : (goals as Array<{ id?: string; title: string; progress?: number; progress_pct?: number }>).slice(0, 3).map((goal, i) => {
+                        const barColors = ["bg-[#2552ca]", "bg-[#ad1d7f]", "bg-[#456ce4]"];
+                        const pct = Math.min(100, Math.round(goal.progress ?? goal.progress_pct ?? 0));
+                        return (
+                          <div key={goal.id ?? i}>
+                            <div className="flex justify-between mb-2">
+                              <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{goal.title}</span>
+                              <span className="text-sm text-slate-500 shrink-0 ms-2">{pct}%</span>
+                            </div>
+                            <div className="h-3 w-full bg-white/60 rounded-full overflow-hidden">
+                              <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }}
+                                transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 + i * 0.1 }}
+                                className={`h-full ${barColors[i % barColors.length]} rounded-full`} />
+                            </div>
+                          </div>
+                        );
+                      })
+                  }
                 </div>
               </motion.div>
             </div>
@@ -227,7 +254,24 @@ export default function GoalsPage() {
         {/* ── GOALS BENTO ── */}
         <section className="pb-24 px-8">
           <div className="max-w-7xl mx-auto">
-            {goals.length === 0 ? (
+            {goalsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+                    <Skeleton className="h-2 w-full rounded-none" />
+                    <div className="p-10 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <Skeleton className="h-12 w-12 rounded-xl" />
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                      </div>
+                      <Skeleton className="h-6 w-3/4 rounded-lg" />
+                      <Skeleton className="h-4 w-full rounded-full" />
+                      <Skeleton className="h-4 w-2/3 rounded-lg" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : goals.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
                 className="bg-[#f6f3f2] rounded-2xl p-24 text-center hover-lift">
                 <Target className="w-16 h-16 mx-auto mb-4 text-[#385b9b]/30" />

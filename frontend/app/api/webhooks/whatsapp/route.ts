@@ -391,7 +391,7 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline / set_r
                                 if (rr.ok) {
                                     const rd = await rr.json() as { access_token: string; expires_in: number }
                                     gcalToken = rd.access_token
-                                    supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: new Date(Date.now() + rd.expires_in * 1000).toISOString() }).eq("id", userId).then(undefined, () => {})
+                                    supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: new Date(Date.now() + rd.expires_in * 1000).toISOString() }).eq("id", userId).then(undefined, (e) => console.error("[whatsapp] gcal token save error:", e))
                                 }
                             }
                             const gcalEvent: Record<string, unknown> = { summary: input.title }
@@ -411,9 +411,9 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline / set_r
                             })
                             if (gcalRes.ok) {
                                 const gcalData = await gcalRes.json() as { id: string }
-                                supabase.from("plans").update({ gcal_event_id: gcalData.id }).eq("id", data.id).then(undefined, () => {})
+                                supabase.from("plans").update({ gcal_event_id: gcalData.id }).eq("id", data.id).then(undefined, (e) => console.error("[whatsapp] gcal_event_id save error:", e))
                             }
-                        } catch { /* silent */ }
+                        } catch (err) { console.error("[API] silent catch:", err) }
                     }
 
                     // Auto WhatsApp reminder 30 min before timed events
@@ -422,9 +422,9 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline / set_r
                             const eventMs = new Date(`${input.plan_date}T${input.plan_time}:00`).getTime() - 3 * 60 * 60 * 1000
                             const remindMs = eventMs - 30 * 60 * 1000
                             if (remindMs > Date.now()) {
-                                supabase.from("reminders").insert({ user_id: userId, title: input.title, remind_at: new Date(remindMs).toISOString(), plan_id: data.id, channel: "whatsapp", is_sent: false }).then(undefined, () => {})
+                                supabase.from("reminders").insert({ user_id: userId, title: input.title, remind_at: new Date(remindMs).toISOString(), plan_id: data.id, channel: "whatsapp", is_sent: false }).then(undefined, (e) => console.error("[whatsapp] reminder insert error:", e))
                             }
-                        } catch { /* silent */ }
+                        } catch (err) { console.error("[API] silent catch:", err) }
                     }
 
                     return { success: true, message: `Scheduled "${input.title}" on ${input.plan_date}${input.plan_time ? " at " + input.plan_time.slice(0, 5) : ""}.` }
@@ -463,10 +463,10 @@ save_memory / search_memories / store_fact / get_my_facts / get_timeline / set_r
                     const { error } = await supabase.from("plans").delete().eq("id", plan_id).eq("user_id", userId)
                     if (error) return { success: false, message: error.message }
                     // Cancel pending reminders
-                    supabase.from("reminders").delete().eq("plan_id", plan_id).eq("is_sent", false).then(undefined, () => {})
+                    supabase.from("reminders").delete().eq("plan_id", plan_id).eq("is_sent", false).then(undefined, (e) => console.error("[whatsapp] reminder delete error:", e))
                     // Delete from Google Calendar
                     if (existing?.gcal_event_id && profile.google_calendar_token) {
-                        fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.gcal_event_id as string}`, { method: "DELETE", headers: { Authorization: `Bearer ${profile.google_calendar_token as string}` } }).catch(() => {})
+                        fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events/${existing.gcal_event_id as string}`, { method: "DELETE", headers: { Authorization: `Bearer ${profile.google_calendar_token as string}` } }).catch((e) => console.error("[whatsapp webhook] gcal event delete error:", e))
                     }
                     return { success: true, message: "Plan deleted." }
                 },

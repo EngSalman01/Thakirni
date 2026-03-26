@@ -66,6 +66,34 @@ function ParticleLayer() {
 }
 
 function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
+  const [uploads, setUploads] = useState<Array<{ id: string; title: string; created_at: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase.from('memories').select('id, title, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(3);
+        setUploads(data ?? []);
+      } catch (err) {
+        console.error("[UploadVisual] failed to fetch recent memories:", err);
+      } finally { setLoading(false); }
+    })();
+  }, []);
+
+  function memIcon(title: string) {
+    const ext = title.split('.').pop()?.toLowerCase() ?? '';
+    if (['jpg','jpeg','png','gif','webp','heic'].includes(ext)) return '🖼️';
+    if (['mp3','wav','m4a','ogg','flac'].includes(ext)) return '🎵';
+    if (['mp4','webm','mov'].includes(ext)) return '🎥';
+    if (['pdf','doc','docx','txt'].includes(ext)) return '📄';
+    return '🧠';
+  }
+
+  const cardColors = ['from-[#2552ca] to-[#456ce4]', 'from-[#ad1d7f] to-[#fd65c2]', 'from-[#385b9b] to-[#2552ca]'];
+
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.8 }}
       className="relative bg-[#e4e2e1] rounded-3xl p-8 overflow-hidden">
@@ -73,27 +101,33 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
       <div className="absolute inset-0 opacity-10"
         style={{ backgroundImage: 'linear-gradient(#2552ca 1px,transparent 1px),linear-gradient(90deg,#2552ca 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
 
-      {/* Floating file cards */}
+      {/* Recent memory cards */}
       <div className="relative space-y-3">
-        {[
-          { icon: '🖼️', name: 'memory-photo.jpg', size: '2.4 MB', color: 'from-[#2552ca] to-[#456ce4]', done: true },
-          { icon: '🎵', name: 'voice-note.mp3', size: '1.1 MB', color: 'from-[#ad1d7f] to-[#fd65c2]', done: true },
-          { icon: '📄', name: 'notes.pdf', size: '340 KB', color: 'from-[#385b9b] to-[#2552ca]', done: false, progress: 65 },
-        ].map((f, i) => (
-          <motion.div key={i} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.15 }}
-            className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-card">
-            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center text-lg`}>{f.icon}</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{f.name}</p>
-              <p className="text-xs text-slate-500">{f.size}</p>
-              {!f.done && f.progress && (
-                <div className="mt-1 h-1.5 bg-[#e4e2e1] rounded-full overflow-hidden">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${f.progress}%` }} transition={{ delay: 0.8, duration: 0.6 }}
-                    className="h-full power-gradient rounded-full" />
-                </div>
-              )}
+        {loading ? (
+          [1, 2, 3].map(i => (
+            <div key={i} className="bg-white/70 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
+              <div className="w-10 h-10 rounded-xl bg-[#d0cece]" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 bg-[#d0cece] rounded w-3/4" />
+                <div className="h-2 bg-[#d0cece] rounded w-1/3" />
+              </div>
             </div>
-            {f.done && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
+          ))
+        ) : uploads.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <span className="text-4xl mb-3">📁</span>
+            <p className="text-sm font-bold text-slate-600">{t('لا توجد ذكريات بعد', 'No uploads yet')}</p>
+            <p className="text-xs text-slate-500 mt-1">{t('ارفع أول ذاكرة لك', 'Upload your first memory')}</p>
+          </div>
+        ) : uploads.map((item, i) => (
+          <motion.div key={item.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.15 }}
+            className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-card">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cardColors[i % cardColors.length]} flex items-center justify-center text-lg`}>{memIcon(item.title)}</div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
+              <p className="text-xs text-slate-500">{new Date(item.created_at).toLocaleDateString()}</p>
+            </div>
+            <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
           </motion.div>
         ))}
       </div>

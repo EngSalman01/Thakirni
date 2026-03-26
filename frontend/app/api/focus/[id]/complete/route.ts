@@ -24,7 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     source_type: "focus_completed",
     source_id: id,
     importance: 1,
-  }).then(undefined, () => {})
+  }).then(undefined, (e) => console.error("[focus/complete] timeline insert error:", e))
 
   return Response.json({ success: true, session: data })
 }

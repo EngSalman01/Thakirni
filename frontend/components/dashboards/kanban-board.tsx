@@ -7,6 +7,7 @@ import { KanbanColumn } from "./kanban-column";
 import { TaskModal } from "./task-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/components/language-provider";
 
 interface KanbanBoardProps {
   teamId: string;
@@ -19,6 +20,7 @@ export function KanbanBoard({
   teamName,
   teamMembers,
 }: KanbanBoardProps) {
+  const { t } = useLanguage();
   const { columns, createColumn, isLoading: columnsLoading } =
     useColumns(teamId);
   const { tasks, createTask, updateTask, deleteTask, isLoading: tasksLoading } =
@@ -43,7 +45,7 @@ export function KanbanBoard({
   const handleCreateTask = async (columnId: string) => {
     try {
       await createTask(columnId, {
-        title: "New Task",
+        title: t("مهمة جديدة", "New Task"),
         description: "",
         priority: "medium",
       });

@@ -87,8 +87,10 @@ export default function AnnouncementsPage() {
     try {
       const res = await fetch("/api/admin/announcements");
       if (res.ok) setAnnouncements(await res.json());
+      else toast.error("Failed to load announcements");
     } catch (e) {
-      console.error(e);
+      console.error("[Admin/Announcements] fetch error:", e);
+      toast.error("Failed to load announcements");
     } finally {
       setLoading(false);
     }

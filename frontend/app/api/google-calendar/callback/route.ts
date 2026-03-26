@@ -16,6 +16,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
   }
 
+  // Verify the state matches the authenticated user (prevents CSRF)
+  const supabaseCheck = await createClient()
+  const { data: { user: authUser } } = await supabaseCheck.auth.getUser()
+  if (!authUser || authUser.id !== state) {
+    return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
+  }
+
   // Exchange code for tokens
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -41,9 +48,8 @@ export async function GET(req: NextRequest) {
 
   const expiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString()
 
-  // Store tokens in Supabase profile
-  const supabase = await createClient()
-  await supabase
+  // Store tokens in Supabase profile (reuse the already-authenticated client)
+  const { error: updateError } = await supabaseCheck
     .from("profiles")
     .update({
       google_calendar_token:          tokens.access_token,
@@ -52,6 +58,11 @@ export async function GET(req: NextRequest) {
       updated_at:                     new Date().toISOString(),
     })
     .eq("id", state)
+
+  if (updateError) {
+    console.error("[google-calendar/callback] profile update error:", updateError)
+    return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
+  }
 
   return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=connected`)
 }

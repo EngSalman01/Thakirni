@@ -29,8 +29,6 @@ interface Meeting {
   created_at: string
 }
 
-const API_URL = ""
-
 function ParticleLayer() {
   useEffect(() => {
     const container = document.getElementById("meetings-particles")
@@ -52,7 +50,18 @@ function ParticleLayer() {
   return <div id="meetings-particles" className="absolute inset-0 overflow-hidden pointer-events-none" />
 }
 
-function MeetingVisual({ t, isArabic }: { t: (a: string, b: string) => string; isArabic: boolean }) {
+function MeetingVisual({ t, latestMeeting }: {
+  t: (a: string, b: string) => string;
+  latestMeeting?: Record<string, unknown> | null;
+}) {
+  type Meeting = { title?: string; duration_seconds?: number; speaker_count?: number; action_items?: Array<{ text?: string; done?: boolean }> };
+  const meeting = latestMeeting as Meeting | null | undefined;
+
+  function fmtDuration(secs: number) {
+    const m = Math.floor(secs / 60), s = Math.floor(secs % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
   return (
     <div className="relative flex items-center justify-center">
       {/* Main card */}
@@ -67,38 +76,49 @@ function MeetingVisual({ t, isArabic }: { t: (a: string, b: string) => string; i
           <div className="w-10 h-10 rounded-xl power-gradient flex items-center justify-center">
             <Mic className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <p className="font-headline font-bold text-slate-900 text-sm">{t("اجتماع الفريق", "Team Meeting")}</p>
-            <p className="text-xs text-slate-500">45:32 • 3 {t("متحدثين", "speakers")}</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-headline font-bold text-slate-900 text-sm truncate">
+              {meeting ? String(meeting.title ?? t("اجتماع", "Meeting")) : t("لا اجتماعات بعد", "No meetings yet")}
+            </p>
+            <p className="text-xs text-slate-500">
+              {meeting
+                ? `${meeting.duration_seconds ? fmtDuration(Number(meeting.duration_seconds)) : "--"} • ${meeting.speaker_count ?? 1} ${t("متحدث", "speakers")}`
+                : t("ارفع تسجيلاً للبدء", "Upload a recording to start")}
+            </p>
           </div>
-          <span className="ms-auto text-xs font-bold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full">{t("مكتمل", "Done")}</span>
+          {meeting && <span className="ms-auto text-xs font-bold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full shrink-0">{t("مكتمل", "Done")}</span>}
         </div>
 
-        {/* Summary lines */}
-        <div className="space-y-2 mb-5">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("الملخص", "Summary")}</p>
-          {[100, 85, 65].map((w, i) => (
-            <motion.div key={i} initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.6 + i * 0.1, duration: 0.5 }}
-              className="h-2 bg-[#e4e2e1] rounded-full origin-left" style={{ width: `${w}%` }} />
-          ))}
-        </div>
+        {/* Summary lines or empty state */}
+        {meeting ? (
+          <div className="space-y-2 mb-5">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("الملخص", "Summary")}</p>
+            {[100, 85, 65].map((w, i) => (
+              <motion.div key={i} initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.6 + i * 0.1, duration: 0.5 }}
+                className="h-2 bg-[#e4e2e1] rounded-full origin-left" style={{ width: `${w}%` }} />
+            ))}
+          </div>
+        ) : (
+          <div className="py-6 text-center text-slate-400">
+            <Mic className="w-10 h-10 mx-auto mb-2 opacity-20" />
+            <p className="text-sm">{t("سجّل اجتماعك وتلقّ ملخصاً ذكياً فورياً", "Record a meeting and get an instant AI summary")}</p>
+          </div>
+        )}
 
-        {/* Action items */}
-        <div className="space-y-2">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("مهام للمتابعة", "Action Items")}</p>
-          {[
-            { label: isArabic ? "مراجعة التصميم" : "Review designs", done: true },
-            { label: isArabic ? "تحديث الوثائق" : "Update docs", done: true },
-            { label: isArabic ? "إرسال التقرير" : "Send report", done: false },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
-              <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${item.done ? "power-gradient text-white" : "border-2 border-[#e4e2e1]"}`}>
-                {item.done && "✓"}
+        {/* Action items (only when meeting exists and has items) */}
+        {meeting && Array.isArray(meeting.action_items) && meeting.action_items.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("مهام للمتابعة", "Action Items")}</p>
+            {meeting.action_items.slice(0, 3).map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
+                <div className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] ${item.done ? "power-gradient text-white" : "border-2 border-[#e4e2e1]"}`}>
+                  {item.done && "✓"}
+                </div>
+                {item.text ?? t("مهمة", "Task")}
               </div>
-              {item.label}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       {/* Floating AI badge */}
@@ -111,15 +131,17 @@ function MeetingVisual({ t, isArabic }: { t: (a: string, b: string) => string; i
         <span className="text-xs font-bold text-slate-900">{t("تحليل ذكي", "AI Analysis")}</span>
       </motion.div>
 
-      {/* Floating speaker badge */}
-      <motion.div
-        animate={{ y: [0, 6, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-4 py-2 flex items-center gap-2"
-      >
-        <Users className="w-4 h-4 text-[#2552ca]" />
-        <span className="text-xs font-bold text-slate-900">3 {t("متحدث", "speakers")}</span>
-      </motion.div>
+      {/* Floating speaker badge (only when meeting exists) */}
+      {meeting && (
+        <motion.div
+          animate={{ y: [0, 6, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-4 py-2 flex items-center gap-2"
+        >
+          <Users className="w-4 h-4 text-[#2552ca]" />
+          <span className="text-xs font-bold text-slate-900">{meeting.speaker_count ?? 1} {t("متحدث", "speakers")}</span>
+        </motion.div>
+      )}
     </div>
   )
 }
@@ -129,7 +151,7 @@ export default function MeetingsPage() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const { meetings, mutate } = useMeetings()
+  const { meetings, mutate, isLoading: meetingsLoading, isError: meetingsError } = useMeetings()
   const { t, isArabic } = useLanguage()
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -147,7 +169,7 @@ export default function MeetingsPage() {
       formData.append("language", isArabic ? "ar" : "en")
       setUploadProgress(30)
       toast.info(t("جاري معالجة التسجيل... قد يستغرق بضع دقائق", "Processing recording... this may take a few minutes"))
-      const res = await fetch(`${API_URL}/api/meetings/upload`, {
+      const res = await fetch(`/api/meetings/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData,
@@ -168,7 +190,8 @@ export default function MeetingsPage() {
       setUploadProgress(100)
       toast.success(t("تم تحليل الاجتماع بنجاح! ✅", "Meeting analysed successfully! ✅"))
       mutate()
-    } catch {
+    } catch (err) {
+      console.error("[Meetings] upload error:", err)
       toast.error(t("حدث خطأ أثناء الرفع", "An error occurred during upload"))
     } finally {
       setIsUploading(false)
@@ -181,12 +204,18 @@ export default function MeetingsPage() {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-    await fetch(`${API_URL}/api/meetings/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    toast.success(t("تم حذف الاجتماع", "Meeting deleted"))
-    mutate()
+    try {
+      const res = await fetch(`/api/meetings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      if (!res.ok) throw new Error(await res.text())
+      toast.success(t("تم حذف الاجتماع", "Meeting deleted"))
+      mutate()
+    } catch (err) {
+      console.error("[Meetings] delete error:", err)
+      toast.error(t("فشل حذف الاجتماع", "Failed to delete meeting"))
+    }
   }
 
   function formatDuration(seconds: number) {
@@ -277,7 +306,7 @@ export default function MeetingsPage() {
             {/* Right visual */}
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
               className="flex items-center justify-center">
-              <MeetingVisual t={t} isArabic={isArabic} />
+              <MeetingVisual t={t} latestMeeting={meetings[0] ?? null} />
             </motion.div>
           </div>
         </section>
@@ -298,7 +327,19 @@ export default function MeetingsPage() {
               </div>
             </motion.div>
 
-            {meetings.length === 0 ? (
+            {meetingsError ? (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-red-50 border border-red-200 rounded-2xl p-10 text-center">
+                <p className="text-red-600 font-semibold mb-3">{t("فشل تحميل الاجتماعات", "Failed to load meetings")}</p>
+                <Button variant="outline" size="sm" onClick={() => mutate()} className="text-red-600 border-red-300 hover:bg-red-50">
+                  {t("إعادة المحاولة", "Retry")}
+                </Button>
+              </motion.div>
+            ) : meetingsLoading ? (
+              <div className="space-y-4">
+                {[1,2,3].map(i => <div key={i} className="bg-[#f6f3f2] rounded-2xl h-28 animate-pulse" />)}
+              </div>
+            ) : meetings.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 className="bg-[#f6f3f2] rounded-2xl p-16 text-center">
                 <div className="w-20 h-20 rounded-3xl power-gradient flex items-center justify-center mx-auto mb-6 opacity-30">

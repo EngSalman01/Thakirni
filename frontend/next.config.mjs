@@ -2,14 +2,8 @@ import { withSentryConfig } from "@sentry/nextjs"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     unoptimized: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
   },
 
   async headers() {
@@ -50,7 +44,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.hcaptcha.com",
               "font-src 'self' https://fonts.gstatic.com https://assets.hcaptcha.com",
               "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com https://assets.hcaptcha.com",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paddle.com https://sandbox-api.paddle.com https://api.groq.com https://api.hcaptcha.com https://hcaptcha.com",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paddle.com https://sandbox-api.paddle.com https://api.groq.com https://api.hcaptcha.com https://hcaptcha.com https://*.sentry.io",
               "frame-src https://cdn.paddle.com https://sandbox-cdn.paddle.com https://newassets.hcaptcha.com",
               "media-src 'self' blob:",
             ].join("; "),

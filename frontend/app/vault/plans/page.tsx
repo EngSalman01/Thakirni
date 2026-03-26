@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar, CheckCircle2, Plus, Trash2, ShoppingBag, Briefcase, ListTodo } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -52,8 +53,10 @@ export default function PlansPage() {
     try {
       await fetch("/api/plans/bulk-delete", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: Array.from(selectedIds) }) });
       await refetch(); setSelectedIds(new Set());
-    } catch (err) { console.error(err); }
-    finally { setBulkDeleting(false); }
+    } catch (err) {
+      console.error("[Plans] bulk delete error:", err);
+      toast.error(t("فشل حذف الخطط", "Failed to delete plans"));
+    } finally { setBulkDeleting(false); }
   };
 
   const filteredPlans = plans.filter(p => activeTab === "all" || p.category === activeTab);
@@ -65,8 +68,10 @@ export default function PlansPage() {
     try {
       await addPlan({ title: newPlanTitle, category: activeTab === "all" ? "task" : (activeTab as "task"|"grocery"|"meeting"), status: "pending", is_recurring: false, priority: "medium", reminder_date: new Date().toISOString() });
       setNewPlanTitle("");
-    } catch (err) { console.error(err); }
-    finally { setIsAdding(false); }
+    } catch (err) {
+      console.error("[Plans] add plan error:", err);
+      toast.error(t("فشل إضافة الخطة", "Failed to add plan"));
+    } finally { setIsAdding(false); }
   };
 
   const getCategoryIcon = (cat: string) => {
@@ -123,7 +128,7 @@ export default function PlansPage() {
                 </div>
               </motion.div>
 
-              {/* Right: animated plan previews */}
+              {/* Right: real plans preview */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
                 className="hidden lg:block relative">
                 <div className="bg-white rounded-2xl p-8 shadow-card hover-lift space-y-3">
@@ -133,26 +138,33 @@ export default function PlansPage() {
                     </div>
                     <span className="font-headline font-bold text-slate-900">{t("قائمة اليوم", "Today's List")}</span>
                   </div>
-                  {[
-                    { color: "bg-[#2552ca]", label: t("مراجعة التقرير الأسبوعي", "Review weekly report"), done: true },
-                    { color: "bg-[#ad1d7f]", label: t("اجتماع الفريق الساعة 3", "Team meeting at 3pm"), done: false },
-                    { color: "bg-emerald-500", label: t("شراء مقاضي الأسبوع", "Buy weekly groceries"), done: false },
-                  ].map(({ color, label, done }, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
-                      className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-[#f6f3f2]"}`}>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${done ? "bg-emerald-500 border-emerald-500" : `border-slate-300`}`}>
-                        {done && <CheckCircle2 className="w-3 h-3 text-white" />}
-                      </div>
-                      <span className={`text-sm font-medium ${done ? "line-through text-slate-400" : "text-slate-700"}`}>{label as string}</span>
-                      <span className={`ms-auto w-2.5 h-2.5 rounded-full ${color}`} />
-                    </motion.div>
-                  ))}
+                  {isLoading
+                    ? [1, 2, 3].map(i => <Skeleton key={i} className="h-12 rounded-xl" />)
+                    : plans.length === 0
+                    ? <p className="text-sm text-slate-400 text-center py-4">{t("لا خطط بعد — أضف مهمتك الأولى!", "No plans yet — add your first task!")}</p>
+                    : plans.slice(0, 3).map((plan, i) => {
+                        const catColor = plan.category === "grocery" ? "bg-emerald-500" : plan.category === "meeting" ? "bg-[#ad1d7f]" : "bg-[#2552ca]";
+                        const done = plan.status === "completed";
+                        return (
+                          <motion.div key={plan.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
+                            className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-[#f6f3f2]"}`}>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${done ? "bg-emerald-500 border-emerald-500" : "border-slate-300"}`}>
+                              {done && <CheckCircle2 className="w-3 h-3 text-white" />}
+                            </div>
+                            <span className={`text-sm font-medium flex-1 truncate ${done ? "line-through text-slate-400" : "text-slate-700"}`}>{plan.title}</span>
+                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${catColor}`} />
+                          </motion.div>
+                        );
+                      })
+                  }
                 </div>
-                {/* Floating badge */}
-                <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-4 -right-4 bg-gradient-to-br from-[#2552ca] to-[#fd65c2] text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold">
-                  {t("منجز 67٪", "67% done")} ✓
-                </motion.div>
+                {/* Floating badge — real completion % */}
+                {!isLoading && plans.length > 0 && (
+                  <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -bottom-4 -right-4 bg-gradient-to-br from-[#2552ca] to-[#fd65c2] text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold">
+                    {Math.round((completedCount / plans.length) * 100)}% {t("منجز", "done")} ✓
+                  </motion.div>
+                )}
               </motion.div>
             </div>
           </div>

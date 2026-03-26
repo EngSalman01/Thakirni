@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Plus, Loader2, Calendar as CalendarIcon,
-  ShoppingCart, CheckCircle2, ExternalLink,
+  ShoppingCart, CheckCircle2, ExternalLink, AlertCircle, RefreshCw,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
@@ -26,13 +26,17 @@ interface GoogleEvent {
   colorId?: string
 }
 
-async function fetchGoogleEvents(): Promise<{ connected: boolean; events: GoogleEvent[] }> {
+async function fetchGoogleEvents(): Promise<{ connected: boolean; events: GoogleEvent[]; error?: boolean }> {
   try {
     const res = await fetch("/api/google-calendar/events")
-    if (!res.ok) return { connected: false, events: [] }
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) return { connected: false, events: [] }
+      return { connected: false, events: [], error: true }
+    }
     return res.json()
-  } catch {
-    return { connected: false, events: [] }
+  } catch (err) {
+    console.error("[GoogleCalendar] fetch failed:", err)
+    return { connected: false, events: [], error: true }
   }
 }
 
@@ -42,9 +46,10 @@ export default function CalendarPage() {
   const router = useRouter();
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  const { data: gcal } = useSWR("google-calendar-events", fetchGoogleEvents, {
+  const { data: gcal, error: gcalSWRError, mutate: refetchGcal } = useSWR("google-calendar-events", fetchGoogleEvents, {
     revalidateOnFocus: false,
   })
+  const gcalError = gcalSWRError || gcal?.error
 
   // Plans for selected date
   const selectedDateStr = date ? date.toISOString().split("T")[0] : "";
@@ -79,7 +84,7 @@ export default function CalendarPage() {
     if (!raw) return ""
     try {
       return format(new Date(raw), "p", { locale: isArabic ? arSA : enUS })
-    } catch { return "" }
+    } catch (err) { console.error("[Calendar] formatEventTime error:", err); return "" }
   }
 
   return (
@@ -171,6 +176,21 @@ export default function CalendarPage() {
                   : t("اختر يوماً", "Select a day")}
               </h2>
             </div>
+
+            {/* Google Calendar error banner */}
+            {gcalError && (
+              <div className="mb-4 flex items-center justify-between gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2 text-red-600">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <p className="text-sm font-medium">{t("تعذّر تحميل أحداث Google Calendar", "Failed to load Google Calendar events")}</p>
+                </div>
+                <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50 shrink-0"
+                  onClick={() => refetchGcal()}>
+                  <RefreshCw className="w-3.5 h-3.5 me-1.5" />
+                  {t("إعادة المحاولة", "Retry")}
+                </Button>
+              </div>
+            )}
 
             {isLoading ? (
               <div className="flex justify-center p-8">

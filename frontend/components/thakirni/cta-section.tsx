@@ -97,7 +97,7 @@ export function CTASection() {
         data.forEach((p) => { map[p.plan_key] = p.price_sar; });
         setLivePrices(map);
       })
-      .catch(() => {});
+      .catch((e) => console.error("[cta-section] live prices fetch error:", e));
   }, []);
 
   useEffect(() => {
@@ -164,7 +164,7 @@ export function CTASection() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code: appliedCode }),
-        }).catch(() => {});
+        }).catch((e) => console.error("[cta-section] promo code tracking error:", e));
       }
       toast.success(t("تم تفعيل الاشتراك بنجاح!", "Subscription activated!"));
       setTimeout(() => router.push("/vault?subscribed=true"), 500);

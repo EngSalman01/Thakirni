@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
             email: data.user.email,
             name: data.user.user_metadata?.full_name ?? data.user.email?.split("@")[0],
           }),
-        }).catch(() => {})
+        }).catch((e) => console.error("[auth/callback] welcome email error:", e))
       }
 
       return NextResponse.redirect(`${origin}${next}`)

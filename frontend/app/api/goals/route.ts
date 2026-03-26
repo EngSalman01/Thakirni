@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
   if (milestones?.length) {
-    await auth.supabase.from("goal_milestones").insert(
+    const { error: msError } = await auth.supabase.from("goal_milestones").insert(
       milestones.map((m, i) => ({
         goal_id: goal.id,
         user_id: auth.userId,
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
         is_completed: false,
       }))
     )
+    if (msError) console.error("[goals] milestone insert error:", msError)
   }
 
   return Response.json({ success: true, goal })

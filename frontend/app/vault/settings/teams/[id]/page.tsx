@@ -214,7 +214,8 @@ export default function TeamSettingsPage() {
         setMembers((prev) => prev.filter((m) => m.user_id !== removingMember.user_id));
         toast.success(t("تم إزالة العضو", "Member removed"));
       }
-    } catch {
+    } catch (err) {
+      console.error("[TeamSettings] remove member:", err)
       toast.error(t("فشل إزالة العضو", "Failed to remove member"));
     } finally {
       setRemoveLoading(false);

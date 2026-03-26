@@ -172,10 +172,15 @@ export async function POST(request: NextRequest) {
   }
 
   // Save the new price ID to DB
-  await supabase
+  const { error: saveError } = await supabase
     .from("plan_config")
     .update({ paddle_price_id: result.priceId, paddle_product_id: productId })
     .eq("plan_key", planKey);
+
+  if (saveError) {
+    console.error("[plan-config] DB update after Paddle price creation failed:", saveError);
+    return NextResponse.json({ error: "Paddle price created but failed to save to DB: " + saveError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ priceId: result.priceId });
 }

@@ -90,6 +90,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [search, setSearch] = useState("");
   const [plan, setPlan] = useState("all");
   const [sort, setSort] = useState("newest");
@@ -117,6 +118,7 @@ export default function UsersPage() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    setFetchError(false);
     try {
       const params = new URLSearchParams({
         search,
@@ -130,9 +132,14 @@ export default function UsersPage() {
         const data = await res.json();
         setUsers(data.users ?? []);
         setTotal(data.total ?? 0);
+      } else {
+        setFetchError(true);
+        toast.error("Failed to load users");
       }
     } catch (e) {
-      console.error(e);
+      console.error("[Admin/Users] fetch error:", e);
+      setFetchError(true);
+      toast.error("Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -393,7 +400,20 @@ export default function UsersPage() {
                       </td>
                     </tr>
                   ))}
-              {!loading && users.length === 0 && (
+              {!loading && fetchError && (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center font-label">
+                    <p className="text-red-500 font-semibold mb-2">Failed to load users</p>
+                    <button
+                      onClick={() => fetchUsers()}
+                      className="text-xs text-[#2552ca] underline hover:no-underline"
+                    >
+                      Retry
+                    </button>
+                  </td>
+                </tr>
+              )}
+              {!loading && !fetchError && users.length === 0 && (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-slate-400 font-label">
                     No users found

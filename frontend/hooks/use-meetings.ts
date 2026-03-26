@@ -1,8 +1,6 @@
 import useSWR from "swr"
 import { createClient } from "@/lib/supabase/client"
 
-const API_URL = ""
-
 async function fetcher(url: string): Promise<Record<string, unknown>[]> {
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
@@ -11,14 +9,14 @@ async function fetcher(url: string): Promise<Record<string, unknown>[]> {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${session.access_token}` },
   })
-  if (!res.ok) return []
+  if (!res.ok) throw new Error(`Failed to fetch meetings: ${res.status}`)
   const data = await res.json() as { meetings?: Record<string, unknown>[] }
   return data.meetings ?? []
 }
 
 export function useMeetings() {
   const { data, error, mutate } = useSWR(
-    `${API_URL}/api/meetings`,
+    `/api/meetings`,
     fetcher,
     { refreshInterval: 0 }
   )

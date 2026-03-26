@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const FALLBACK = [
-  { plan_key: "free", price_sar: 0 },
-  { plan_key: "pro", price_sar: 30 },
-  { plan_key: "teams", price_sar: 60 },
+  { plan_key: "free",  price_sar: 0,  features: ["10 plans per day", "25 memories", "1 project", "Basic AI chat"] },
+  { plan_key: "pro",   price_sar: 30, features: ["100 plans per day", "1,000 memories", "10 projects", "Analytics & reports"] },
+  { plan_key: "teams", price_sar: 60, features: ["Everything unlimited", "Shared memories & notes", "Priority support"] },
 ];
 
 // Public endpoint — only exposes price_sar per plan key.
@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("plan_config")
-      .select("plan_key, price_sar")
+      .select("plan_key, price_sar, features")
       .order("price_sar", { ascending: true });
 
     if (error || !data || data.length === 0) {
@@ -26,9 +26,10 @@ export async function GET() {
     }
 
     // Normalize plan_key to lowercase so frontend lookups always match
-    const normalized = data.map((p: { plan_key: string; price_sar: number }) => ({
+    const normalized = data.map((p: { plan_key: string; price_sar: number; features?: string[] }) => ({
       plan_key: p.plan_key.toLowerCase(),
       price_sar: p.price_sar,
+      features: p.features ?? [],
     }));
 
     return NextResponse.json(normalized, {

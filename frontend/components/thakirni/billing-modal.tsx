@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -81,6 +81,18 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   const { t } = useLanguage();
   const [confirming, setConfirming] = useState<PlanTier | null>(null);
   const [processing, setProcessing] = useState<PlanTier | null>(null);
+  const [planPrices, setPlanPrices] = useState<Record<string, number>>({ pro: 29.99, teams: 59.99 });
+
+  useEffect(() => {
+    fetch("/api/plans")
+      .then((r) => r.json())
+      .then((data: Array<{ plan_key: string; price_sar: number }>) => {
+        const prices: Record<string, number> = {};
+        for (const p of data) prices[p.plan_key] = p.price_sar;
+        setPlanPrices((prev) => ({ ...prev, ...prices }));
+      })
+      .catch((e) => console.error("[billing-modal] plan prices fetch error:", e));
+  }, []);
 
   // Promo code state
   const [promoInput, setPromoInput] = useState("");
@@ -130,7 +142,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ code: appliedCode }),
-              }).catch(() => {});
+              }).catch((e) => console.error("[billing-modal] promo code tracking error:", e));
             }
             onUpgradeComplete(planId);
             onClose();
@@ -271,7 +283,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   <div>
                     <p className="font-headline font-bold text-base text-slate-900">{t(plan.nameAr, plan.nameEn)}</p>
                     <p className="text-xl font-bold mt-1" style={{ color: plan.accent }}>
-                      {plan.price}
+                      {plan.id === "free" ? plan.price : `${planPrices[plan.id] ?? (plan.id === "pro" ? 29.99 : 59.99)} SAR/mo`}
                       {plan.noteSuffixEn && (
                         <span className="text-xs text-slate-400 font-normal ml-1">
                           {t(plan.noteSuffixAr!, plan.noteSuffixEn)}
