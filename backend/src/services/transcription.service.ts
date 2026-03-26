@@ -1,6 +1,5 @@
-import { getGroqSDK, getAiModel } from "./ai.service.js"
+import { getAiModel, getGoogle } from "./ai.service.js"
 import { generateText } from "ai"
-import fs from "fs"
 import path from "path"
 
 export interface TranscriptSegment {
@@ -22,44 +21,44 @@ export interface MeetingSummary {
 }
 
 /**
- * Transcribe audio using Groq Whisper with segment-level timestamps.
+ * Transcribe audio using Gemini with estimated segment-level timestamps.
  */
 export async function transcribeAudio(
   audioBuffer: Buffer,
   filename: string,
   language?: string
 ): Promise<TranscriptSegment[]> {
-  const groq = getGroqSDK()
+  const ext = path.extname(filename).toLowerCase()
+  const mimeTypes: Record<string, string> = {
+    ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
+    ".m4a": "audio/mp4", ".flac": "audio/flac", ".webm": "audio/webm",
+  }
+  const mimeType = mimeTypes[ext] ?? "audio/mpeg"
+  const langInstruction = language ? `The audio is in ${language}.` : ""
 
-  // Write buffer to a temp file (Groq SDK requires a file-like object)
-  const tmpPath = path.join("/tmp", `thakirni_${Date.now()}_${filename}`)
-  fs.writeFileSync(tmpPath, audioBuffer)
+  const { text } = await generateText({
+    model: getGoogle()("gemini-flash-latest"),
+    messages: [{
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: `Transcribe this audio file accurately. ${langInstruction}
+Return ONLY a JSON array of transcript segments:
+[{"id": 0, "start": 0.0, "end": 5.0, "text": "..."}, ...]
+Estimate timestamps based on audio duration. JSON only, no explanation.`,
+        },
+        { type: "file", data: audioBuffer, mimeType },
+      ],
+    }],
+  })
 
   try {
-    const file = fs.createReadStream(tmpPath)
-
-    const transcription = await groq.audio.transcriptions.create({
-      file,
-      model: "whisper-large-v3-turbo",
-      response_format: "verbose_json",
-      timestamp_granularities: ["segment"],
-      ...(language ? { language } : {}),
-    }) as unknown as {
-      text: string
-      segments?: Array<{ start: number; end: number; text: string }>
-    }
-
-    const rawSegs = transcription.segments ?? []
-    const segments: TranscriptSegment[] = rawSegs.map((seg, i) => ({
-      id: i,
-      start: seg.start,
-      end: seg.end,
-      text: seg.text.trim(),
-    }))
-
-    return segments
-  } finally {
-    try { fs.unlinkSync(tmpPath) } catch { /* ignore */ }
+    const match = text.match(/\[[\s\S]*\]/)
+    if (!match) return [{ id: 0, start: 0, end: 0, text: text.trim() }]
+    return JSON.parse(match[0])
+  } catch {
+    return [{ id: 0, start: 0, end: 0, text: text.trim() }]
   }
 }
 

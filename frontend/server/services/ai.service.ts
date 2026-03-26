@@ -3,23 +3,21 @@
  * Used by API routes only. Never imported by client components.
  */
 import "server-only";
-import { createGroq } from "@ai-sdk/groq";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { generateText } from "ai";
 
 // ── Models ────────────────────────────────────────────────────────────────────
 
-function getGroq() {
-  return createGroq({ apiKey: process.env.GROQ_API_KEY ?? "" });
-}
+const _google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "" });
 
 /** Primary model — smart, fast, multilingual. */
 export function getAiModel() {
-  return getGroq()("llama-3.3-70b-versatile");
+  return _google("gemini-flash-latest");
 }
 
 /** Fast model — for quick classification/extraction tasks. */
 export function getFastModel() {
-  return getGroq()("llama-3.1-8b-instant");
+  return _google("gemini-flash-latest");
 }
 
 // ── Hijri Date ────────────────────────────────────────────────────────────────
