@@ -224,7 +224,7 @@ export default function HabitsPage() {
                           {h.completed_today
                             ? <CheckCircle2 className="w-7 h-7 text-emerald-500" />
                             : <Circle className="w-7 h-7 text-slate-300" />}
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
+                          <Button variant="ghost" size="icon" aria-label="Delete habit" className="h-8 w-8 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
                             onClick={e => { e.stopPropagation(); deleteHabit(h.id as string) }}>
                             <Trash2 className="w-4 h-4" />
                           </Button>

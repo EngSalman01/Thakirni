@@ -149,7 +149,7 @@ function FileRow({ item, onRemove }: { item: FileItem; onRemove: (id: string) =>
       className="flex items-center gap-3 p-4 rounded-2xl border border-[#e4e2e1] bg-white shadow-card hover-lift">
       <div className="w-11 h-11 rounded-xl power-gradient flex items-center justify-center shrink-0 overflow-hidden">
         {item.preview
-          ? <img src={item.preview} alt="" className="w-full h-full object-cover" />
+          ? <img src={item.preview} alt={item.file.name} className="w-full h-full object-cover" />
           : <Icon className="w-5 h-5 text-white" />}
       </div>
       <div className="flex-1 min-w-0 space-y-1">
@@ -170,7 +170,7 @@ function FileRow({ item, onRemove }: { item: FileItem; onRemove: (id: string) =>
         </div>
       </div>
       {item.status !== 'uploading' && (
-        <Button size="icon" variant="ghost" className="shrink-0 h-8 w-8 rounded-full text-slate-400 hover:text-red-500" onClick={() => onRemove(item.id)}>
+        <Button size="icon" variant="ghost" aria-label="Remove file" className="shrink-0 h-8 w-8 rounded-full text-slate-400 hover:text-red-500" onClick={() => onRemove(item.id)}>
           <X className="w-4 h-4" />
         </Button>
       )}

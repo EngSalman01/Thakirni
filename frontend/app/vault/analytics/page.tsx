@@ -108,9 +108,9 @@ export default function AnalyticsPage() {
       const [plansRes, memoriesRes, habitsRes, habitLogsRes, goalsRes] = await Promise.all([
         supabase.from("plans").select("plan_date, status").eq("user_id", user.id).gte("plan_date", startDate),
         supabase.from("memories").select("created_at").eq("user_id", user.id).gte("created_at", `${startDate}T00:00:00`),
-        supabase.from("habits").select("id, title, current_streak, is_active").eq("user_id", user.id).eq("is_active", true).limit(5),
+        supabase.from("habits").select("id, name, current_streak, is_active").eq("user_id", user.id).eq("is_active", true).limit(5),
         supabase.from("habit_logs").select("habit_id, logged_at").eq("user_id", user.id).gte("logged_at", `${startDate}T00:00:00`),
-        supabase.from("goals").select("title, status, progress_pct").eq("user_id", user.id).limit(6),
+        supabase.from("goals").select("title, status, progress").eq("user_id", user.id).limit(6),
       ])
 
       for (const plan of plansRes.data ?? []) {
@@ -129,14 +129,14 @@ export default function AnalyticsPage() {
       }
 
       const habitData: HabitData[] = (habitsRes.data ?? []).map(h => ({
-        name: h.title.slice(0, 20),
+        name: h.name.slice(0, 20),
         streak: h.current_streak ?? 0,
         completed: habitLogCounts[h.id] ?? 0,
       })).sort((a, b) => b.completed - a.completed)
 
       const goalData: GoalData[] = (goalsRes.data ?? []).map(g => ({
         title: g.title.slice(0, 25),
-        progress: g.progress_pct ?? 0,
+        progress: g.progress ?? 0,
         status: g.status,
       }))
 
@@ -147,7 +147,7 @@ export default function AnalyticsPage() {
         totalMemories: memoriesRes.data?.length ?? 0,
         completedPlans: (plansRes.data ?? []).filter(p => p.status === "done").length,
         activeHabits: habitsRes.data?.length ?? 0,
-        activeGoals: (goalsRes.data ?? []).filter(g => g.status === "in_progress").length,
+        activeGoals: (goalsRes.data ?? []).filter(g => g.status === "active" || g.status === "in_progress").length,
       })
       setLoading(false)
       } catch (err) {

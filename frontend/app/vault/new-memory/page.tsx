@@ -67,7 +67,8 @@ export default function NewMemoryPage() {
                 placeholder={t('أدخل عنوان الذكرى', 'Enter memory title')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-background border border-border"
+                disabled={saving}
+                className="w-full px-4 py-2 rounded-lg bg-background border border-border disabled:opacity-50"
               />
             </div>
 
@@ -77,7 +78,8 @@ export default function NewMemoryPage() {
                 placeholder={t('أدخل محتوى الذكرى', 'Enter memory content')}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg bg-background border border-border h-48"
+                disabled={saving}
+                className="w-full px-4 py-2 rounded-lg bg-background border border-border h-48 disabled:opacity-50"
               />
             </div>
 

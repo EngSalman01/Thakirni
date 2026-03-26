@@ -269,7 +269,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </DropdownMenu>
 
         <Link
-          href="#"
+          href="/help"
           className="flex items-center gap-3 text-slate-500 py-2 px-2 hover:text-[#2552ca] transition-colors text-sm font-semibold"
           onClick={onNavigate}
         >

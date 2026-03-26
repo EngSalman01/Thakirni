@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 // Update plan status (Quick action)
 export async function updatePlanStatus(
   planId: string,
-  status: "pending" | "in_progress" | "completed" | "cancelled"
+  status: "pending" | "done" | "cancelled"
 ) {
   try {
     const supabase = await createClient();

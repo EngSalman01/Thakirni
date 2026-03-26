@@ -6,7 +6,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (auth instanceof Response) return auth
   const { id } = await params
 
-  const { data, error } = await auth.supabase.from("meetings").select("*").eq("id", id).single()
+  const { data, error } = await auth.supabase.from("meetings").select("*").eq("id", id).eq("user_id", auth.userId).single()
   if (error || !data) return Response.json({ error: "Meeting not found" }, { status: 404 })
   return Response.json({ meeting: data })
 }

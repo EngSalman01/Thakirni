@@ -410,10 +410,10 @@ export default function SettingsPage() {
         const { data } = await supabase.from("plans").select("title, plan_date, plan_time, status, category").eq("user_id", user.id).order("plan_date", { ascending: false });
         items = data ?? [];
       } else if (type === "habits") {
-        const { data } = await supabase.from("habits").select("title, category, frequency, current_streak").eq("user_id", user.id);
+        const { data } = await supabase.from("habits").select("name, category, frequency, current_streak").eq("user_id", user.id);
         items = data ?? [];
       } else if (type === "goals") {
-        const { data } = await supabase.from("goals").select("title, status, deadline, progress_pct").eq("user_id", user.id);
+        const { data } = await supabase.from("goals").select("title, status, target_date, progress").eq("user_id", user.id);
         items = data ?? [];
       }
 

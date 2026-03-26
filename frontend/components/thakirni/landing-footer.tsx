@@ -10,6 +10,7 @@ export function LandingFooter() {
     { href: "#features", ar: "المميزات", en: "Features" },
     { href: "#", ar: "التكاملات", en: "Integrations" },
     { href: "/pricing", ar: "الأسعار", en: "Pricing" },
+    { href: "/help", ar: "مركز المساعدة", en: "Help Center" },
   ];
 
   const companyLinks = [

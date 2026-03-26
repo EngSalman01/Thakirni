@@ -186,7 +186,7 @@ export default function PlansPage() {
                 <form onSubmit={handleAddPlan} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="text-sm font-medium text-white/90">
-                      {t("عنوان المهمة", "Task title")} <span className="text-red-300">*</span>
+                      {t("عنوان المهمة", "Task title")} <span className="text-red-500">*</span>
                     </label>
                     <Input
                       value={newPlanTitle} onChange={e => setNewPlanTitle(e.target.value)}

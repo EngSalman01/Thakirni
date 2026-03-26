@@ -26,9 +26,9 @@ export async function GET(req: NextRequest) {
       .limit(5),
     supabase
       .from("habits")
-      .select("id, title, category")
+      .select("id, name, category")
       .eq("user_id", user.id)
-      .ilike("title", search)
+      .ilike("name", search)
       .limit(3),
     supabase
       .from("goals")
