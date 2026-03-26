@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@supabase/ssr"
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
@@ -9,7 +9,28 @@ export async function GET(req: NextRequest) {
   const next = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : "/vault"
 
   if (code) {
-    const supabase = await createClient()
+    // Build the redirect response first so we can attach cookies to it directly.
+    // Using createClient() (next/headers) would set cookies on a separate response
+    // object that is NOT the redirect response, so the session would be lost.
+    const response = NextResponse.redirect(`${origin}${next}`)
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return req.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            )
+          },
+        },
+      }
+    )
+
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
@@ -28,7 +49,7 @@ export async function GET(req: NextRequest) {
         }).catch((e) => console.error("[auth/callback] welcome email error:", e))
       }
 
-      return NextResponse.redirect(`${origin}${next}`)
+      return response
     }
   }
 
