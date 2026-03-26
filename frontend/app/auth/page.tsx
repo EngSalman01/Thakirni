@@ -162,11 +162,11 @@ function getPasswordStrength(password: string) {
   if (/[^A-Za-z0-9]/.test(password)) score++;
   const clipped = Math.min(score, 4) as 0|1|2|3|4;
   const map = {
-    0: { label: "قصيرة جداً", color: "bg-red-500" },
-    1: { label: "ضعيفة",      color: "bg-red-500" },
-    2: { label: "متوسطة",     color: "bg-yellow-500" },
-    3: { label: "جيدة",       color: "bg-blue-500" },
-    4: { label: "قوية",       color: "bg-green-500" },
+    0: { labelAr: "قصيرة جداً", labelEn: "Too short",  color: "bg-red-500" },
+    1: { labelAr: "ضعيفة",      labelEn: "Weak",        color: "bg-red-500" },
+    2: { labelAr: "متوسطة",     labelEn: "Fair",        color: "bg-yellow-500" },
+    3: { labelAr: "جيدة",       labelEn: "Good",        color: "bg-blue-500" },
+    4: { labelAr: "قوية",       labelEn: "Strong",      color: "bg-green-500" },
   };
   return { score: clipped, ...map[clipped] };
 }
@@ -189,7 +189,7 @@ function AuthForm() {
   const [signInCaptchaToken, setSignInCaptchaToken] = useState("");
   const signInCaptchaRef                        = useRef<HCaptcha>(null);
 
-  const { t } = useLanguage();
+  const { t, isArabic } = useLanguage();
   const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next");
   const router  = useRouter();
@@ -275,7 +275,7 @@ function AuthForm() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, name }),
-    }).catch(() => {});
+    }).catch((e) => console.error("[auth] welcome email error:", e));
   };
 
   // ── Google ───────────────────────────────────────────────────────
@@ -541,16 +541,19 @@ function AuthForm() {
                   {showSignUpPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {signUpPassword.length > 0 && (
-                <div className="space-y-1 pt-1">
-                  <div className="flex gap-1">
-                    {[1,2,3,4].map((i) => (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= strength.score ? strength.color : "bg-muted"}`} />
-                    ))}
+              {signUpPassword.length === 0
+                ? <p className="text-xs text-muted-foreground pt-1">{t("٨ أحرف على الأقل، يُفضَّل مع أرقام ورموز", "At least 8 characters — mix letters, numbers & symbols for a stronger password.")}</p>
+                : (
+                  <div className="space-y-1 pt-1">
+                    <div className="flex gap-1">
+                      {[1,2,3,4].map((i) => (
+                        <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= strength.score ? strength.color : "bg-muted"}`} />
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{isArabic ? strength.labelAr : strength.labelEn}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">{strength.label}</p>
-                </div>
-              )}
+                )
+              }
               {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
             </div>
 

@@ -52,9 +52,9 @@ function VaultSkeleton() {
   );
 }
 
-// ── Memory Map Orb ────────────────────────────────────────────────────────────
+// ── Memory Map Stats ──────────────────────────────────────────────────────────
 
-function MemoryMapOrb() {
+function MemoryMapStats({ stats }: { stats: { memories: number; plans: number; habits: number; goals: number } }) {
   const { t } = useLanguage();
   const [memories, setMemories] = useState<Array<{ id: string; title: string }>>([]);
   const [loading, setLoading] = useState(true);
@@ -65,55 +65,60 @@ function MemoryMapOrb() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-        const { data } = await supabase.from("memories").select("id, title").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
+        const { data } = await supabase.from("memories").select("id, title").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3);
         setMemories(data ?? []);
-      } catch {}
-      finally { setLoading(false); }
+      } catch (err) {
+        console.error("[MemoryMapStats] failed to fetch memories:", err);
+      } finally { setLoading(false); }
     })();
   }, []);
 
-  const memColors = ["from-[#2552ca] to-[#456ce4]","from-[#ad1d7f] to-[#fd65c2]","from-[#385b9b] to-[#2552ca]","from-emerald-500 to-teal-400","from-amber-500 to-orange-400"];
+  const statItems = [
+    { value: stats.memories, label: t("ذكريات", "Memories"),      icon: "🧠", color: "bg-[#dce1ff] text-[#2552ca]",    href: "/vault/new-memory" },
+    { value: stats.plans,    label: t("خطط اليوم", "Plans today"), icon: "📋", color: "bg-[#ffd8e9] text-[#ad1d7f]",    href: "/vault/plans" },
+    { value: stats.habits,   label: t("عادات", "Habits"),          icon: "🔥", color: "bg-emerald-50 text-emerald-700", href: "/vault/habits" },
+    { value: stats.goals,    label: t("أهداف", "Goals"),           icon: "🎯", color: "bg-amber-50 text-amber-700",     href: "/vault/goals" },
+  ];
+
+  const dotColors = ["bg-[#2552ca]", "bg-[#ad1d7f]", "bg-emerald-500", "bg-amber-500"];
 
   return (
-    <div className="relative bg-white rounded-2xl p-4 shadow-card hover-lift">
-      <div className="rounded-xl w-full h-[420px] bg-gradient-to-br from-[#dce1ff] via-[#f0eded] to-[#ffd8e9] flex items-center justify-center relative overflow-hidden">
-        <div className="relative w-56 h-56">
-          <div className="absolute inset-0 rounded-full border-2 border-[#2552ca]/20 animate-[spin_20s_linear_infinite]" />
-          <div className="absolute inset-4 rounded-full border border-[#fd65c2]/20 animate-[spin_15s_linear_infinite_reverse]" />
-          <motion.div
-            animate={{ scale: [1, 1.04, 1] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute inset-10 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_60px_rgba(37,82,202,0.5)] flex items-center justify-center"
-          >
-            <span className="text-white text-3xl font-headline font-bold select-none">ذ</span>
-          </motion.div>
-          {[
-            { pos: "top-0 left-1/2 -translate-x-1/2 -translate-y-4", label: "AI", color: "text-[#2552ca]" },
-            { pos: "bottom-0 left-1/2 -translate-x-1/2 translate-y-4", label: "⚡", color: "text-[#ad1d7f]" },
-            { pos: "left-0 top-1/2 -translate-y-1/2 -translate-x-4", label: "📄", color: "text-slate-600" },
-            { pos: "right-0 top-1/2 -translate-y-1/2 translate-x-4", label: "🎙️", color: "text-slate-600" },
-          ].map(({ pos, label, color }) => (
-            <motion.div key={label} initial={{ opacity: 0, scale: 0 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, delay: 0.3 }}
-              className={`absolute ${pos} w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-base font-bold ${color}`}>
-              {label}
+    <div className="relative bg-white rounded-2xl p-6 shadow-card hover-lift">
+      {/* 2×2 live stats grid */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {statItems.map(({ value, label, icon, color, href }) => (
+          <Link key={href} href={href}>
+            <motion.div whileHover={{ scale: 1.03 }} className={`flex flex-col gap-1 p-4 rounded-xl cursor-pointer transition-all ${color}`}>
+              <span className="text-xl">{icon}</span>
+              <span className="text-3xl font-headline font-extrabold leading-none">{value}</span>
+              <span className="text-xs font-bold opacity-80">{label}</span>
             </motion.div>
-          ))}
-          {!loading && memories.slice(0,3).map(({ id, title }, i) => {
-            const angle = (i / 3) * 2 * Math.PI - Math.PI / 2;
-            const r = 44;
-            const x = 50 + r * Math.cos(angle);
-            const y = 50 + r * Math.sin(angle);
-            return (
-              <motion.div key={id} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4, delay: 0.5 + i * 0.1 }}
-                className="absolute hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-md border border-white/60"
-                style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)" }}>
-                <span className={`w-2 h-2 rounded-full bg-gradient-to-br ${memColors[i % memColors.length]} shrink-0`} />
-                <span className="text-[11px] font-bold text-slate-700 whitespace-nowrap max-w-[90px] truncate">{title}</span>
-              </motion.div>
-            );
-          })}
-        </div>
+          </Link>
+        ))}
       </div>
+
+      {/* Recent memories list */}
+      <div>
+        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">{t("آخر الذكريات", "Recent Memories")}</p>
+        <div className="space-y-1.5">
+          {loading
+            ? [1, 2, 3].map(i => <Skeleton key={i} className="h-8 rounded-lg" />)
+            : memories.length === 0
+            ? <p className="text-xs text-slate-400 text-center py-3">{t("لا توجد ذكريات بعد", "No memories yet")}</p>
+            : memories.map(({ id, title }, i) => (
+              <motion.div key={id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.07 }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#f6f3f2] transition-colors">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${dotColors[i % dotColors.length]}`} />
+                <span className="text-sm text-slate-700 truncate font-medium">{title}</span>
+              </motion.div>
+            ))
+          }
+        </div>
+        <Link href="/vault/new-memory" className="mt-3 flex items-center gap-1.5 text-xs font-bold text-[#2552ca] hover:underline">
+          {t("عرض الكل", "View all")} <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
+
       {/* Floating notification */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="absolute -bottom-5 -left-5 max-w-xs">
         <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
@@ -149,7 +154,7 @@ function useStats() {
           supabase.from("goals").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         ]);
         setStats({ memories: m.count ?? 0, plans: p.count ?? 0, habits: h.count ?? 0, goals: g.count ?? 0 });
-      } catch {}
+      } catch (err) { console.error("[useStats] failed to fetch counts:", err); }
     })();
   }, []);
   return stats;
@@ -171,7 +176,7 @@ function RecentCaptures() {
       if (!user) return;
       const { data } = await supabase.from("memories").select("id, title, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
       setMemories(data ?? []);
-    } catch {}
+    } catch (err) { console.error("[RecentCaptures] failed to fetch memories:", err); }
     finally { setLoading(false); }
   }, []);
 
@@ -263,7 +268,7 @@ function FocusStream() {
         if (!user) return;
         const { data } = await supabase.from("plans").select("id, title, plan_time").eq("user_id", user.id).eq("plan_date", today).eq("status", "pending").order("plan_time", { ascending: true }).limit(4);
         setPlans(data ?? []);
-      } catch {}
+      } catch (err) { console.error("[FocusStream] failed to fetch plans:", err); }
       finally { setLoading(false); }
     })();
   }, []);
@@ -321,7 +326,7 @@ function AIInsight() {
       try {
         const res = await fetch("/api/vault/insights");
         if (res.ok) setData(await res.json() as InsightData);
-      } catch {}
+      } catch (err) { console.error("[FocusStream] failed to fetch insights:", err); }
       finally { setLoading(false); }
     })();
   }, []);
@@ -443,9 +448,9 @@ function VaultPageInner() {
                 </div>
               </motion.div>
 
-              {/* Orb */}
+              {/* Stats panel */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }} className="relative hidden lg:block">
-                <MemoryMapOrb />
+                <MemoryMapStats stats={stats} />
               </motion.div>
             </div>
           </div>

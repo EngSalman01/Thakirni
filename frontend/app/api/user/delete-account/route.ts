@@ -13,15 +13,25 @@ export async function DELETE() {
   const service = createServiceClient()
 
   try {
-    // Delete all user data in order (children first)
+    // Delete all user data in order (children first, parents last)
     const tables = [
       "habit_logs",
+      "goal_milestones",
       "reminders",
+      "focus_sessions",
+      "timeline_events",
+      "notifications",
+      "user_facts",
+      "conversations",
+      "documents",
       "memories",
+      "meetings",
+      "whatsapp_messages",
+      "whatsapp_connections",
+      "subscriptions",
       "plans",
       "habits",
       "goals",
-      "meeting_summaries",
       "team_invitations",
     ]
 

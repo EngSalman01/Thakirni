@@ -61,6 +61,9 @@ export async function POST(req: NextRequest) {
 
       if (updateError) {
         console.error("Error setting admin role:", updateError);
+        // Auth user was created — roll back by deleting to avoid orphaned auth user
+        await supabase.auth.admin.deleteUser(authData.user.id);
+        return NextResponse.json({ error: "Failed to set admin role: " + updateError.message }, { status: 500 });
       }
     }
 

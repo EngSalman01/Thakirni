@@ -54,11 +54,13 @@ export async function POST() {
   }
 
   // Mark in DB: cancel scheduled at period end
-  await service
+  const { error: dbError } = await service
     .from("subscriptions")
     .update({ cancel_at_period_end: true, updated_at: new Date().toISOString() })
     .eq("user_id", user.id)
     .eq("status", "active")
+
+  if (dbError) console.error("[cancel] subscription DB update error:", dbError)
 
   return Response.json({ success: true })
 }

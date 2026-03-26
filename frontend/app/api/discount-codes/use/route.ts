@@ -24,10 +24,15 @@ export async function POST(req: NextRequest) {
   if (data.expires_at && new Date(data.expires_at) < new Date()) return NextResponse.json({ success: false });
   if (data.max_uses > 0 && data.used_count >= data.max_uses) return NextResponse.json({ success: false });
 
-  await service
+  // Atomic increment with optimistic lock — only updates if used_count hasn't changed
+  const { count } = await service
     .from("discount_codes")
     .update({ used_count: data.used_count + 1 })
-    .eq("id", data.id);
+    .eq("id", data.id)
+    .eq("used_count", data.used_count) // prevents TOCTOU race condition
+    .select("id", { count: "exact", head: true });
+
+  if (!count) return NextResponse.json({ success: false }); // concurrent use won the race
 
   return NextResponse.json({ success: true });
 }

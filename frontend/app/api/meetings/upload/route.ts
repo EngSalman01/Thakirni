@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       source_type: "meeting_recorded",
       source_id: meeting.id,
       importance: 2,
-    }).then(undefined, () => {})
+    }).then(undefined, (err) => { console.error("[Meetings] timeline_events insert failed:", err) })
 
     return Response.json({ success: true, meeting, summary: result.summary, speakers: result.speakers, keyPoints: result.keyPoints, actionItems: result.actionItems, transcript: result.transcript })
   } catch (err) {

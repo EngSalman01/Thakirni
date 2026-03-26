@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
 
   if (!sub?.paddle_customer_id) return Response.json({ error: "No active subscription found" }, { status: 404 })
 
-  const portalUrl = `https://sandbox-buy.paddle.com/customers/${sub.paddle_customer_id}/portal`
+  const paddleBase = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
+    ? "https://sandbox-buy.paddle.com"
+    : "https://buy.paddle.com"
+  const portalUrl = `${paddleBase}/customers/${sub.paddle_customer_id}/portal`
   return Response.json({ url: portalUrl })
 }

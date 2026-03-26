@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/components/language-provider';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -83,7 +83,9 @@ export default function NewMemoryPage() {
 
             <div className="flex gap-4">
               <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-500">
-                <Plus className="w-4 h-4 me-2" />
+                {saving
+                  ? <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                  : <Plus className="w-4 h-4 me-2" />}
                 {saving ? t('جاري الحفظ...', 'Saving...') : t('حفظ الذكرى', 'Save Memory')}
               </Button>
               <Button variant="outline" onClick={() => router.back()}>

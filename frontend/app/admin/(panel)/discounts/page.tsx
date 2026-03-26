@@ -105,8 +105,10 @@ export default function DiscountsPage() {
     try {
       const res = await fetch("/api/admin/discount-codes");
       if (res.ok) setCodes(await res.json());
+      else toast.error("Failed to load discount codes");
     } catch (e) {
-      console.error(e);
+      console.error("[Admin/Discounts] fetch error:", e);
+      toast.error("Failed to load discount codes");
     } finally {
       setLoading(false);
     }

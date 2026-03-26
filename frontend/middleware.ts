@@ -44,12 +44,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Protect /admin routes — user must be logged in (admin check in layout)
+  // Protect /admin routes — user must be logged in AND have is_admin = true
   // /admin/login is the entry point and must remain publicly accessible
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login") && !user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/login";
+      return NextResponse.redirect(url);
+    }
+    // Verify admin role — redirect non-admins back to vault
+    try {
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", user.id)
+        .single();
+      if (!profileRow?.is_admin) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/vault";
+        return NextResponse.redirect(url);
+      }
+    } catch {
+      // If profile lookup fails, deny access
+      const url = request.nextUrl.clone();
+      url.pathname = "/vault";
+      return NextResponse.redirect(url);
+    }
   }
 
   // Maintenance mode check for /vault routes

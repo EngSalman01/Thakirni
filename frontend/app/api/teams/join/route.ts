@@ -59,13 +59,15 @@ export async function POST(req: NextRequest) {
   }
 
   // Mark invitation as accepted
-  await service
+  const { error: acceptError } = await service
     .from("team_invitations")
     .update({ status: "accepted", accepted_at: new Date().toISOString() })
     .eq("id", invite.id)
+  if (acceptError) console.error("[teams/join] invitation accept error:", acceptError)
 
   // Update user's team_id in profile
-  await service.from("profiles").update({ team_id: invite.team_id }).eq("id", user.id)
+  const { error: profileError } = await service.from("profiles").update({ team_id: invite.team_id }).eq("id", user.id)
+  if (profileError) console.error("[teams/join] profile team_id update error:", profileError)
 
   return NextResponse.json({ success: true, teamId: invite.team_id })
 }

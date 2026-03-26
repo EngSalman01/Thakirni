@@ -230,9 +230,9 @@ export async function POST(req: Request) {
                 if (refreshRes.ok) {
                   const refreshData = await refreshRes.json() as { access_token: string; expires_in: number }
                   gcalToken = refreshData.access_token
-                  supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: new Date(Date.now() + refreshData.expires_in * 1000).toISOString() }).eq("id", user.id).then(undefined, () => {})
+                  supabase.from("profiles").update({ google_calendar_token: gcalToken, google_calendar_expires_at: new Date(Date.now() + refreshData.expires_in * 1000).toISOString() }).eq("id", user.id).then(undefined, (e) => console.error("[chat] gcal token refresh save error:", e))
                 }
-              } catch { /* silent */ }
+              } catch (err) { console.error("[API] silent catch:", err) }
             }
           }
 
@@ -261,7 +261,7 @@ export async function POST(req: Request) {
               }
               setCachedGcal(user.id, googleCalendarBlock)
             }
-          } catch { /* silent */ }
+          } catch (err) { console.error("[API] silent catch:", err) }
         }
       }
     }
@@ -304,9 +304,9 @@ export async function POST(req: Request) {
           if (rr.ok) {
             const rd = await rr.json() as { access_token: string; expires_in: number }
             token = rd.access_token
-            supabase.from("profiles").update({ google_calendar_token: token, google_calendar_expires_at: new Date(Date.now() + rd.expires_in * 1000).toISOString() }).eq("id", user.id).then(undefined, () => {})
+            supabase.from("profiles").update({ google_calendar_token: token, google_calendar_expires_at: new Date(Date.now() + rd.expires_in * 1000).toISOString() }).eq("id", user.id).then(undefined, (e) => console.error("[chat] gcal token save error:", e))
           }
-        } catch { /* silent */ }
+        } catch (err) { console.error("[API] silent catch:", err) }
       }
       return token
     }
@@ -615,10 +615,10 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
                 })
                 if (gcalRes.ok) {
                   const gcalData = await gcalRes.json() as { id: string }
-                  supabase.from("plans").update({ gcal_event_id: gcalData.id }).eq("id", data.id).then(undefined, () => {})
+                  supabase.from("plans").update({ gcal_event_id: gcalData.id }).eq("id", data.id).then(undefined, (e) => console.error("[chat] gcal_event_id save error:", e))
                 }
               }
-            } catch { /* silent */ }
+            } catch (err) { console.error("[API] silent catch:", err) }
 
             // Auto-schedule WhatsApp reminder 30 min before (only for timed events in the future)
             if (input.plan_time && !input.is_all_day) {
@@ -635,9 +635,9 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
                     plan_id: data.id,
                     channel,
                     is_sent: false,
-                  }).then(undefined, () => {})
+                  }).then(undefined, (e) => console.error("[chat] reminder insert error:", e))
                 }
-              } catch { /* silent */ }
+              } catch (err) { console.error("[API] silent catch:", err) }
             }
 
             return {
@@ -685,7 +685,7 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
                     body: JSON.stringify(buildGcalEvent({ title: merged.title, description: merged.description, location: merged.location, plan_date: merged.plan_date, plan_time: merged.plan_time, end_time: merged.end_time, is_all_day: merged.is_all_day })),
                   })
                 }
-              } catch { /* silent */ }
+              } catch (err) { console.error("[API] silent catch:", err) }
             }
 
             return { success: true, message: "Plan updated.", plan: data }
@@ -706,7 +706,7 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
             if (error) return { success: false, message: error.message }
 
             // Cancel any unsent reminders for this plan
-            supabase.from("reminders").delete().eq("plan_id", plan_id).eq("is_sent", false).then(undefined, () => {})
+            supabase.from("reminders").delete().eq("plan_id", plan_id).eq("is_sent", false).then(undefined, (e) => console.error("[chat] reminder delete error:", e))
 
             // Delete from Google Calendar
             if (existing?.gcal_event_id) {
@@ -718,7 +718,7 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
                     headers: { Authorization: `Bearer ${gcalToken}` },
                   })
                 }
-              } catch { /* silent */ }
+              } catch (err) { console.error("[API] silent catch:", err) }
             }
 
             return { success: true, message: "Plan deleted." }
@@ -840,7 +840,7 @@ NOTE: Habits and goals are already loaded above — use them naturally without c
                     body: JSON.stringify({ summary: `✅ ${existing.title}` }),
                   })
                 }
-              } catch { /* silent */ }
+              } catch (err) { console.error("[API] silent catch:", err) }
             }
 
             return { success: true, message: "Marked as done ✅", plan: data }

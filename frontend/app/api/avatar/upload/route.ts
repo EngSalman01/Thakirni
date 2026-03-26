@@ -20,7 +20,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 400 });
     }
 
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const ALLOWED_MIME_TYPES: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+    const ext = ALLOWED_MIME_TYPES[file.type];
+    if (!ext) {
+      return NextResponse.json({ error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF" }, { status: 400 });
+    }
+
     const path = `${user.id}/avatar.${ext}`;
 
     const bytes = await file.arrayBuffer();

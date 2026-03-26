@@ -5,7 +5,7 @@ export async function GET(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  const days = parseInt(req.nextUrl.searchParams.get("days") ?? "7")
+  const days = Math.min(Math.max(parseInt(req.nextUrl.searchParams.get("days") ?? "7") || 7, 1), 365)
   const since = new Date()
   since.setDate(since.getDate() - days)
 

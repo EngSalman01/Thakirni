@@ -14,8 +14,6 @@ import { toast } from "sonner"
 import useSWR from "swr"
 import { motion } from "framer-motion"
 
-const API_URL = ""
-
 const SESSION_TYPES = [
   { value: "pomodoro",    label: "بومودورو 🍅",      labelEn: "Pomodoro 🍅",      minutes: 25, color: "#e53e3e" },
   { value: "short_break", label: "استراحة قصيرة ☕", labelEn: "Short Break ☕",   minutes: 5,  color: "#38a169" },
@@ -28,19 +26,20 @@ async function fetchStats() {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return null
-    const res = await fetch(`${API_URL}/api/focus/stats?days=7`, {
+    const res = await fetch(`/api/focus/stats?days=7`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
     if (!res.ok) return null
     const d = await res.json() as { stats?: Record<string, unknown> }
     return d.stats ?? null
-  } catch {
+  } catch (err) {
+    console.error("[Focus] failed to fetch stats:", err)
     return null
   }
 }
 
 export default function FocusPage() {
-  const { data: stats, mutate: mutateStats } = useSWR(`${API_URL}/api/focus/stats`, fetchStats)
+  const { data: stats, mutate: mutateStats } = useSWR(`/api/focus/stats`, fetchStats)
   const { t, isArabic } = useLanguage()
   const [sessionType, setSessionType] = useState("pomodoro")
   const [isRunning, setIsRunning]     = useState(false)
@@ -51,6 +50,7 @@ export default function FocusPage() {
   const intervalRef  = useRef<ReturnType<typeof setInterval> | null>(null)
   const sessionIdRef = useRef<string | null>(null)
   const startedAtRef = useRef<Date | null>(null)
+  const isStartingRef = useRef(false)
 
   const selectedType = SESSION_TYPES.find((t) => t.value === sessionType) ?? SESSION_TYPES[0]
 
@@ -92,18 +92,20 @@ export default function FocusPage() {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      await fetch(`${API_URL}/api/focus/${sid}/complete`, {
+      await fetch(`/api/focus/${sid}/complete`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ actual_minutes: actualMinutes }),
       })
-    } catch { /* backend unavailable — timer still completed locally */ }
+    } catch (err) { console.error("[Focus] complete sync failed:", err) }
   }, [selectedType.minutes, mutateStats, t])
 
   // Keep ref in sync
   useEffect(() => { completeSessionRef.current = handleComplete }, [handleComplete])
 
   async function startSession() {
+    if (isStartingRef.current || isRunning) return
+    isStartingRef.current = true
     const mins = selectedType.minutes
     // Start the timer immediately — no waiting for backend
     setTimeLeft(mins * 60)
@@ -118,7 +120,7 @@ export default function FocusPage() {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      const res = await fetch(`${API_URL}/api/focus/start`, {
+      const res = await fetch(`/api/focus/start`, {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ session_type: sessionType, duration_minutes: mins, goal: goal || undefined }),
@@ -127,7 +129,8 @@ export default function FocusPage() {
         const d = await res.json() as { session?: { id: string } }
         if (d.session?.id) sessionIdRef.current = d.session.id
       }
-    } catch { /* backend unavailable — session runs locally only */ }
+    } catch (err) { console.error("[Focus] start sync failed:", err) }
+    finally { isStartingRef.current = false }
   }
 
   async function abandonSession() {
@@ -140,16 +143,17 @@ export default function FocusPage() {
     setTimeLeft(selectedType.minutes * 60)
     setTotalTime(selectedType.minutes * 60)
     toast.info(t("تم إيقاف الجلسة", "Session stopped"))
+    mutateStats()
     if (!sid) return
     try {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
-      await fetch(`${API_URL}/api/focus/${sid}/abandon`, {
+      await fetch(`/api/focus/${sid}/abandon`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
-    } catch { /* ignore */ }
+    } catch (err) { console.error("[Focus] abandon sync failed:", err) }
   }
 
   function togglePause() {

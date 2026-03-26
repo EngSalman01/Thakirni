@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -8,6 +8,7 @@ import { LanguageToggle } from "@/components/language-toggle"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLanguage } from "@/components/language-provider"
 import { createClient } from "@/lib/supabase/client"
+import { APP_TIMEZONE } from "@/lib/constants"
 import { BarChart, Bar, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { TrendingUp, Brain, ListTodo, Flame, Target } from "lucide-react"
 
@@ -36,20 +37,25 @@ function ParticleLayer() {
   return <div id="analytics-particles" className="absolute inset-0 overflow-hidden pointer-events-none" />
 }
 
-function MiniBarChart() {
-  const bars = [40, 65, 45, 80, 55, 90, 70, 85, 60, 75, 95, 65, 80, 100]
+function MiniBarChart({ days }: { days?: DayData[] }) {
+  const hasData = days && days.length > 0
+  const bars = hasData
+    ? days.map(d => d.plans > 0 ? Math.round((d.completed / d.plans) * 100) : 0)
+    : Array(14).fill(0)
   return (
     <div className="flex items-end gap-1.5 h-24">
       {bars.map((h, i) => (
         <motion.div key={i} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
           transition={{ delay: 0.4 + i * 0.04, duration: 0.4, ease: [0.2, 1, 0.3, 1] }}
           className="flex-1 rounded-t-sm origin-bottom"
-          style={{ height: `${h}%`, background: i === bars.length - 1 ? "linear-gradient(135deg,#2552ca,#ad1d7f)" : i % 2 === 0 ? "#e4e2e1" : "#d0cece" }}
+          style={{ height: `${Math.max(h, 4)}%`, background: (hasData && i === bars.length - 1) ? "linear-gradient(135deg,#2552ca,#ad1d7f)" : i % 2 === 0 ? "#e4e2e1" : "#d0cece" }}
         />
       ))}
     </div>
   )
 }
+
+const BRAND_COLORS = ["#2552ca", "#ad1d7f", "#fd65c2", "#2552ca", "#ad1d7f"]
 
 export default function AnalyticsPage() {
   const { t, isArabic } = useLanguage()
@@ -58,20 +64,42 @@ export default function AnalyticsPage() {
   const [habits, setHabits] = useState<HabitData[]>([])
   const [goals, setGoals] = useState<GoalData[]>([])
   const [stats, setStats] = useState({ totalMemories: 0, completedPlans: 0, activeHabits: 0, activeGoals: 0 })
+  const [period, setPeriod] = useState<7 | 14 | 30>(14)
+  const [fetchError, setFetchError] = useState(false)
+  const [retryKey, setRetryKey] = useState(0)
+
+  const weekOverWeek = useMemo(() => {
+    if (days.length < 2) return null
+    const half = Math.floor(days.length / 2)
+    const prev = days.slice(0, half)
+    const curr = days.slice(half)
+    const avg = (slice: DayData[]) => {
+      const totalPlans = slice.reduce((s, d) => s + d.plans, 0)
+      if (totalPlans === 0) return 0
+      return slice.reduce((s, d) => s + d.completed, 0) / totalPlans
+    }
+    const prevAvg = avg(prev)
+    const currAvg = avg(curr)
+    if (prevAvg === 0) return currAvg > 0 ? 100 : null
+    return Math.round(((currAvg - prevAvg) / prevAvg) * 100)
+  }, [days])
 
   useEffect(() => {
+    setLoading(true)
+    setFetchError(false)
     async function load() {
+      try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) { setLoading(false); return }
 
       const today = new Date()
       const dayArray: DayData[] = []
-      for (let i = 13; i >= 0; i--) {
+      for (let i = period - 1; i >= 0; i--) {
         const d = new Date(today)
         d.setDate(d.getDate() - i)
-        const dateStr = d.toLocaleDateString("en-CA", { timeZone: "Asia/Riyadh" })
-        const label = d.toLocaleDateString(isArabic ? "ar-SA" : "en-US", { weekday: "short", timeZone: "Asia/Riyadh" })
+        const dateStr = d.toLocaleDateString("en-CA", { timeZone: APP_TIMEZONE })
+        const label = d.toLocaleDateString(isArabic ? "ar-SA" : "en-US", { weekday: "short", timeZone: APP_TIMEZONE })
         dayArray.push({ date: dateStr, label, plans: 0, completed: 0, memories: 0 })
       }
 
@@ -90,7 +118,7 @@ export default function AnalyticsPage() {
         if (day) { day.plans++; if (plan.status === "done") day.completed++ }
       }
       for (const mem of memoriesRes.data ?? []) {
-        const dateStr = new Date(mem.created_at).toLocaleDateString("en-CA", { timeZone: "Asia/Riyadh" })
+        const dateStr = new Date(mem.created_at).toLocaleDateString("en-CA", { timeZone: APP_TIMEZONE })
         const day = dayArray.find(d => d.date === dateStr)
         if (day) day.memories++
       }
@@ -122,9 +150,14 @@ export default function AnalyticsPage() {
         activeGoals: (goalsRes.data ?? []).filter(g => g.status === "in_progress").length,
       })
       setLoading(false)
+      } catch (err) {
+        console.error("[Analytics] load error:", err)
+        setFetchError(true)
+        setLoading(false)
+      }
     }
     load()
-  }, [isArabic])
+  }, [isArabic, period, retryKey])
 
   if (loading) {
     return (
@@ -133,6 +166,24 @@ export default function AnalyticsPage() {
         <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20">
           <div className="max-w-5xl mx-auto space-y-6">
             {[1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
+          </div>
+        </main>
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
+        <VaultSidebar />
+        <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <p className="text-2xl">⚠️</p>
+            <p className="text-slate-700 font-semibold">{t("فشل تحميل التحليلات", "Failed to load analytics")}</p>
+            <button onClick={() => { setFetchError(false); setRetryKey(k => k + 1); }}
+              className="px-4 py-2 rounded-xl bg-[#2552ca] text-white text-sm font-bold hover:bg-[#1e44a8] transition-colors">
+              {t("إعادة المحاولة", "Retry")}
+            </button>
           </div>
         </main>
       </div>
@@ -151,7 +202,17 @@ export default function AnalyticsPage() {
           </div>
           <span className="text-xl font-headline font-extrabold gradient-text">{t("التحليلات", "Analytics")}</span>
         </div>
-        <div className="flex items-center gap-2"><MobileMenuButton /><ThemeToggle /><LanguageToggle /></div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-[#f6f3f2] rounded-xl p-1 border border-[#e4e2e1]">
+            {([7, 14, 30] as const).map(p => (
+              <button key={p} onClick={() => setPeriod(p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-label font-semibold transition-all duration-200 ${period === p ? "bg-white text-[#2552ca] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
+                {p}d
+              </button>
+            ))}
+          </div>
+          <MobileMenuButton /><ThemeToggle /><LanguageToggle />
+        </div>
       </header>
 
       <main className="lg:ml-72 transition-all duration-300">
@@ -171,7 +232,7 @@ export default function AnalyticsPage() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
                 <TrendingUp className="w-4 h-4 text-[#2552ca]" />
-                <span className="text-sm font-label font-medium text-slate-700">{t("آخر ١٤ يوم", "Last 14 days")}</span>
+                <span className="text-sm font-label font-medium text-slate-700">{t(`آخر ${period} أيام`, `Last ${period} days`)}</span>
               </motion.div>
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
@@ -217,17 +278,18 @@ export default function AnalyticsPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2552ca]/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
 
               <p className="text-sm font-label font-bold text-slate-500 mb-1">{t("إنجاز الخطط", "Plan Completion")}</p>
-              <p className="text-3xl font-headline font-extrabold text-slate-900 mb-6">
+              <p className="text-3xl font-headline font-extrabold text-slate-900 mb-3">
                 {stats.completedPlans} <span className="text-lg font-normal text-slate-500">{t("مكتملة", "completed")}</span>
               </p>
-              <MiniBarChart />
-
-              {/* Floating badge */}
-              <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-4 right-4 bg-white rounded-xl shadow-card px-3 py-1.5 flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-green-500" />
-                <span className="text-xs font-bold text-green-600">+12%</span>
-              </motion.div>
+              {weekOverWeek !== null && (
+                <div className={`inline-flex items-center gap-1.5 text-xs font-label font-bold px-3 py-1 rounded-full mb-4 ${
+                  weekOverWeek >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"
+                }`}>
+                  <TrendingUp className={`w-3 h-3 ${weekOverWeek < 0 ? "rotate-180" : ""}`} />
+                  {weekOverWeek >= 0 ? "+" : ""}{weekOverWeek}% {t("مقارنة بالفترة السابقة", "vs prior period")}
+                </div>
+              )}
+              <MiniBarChart days={days} />
             </motion.div>
           </div>
         </section>
@@ -297,7 +359,7 @@ export default function AnalyticsPage() {
                       <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} width={80} />
                       <Tooltip contentStyle={{ borderRadius: "16px", border: "none", fontSize: 12 }} />
                       <Bar dataKey="completed" name={t("مرات الإنجاز", "Completions")} radius={[0, 6, 6, 0]}>
-                        {habits.map((_, i) => <Cell key={i} fill={`hsl(${30 + i * 20}, 90%, 55%)`} />)}
+                        {habits.map((_, i) => <Cell key={i} fill={BRAND_COLORS[i % BRAND_COLORS.length]} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>

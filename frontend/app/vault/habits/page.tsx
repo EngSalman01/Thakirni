@@ -14,8 +14,8 @@ import { CheckCircle2, Circle, Flame, Plus, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import useSWR from "swr"
 import { motion } from "framer-motion"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const API_URL = ""
 const HABIT_ICONS = ["✅","🏃","💧","📚","🧘","🍎","💪","☀️","🧠","🎯","💤","🙏"]
 
 function ParticleLayer() {
@@ -38,14 +38,14 @@ async function fetchHabits() {
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return []
-  const res = await fetch(`${API_URL}/api/habits`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+  const res = await fetch(`/api/habits`, { headers: { Authorization: `Bearer ${session.access_token}` } })
   if (!res.ok) return []
   const d = await res.json() as { habits?: Record<string, unknown>[] }
   return d.habits ?? []
 }
 
 export default function HabitsPage() {
-  const { data: habits = [], mutate } = useSWR(`${API_URL}/api/habits`, fetchHabits, { refreshInterval: 60000 })
+  const { data: habits = [], mutate, isLoading: habitsLoading } = useSWR(`/api/habits`, fetchHabits, { refreshInterval: 60000 })
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" })
@@ -59,7 +59,7 @@ export default function HabitsPage() {
   async function createHabit(e: React.FormEvent) {
     e.preventDefault()
     const session = await getSession(); if (!session) return
-    const res = await fetch(`${API_URL}/api/habits`, {
+    const res = await fetch(`/api/habits`, {
       method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(form)
     })
     if (res.ok) { toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉")); setOpen(false); setForm({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" }); mutate() }
@@ -68,16 +68,28 @@ export default function HabitsPage() {
 
   async function toggleHabit(id: string, completedToday: boolean) {
     const session = await getSession(); if (!session) return
-    const url = completedToday ? `${API_URL}/api/habits/${id}/uncomplete` : `${API_URL}/api/habits/${id}/complete`
-    await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
-    mutate()
+    const url = completedToday ? `/api/habits/${id}/uncomplete` : `/api/habits/${id}/complete`
+    try {
+      const res = await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
+      if (!res.ok) throw new Error(await res.text())
+      mutate()
+    } catch (err) {
+      console.error("[Habits] toggle error:", err)
+      toast.error(t("فشل تحديث العادة", "Failed to update habit"))
+    }
   }
 
   async function deleteHabit(id: string) {
     const session = await getSession(); if (!session) return
-    await fetch(`${API_URL}/api/habits/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
-    toast.success(t("تم حذف العادة", "Habit deleted"))
-    mutate()
+    try {
+      const res = await fetch(`/api/habits/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
+      if (!res.ok) throw new Error(await res.text())
+      toast.success(t("تم حذف العادة", "Habit deleted"))
+      mutate()
+    } catch (err) {
+      console.error("[Habits] delete error:", err)
+      toast.error(t("فشل حذف العادة", "Failed to delete habit"))
+    }
   }
 
   const completedCount = habits.filter((h: Record<string, unknown>) => h.completed_today).length
@@ -190,7 +202,21 @@ export default function HabitsPage() {
         {/* ── HABITS BENTO ── */}
         <section className="pb-24 px-8">
           <div className="max-w-7xl mx-auto">
-            {habits.length === 0 ? (
+            {habitsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+                    <Skeleton className="h-2 w-full rounded-none" />
+                    <div className="p-10 space-y-4">
+                      <Skeleton className="h-12 w-12 rounded-xl" />
+                      <Skeleton className="h-6 w-3/4 rounded-lg" />
+                      <Skeleton className="h-4 w-1/2 rounded-lg" />
+                      <Skeleton className="h-8 w-24 rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : habits.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
                 className="bg-[#f6f3f2] rounded-2xl p-24 text-center hover-lift">
                 <Flame className="w-16 h-16 mx-auto mb-4 text-[#ad1d7f]/30" />

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
@@ -148,6 +149,14 @@ export default function SettingsPage() {
   );
 
   const [exportingPdf, setExportingPdf] = useState<string | null>(null);
+  const [planConfig, setPlanConfig] = useState<Array<{ plan_key: string; price_sar: number; features: string[] }> | null>(null);
+
+  useEffect(() => {
+    fetch("/api/plans")
+      .then(r => r.json())
+      .then((d: Array<{ plan_key: string; price_sar: number; features: string[] }>) => setPlanConfig(d))
+      .catch((e) => console.error("[settings] plan config fetch error:", e));
+  }, []);
 
   const abortRef = useRef<AbortController | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -279,7 +288,7 @@ export default function SettingsPage() {
     fetch("/api/google-calendar/events")
       .then((r) => r.json())
       .then((d: { connected?: boolean }) => setCalendarConnected(d.connected === true))
-      .catch(() => {})
+      .catch((e) => console.error("[settings] calendar connection check error:", e))
     // Check for calendar connection result in URL
     const params = new URLSearchParams(window.location.search)
     if (params.get("calendar") === "connected") {
@@ -298,7 +307,8 @@ export default function SettingsPage() {
       await fetch("/api/google-calendar/events", { method: "DELETE" })
       setCalendarConnected(false)
       toast.success(t("تم إلغاء ربط Google Calendar", "Google Calendar disconnected"))
-    } catch {
+    } catch (err) {
+      console.error("[Settings] disconnect calendar:", err)
       toast.error(t("حدث خطأ", "Something went wrong"))
     } finally {
       setCalendarLoading(false)
@@ -323,7 +333,8 @@ export default function SettingsPage() {
         .eq("id", user.id);
       if (error) throw error;
       toast.success(t("تم تحديث الإشعارات", "Notifications updated"));
-    } catch {
+    } catch (err) {
+      console.error("[Settings] toggle notification:", err)
       setNotifs((prev) => ({ ...prev, [key]: !newVal }));
       toast.error(t("فشل تحديث الإشعارات", "Failed to update notifications"));
     } finally {
@@ -343,7 +354,8 @@ export default function SettingsPage() {
         "Cancellation scheduled. Your plan stays active until end of billing period."
       ));
       setCancelOpen(false);
-    } catch {
+    } catch (err) {
+      console.error("[Settings] cancel subscription:", err)
       toast.error(t("فشل الإلغاء، حاول مرة أخرى", "Cancellation failed, please try again"));
     } finally {
       setCancelling(false);
@@ -360,7 +372,8 @@ export default function SettingsPage() {
       if (error) throw error;
       toast.success(t("تم تسجيل الخروج", "Signed out successfully"));
       router.push("/auth");
-    } catch {
+    } catch (err) {
+      console.error("[Settings] sign out:", err)
       router.push("/auth");
     } finally {
       setSigningOut(false); setSignOutOpen(false);
@@ -375,7 +388,8 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error("Failed");
       toast.success(t("تم حذف حسابك بنجاح", "Account deleted successfully"));
       router.push("/");
-    } catch {
+    } catch (err) {
+      console.error("[Settings] delete account:", err)
       toast.error(t("فشل حذف الحساب", "Failed to delete account"));
       setDeleting(false);
     }
@@ -428,26 +442,31 @@ export default function SettingsPage() {
       ? { label: "PRO",    bg: "#f5f3ff", color: "#7c3aed" }
       : { label: "FREE",   bg: "#f1f5f9", color: "#64748b" };
 
-  const planFeatures =
-    resolvedTier === "teams"
-      ? [
-          { ar: "كل شيء غير محدود", en: "Everything unlimited" },
-          { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes" },
-          { ar: "دعم فني ذو أولوية", en: "Priority support" },
-        ]
-      : resolvedTier === "pro"
-      ? [
-          { ar: "١٠٠ خطة يومياً", en: "100 plans per day" },
-          { ar: "١٠٠٠ ذاكرة", en: "1,000 memories" },
-          { ar: "١٠ مشاريع", en: "10 projects" },
-          { ar: "تحليلات وتقارير", en: "Analytics & reports" },
-        ]
-      : [
-          { ar: "١٠ خطط يومياً", en: "10 plans per day" },
-          { ar: "٢٥ ذاكرة", en: "25 memories" },
-          { ar: "١ مشروع", en: "1 project" },
-          { ar: "محادثة AI أساسية", en: "Basic AI chat" },
-        ];
+  const configForTier = planConfig?.find(p => p.plan_key === resolvedTier);
+  const planFeatures: Array<{ ar: string; en: string }> = configForTier
+    ? configForTier.features.map(f => ({ ar: f, en: f }))
+    : resolvedTier === "teams"
+    ? [
+        { ar: "كل شيء غير محدود", en: "Everything unlimited" },
+        { ar: "ذكريات وملاحظات مشتركة", en: "Shared memories & notes" },
+        { ar: "دعم فني ذو أولوية", en: "Priority support" },
+      ]
+    : resolvedTier === "pro"
+    ? [
+        { ar: "١٠٠ خطة يومياً", en: "100 plans per day" },
+        { ar: "١٠٠٠ ذاكرة", en: "1,000 memories" },
+        { ar: "١٠ مشاريع", en: "10 projects" },
+        { ar: "تحليلات وتقارير", en: "Analytics & reports" },
+      ]
+    : [
+        { ar: "١٠ خطط يومياً", en: "10 plans per day" },
+        { ar: "٢٥ ذاكرة", en: "25 memories" },
+        { ar: "١ مشروع", en: "1 project" },
+        { ar: "محادثة AI أساسية", en: "Basic AI chat" },
+      ];
+
+  const proPrice = planConfig?.find(p => p.plan_key === "pro")?.price_sar ?? 30;
+  const teamsPrice = planConfig?.find(p => p.plan_key === "teams")?.price_sar ?? 60;
   const initial = name?.charAt(0)?.toUpperCase() || "U";
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -721,6 +740,17 @@ export default function SettingsPage() {
                 </h2>
               </div>
               <div className="space-y-4">
+                {/* Change password */}
+                <div className="p-5 bg-[#f6f3f2] rounded-xl flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-slate-900 text-sm">{t("كلمة المرور", "Password")}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
+                  </div>
+                  <Link href="/vault/settings/security/change-password"
+                    className="px-4 py-2 rounded-full border border-[#ad1d7f] text-[#ad1d7f] font-bold text-sm hover:bg-[#ffd8e9] transition-colors font-label">
+                    {t("تغيير", "Change")}
+                  </Link>
+                </div>
                 <div className="p-6 bg-red-50/50 rounded-xl border border-red-200/30">
                   <h3 className="text-red-600 font-headline font-bold mb-2">
                     {t("منطقة الخطر", "Danger Zone")}
@@ -770,8 +800,8 @@ export default function SettingsPage() {
                   {resolvedTier === "free"
                     ? t("أنت على الخطة المجانية", "You're on the Free plan")
                     : resolvedTier === "pro"
-                    ? t("أنت على خطة برو — 29.99 ر.س / شهر", "You're on Pro — 29.99 SAR/mo")
-                    : t("أنت على خطة الفرق — 59.99 ر.س / شهر / مستخدم", "You're on Teams — 59.99 SAR/mo per user")}
+                    ? t(`أنت على خطة برو — ${proPrice} ر.س / شهر`, `You're on Pro — ${proPrice} SAR/mo`)
+                    : t(`أنت على خطة الفرق — ${teamsPrice} ر.س / شهر / مستخدم`, `You're on Teams — ${teamsPrice} SAR/mo per user`)}
                 </p>
                 <div className="space-y-3 mb-8">
                   {planFeatures.map(({ ar, en }) => (

@@ -65,12 +65,17 @@ export async function POST(request: NextRequest) {
     const validPhones = (phoneUsers ?? []).filter((u) => u.phone_number);
 
     if (validPhones.length > 0 && process.env.KAPSO_API_KEY) {
-      await Promise.allSettled(
+      const results = await Promise.allSettled(
         validPhones.map((u) => sendWhatsAppMessage(u.phone_number!, message))
       );
+      const failed = results.filter((r) => r.status === "rejected");
+      if (failed.length > 0) {
+        console.error(`[announcements] ${failed.length}/${results.length} WhatsApp sends failed`);
+      }
+      sentCount = results.filter((r) => r.status === "fulfilled").length;
+    } else {
+      sentCount = 0;
     }
-
-    sentCount = validPhones.length;
   }
 
   const { data, error: insertError } = await supabase

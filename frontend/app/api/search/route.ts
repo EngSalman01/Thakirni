@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   if (error || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
   const q = req.nextUrl.searchParams.get("q")?.trim()
-  if (!q || q.length < 2) return NextResponse.json({ results: [] })
+  if (!q || q.length < 2 || q.length > 100) return NextResponse.json({ results: [] })
 
   const search = `%${q}%`
 
