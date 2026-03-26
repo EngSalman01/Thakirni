@@ -3,10 +3,11 @@ import { createClient } from "@/lib/supabase/server"
 
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID ?? ""
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? ""
+const APP_URL              = process.env.NEXT_PUBLIC_APP_URL ?? "https://thakirni.com"
+const REDIRECT_URI         = `${APP_URL}/api/google-calendar/callback`
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
-  const redirectUri = `${origin}/api/google-calendar/callback`
 
   const code  = searchParams.get("code")
   const state = searchParams.get("state")   // user id
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
       code,
       client_id:     GOOGLE_CLIENT_ID,
       client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri:  redirectUri,
+      redirect_uri:  REDIRECT_URI,
       grant_type:    "authorization_code",
     }),
   })
