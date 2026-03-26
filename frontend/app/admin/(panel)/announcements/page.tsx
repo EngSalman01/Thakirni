@@ -243,7 +243,7 @@ export default function AnnouncementsPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label>Title (internal)</Label>
+              <Label>Title (internal) <span className="text-red-500">*</span></Label>
               <Input
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
@@ -252,7 +252,7 @@ export default function AnnouncementsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Message</Label>
+              <Label>Message <span className="text-red-500">*</span></Label>
               <Textarea
                 value={formMessage}
                 onChange={(e) => setFormMessage(e.target.value)}

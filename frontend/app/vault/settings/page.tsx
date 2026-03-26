@@ -636,7 +636,7 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-slate-700">{t("الاسم الكامل", "Full Name")}</Label>
+                    <Label className="font-label font-semibold text-slate-700">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}

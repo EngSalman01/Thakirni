@@ -184,13 +184,18 @@ export default function PlansPage() {
                 <h2 className="text-2xl font-headline font-bold mb-2">{t("أضف مهمة جديدة", "Add New Task")}</h2>
                 <p className="text-white/70 mb-8">{t("سجّل مهمتك بسرعة", "Quickly log your next task")}</p>
                 <form onSubmit={handleAddPlan} className="space-y-4">
-                  <Input
-                    value={newPlanTitle} onChange={e => setNewPlanTitle(e.target.value)}
-                    placeholder={t(activeTab === "grocery" ? "أضف سلعة..." : activeTab === "meeting" ? "أضف اجتماعاً..." : "أضف مهمة...",
-                                   activeTab === "grocery" ? "Add item..." : activeTab === "meeting" ? "Add meeting..." : "Add task...")}
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/50"
-                    disabled={isAdding}
-                  />
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-white/90">
+                      {t("عنوان المهمة", "Task title")} <span className="text-red-300">*</span>
+                    </label>
+                    <Input
+                      value={newPlanTitle} onChange={e => setNewPlanTitle(e.target.value)}
+                      placeholder={t(activeTab === "grocery" ? "أضف سلعة..." : activeTab === "meeting" ? "أضف اجتماعاً..." : "أضف مهمة...",
+                                     activeTab === "grocery" ? "Add item..." : activeTab === "meeting" ? "Add meeting..." : "Add task...")}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-white/50"
+                      disabled={isAdding}
+                    />
+                  </div>
                   <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} disabled={!newPlanTitle.trim() || isAdding}
                     className="w-full py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40">
                     {isAdding ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Plus className="w-4 h-4" />}

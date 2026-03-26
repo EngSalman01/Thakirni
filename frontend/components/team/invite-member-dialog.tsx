@@ -165,7 +165,7 @@ export function InviteMemberDialog({
                   className="text-sm font-medium flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4 text-indigo-500" />
-                  Email Address
+                  Email Address <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="email"

@@ -61,7 +61,7 @@ export default function NewMemoryPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('العنوان', 'Title')}</label>
+              <label className="text-sm font-medium">{t('العنوان', 'Title')} <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 placeholder={t('أدخل عنوان الذكرى', 'Enter memory title')}
@@ -72,7 +72,7 @@ export default function NewMemoryPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('المحتوى', 'Content')}</label>
+              <label className="text-sm font-medium">{t('المحتوى', 'Content')} <span className="text-red-500">*</span></label>
               <textarea
                 placeholder={t('أدخل محتوى الذكرى', 'Enter memory content')}
                 value={content}

@@ -227,7 +227,7 @@ export default function UpdatePasswordPage() {
                   {/* New password */}
                   <div className="space-y-1.5">
                     <Label className="text-sm font-medium">
-                      {t("كلمة المرور الجديدة", "New Password")}
+                      {t("كلمة المرور الجديدة", "New Password")} <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -260,7 +260,7 @@ export default function UpdatePasswordPage() {
                   {/* Confirm password */}
                   <div className="space-y-1.5">
                     <Label className="text-sm font-medium">
-                      {t("تأكيد كلمة المرور", "Confirm Password")}
+                      {t("تأكيد كلمة المرور", "Confirm Password")} <span className="text-red-500">*</span>
                     </Label>
                     <div className="relative">
                       <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

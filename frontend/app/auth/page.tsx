@@ -410,7 +410,7 @@ function AuthForm() {
 
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("البريد الإلكتروني", "Email")}</Label>
+              <Label className="text-sm font-medium">{t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="email" type="email" placeholder="example@email.com"
@@ -420,7 +420,7 @@ function AuthForm() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">{t("كلمة المرور", "Password")}</Label>
+                <Label className="text-sm font-medium">{t("كلمة المرور", "Password")} <span className="text-red-500">*</span></Label>
                 <Link href="/auth/reset-password"
                   className="text-xs hover:underline" style={{ color: "#2552ca" }}>
                   {t("نسيت كلمة المرور؟", "Forgot password?")}
@@ -473,7 +473,7 @@ function AuthForm() {
           <form onSubmit={handleSignUp} className="space-y-4">
             {/* Name */}
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("الاسم الكامل", "Full Name")}</Label>
+              <Label className="text-sm font-medium">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <User className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="name" type="text" placeholder={t("محمد العمري", "John Doe")}
@@ -483,7 +483,7 @@ function AuthForm() {
 
             {/* Email */}
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("البريد الإلكتروني", "Email")}</Label>
+              <Label className="text-sm font-medium">{t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="email" type="email" placeholder="example@email.com"
@@ -530,7 +530,7 @@ function AuthForm() {
 
             {/* Password */}
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("كلمة المرور", "Password")}</Label>
+              <Label className="text-sm font-medium">{t("كلمة المرور", "Password")} <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="password" type={showSignUpPw ? "text" : "password"}
@@ -559,7 +559,7 @@ function AuthForm() {
 
             {/* Confirm Password */}
             <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("تأكيد كلمة المرور", "Confirm Password")}</Label>
+              <Label className="text-sm font-medium">{t("تأكيد كلمة المرور", "Confirm Password")} <span className="text-red-500">*</span></Label>
               <div className="relative">
                 <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="confirmPassword" type={showSignUpPw ? "text" : "password"}

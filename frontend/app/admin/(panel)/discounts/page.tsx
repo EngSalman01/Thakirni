@@ -295,7 +295,7 @@ export default function DiscountsPage() {
           <div className="space-y-4 py-2">
             {/* Code */}
             <div className="space-y-1.5">
-              <Label>Code</Label>
+              <Label>Code <span className="text-red-500">*</span></Label>
               <div className="flex gap-2">
                 <Input
                   value={formCode}
@@ -317,7 +317,7 @@ export default function DiscountsPage() {
 
             {/* Discount % */}
             <div className="space-y-1.5">
-              <Label>Discount %</Label>
+              <Label>Discount % <span className="text-red-500">*</span></Label>
               <Input
                 type="number"
                 min={1}
