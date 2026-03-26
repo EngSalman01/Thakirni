@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? ""
-const APP_URL          = process.env.NEXT_PUBLIC_APP_URL ?? "https://thakirni.com"
-const REDIRECT_URI     = `${APP_URL}/api/google-calendar/callback`
+const _appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? ""
+const APP_URL      = _appUrl.startsWith("https://") ? _appUrl : "https://thakirni.com"
+const REDIRECT_URI = `${APP_URL}/api/google-calendar/callback`
 const SCOPES = [
   "openid",
   "https://www.googleapis.com/auth/userinfo.email",
