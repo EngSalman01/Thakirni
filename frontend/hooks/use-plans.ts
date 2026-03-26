@@ -64,20 +64,30 @@ export function usePlans(): UsePlansReturn {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error("User not authenticated")
 
-      const newPlan = {
-        ...plan,
-        user_id: user.id,
-      }
-      
       const { data, error } = await supabase
         .from('plans')
-        .insert(newPlan)
+        .insert({ ...plan, user_id: user.id })
         .select()
         .single()
 
       if (error) throw error
-      
+
       setPlans(prev => [...prev, data as Plan])
+
+      // Auto-push to Google Calendar if enabled (fire-and-forget)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('gcal_auto_sync, google_calendar_token')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.gcal_auto_sync && profile?.google_calendar_token) {
+        fetch('/api/google-calendar/events', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: plan.title, date: plan.plan_date ?? undefined }),
+        }).catch(() => {/* silent — don't block plan creation */})
+      }
     } catch (err) {
       console.error("Error adding plan:", err)
       throw err instanceof Error ? err : new Error("Failed to add plan")

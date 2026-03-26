@@ -24,6 +24,8 @@ interface GoogleEvent {
   end?: { dateTime?: string; date?: string }
   htmlLink?: string
   colorId?: string
+  _calendarName?: string
+  _calendarColor?: string
 }
 
 async function fetchGoogleEvents(): Promise<{ connected: boolean; events: GoogleEvent[]; error?: boolean }> {
@@ -48,6 +50,7 @@ export default function CalendarPage() {
 
   const { data: gcal, error: gcalSWRError, mutate: refetchGcal } = useSWR("google-calendar-events", fetchGoogleEvents, {
     revalidateOnFocus: false,
+    revalidateOnMount: true,
   })
   const gcalError = gcalSWRError || gcal?.error
 
@@ -206,16 +209,18 @@ export default function CalendarPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      className="bg-card border border-[#4285F4]/30 rounded-xl p-4 flex items-center gap-4 group hover:border-[#4285F4]/60 transition-colors"
+                      className="bg-card border rounded-xl p-4 flex items-center gap-4 group transition-colors hover:shadow-sm"
+                      style={{ borderColor: `${event._calendarColor ?? "#4285F4"}40` }}
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#4285F4]/10 flex items-center justify-center shrink-0">
-                        <CalendarIcon className="w-5 h-5 text-[#4285F4]" />
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${event._calendarColor ?? "#4285F4"}18` }}>
+                        <CalendarIcon className="w-5 h-5" style={{ color: event._calendarColor ?? "#4285F4" }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{event.summary ?? t("بدون عنوان", "Untitled")}</h3>
                         <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#4285F4] inline-block" />
-                          Google · {formatEventTime(event)}
+                          <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: event._calendarColor ?? "#4285F4" }} />
+                          {event._calendarName ?? "Google"}{formatEventTime(event) ? ` · ${formatEventTime(event)}` : ""}
                         </p>
                       </div>
                       {event.htmlLink && (

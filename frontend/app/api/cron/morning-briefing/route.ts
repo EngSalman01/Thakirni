@@ -95,23 +95,32 @@ async function fetchGCalEvents(
   }
 
   try {
-    const url = new URL("https://www.googleapis.com/calendar/v3/calendars/primary/events")
-    url.searchParams.set("timeMin", timeMin)
-    url.searchParams.set("timeMax", timeMax)
-    url.searchParams.set("singleEvents", "true")
-    url.searchParams.set("orderBy", "startTime")
+    const headers = { Authorization: `Bearer ${token}` }
 
-    const res = await fetch(url.toString(), {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    // Fetch all user calendars (primary + birthdays + holidays etc.)
+    const calListRes = await fetch(
+      "https://www.googleapis.com/calendar/v3/users/me/calendarList?maxResults=50",
+      { headers }
+    )
+    if (!calListRes.ok) return []
 
-    if (!res.ok) {
-      console.error("[Cron/MorningBriefing] GCal fetch failed:", res.status)
-      return []
-    }
+    const calList = await calListRes.json() as { items?: { id: string; selected?: boolean }[] }
+    const calendars = (calList.items ?? []).filter(c => c.selected !== false)
 
-    const data: GCalResponse = await res.json()
-    return data.items ?? []
+    const qp = new URLSearchParams({ timeMin, timeMax, singleEvents: "true", orderBy: "startTime", maxResults: "10" })
+
+    const results = await Promise.allSettled(
+      calendars.map(cal =>
+        fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?${qp}`,
+          { headers }
+        )
+          .then(r => r.ok ? r.json() : { items: [] })
+          .then((d: GCalResponse) => d.items ?? [])
+      )
+    )
+
+    return results.flatMap(r => r.status === "fulfilled" ? r.value : [])
   } catch (err) {
     console.error("[Cron/MorningBriefing] GCal fetch error:", err)
     return []
