@@ -57,28 +57,64 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Fetch upcoming events (next 7 days)
-  const now    = new Date().toISOString()
-  const oneWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-  const params = new URLSearchParams({
+  const headers = { Authorization: `Bearer ${accessToken}` }
+
+  // Fetch all calendars the user has
+  const calListRes = await fetch(
+    "https://www.googleapis.com/calendar/v3/users/me/calendarList?maxResults=50",
+    { headers }
+  )
+  if (!calListRes.ok) {
+    return NextResponse.json({ connected: true, events: [], error: "Failed to fetch calendar list" })
+  }
+
+  interface CalendarListEntry {
+    id: string
+    summary: string
+    backgroundColor?: string
+    selected?: boolean
+    accessRole?: string
+  }
+  const calList = await calListRes.json() as { items?: CalendarListEntry[] }
+  const calendars = (calList.items ?? []).filter(c => c.selected !== false)
+
+  // Fetch events from all calendars in parallel (next 30 days)
+  const now     = new Date().toISOString()
+  const in30Days = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  const qp = new URLSearchParams({
     timeMin:      now,
-    timeMax:      oneWeek,
-    maxResults:   "20",
+    timeMax:      in30Days,
+    maxResults:   "15",
     singleEvents: "true",
     orderBy:      "startTime",
   })
 
-  const calRes = await fetch(
-    `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
+  const eventResults = await Promise.allSettled(
+    calendars.map(cal =>
+      fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?${qp}`,
+        { headers }
+      )
+        .then(r => r.ok ? r.json() : Promise.resolve({ items: [] }))
+        .then((data: { items?: Record<string, unknown>[] }) =>
+          (data.items ?? []).map(ev => ({
+            ...ev,
+            _calendarName:  cal.summary,
+            _calendarColor: cal.backgroundColor ?? "#4285F4",
+          }))
+        )
+    )
   )
 
-  if (!calRes.ok) {
-    return NextResponse.json({ connected: true, events: [], error: "Failed to fetch events" })
-  }
+  type CalEvent = Record<string, unknown> & { _calendarName: string; _calendarColor: string }
+  const allEvents = (eventResults.flatMap(r => r.status === "fulfilled" ? r.value : []) as CalEvent[])
+    .sort((a, b) => {
+      const aStart = (a.start as Record<string, string> | undefined)?.dateTime ?? (a.start as Record<string, string> | undefined)?.date ?? ""
+      const bStart = (b.start as Record<string, string> | undefined)?.dateTime ?? (b.start as Record<string, string> | undefined)?.date ?? ""
+      return aStart.localeCompare(bStart)
+    })
 
-  const data = await calRes.json() as { items?: unknown[] }
-  return NextResponse.json({ connected: true, events: data.items ?? [] })
+  return NextResponse.json({ connected: true, events: allEvents })
 }
 
 export async function POST(req: NextRequest) {

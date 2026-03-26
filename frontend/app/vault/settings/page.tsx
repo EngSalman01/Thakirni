@@ -38,6 +38,8 @@ interface Profile {
   notification_email: boolean;
   notification_push: boolean;
   notification_friday: boolean;
+  gcal_auto_sync: boolean;
+  gcal_whatsapp_reminders: boolean;
 }
 
 // ── Card wrapper ──────────────────────────────────────────────────────────────
@@ -140,6 +142,11 @@ export default function SettingsPage() {
     notification_push: true,
     notification_friday: true,
   });
+  const [gcalPrefs, setGcalPrefs] = useState({
+    gcal_auto_sync: false,
+    gcal_whatsapp_reminders: false,
+  });
+  const [savingGcalPref, setSavingGcalPref] = useState<string | null>(null);
   const [savingNotif, setSavingNotif] = useState<string | null>(null);
   const [motionEnabled, setMotionEnabled] = useState(() =>
     typeof window !== "undefined" ? localStorage.getItem("thakirni_motion") !== "false" : true
@@ -176,7 +183,7 @@ export default function SettingsPage() {
 
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, full_name, avatar_url, phone_number, notification_email, notification_push, notification_friday")
+          .select("id, full_name, avatar_url, phone_number, notification_email, notification_push, notification_friday, gcal_auto_sync, gcal_whatsapp_reminders")
           .eq("id", user.id)
           .single();
 
@@ -195,6 +202,10 @@ export default function SettingsPage() {
             notification_email: data.notification_email ?? true,
             notification_push: data.notification_push ?? true,
             notification_friday: data.notification_friday ?? true,
+          });
+          setGcalPrefs({
+            gcal_auto_sync: data.gcal_auto_sync ?? false,
+            gcal_whatsapp_reminders: data.gcal_whatsapp_reminders ?? false,
           });
         }
       } catch (err) {
@@ -353,6 +364,33 @@ export default function SettingsPage() {
       setSavingNotif(null);
     }
   }, [notifs, t]);
+
+  // ── Toggle Google Calendar preference ─────────────────────────────────────
+
+  const handleToggleGcalPref = useCallback(async (
+    key: "gcal_auto_sync" | "gcal_whatsapp_reminders"
+  ) => {
+    const newVal = !gcalPrefs[key];
+    setGcalPrefs((prev) => ({ ...prev, [key]: newVal }));
+    setSavingGcalPref(key);
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("profiles")
+        .update({ [key]: newVal, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast.success(t("تم حفظ التفضيلات", "Preferences saved"));
+    } catch (err) {
+      console.error("[Settings] toggle gcal pref:", err);
+      setGcalPrefs((prev) => ({ ...prev, [key]: !newVal }));
+      toast.error(t("فشل الحفظ", "Failed to save"));
+    } finally {
+      setSavingGcalPref(null);
+    }
+  }, [gcalPrefs, t]);
 
   // ── Cancel subscription ────────────────────────────────────────────────────
 
@@ -910,6 +948,30 @@ export default function SettingsPage() {
                     </a>
                   )}
                 </div>
+
+                {/* Google Calendar preferences — only show when connected */}
+                {calendarConnected && (
+                  <div className="bg-white rounded-xl divide-y divide-slate-100 overflow-hidden">
+                    {([
+                      { key: "gcal_auto_sync" as const, ar: "مزامنة تلقائية مع Google Calendar", en: "Auto-sync to Google Calendar", descAr: "أضف كل خطة جديدة تلقائياً إلى تقويم Google", descEn: "Automatically add every new plan to Google Calendar" },
+                      { key: "gcal_whatsapp_reminders" as const, ar: "تذكيرات WhatsApp للأحداث", en: "WhatsApp reminders for events", descAr: "أرسل لي رسالة WhatsApp قبل 30 دقيقة من كل حدث", descEn: "Send me a WhatsApp message 30 min before each event" },
+                    ]).map(({ key, ar, en, descAr, descEn }) => (
+                      <div key={key} className="flex items-center justify-between px-4 py-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-700">{t(ar, en)}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{t(descAr, descEn)}</p>
+                        </div>
+                        <button
+                          onClick={() => handleToggleGcalPref(key)}
+                          disabled={savingGcalPref === key}
+                          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${gcalPrefs[key] ? "bg-[#2552ca]" : "bg-slate-200"} disabled:opacity-50`}
+                        >
+                          <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${gcalPrefs[key] ? "left-5" : "left-0.5"}`} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* WhatsApp */}
                 <div className="flex items-center justify-between p-4 bg-white rounded-xl">
