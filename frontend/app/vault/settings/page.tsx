@@ -289,17 +289,19 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((d: { connected?: boolean }) => setCalendarConnected(d.connected === true))
       .catch((e) => console.error("[settings] calendar connection check error:", e))
-    // Check for calendar connection result in URL
+    // Check for calendar connection result in URL — read language directly from
+    // localStorage so this fires correctly before React language state settles
     const params = new URLSearchParams(window.location.search)
+    const isEn = (localStorage.getItem("language") || "ar") === "en"
     if (params.get("calendar") === "connected") {
       setCalendarConnected(true)
-      toast.success(t("تم ربط Google Calendar بنجاح! 📅", "Google Calendar connected! 📅"))
+      toast.success(isEn ? "Google Calendar connected! 📅" : "تم ربط Google Calendar بنجاح! 📅")
       window.history.replaceState({}, "", window.location.pathname)
     } else if (params.get("calendar") === "error") {
-      toast.error(t("فشل ربط Google Calendar", "Failed to connect Google Calendar"))
+      toast.error(isEn ? "Failed to connect Google Calendar" : "فشل ربط Google Calendar")
       window.history.replaceState({}, "", window.location.pathname)
     }
-  }, [t]);
+  }, []);
 
   const handleDisconnectCalendar = useCallback(async () => {
     setCalendarLoading(true)

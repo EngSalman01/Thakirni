@@ -3,24 +3,24 @@ import { createClient } from "@/lib/supabase/server"
 
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID ?? ""
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? ""
-const APP_URL              = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
-const REDIRECT_URI         = `${APP_URL}/api/google-calendar/callback`
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
+  const { searchParams, origin } = new URL(req.url)
+  const redirectUri = `${origin}/api/google-calendar/callback`
+
   const code  = searchParams.get("code")
   const state = searchParams.get("state")   // user id
   const error = searchParams.get("error")
 
   if (error || !code || !state) {
-    return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
   }
 
   // Verify the state matches the authenticated user (prevents CSRF)
   const supabaseCheck = await createClient()
   const { data: { user: authUser } } = await supabaseCheck.auth.getUser()
   if (!authUser || authUser.id !== state) {
-    return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
   }
 
   // Exchange code for tokens
@@ -31,13 +31,13 @@ export async function GET(req: NextRequest) {
       code,
       client_id:     GOOGLE_CLIENT_ID,
       client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri:  REDIRECT_URI,
+      redirect_uri:  redirectUri,
       grant_type:    "authorization_code",
     }),
   })
 
   if (!tokenRes.ok) {
-    return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
   }
 
   const tokens = await tokenRes.json() as {
@@ -61,8 +61,8 @@ export async function GET(req: NextRequest) {
 
   if (updateError) {
     console.error("[google-calendar/callback] profile update error:", updateError)
-    return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=error`)
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error`)
   }
 
-  return NextResponse.redirect(`${APP_URL}/vault/settings?calendar=connected`)
+  return NextResponse.redirect(`${origin}/vault/settings?calendar=connected`)
 }
