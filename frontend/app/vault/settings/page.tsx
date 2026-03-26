@@ -302,7 +302,7 @@ export default function SettingsPage() {
       const reasonMap: Record<string, string> = {
         no_session:    isEn ? "Session lost — please sign in again" : "انتهت الجلسة — سجّل الدخول مجدداً",
         state_mismatch: isEn ? "Security check failed — try again" : "فشل التحقق الأمني — حاول مجدداً",
-        token_exchange: isEn ? "Google rejected the token — check your OAuth credentials" : "رفض Google الرمز — تحقق من بيانات OAuth",
+        token_exchange: isEn ? `Google rejected the token${params.get("detail") ? `: ${params.get("detail")}` : " — check your OAuth credentials"}` : "رفض Google الرمز — تحقق من بيانات OAuth",
         missing_params: isEn ? "Google did not return the required code" : "لم يُرسل Google الكود المطلوب",
       }
       const msg = reason && reasonMap[reason]

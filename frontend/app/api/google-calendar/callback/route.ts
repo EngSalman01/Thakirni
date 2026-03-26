@@ -3,8 +3,10 @@ import { createClient } from "@/lib/supabase/server"
 
 const GOOGLE_CLIENT_ID     = process.env.GOOGLE_CLIENT_ID ?? ""
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? ""
-const APP_URL              = process.env.NEXT_PUBLIC_APP_URL ?? "https://thakirni.com"
-const REDIRECT_URI         = `${APP_URL}/api/google-calendar/callback`
+// Only use APP_URL if it's a real https URL — ignore localhost values from dev env
+const _appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ""
+const APP_URL = _appUrl.startsWith("https://") ? _appUrl : "https://thakirni.com"
+const REDIRECT_URI = `${APP_URL}/api/google-calendar/callback`
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url)
@@ -45,8 +47,10 @@ export async function GET(req: NextRequest) {
 
   if (!tokenRes.ok) {
     const errBody = await tokenRes.text()
-    console.error("[gcal/callback] token exchange failed:", tokenRes.status, errBody)
-    return NextResponse.redirect(`${origin}/vault/settings?calendar=error&reason=token_exchange`)
+    console.error("[gcal/callback] token exchange failed:", tokenRes.status, errBody, "| redirect_uri used:", REDIRECT_URI)
+    let googleError = "unknown"
+    try { googleError = (JSON.parse(errBody) as { error?: string }).error ?? errBody } catch { googleError = errBody }
+    return NextResponse.redirect(`${origin}/vault/settings?calendar=error&reason=token_exchange&detail=${encodeURIComponent(googleError)}`)
   }
 
   const tokens = await tokenRes.json() as {
