@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { createGroq } from "@ai-sdk/groq"
+import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { generateText, tool } from "ai"
 import { z } from "zod"
 import { createServiceClient } from "@/lib/supabase/server"
@@ -12,7 +12,7 @@ export const maxDuration = 60
 // alter table public.profiles add column if not exists phone_number text unique;
 // create index if not exists profiles_phone_idx on public.profiles(phone_number);
 
-const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
+const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
 
 // ─── Time Helpers ─────────────────────────────────────────────────────────────
 
@@ -71,23 +71,20 @@ async function verifySignature(
     }
 }
 
-// ─── Transcribe audio via Groq Whisper ───────────────────────────────────────
+// ─── Transcribe audio via Gemini ─────────────────────────────────────────────
 
 async function transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
-    const formData = new FormData()
-    const blob = new Blob([audioBuffer as unknown as ArrayBuffer], { type: mimeType })
-    formData.append("file", blob, "audio.ogg")
-    formData.append("model", "whisper-large-v3")
-
-    const res = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${process.env.GROQ_API_KEY}` },
-        body: formData,
+    const { text } = await generateText({
+        model: google("gemini-flash-latest"),
+        messages: [{
+            role: "user",
+            content: [
+                { type: "text", text: "Transcribe this audio message. Return only the transcript text, nothing else." },
+                { type: "file", data: audioBuffer, mimeType },
+            ],
+        }],
     })
-
-    if (!res.ok) throw new Error(`[Whisper] transcription failed: ${res.status}`)
-    const data = await res.json()
-    return data.text ?? ""
+    return text.trim()
 }
 
 // ─── Main Webhook Handler ─────────────────────────────────────────────────────
@@ -285,7 +282,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         : "⚠️ MANDATORY: Reply in ENGLISH only."
 
     const { text: aiResponse } = await generateText({
-        model: groq("llama-3.3-70b-versatile"),
+        model: google("gemini-flash-latest"),
         maxSteps: 10,
         messages: [
             ...history,

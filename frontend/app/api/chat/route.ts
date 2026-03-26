@@ -1,5 +1,5 @@
 import { streamText, tool, convertToCoreMessages } from "ai"
-import { createGroq } from "@ai-sdk/groq"
+import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { z } from "zod"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { getHijriDate, formatTodayBlock, formatFactsBlock } from "@/server/services/ai.service"
@@ -8,7 +8,7 @@ import { trackEvent } from "@/lib/analytics"
 
 export const maxDuration = 60
 
-const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
+const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
 
 // ─── Google Calendar in-memory cache (5 min TTL) ──────────────────────────────
 const gcalCache = new Map<string, { block: string; expiresAt: number }>()
@@ -331,7 +331,7 @@ export async function POST(req: Request) {
 
     // ── Stream ────────────────────────────────────────────────────────────────
     const result = streamText({
-      model: groq("llama-3.3-70b-versatile"),
+      model: google("gemini-flash-latest"),
       maxSteps: 15,
       messages: convertToCoreMessages(messages),
 
