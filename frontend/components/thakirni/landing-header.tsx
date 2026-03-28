@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
+import { BrandLogo } from "@/components/thakirni/brand-logo";
 
 export function LandingHeader() {
   const { t } = useLanguage();
@@ -47,9 +48,7 @@ export function LandingHeader() {
       <div className={`flex items-center justify-between px-4 sm:px-8 max-w-7xl mx-auto ${scrolled ? "h-16" : "h-20"}`}>
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <span className="text-2xl font-bold gradient-text font-headline tracking-tight">
-            Thakirni
-          </span>
+          <BrandLogo className="h-9 w-auto" />
         </Link>
 
         {/* Desktop Nav */}

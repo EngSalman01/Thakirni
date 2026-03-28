@@ -1,0 +1,35 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e47b8"/>
+      <stop offset="55%" stop-color="#5b35d5"/>
+      <stop offset="100%" stop-color="#b8185d"/>
+    </linearGradient>
+    <clipPath id="c">
+      <rect x="0" y="0" width="500" height="500" rx="90"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="500" height="500" rx="90" fill="url(#g)"/>
+  <!-- Corner arc highlight (top-right) -->
+  <circle cx="500" cy="0" r="200" fill="white" fill-opacity="0.13" clip-path="url(#c)"/>
+
+  <!-- 4-pointed star — center (250,195), outer r=80, inner r=30 -->
+  <path d="M250,115 L271.2,173.8 L330,195 L271.2,216.2 L250,275 L228.8,216.2 L170,195 L228.8,173.8 Z"
+        fill="white" fill-opacity="0.97"/>
+
+  <!-- "Thakirni" wordmark -->
+  <text x="250" y="340"
+        text-anchor="middle"
+        font-family="'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-size="58" font-weight="700" letter-spacing="-1.5"
+        fill="white">Thakirni</text>
+
+  <!-- Arabic name -->
+  <text x="250" y="395"
+        text-anchor="middle"
+        font-family="'SF Arabic', 'Geeza Pro', 'Segoe UI', Arial, sans-serif"
+        font-size="34" font-weight="400" letter-spacing="1"
+        fill="rgba(255,255,255,0.65)">ذكرني</text>
+</svg>

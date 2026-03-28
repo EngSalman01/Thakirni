@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Eye, EyeOff, Mail, Lock, User, Phone,
-  ArrowLeft, AlertCircle, CheckCircle2, Sparkles,
+  ArrowLeft, AlertCircle, CheckCircle2,
 } from "lucide-react";
+import { BrandLogo } from "@/components/thakirni/brand-logo";
 import Link from "next/link";
 import { useLanguage } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/client";
@@ -193,6 +194,7 @@ function AuthForm() {
   const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next");
   const urlError = searchParams.get("error");
+  const urlMessage = searchParams.get("message");
   const router  = useRouter();
   const supabase = createClient();
   const strength = getPasswordStrength(signUpPassword);
@@ -206,7 +208,10 @@ function AuthForm() {
         : t("فشل تسجيل الدخول بجوجل، حاول مرة أخرى", "Google sign-in failed. Please try again.");
       setErrors({ form: msg });
     }
-  }, [urlError]);
+    if (urlMessage === "verify") {
+      setErrors({ form: t("يرجى تأكيد بريدك الإلكتروني أولاً — تحقق من صندوق الوارد", "Please verify your email first — check your inbox.") });
+    }
+  }, [urlError, urlMessage]);
 
   // ── Sign In ──────────────────────────────────────────────────────
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -223,9 +228,12 @@ function AuthForm() {
     if (error) {
       signInCaptchaRef.current?.resetCaptcha();
       setSignInCaptchaToken("");
-      setErrors({ form: error.message.includes("Invalid login credentials")
+      const msg = error.message.includes("Invalid login credentials")
         ? t("البريد أو كلمة المرور غلط، حاول مرة ثانية", "Incorrect email or password.")
-        : error.message });
+        : error.message.includes("Email not confirmed")
+        ? t("يرجى تأكيد بريدك الإلكتروني أولاً — تحقق من صندوق الوارد", "Please verify your email first — check your inbox.")
+        : error.message;
+      setErrors({ form: msg });
       setIsLoading(false);
       return;
     }
@@ -262,6 +270,7 @@ function AuthForm() {
       email, password: pw,
       options: {
         captchaToken: captchaToken || undefined,
+        emailRedirectTo: `${location.origin}/auth/confirm`,
         data: {
           full_name: name,
           avatar_url: "",
@@ -341,11 +350,7 @@ function AuthForm() {
     >
       {/* Logo (mobile) */}
       <div className="lg:hidden text-center mb-8">
-        <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)" }}>
-          <Sparkles className="w-7 h-7 text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-foreground">ذكرني</h1>
+        <BrandLogo className="h-10 w-auto mx-auto" />
       </div>
 
       {/* Google — primary CTA */}
@@ -637,18 +642,18 @@ export default function AuthPage() {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }} className="flex flex-col items-center">
 
-            {/* Aura sphere */}
+            {/* Logo mark */}
             <motion.div className="relative mb-10"
               animate={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <div className="w-28 h-28 rounded-full flex items-center justify-center"
+              <div className="w-28 h-28 rounded-3xl flex items-center justify-center"
                 style={{
                   background: "rgba(255,255,255,0.15)",
                   backdropFilter: "blur(12px)",
                   border: "1.5px solid rgba(255,255,255,0.25)",
                   boxShadow: "0 0 50px rgba(253,101,194,0.4), 0 0 100px rgba(37,82,202,0.3)",
                 }}>
-                <Sparkles className="w-12 h-12 text-white" />
+                <BrandLogo className="h-16 w-auto brightness-0 invert" />
               </div>
               {/* Orbital ring */}
               <motion.div className="absolute inset-[-12px] rounded-full border border-white/20"
@@ -656,16 +661,16 @@ export default function AuthPage() {
                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }} />
             </motion.div>
 
-            <h2 className="text-5xl font-bold text-white mb-3 tracking-tight">ذكرني</h2>
-            <p className="text-white/70 text-lg mb-10 font-light" dir="ltr">Your second brain. Yours forever.</p>
+            <h2 className="text-5xl font-bold text-white mb-3 tracking-tight">{t("ذكرني", "Thakirni")}</h2>
+            <p className="text-white/70 text-lg mb-10 font-light">{t("ذاكرتك الثانية. ملكك للأبد.", "Your second brain. Yours forever.")}</p>
 
             {/* Feature pills */}
             <div className="flex flex-col gap-3 w-full max-w-xs">
               {[
-                { ar: "ذاكرتك الثانية تحفظ كل شيء",  icon: "🧠" },
-                { ar: "تشفير كامل وخصوصية تامة",       icon: "🔒" },
-                { ar: "مساعد ذكي يفهم بالسعودي",       icon: "✨" },
-                { ar: "بيانات مستضافة في السعودية",    icon: "🇸🇦" },
+                { ar: "ذاكرتك الثانية تحفظ كل شيء",  en: "Your second brain, remembers everything", icon: "🧠" },
+                { ar: "تشفير كامل وخصوصية تامة",       en: "Full encryption & complete privacy",      icon: "🔒" },
+                { ar: "مساعد ذكي يفهم بالسعودي",       en: "AI assistant that speaks your language",  icon: "✨" },
+                { ar: "بيانات مستضافة في السعودية",    en: "Data hosted in Saudi Arabia",             icon: "🇸🇦" },
               ].map((item, i) => (
                 <motion.div key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -674,7 +679,7 @@ export default function AuthPage() {
                   className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/90"
                   style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
                   <span className="text-base">{item.icon}</span>
-                  <span>{item.ar}</span>
+                  <span>{t(item.ar, item.en)}</span>
                 </motion.div>
               ))}
             </div>
