@@ -44,7 +44,7 @@ export function LandingHeader() {
           : "h-auto"
       } bg-white dark:bg-slate-900 shadow-ambient`}
     >
-      <div className={`flex items-center justify-between px-8 max-w-7xl mx-auto ${scrolled ? "h-16" : "h-20"}`}>
+      <div className={`flex items-center justify-between px-4 sm:px-8 max-w-7xl mx-auto ${scrolled ? "h-16" : "h-20"}`}>
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <span className="text-2xl font-bold gradient-text font-headline tracking-tight">
@@ -118,7 +118,7 @@ export function LandingHeader() {
             transition={{ duration: 0.3 }}
             className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden z-50"
           >
-            <div className="px-8 py-5 flex flex-col gap-4">
+            <div className="px-4 sm:px-8 py-5 flex flex-col gap-4">
               {[
                 { href: "/#features", ar: "المميزات", en: "Features" },
                 { href: "/help", ar: "مركز المساعدة", en: "Help Center" },

@@ -36,22 +36,22 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="relative pt-40 pb-32 overflow-hidden hero-mesh min-h-screen flex items-center">
+    <section className="relative pt-24 pb-16 sm:pt-40 sm:pb-32 overflow-hidden hero-mesh min-h-screen flex items-center">
       {/* Particle layer */}
       <div ref={particleRef} className="absolute inset-0 overflow-hidden pointer-events-none z-0" />
 
-      <div className="max-w-7xl mx-auto px-8 relative z-10 w-full">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 w-full">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
           {/* ── Left: Copy ── */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
             {/* Headline */}
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight leading-[1.3] text-slate-900 dark:text-white">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight leading-[1.2] text-slate-900 dark:text-white">
               {isArabic ? (
                 <span>
                   أنت <span className="text-[#2552ca] italic pb-1">لست</span>
@@ -66,7 +66,7 @@ export function HeroSection() {
             </h1>
 
             {/* Sub */}
-            <p className="text-xl text-slate-500 font-light max-w-xl leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-slate-500 font-light max-w-xl leading-relaxed">
               {t(
                 "ذكرني يحفظ مواعيدك وملاحظاتك ويساعدك تنظم حياتك — كل شي في مكان واحد. ويشتغل بعد على واتساب — ما تحتاج تنزّل شي.",
                 "Thakirni is your AI personal assistant. It remembers your plans, saves your notes, and helps you stay organised — all in one place. Also works on WhatsApp — no app needed."
@@ -79,7 +79,7 @@ export function HeroSection() {
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
-                  className="px-10 py-5 rounded-full power-gradient text-white font-bold text-lg shadow-xl btn-glow font-label"
+                  className="px-7 py-4 sm:px-10 sm:py-5 rounded-full power-gradient text-white font-bold text-base sm:text-lg shadow-xl btn-glow font-label"
                 >
                   {t("جرّب مجاناً", "Try for Free")}
                 </motion.button>
@@ -88,7 +88,7 @@ export function HeroSection() {
                 <motion.button
                   whileHover={{ scale: 1.02, y: -4 }}
                   whileTap={{ scale: 0.97 }}
-                  className="px-10 py-5 rounded-full bg-[#eae8e7] text-[#2552ca] font-bold text-lg hover:bg-[#e4e2e1] transition-all font-label"
+                  className="px-7 py-4 sm:px-10 sm:py-5 rounded-full bg-[#eae8e7] text-[#2552ca] font-bold text-base sm:text-lg hover:bg-[#e4e2e1] transition-all font-label"
                 >
                   {t("تحدث مع ذكرني", "Talk to Thakirni")}
                 </motion.button>
@@ -107,8 +107,8 @@ export function HeroSection() {
 
             <div className="relative bg-white rounded-2xl p-4 shadow-card hover-lift">
               {/* Aura visualization */}
-              <div className="rounded-xl w-full h-[460px] bg-gradient-to-br from-[#dce1ff] via-[#f0eded] to-[#ffd8e9] flex items-center justify-center relative overflow-hidden">
-                <div className="relative w-56 h-56">
+              <div className="rounded-xl w-full h-64 sm:h-80 lg:h-[460px] bg-gradient-to-br from-[#dce1ff] via-[#f0eded] to-[#ffd8e9] flex items-center justify-center relative overflow-hidden">
+                <div className="relative w-40 h-40 sm:w-52 sm:h-52 lg:w-56 lg:h-56">
                   <div className="absolute inset-0 rounded-full border-2 border-[#2552ca]/20 animate-[spin_20s_linear_infinite]" />
                   <div className="absolute inset-4 rounded-full border border-[#fd65c2]/20 animate-[spin_15s_linear_infinite_reverse]" />
                   <div className="absolute inset-10 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_60px_rgba(37,82,202,0.4)] flex items-center justify-center">
@@ -136,7 +136,7 @@ export function HeroSection() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: "easeOut", delay: 0.7 }}
-                className="absolute -bottom-6 -left-6 max-w-xs"
+                className="absolute -bottom-6 -left-6 max-w-xs hidden sm:block"
               >
                 <motion.div
                   animate={{ y: [0, -8, 0] }}

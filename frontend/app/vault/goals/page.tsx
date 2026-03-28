@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useLanguage } from "@/components/language-provider"
@@ -155,9 +155,6 @@ export default function GoalsPage() {
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
-                <div className="flex items-center gap-3 lg:hidden">
-                  <MobileMenuButton /><div className="flex-1" /><ThemeToggle /><LanguageToggle />
-                </div>
                 <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
                 <div>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">

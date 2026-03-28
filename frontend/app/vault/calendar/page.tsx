@@ -13,7 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
-import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
@@ -99,7 +99,6 @@ export default function CalendarPage() {
       <main className="lg:ml-72 pt-16 p-4 md:p-6 lg:p-8 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <MobileMenuButton />
             <h1 className="text-2xl font-bold">{t("التقويم", "Calendar")}</h1>
           </div>
           <div className="flex items-center gap-2">

@@ -21,9 +21,9 @@ export function LandingFooter() {
   ];
 
   return (
-    <footer className="bg-slate-900 text-slate-400 py-20 border-t border-slate-800/50">
-      <div className="max-w-7xl mx-auto px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+    <footer className="bg-slate-900 text-slate-400 py-12 sm:py-20 border-t border-slate-800/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-12 mb-10 sm:mb-16">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="text-2xl font-bold tracking-tighter text-white font-headline mb-6 gradient-text">

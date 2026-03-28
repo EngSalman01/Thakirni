@@ -215,7 +215,7 @@ export default function HelpPage() {
       <section className="relative pt-32 pb-20 overflow-hidden bg-slate-900 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#2552ca,transparent_65%)] opacity-30 pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,#ad1d7f,transparent_50%)] opacity-15 pointer-events-none" />
-        <div className="max-w-4xl mx-auto px-8 text-center relative z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
@@ -225,10 +225,10 @@ export default function HelpPage() {
               <span className="w-2 h-2 rounded-full bg-[#fd65c2] animate-pulse" />
               {t("مركز المساعدة", "Help Center")}
             </div>
-            <h1 className="text-5xl md:text-6xl font-headline font-bold mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-headline font-bold mb-6 leading-tight">
               {t("كيف نقدر نساعدك؟", "How can we help you?")}
             </h1>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-8">
+            <p className="text-base sm:text-xl text-slate-400 max-w-2xl mx-auto mb-8">
               {t(
                 "كل ما تحتاج معرفته عن ذكرني — كيف يعمل، أسئلة شائعة، وكل شيء بينهما.",
                 "Everything you need to know about Thakirni — how it works, common questions, and everything in between."
@@ -236,7 +236,7 @@ export default function HelpPage() {
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full border border-white/20 text-white font-semibold hover:bg-white/10 transition-colors"
+              className="inline-flex items-center gap-2 px-4 sm:px-8 py-4 rounded-full border border-white/20 text-white font-semibold hover:bg-white/10 transition-colors"
             >
               {t("تواصل معنا", "Contact Us")}
             </Link>
@@ -246,7 +246,7 @@ export default function HelpPage() {
 
       {/* How it works */}
       <section className="py-24 bg-background">
-        <div className="max-w-6xl mx-auto px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -296,7 +296,7 @@ export default function HelpPage() {
 
       {/* FAQ */}
       <section className="py-24 bg-muted/20">
-        <div className="max-w-4xl mx-auto px-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -337,7 +337,7 @@ export default function HelpPage() {
 
       {/* Still need help */}
       <section className="py-20 bg-background">
-        <div className="max-w-2xl mx-auto px-8 text-center">
+        <div className="max-w-2xl mx-auto px-4 sm:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -358,7 +358,7 @@ export default function HelpPage() {
             </p>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full power-gradient text-white font-bold shadow-lg hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 px-4 sm:px-8 py-4 rounded-full power-gradient text-white font-bold shadow-lg hover:opacity-90 transition-opacity"
             >
               {t("تواصل معنا", "Contact Us")}
             </Link>
