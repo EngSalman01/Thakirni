@@ -14,12 +14,13 @@ export async function GET(req: NextRequest) {
   const supabase = createServiceClient()
   const now = new Date().toISOString()
 
-  // Fetch all due, unsent reminders
+  // Atomically mark reminders as sent and return them — prevents double-send on overlapping cron runs
   const { data: reminders, error } = await supabase
     .from("reminders")
-    .select("id, user_id, title, channel, remind_at")
+    .update({ is_sent: true, sent_at: now })
     .lte("remind_at", now)
     .eq("is_sent", false)
+    .select("id, user_id, title, channel, remind_at")
     .limit(50)
 
   if (error) {
@@ -43,7 +44,6 @@ export async function GET(req: NextRequest) {
   )
 
   let sent = 0
-  const sentIds: string[] = []
 
   for (const reminder of reminders) {
     const profile = profileMap.get(reminder.user_id) ?? null
@@ -62,22 +62,11 @@ export async function GET(req: NextRequest) {
           ? `🔔 تذكير: ${reminder.title}\n⏰ ${reminderTime}`
           : `🔔 Reminder: ${reminder.title}\n⏰ ${reminderTime}`
         await sendWhatsAppMessage(phone, message)
+        sent++
       }
-      sentIds.push(reminder.id)
-      sent++
     } catch (err) {
       console.error(`[Cron/Reminders] failed to send reminder ${reminder.id}:`, err)
-      // Still mark as sent to avoid infinite retries on permanent failures
-      sentIds.push(reminder.id)
     }
-  }
-
-  // Mark all processed reminders as sent
-  if (sentIds.length > 0) {
-    await supabase
-      .from("reminders")
-      .update({ is_sent: true, sent_at: now })
-      .in("id", sentIds)
   }
 
   return NextResponse.json({ sent, total: reminders.length })

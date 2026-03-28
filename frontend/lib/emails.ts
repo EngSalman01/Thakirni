@@ -21,8 +21,8 @@ function layout(body: string, footer?: string): string {
       <table width="100%" style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.07);">
         <tr>
           <td style="background:linear-gradient(135deg,#2552ca,#ad1d7f);padding:40px 40px 32px;text-align:center;">
-            <div style="font-size:32px;font-weight:900;color:#ffffff;letter-spacing:-1px;">ذكّرني</div>
-            <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px;letter-spacing:2px;">THAKIRNI</div>
+            <div style="font-size:32px;font-weight:900;color:#ffffff;letter-spacing:-1px;">Thakirni</div>
+            <div style="font-size:16px;color:rgba(255,255,255,0.85);margin-top:6px;letter-spacing:1px;">ذكّرني</div>
           </td>
         </tr>
         <tr>

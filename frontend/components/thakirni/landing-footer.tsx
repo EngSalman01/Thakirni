@@ -87,9 +87,12 @@ export function LandingFooter() {
             {t("© 2026 ذكرني. جميع الحقوق محفوظة.", "© 2026 Thakirni. All rights reserved.")}
           </p>
           <div className="flex gap-8 text-sm">
-            <a href="#" className="hover:underline underline-offset-4 decoration-[#2552ca]">
-              Twitter
-            </a>
+            <Link href="/privacy" className="hover:underline underline-offset-4 decoration-[#2552ca]">
+              {t("سياسة الخصوصية", "Privacy Policy")}
+            </Link>
+            <Link href="/terms" className="hover:underline underline-offset-4 decoration-[#2552ca]">
+              {t("الشروط", "Terms")}
+            </Link>
             <Link href="/contact" className="hover:underline underline-offset-4 decoration-[#2552ca]">
               {t("تواصل معنا", "Contact")}
             </Link>

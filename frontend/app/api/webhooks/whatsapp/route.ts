@@ -281,7 +281,9 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         ? "⚠️ MANDATORY: Reply in ARABIC only. Never switch to English."
         : "⚠️ MANDATORY: Reply in ENGLISH only."
 
-    const { text: aiResponse } = await generateText({
+    let aiResponse: string
+    try {
+    const { text } = await generateText({
         model: google("gemini-flash-latest"),
         maxSteps: 10,
         messages: [
@@ -776,7 +778,7 @@ RULE:
             }),
 
             set_reminder: tool({
-                description: "Schedule a reminder to be sent via WhatsApp at a specific time.",
+                description: "Schedule a reminder to be sent via WhatsApp at a specific time. CRITICAL: Call this tool ONLY ONCE per reminder request. Never call it again even if the user confirms or repeats — one call is enough.",
                 parameters: z.object({
                     title: z.string().describe("Reminder message"),
                     remind_at: z.string().describe("ISO datetime in Riyadh time e.g. 2026-03-25T15:00:00"),
@@ -801,6 +803,13 @@ RULE:
 
         },
     })
+    aiResponse = text
+    } catch (err) {
+        console.error("[WhatsApp AI] generateText error:", err)
+        aiResponse = lang === "ar"
+            ? "صار شي غلط، جرب مرة ثانية 🙏"
+            : "Something went wrong, please try again 🙏"
+    }
 
     await Promise.all([
         supabase.from("conversations").insert({
