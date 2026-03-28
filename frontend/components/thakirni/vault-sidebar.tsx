@@ -205,7 +205,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Logo */}
       <div className="px-8 pt-8 pb-6 flex items-center gap-3">
         <Link href="/" onClick={onNavigate} className="flex items-center">
-          <BrandLogo />
+          <BrandLogo className="h-11 w-auto" />
         </Link>
       </div>
 

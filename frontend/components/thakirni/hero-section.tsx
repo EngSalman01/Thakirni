@@ -105,57 +105,29 @@ export function HeroSection() {
           >
             <div className="absolute -top-20 -right-20 w-96 h-96 bg-[#2552ca]/10 blur-[120px] rounded-full pointer-events-none" />
 
-            <div className="relative bg-white rounded-2xl p-4 shadow-card hover-lift">
-              {/* Aura visualization */}
-              <div className="rounded-xl w-full h-64 sm:h-80 lg:h-[460px] bg-gradient-to-br from-[#dce1ff] via-[#f0eded] to-[#ffd8e9] flex items-center justify-center relative overflow-hidden">
-                <div className="relative w-40 h-40 sm:w-52 sm:h-52 lg:w-56 lg:h-56">
-                  <div className="absolute inset-0 rounded-full border-2 border-[#2552ca]/20 animate-[spin_20s_linear_infinite]" />
-                  <div className="absolute inset-4 rounded-full border border-[#fd65c2]/20 animate-[spin_15s_linear_infinite_reverse]" />
-                  <div className="absolute inset-10 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_60px_rgba(37,82,202,0.4)] flex items-center justify-center">
-                    <span className="text-white text-3xl font-headline font-bold">ذ</span>
-                  </div>
-                  {/* Orbital nodes */}
-                  {[
-                    { pos: "top-0 left-1/2 -translate-x-1/2 -translate-y-4", label: "AI", color: "text-[#2552ca]" },
-                    { pos: "bottom-0 left-1/2 -translate-x-1/2 translate-y-4", label: "⚡", color: "text-[#ad1d7f]" },
-                    { pos: "left-0 top-1/2 -translate-y-1/2 -translate-x-4", label: "📄", color: "text-slate-600" },
-                    { pos: "right-0 top-1/2 -translate-y-1/2 translate-x-4", label: "🎙️", color: "text-slate-600" },
-                  ].map(({ pos, label, color }) => (
-                    <div
-                      key={label}
-                      className={`absolute ${pos} w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-sm font-bold ${color}`}
-                    >
-                      {label}
-                    </div>
-                  ))}
+            {/* Aura visualization */}
+            <div className="rounded-2xl w-full h-64 sm:h-80 lg:h-[460px] bg-gradient-to-br from-[#dce1ff] via-[#f0eded] to-[#ffd8e9] flex items-center justify-center relative overflow-hidden">
+              <div className="relative w-40 h-40 sm:w-52 sm:h-52 lg:w-56 lg:h-56">
+                <div className="absolute inset-0 rounded-full border-2 border-[#2552ca]/20 animate-[spin_20s_linear_infinite]" />
+                <div className="absolute inset-4 rounded-full border border-[#fd65c2]/20 animate-[spin_15s_linear_infinite_reverse]" />
+                <div className="absolute inset-10 rounded-full bg-gradient-to-br from-[#2552ca] to-[#fd65c2] shadow-[0_0_60px_rgba(37,82,202,0.4)] flex items-center justify-center">
+                  <span className="text-white text-3xl font-headline font-bold">ذ</span>
                 </div>
+                {/* Orbital nodes */}
+                {[
+                  { pos: "top-0 left-1/2 -translate-x-1/2 -translate-y-4", label: "AI", color: "text-[#2552ca]" },
+                  { pos: "bottom-0 left-1/2 -translate-x-1/2 translate-y-4", label: "⚡", color: "text-[#ad1d7f]" },
+                  { pos: "left-0 top-1/2 -translate-y-1/2 -translate-x-4", label: "📄", color: "text-slate-600" },
+                  { pos: "right-0 top-1/2 -translate-y-1/2 translate-x-4", label: "🎙️", color: "text-slate-600" },
+                ].map(({ pos, label, color }) => (
+                  <div
+                    key={label}
+                    className={`absolute ${pos} w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-sm font-bold ${color}`}
+                  >
+                    {label}
+                  </div>
+                ))}
               </div>
-
-              {/* Floating notification — entry + idle bob */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut", delay: 0.7 }}
-                className="absolute -bottom-6 -left-6 max-w-xs hidden sm:block"
-              >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-                  className="bg-white p-5 rounded-xl shadow-2xl flex items-center gap-4 border-l-4 border-[#ad1d7f]"
-                >
-                  <div className="w-10 h-10 rounded-full power-gradient flex items-center justify-center shrink-0">
-                    <span className="text-white text-lg">🧠</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-900 font-label">
-                      {t("تم الحفظ", "Saved")}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      {t("ملاحظاتك الآن قابلة للبحث.", "Your meeting notes are now searchable.")}
-                    </p>
-                  </div>
-                </motion.div>
-              </motion.div>
             </div>
           </motion.div>
         </div>
