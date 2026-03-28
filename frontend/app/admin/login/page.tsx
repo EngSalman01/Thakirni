@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Mail, Lock, AlertCircle, ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 export default function AdminLoginPage() {
-  const [showPw, setShowPw]     = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError]       = useState<string | null>(null);
+  const [showPw, setShowPw]         = useState(false);
+  const [isLoading, setIsLoading]   = useState(false);
+  const [error, setError]           = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captchaRef                  = useRef<HCaptcha>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -25,8 +28,13 @@ export default function AdminLoginPage() {
     const password = fd.get("password") as string;
 
     // 1. Sign in
-    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+      email, password,
+      options: { captchaToken: captchaToken || undefined },
+    });
     if (signInError || !authData.user) {
+      captchaRef.current?.resetCaptcha();
+      setCaptchaToken("");
       setError("البريد أو كلمة المرور غلط");
       setIsLoading(false);
       return;
@@ -109,9 +117,18 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
+            <div className="flex justify-center">
+              <HCaptcha
+                ref={captchaRef}
+                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+                onVerify={(token) => setCaptchaToken(token)}
+                onExpire={() => setCaptchaToken("")}
+              />
+            </div>
+
             <motion.button
               whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-              type="submit" disabled={isLoading}
+              type="submit" disabled={isLoading || !captchaToken}
               className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60 mt-2"
               style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", boxShadow: "0 4px 20px rgba(37,82,202,0.35)" }}
             >
