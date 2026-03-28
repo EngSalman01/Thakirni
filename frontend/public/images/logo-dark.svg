@@ -1,20 +1,33 @@
-<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" style="background:#0d0d16">
+<svg width="280" height="64" viewBox="0 0 280 64" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8B5CF6"/>
-      <stop offset="50%" stop-color="#A855F7"/>
-      <stop offset="100%" stop-color="#EC4899"/>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e47b8"/>
+      <stop offset="55%" stop-color="#5b35d5"/>
+      <stop offset="100%" stop-color="#b8185d"/>
     </linearGradient>
-    <linearGradient id="divider" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0"/>
-      <stop offset="50%" stop-color="#8B5CF6" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
-    </linearGradient>
+    <clipPath id="c">
+      <rect x="4" y="6" width="52" height="52" rx="15"/>
+    </clipPath>
   </defs>
-  <rect x="6" y="6" width="68" height="68" rx="18" fill="url(#iconGrad)"/>
-  <ellipse cx="24" cy="22" rx="16" ry="11" fill="white" fill-opacity="0.18"/>
-  <text x="40" y="52" text-anchor="middle" font-family="'Segoe UI', 'Arial', sans-serif" font-size="34" font-weight="500" fill="white">ذ</text>
-  <rect x="88" y="22" width="1" height="36" fill="url(#divider)"/>
-  <text x="102" y="46" font-family="'Segoe UI', system-ui, sans-serif" font-size="27" font-weight="600" letter-spacing="-0.4" fill="#f4f4f8">Thakirni</text>
-  <text x="102" y="63" font-family="'Segoe UI', 'Arial', sans-serif" font-size="14" font-weight="400" fill="rgba(255,255,255,0.45)">ذكرني</text>
+
+  <!-- Icon squircle -->
+  <rect x="4" y="6" width="52" height="52" rx="15" fill="url(#g)"/>
+  <!-- Corner arc highlight (top-right) -->
+  <circle cx="56" cy="6" r="26" fill="white" fill-opacity="0.16" clip-path="url(#c)"/>
+
+  <!-- 4-pointed star — center (30,32), outer r=12, inner r=5 -->
+  <path d="M30,20 L33.5,28.5 L42,32 L33.5,35.5 L30,44 L26.5,35.5 L18,32 L26.5,28.5 Z"
+        fill="white" fill-opacity="0.96"/>
+
+  <!-- Wordmark (white for dark bg) -->
+  <text x="70" y="34"
+        font-family="'Inter', -apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-size="22" font-weight="700" letter-spacing="-0.6"
+        fill="#f1f5f9">Thakirni</text>
+
+  <!-- Arabic subtitle -->
+  <text x="71" y="50"
+        font-family="'SF Arabic', 'Geeza Pro', 'Segoe UI', Arial, sans-serif"
+        font-size="13" font-weight="400" letter-spacing="0.2"
+        fill="rgba(255,255,255,0.38)">ذكرني</text>
 </svg>

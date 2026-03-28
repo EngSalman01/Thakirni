@@ -44,6 +44,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Block unverified users from /vault
+  if (pathname.startsWith("/vault") && user && !user.email_confirmed_at) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth";
+    url.searchParams.set("message", "verify");
+    return NextResponse.redirect(url);
+  }
+
   // Protect /admin routes — user must be logged in AND have is_admin = true
   // /admin/login is the entry point and must remain publicly accessible
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
