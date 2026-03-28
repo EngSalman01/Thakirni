@@ -646,15 +646,12 @@ export default function AuthPage() {
             <motion.div className="relative mb-10"
               animate={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <div className="w-28 h-28 rounded-3xl flex items-center justify-center"
-                style={{
-                  background: "rgba(255,255,255,0.15)",
-                  backdropFilter: "blur(12px)",
-                  border: "1.5px solid rgba(255,255,255,0.25)",
-                  boxShadow: "0 0 50px rgba(253,101,194,0.4), 0 0 100px rgba(37,82,202,0.3)",
-                }}>
-                <BrandLogo className="h-16 w-auto brightness-0 invert" />
-              </div>
+              <img
+                src="/images/logo-gradient-bg.svg"
+                alt="Thakirni"
+                className="w-24 h-24 rounded-3xl"
+                style={{ boxShadow: "0 0 50px rgba(253,101,194,0.4), 0 0 100px rgba(37,82,202,0.3)" }}
+              />
               {/* Orbital ring */}
               <motion.div className="absolute inset-[-12px] rounded-full border border-white/20"
                 animate={{ rotate: 360 }}

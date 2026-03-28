@@ -48,7 +48,7 @@ export function LandingHeader() {
       <div className={`flex items-center justify-between px-4 sm:px-8 max-w-7xl mx-auto ${scrolled ? "h-16" : "h-20"}`}>
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <BrandLogo className="h-9 w-auto" />
+          <BrandLogo className="h-11 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
