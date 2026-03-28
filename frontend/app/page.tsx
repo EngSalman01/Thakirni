@@ -27,6 +27,11 @@ export default function Home() {
       <TrustSignals />
       <CTASection />
       <LandingFooter />
+      {/* Server-rendered policy links — required for Google OAuth verification */}
+      <div style={{ background: "#0f172a", padding: "12px", textAlign: "center", fontSize: "12px" }}>
+        <a href="/privacy" style={{ color: "#94a3b8", marginRight: "16px" }}>Privacy Policy</a>
+        <a href="/terms" style={{ color: "#94a3b8" }}>Terms of Service</a>
+      </div>
     </main>
   )
 }

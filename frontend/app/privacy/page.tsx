@@ -100,8 +100,8 @@ export default function PrivacyPage() {
 
         <Section title={t("٤. مشاركة البيانات", "4. Data Sharing")}>
           {t(
-            "لا نبيع بياناتك الشخصية لأطراف ثالثة. نشارك البيانات مع: Supabase (تخزين البيانات)، Groq (معالجة الذكاء الاصطناعي لرسائل الدردشة)، Paddle (معالجة المدفوعات)، Vercel (استضافة التطبيق). جميع هؤلاء الشركاء ملزمون بحماية بياناتك.",
-            "We do not sell your personal data to third parties. We share data with: Supabase (data storage), Groq (AI processing of chat messages), Paddle (payment processing), and Vercel (application hosting). All partners are bound to protect your data.",
+            "لا نبيع بياناتك الشخصية لأطراف ثالثة. نشارك البيانات مع: Supabase (تخزين البيانات)، Google AI / Gemini (معالجة الذكاء الاصطناعي لرسائل الدردشة)، Paddle (معالجة المدفوعات)، Vercel (استضافة التطبيق). جميع هؤلاء الشركاء ملزمون بحماية بياناتك.",
+            "We do not sell your personal data to third parties. We share data with: Supabase (data storage), Google AI / Gemini (AI processing of chat messages), Paddle (payment processing), and Vercel (application hosting). All partners are bound to protect your data.",
           )}
         </Section>
 
@@ -114,8 +114,8 @@ export default function PrivacyPage() {
 
         <Section title={t("٦. الذكاء الاصطناعي والمحادثات", "6. AI and Conversations")}>
           {t(
-            "تُعالَج رسائل الدردشة عبر نماذج Groq AI. يتم استخدام محتوى المحادثات لتقديم الردود فقط ولا يُستخدم لتدريب النماذج أو مشاركته مع أطراف ثالثة خارج نطاق تقديم الخدمة.",
-            "Chat messages are processed via Groq AI models. Conversation content is used solely to provide responses and is not used to train models or shared with third parties outside of service delivery.",
+            "تُعالَج رسائل الدردشة عبر نماذج Google AI (Gemini). يتم استخدام محتوى المحادثات لتقديم الردود فقط ولا يُستخدم لتدريب النماذج أو مشاركته مع أطراف ثالثة خارج نطاق تقديم الخدمة.",
+            "Chat messages are processed via Google AI (Gemini) models. Conversation content is used solely to provide responses and is not used to train models or shared with third parties outside of service delivery.",
           )}
         </Section>
 
