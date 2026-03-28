@@ -643,7 +643,7 @@ export default function AuthPage() {
             transition={{ duration: 0.8 }} className="flex flex-col items-center">
 
             {/* Logo mark */}
-            <motion.div className="relative mb-10"
+            <motion.div className="mb-10"
               animate={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
               <img
@@ -652,10 +652,6 @@ export default function AuthPage() {
                 className="w-24 h-24 rounded-3xl"
                 style={{ boxShadow: "0 0 50px rgba(253,101,194,0.4), 0 0 100px rgba(37,82,202,0.3)" }}
               />
-              {/* Orbital ring */}
-              <motion.div className="absolute inset-[-12px] rounded-full border border-white/20"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }} />
             </motion.div>
 
             <h2 className="text-5xl font-bold text-white mb-3 tracking-tight">{t("ذكرني", "Thakirni")}</h2>
