@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { VaultSidebar, MobileMenuButton } from "@/components/thakirni/vault-sidebar";
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useSubscription } from "@/hooks/use-subscription";
 import { createClient } from "@/lib/supabase/client";
@@ -119,19 +119,6 @@ function MemoryMapStats({ stats }: { stats: { memories: number; plans: number; h
         </Link>
       </div>
 
-      {/* Floating notification */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="absolute -bottom-5 -left-5 max-w-xs">
-        <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-          className="bg-white p-4 rounded-xl shadow-2xl flex items-center gap-3 border-l-4 border-[#ad1d7f]">
-          <div className="w-9 h-9 rounded-full power-gradient flex items-center justify-center shrink-0">
-            <span className="text-white text-base">🧠</span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-900 font-label">{t("محفوظ!", "Saved!")}</p>
-            <p className="text-xs text-slate-500">{t("ذكرياتك قابلة للبحث", "Your memories are searchable")}</p>
-          </div>
-        </motion.div>
-      </motion.div>
     </div>
   );
 }
@@ -394,11 +381,6 @@ function VaultPageInner() {
 
               {/* Copy */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-8">
-                <div className="flex items-center gap-3 lg:hidden">
-                  <MobileMenuButton />
-                  <div className="flex-1" />
-                  <ThemeToggle /><LanguageToggle />
-                </div>
                 <div className="hidden lg:flex justify-end gap-3">
                   <ThemeToggle /><LanguageToggle />
                 </div>

@@ -14,7 +14,7 @@ import { useLanguage } from '@/components/language-provider';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { VaultSidebar, MobileMenuButton } from '@/components/thakirni/vault-sidebar';
+import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { LanguageToggle } from '@/components/language-toggle';
 
@@ -265,13 +265,7 @@ export default function UploadPage() {
         <div className="flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
       </header>
 
-      <main className="lg:ml-72 transition-all duration-300">
-        {/* Mobile header */}
-        <div className="flex items-center gap-3 p-4 lg:hidden">
-          <MobileMenuButton />
-          <span className="text-lg font-headline font-extrabold gradient-text">{t('رفع ذكريات', 'Upload Memories')}</span>
-          <div className="ms-auto flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
-        </div>
+      <main className="lg:ml-72 pt-14 lg:pt-0 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">

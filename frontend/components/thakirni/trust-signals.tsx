@@ -37,14 +37,14 @@ export function TrustSignals() {
   const { t } = useLanguage();
 
   return (
-    <section className="py-32 relative overflow-hidden bg-[#f6f3f2]/50 dark:bg-slate-900/50" id="process">
-      <div className="max-w-7xl mx-auto px-8">
+    <section className="py-16 sm:py-32 relative overflow-hidden bg-[#f6f3f2]/50 dark:bg-slate-900/50" id="process">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <motion.h2
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
-          className="text-5xl font-headline font-bold text-center mb-20 tracking-tight text-slate-900 dark:text-white"
+          className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold text-center mb-10 sm:mb-20 tracking-tight text-slate-900 dark:text-white"
         >
           {t("كيف ستتوقف عن النسيان إلى الأبد", "How you'll stop forgetting forever")}
         </motion.h2>
@@ -53,7 +53,7 @@ export function TrustSignals() {
           {/* Connecting line */}
           <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-gradient-to-r from-[#2552ca] via-[#ad1d7f] to-[#456ce4] -translate-y-1/2 opacity-20" />
 
-          <div className="grid lg:grid-cols-3 gap-12 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-12 relative z-10">
             {steps.map(({ num, numColor, borderColor, titleAr, titleEn, bodyAr, bodyEn }, i) => (
               <motion.div
                 key={num}
@@ -61,10 +61,10 @@ export function TrustSignals() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.7, delay: i * 0.2, ease: [0.2, 1, 0.3, 1] }}
-                className={`bg-white dark:bg-slate-800 p-10 rounded-2xl shadow-ambient border-t-8 ${borderColor} hover-lift`}
+                className={`bg-white dark:bg-slate-800 p-6 sm:p-10 rounded-2xl shadow-ambient border-t-8 ${borderColor} hover-lift`}
               >
                 <div className={`text-5xl font-extrabold ${numColor} mb-6`}>{num}</div>
-                <h4 className="text-2xl font-headline font-bold mb-4 text-slate-900 dark:text-white">
+                <h4 className="text-lg sm:text-xl md:text-2xl font-headline font-bold mb-4 text-slate-900 dark:text-white">
                   {t(titleAr, titleEn)}
                 </h4>
                 <p className="text-slate-500 leading-relaxed">

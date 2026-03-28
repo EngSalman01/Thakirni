@@ -16,8 +16,8 @@ export function FeaturesSection() {
   const { t, isArabic } = useLanguage();
 
   return (
-    <section className="py-32 bg-[#fbf9f8] dark:bg-slate-900" id="features">
-      <div className="max-w-7xl mx-auto px-8">
+    <section className="py-16 sm:py-32 bg-[#fbf9f8] dark:bg-slate-900" id="features">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8">
 
         {/* Section header */}
         <motion.div
@@ -25,15 +25,15 @@ export function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
-          className="text-center max-w-3xl mx-auto mb-20"
+          className="text-center max-w-3xl mx-auto mb-10 sm:mb-20"
         >
-          <h2 className="text-5xl font-headline font-bold mb-6 tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 sm:mb-6 tracking-tight text-slate-900 dark:text-white">
             {t(
               "كل اللي تحتاجه في مكان واحد",
               "Everything you need to stay on top of your life"
             )}
           </h2>
-          <p className="text-xl text-slate-500">
+          <p className="text-base sm:text-lg md:text-xl text-slate-500">
             {t(
               "أضف مواعيد، احفظ ملاحظات، وتكلم مع مساعدك الذكي — في ثواني.",
               "Add plans, save memories, and chat with your AI assistant — in seconds."
@@ -42,7 +42,7 @@ export function FeaturesSection() {
         </motion.div>
 
         {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
 
           {/* Card 1 — Semantic Threading (wide) */}
           <motion.div
@@ -51,15 +51,15 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="md:col-span-2 bg-[#f6f3f2] rounded-2xl p-12 relative overflow-hidden group hover-lift cursor-default"
+            className="md:col-span-2 bg-[#f6f3f2] rounded-2xl p-6 sm:p-10 md:p-12 relative overflow-hidden group hover-lift cursor-default"
           >
             <div className="relative z-10 flex flex-col h-full justify-between">
               <div>
                 <span className="text-4xl text-[#2552ca] mb-6 block">✦</span>
-                <h3 className="text-3xl font-headline font-bold mb-4 text-slate-900">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4 text-slate-900">
                   {t("المساعد الذكي", "AI Assistant")}
                 </h3>
-                <p className="text-lg text-slate-500 max-w-md">
+                <p className="text-base sm:text-lg text-slate-500 max-w-md">
                   {t(
                     "تكلم ذكرني بالطبيعي وهو يضيف المواعيد ويحفظ الملاحظات. يفهمك ويتذكر كل شي قلته.",
                     "Chat naturally to add reminders, schedule meetings, and save notes. Thakirni understands you and remembers everything you tell it."
@@ -81,14 +81,14 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#456ce4] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-default"
+            className="bg-[#456ce4] text-white rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col justify-between hover-lift cursor-default"
           >
             <div>
               <span className="text-4xl mb-6 block">🎙️</span>
-              <h3 className="text-3xl font-headline font-bold mb-4">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4">
                 {t("تسجيل صوتي", "Voice Notes")}
               </h3>
-              <p className="text-lg opacity-90">
+              <p className="text-base sm:text-lg opacity-90">
                 {t(
                   "سجّل صوتية وذكرني يحفظها لك على طول. ترجع لها متى تبي من الفولت.",
                   "Record a voice note and Thakirni saves it instantly to your Second Brain. Access it anytime from your vault."
@@ -124,7 +124,7 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#f6f3f2] rounded-2xl p-12 flex flex-col items-center text-center hover-lift cursor-default"
+            className="bg-[#f6f3f2] rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col items-center text-center hover-lift cursor-default"
           >
             <div className="w-20 h-20 rounded-full bg-[#fd65c2] flex items-center justify-center mb-8 animate-soft-pulse">
               <span className="text-white text-3xl">🔒</span>
@@ -147,10 +147,10 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="md:col-span-2 bg-[#e4e2e1] rounded-2xl p-12 grid md:grid-cols-2 gap-12 items-center hover-lift cursor-default"
+            className="md:col-span-2 bg-[#e4e2e1] rounded-2xl p-6 sm:p-10 md:p-12 grid md:grid-cols-2 gap-6 md:gap-12 items-center hover-lift cursor-default"
           >
             <div>
-              <h3 className="text-3xl font-headline font-bold mb-4 text-slate-900">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4 text-slate-900">
                 {t("لوحة التحكم", "Smart Dashboard")}
               </h3>
               <p className="text-slate-500 leading-relaxed">
@@ -193,14 +193,14 @@ export function FeaturesSection() {
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#25d366] text-white rounded-2xl p-12 flex flex-col justify-between hover-lift cursor-default"
+            className="bg-[#25d366] text-white rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col justify-between hover-lift cursor-default"
           >
             <div>
               <span className="text-4xl mb-6 block">💬</span>
-              <h3 className="text-3xl font-headline font-bold mb-4">
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4">
                 {t("يشتغل على واتساب", "Works on WhatsApp")}
               </h3>
-              <p className="text-lg opacity-90">
+              <p className="text-base sm:text-lg opacity-90">
                 {t(
                   "تكلم ذكرني على واتساب وهو يتكفل بالباقي. أضف مواعيد، احفظ ملاحظات، وخلّه يذكرك — ما تحتاج تفتح التطبيق أبد.",
                   "Chat with your Thakirni assistant directly on WhatsApp. Add plans, save notes, and get reminders — without opening the app."

@@ -28,6 +28,8 @@ import {
 import { useLanguage } from "@/components/language-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { GlobalSearch } from "@/components/thakirni/global-search";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
 import {
   useState,
   useEffect,
@@ -290,18 +292,20 @@ function MobileTopBar() {
 
   return (
     <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 bg-[#fbf9f8] border-b border-slate-200/60 flex items-center justify-between px-4 shadow-ambient">
-      {/* Logo: left in LTR, right in RTL */}
-      <Link href="/" className="flex items-center order-1 rtl:order-2">
+      <Link href="/" className="flex items-center">
         <BrandLogo className="h-8 w-auto" />
       </Link>
-      {/* Hamburger: right in LTR, left in RTL (drawer slides from that side) */}
-      <button
-        onClick={() => setOpen(true)}
-        className="p-2 rounded-full hover:bg-slate-100 transition-colors order-2 rtl:order-1"
-        aria-label={t("فتح القائمة", "Open menu")}
-      >
-        <Menu className="w-5 h-5 text-slate-600" />
-      </button>
+      <div className="flex items-center gap-1">
+        <LanguageToggle />
+        <ThemeToggle />
+        <button
+          onClick={() => setOpen(true)}
+          className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+          aria-label={t("فتح القائمة", "Open menu")}
+        >
+          <Menu className="w-5 h-5 text-slate-600" />
+        </button>
+      </div>
     </div>
   );
 }

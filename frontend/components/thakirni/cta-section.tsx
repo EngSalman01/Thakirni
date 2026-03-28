@@ -98,21 +98,21 @@ export function CTASection() {
   return (
     <>
       {/* FAQ section */}
-      <section className="py-32 bg-slate-900 text-white relative overflow-hidden" id="faq">
+      <section className="py-16 sm:py-32 bg-slate-900 text-white relative overflow-hidden" id="faq">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#2552ca,transparent_70%)] opacity-30 pointer-events-none" />
 
-        <div className="max-w-4xl mx-auto px-8 relative z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="text-center mb-16"
+            className="text-center mb-8 sm:mb-16"
           >
-            <h2 className="text-5xl md:text-6xl font-headline font-bold mb-4 tracking-tight">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-headline font-bold mb-4 tracking-tight">
               {t("أسئلة شائعة", "Frequently Asked Questions")}
             </h2>
-            <p className="text-xl text-slate-400">
+            <p className="text-base sm:text-xl text-slate-400">
               {t(
                 "إجابات على أكثر الأسئلة التي تصلنا.",
                 "Answers to the questions we hear most."
@@ -152,16 +152,16 @@ export function CTASection() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-32 bg-slate-900 relative overflow-hidden">
+      <section className="py-16 sm:py-32 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(253,101,194,0.05)_0,transparent_50%)] pointer-events-none" />
-        <div className="max-w-4xl mx-auto px-8 text-center relative z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="text-4xl md:text-6xl font-headline font-extrabold text-white mb-10 leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-headline font-extrabold text-white mb-8 sm:mb-10 leading-tight">
               {t("جاهز تنظم حياتك؟", "Ready to get organised?")}
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -169,7 +169,7 @@ export function CTASection() {
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
-                  className="px-12 py-5 rounded-full power-gradient text-white font-bold text-xl shadow-2xl btn-glow"
+                  className="px-8 py-4 sm:px-12 sm:py-5 rounded-full power-gradient text-white font-bold text-base sm:text-xl shadow-2xl btn-glow"
                 >
                   {t("ابدأ مجاناً", "Get Started for Free")}
                 </motion.button>
