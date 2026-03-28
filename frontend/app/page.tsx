@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "ذكرني | Thakirni – مساعدك الذكي الشخصي",
   description:
     "ذكرني هو أول مساعد ذكي شخصي وذاكرة ثانية مدعومة بالذكاء الاصطناعي في السعودية. نظّم مهامك، احفظ ذكرياتك، وحقق أهدافك. The first AI-powered personal assistant built for Saudi Arabia.",
+  alternates: {
+    canonical: "https://thakirni.com",
+  },
   openGraph: {
     title: "ذكرني | Thakirni",
     description:
