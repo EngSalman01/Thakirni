@@ -34,7 +34,17 @@ export async function GET(request: NextRequest) {
       if (type === "recovery") {
         return NextResponse.redirect(`${origin}/auth/reset-password`);
       }
-      return NextResponse.redirect(`${origin}/vault`);
+      if (type === "magiclink") {
+        return NextResponse.redirect(`${origin}/vault`);
+      }
+      // signup, invite, email_change → back to auth with a success message
+      const messageMap: Record<string, string> = {
+        signup: "email_verified",
+        invite: "invite_accepted",
+        email_change: "email_changed",
+      };
+      const msg = messageMap[type] ?? "verified";
+      return NextResponse.redirect(`${origin}/auth?message=${msg}`);
     }
   }
 

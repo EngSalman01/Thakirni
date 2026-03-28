@@ -181,6 +181,7 @@ function AuthForm() {
   const [isLoading, setIsLoading]       = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors]             = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [signUpDone, setSignUpDone]     = useState(false);
   const [signUpPassword, setSignUpPassword] = useState("");
   const [phoneNumber, setPhoneNumber]   = useState("");
@@ -199,17 +200,28 @@ function AuthForm() {
   const supabase = createClient();
   const strength = getPasswordStrength(signUpPassword);
 
-  // Show error from OAuth callback (e.g. Google login failed)
+  // Show messages from URL params
   React.useEffect(() => {
     if (urlError === "callback_failed") {
       const reason = searchParams.get("reason");
-      const msg = reason
+      setErrors({ form: reason
         ? `Google sign-in failed: ${reason}`
-        : t("فشل تسجيل الدخول بجوجل، حاول مرة أخرى", "Google sign-in failed. Please try again.");
-      setErrors({ form: msg });
+        : t("فشل تسجيل الدخول بجوجل، حاول مرة أخرى", "Google sign-in failed. Please try again.") });
+    }
+    if (urlError === "confirm_failed") {
+      setErrors({ form: t("انتهت صلاحية الرابط أو غير صالح، اطلب رابطاً جديداً", "Link expired or invalid — please request a new one.") });
     }
     if (urlMessage === "verify") {
       setErrors({ form: t("يرجى تأكيد بريدك الإلكتروني أولاً — تحقق من صندوق الوارد", "Please verify your email first — check your inbox.") });
+    }
+    if (urlMessage === "email_verified") {
+      setSuccessMessage(t("تم تأكيد بريدك الإلكتروني! سجّل دخولك الآن.", "Email verified! Sign in to continue."));
+    }
+    if (urlMessage === "email_changed") {
+      setSuccessMessage(t("تم تغيير بريدك الإلكتروني بنجاح. سجّل دخولك بالبريد الجديد.", "Email updated successfully. Sign in with your new email."));
+    }
+    if (urlMessage === "invite_accepted") {
+      setSuccessMessage(t("تم قبول الدعوة! أنشئ كلمة مرورك وسجّل دخولك.", "Invite accepted! Set a password and sign in."));
     }
   }, [urlError, urlMessage]);
 
@@ -402,6 +414,20 @@ function AuthForm() {
           </button>
         ))}
       </div>
+
+      {/* Success banner */}
+      <AnimatePresence>
+        {successMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="mb-5 p-3 rounded-xl flex items-center gap-2 text-sm"
+            style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", color: "#16a34a" }}
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            {successMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Error banner */}
       <AnimatePresence>
