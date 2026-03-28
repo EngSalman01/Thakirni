@@ -55,7 +55,7 @@ export function LandingHeader() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">
           <Link
-            href="#features"
+            href="/#features"
             className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
           >
             {t("المميزات", "Features")}
@@ -67,7 +67,7 @@ export function LandingHeader() {
             {t("مركز المساعدة", "Help Center")}
           </Link>
           <Link
-            href="#process"
+            href="/#process"
             className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
           >
             {t("كيف يعمل", "How It Works")}
@@ -120,9 +120,9 @@ export function LandingHeader() {
           >
             <div className="px-8 py-5 flex flex-col gap-4">
               {[
-                { href: "#features", ar: "المميزات", en: "Features" },
+                { href: "/#features", ar: "المميزات", en: "Features" },
                 { href: "/help", ar: "مركز المساعدة", en: "Help Center" },
-                { href: "#process", ar: "كيف يعمل", en: "How It Works" },
+                { href: "/#process", ar: "كيف يعمل", en: "How It Works" },
               ].map(({ href, ar, en }) => (
                 <Link
                   key={href}
