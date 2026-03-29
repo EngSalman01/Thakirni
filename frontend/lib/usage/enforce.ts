@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js"
 import { getLimitsForTier } from "./limits"
+import { checkGlobalBudget, incrementGlobalUsage } from "./global-budget"
 
 function getServiceSupabase() {
   return createClient(
@@ -16,9 +17,10 @@ export type UsageFeature =
 
 export interface EnforceResult {
   allowed: boolean
-  reason?: "upgrade_required" | "limit_exceeded" | "kill_switch" | "daily_cap"
+  reason?: "upgrade_required" | "limit_exceeded" | "kill_switch" | "daily_cap" | "global_budget_exceeded"
   remaining?: number
   tier?: string
+  usingCredits?: boolean
 }
 
 const FEATURE_TO_MONTHLY_FIELD: Record<UsageFeature, keyof import("./limits").UsageLimits> = {
@@ -52,9 +54,10 @@ async function isKillSwitchActive(): Promise<boolean> {
 /**
  * Full enforcement pipeline:
  * 1. Global kill switch
- * 2. Plan tier — feature access
- * 3. Monthly limit
- * 4. Daily request cap (hard absolute cap)
+ * 2. Global system budget (cached, 60s TTL)
+ * 3. Plan tier — feature access
+ * 4. Monthly limit (credits fallback if exceeded)
+ * 5. Daily request cap (hard absolute cap)
  */
 export async function enforceUsage(
   userId: string,
@@ -67,7 +70,13 @@ export async function enforceUsage(
     return { allowed: false, reason: "kill_switch" }
   }
 
-  // 2. Plan tier
+  // 2. Global system budget
+  const budget = await checkGlobalBudget()
+  if (!budget.allowed) {
+    return { allowed: false, reason: "global_budget_exceeded" }
+  }
+
+  // 3. Plan tier
   const { data: profile } = await service
     .from("profiles")
     .select("plan_tier")
@@ -81,10 +90,17 @@ export async function enforceUsage(
   const monthlyLimit = limits[limitKey] as number
 
   if (monthlyLimit === 0) {
+    // Feature not available on this plan — try credits
+    const { data: creditsAllowed } = await service
+      .rpc("consume_credits", { p_user_id: userId, p_amount: 1 })
+    if (creditsAllowed) {
+      incrementGlobalUsage().catch(() => {})
+      return { allowed: true, remaining: 0, tier, usingCredits: true }
+    }
     return { allowed: false, reason: "upgrade_required", tier }
   }
 
-  // 3. Monthly limit
+  // 4. Monthly limit
   const month = new Date().toISOString().slice(0, 7)
   const { data: usage } = await service
     .rpc("get_or_create_usage", { p_user_id: userId, p_month: month })
@@ -94,11 +110,18 @@ export async function enforceUsage(
     const currentCount = (usage as Record<string, number>)[dbField] ?? 0
 
     if (currentCount >= monthlyLimit) {
+      // Try credits as fallback before blocking
+      const { data: creditsAllowed } = await service
+        .rpc("consume_credits", { p_user_id: userId, p_amount: 1 })
+      if (creditsAllowed) {
+        incrementGlobalUsage().catch(() => {})
+        return { allowed: true, remaining: 0, tier, usingCredits: true }
+      }
       return { allowed: false, reason: "limit_exceeded", remaining: 0, tier }
     }
   }
 
-  // 4. Daily request cap (only for ai_chat to avoid per-document overhead)
+  // 5. Daily request cap (only for ai_chat to avoid per-document overhead)
   if (feature === "ai_chat") {
     const date = new Date().toISOString().slice(0, 10)
     const { data: daily } = await service
@@ -114,7 +137,7 @@ export async function enforceUsage(
     }
   }
 
-  // 5. Hard absolute daily request cap (all AI features)
+  // 6. Hard absolute daily request cap (all AI features)
   const date = new Date().toISOString().slice(0, 10)
   const { data: dailyTotal } = await service
     .from("usage_daily")
@@ -132,5 +155,6 @@ export async function enforceUsage(
     ? monthlyLimit - ((usage as Record<string, number>)[FEATURE_TO_DB_FIELD[feature]] ?? 0)
     : monthlyLimit
 
+  incrementGlobalUsage().catch(() => {})
   return { allowed: true, remaining: monthlyRemaining, tier }
 }
