@@ -806,9 +806,10 @@ RULE:
     aiResponse = text
     } catch (err) {
         const e = err as Error & { cause?: unknown; statusCode?: number; responseBody?: string }
-        const errMsg = (e?.message ?? String(err)).slice(0, 200)
-        console.log("[WhatsApp AI] ERR:", errMsg, "| cause:", String(e?.cause), "| status:", e?.statusCode)
-        aiResponse = `DEBUG ERROR: ${errMsg}`
+        console.log("[WhatsApp AI] ERR:", e?.message ?? String(err), "| cause:", String(e?.cause), "| status:", e?.statusCode)
+        aiResponse = lang === "ar"
+            ? "صار شي غلط، جرب مرة ثانية 🙏"
+            : "Something went wrong, please try again 🙏"
     }
 
     console.log("[WhatsApp] sending response:", aiResponse?.slice(0, 80))
