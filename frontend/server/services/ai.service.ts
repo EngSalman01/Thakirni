@@ -12,12 +12,12 @@ const _google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE
 
 /** Primary model — smart, fast, multilingual. */
 export function getAiModel() {
-  return _google("gemini-flash-latest");
+  return _google("gemini-2.0-flash");
 }
 
 /** Fast model — for quick classification/extraction tasks. */
 export function getFastModel() {
-  return _google("gemini-flash-latest");
+  return _google("gemini-2.0-flash");
 }
 
 // ── Hijri Date ────────────────────────────────────────────────────────────────

@@ -75,7 +75,7 @@ async function verifySignature(
 
 async function transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
     const { text } = await generateText({
-        model: google("gemini-flash-latest"),
+        model: google("gemini-2.0-flash"),
         messages: [{
             role: "user",
             content: [
@@ -284,7 +284,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     let aiResponse: string
     try {
     const { text } = await generateText({
-        model: google("gemini-flash-latest"),
+        model: google("gemini-2.0-flash"),
         maxSteps: 10,
         messages: [
             ...history,
