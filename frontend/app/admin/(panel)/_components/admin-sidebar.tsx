@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   ListTodo,
   ScrollText,
+  Shield,
 } from "lucide-react";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 
@@ -30,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
   { href: "/admin/jobs", icon: ListTodo, label: "Job Queue" },
   { href: "/admin/logs", icon: ScrollText, label: "Request Logs" },
+  { href: "/admin/compliance", icon: Shield, label: "Compliance" },
   { href: "/admin/settings", icon: Settings, label: "Settings" },
 ];
 

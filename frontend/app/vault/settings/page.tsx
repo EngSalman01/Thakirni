@@ -1259,6 +1259,97 @@ export default function SettingsPage() {
               </div>
             </SettingsCard>
 
+            {/* Data & Privacy (PDPL) */}
+            <SettingsCard delay={0.24} className="border-l-4 border-[#2552ca]">
+              <div className="flex items-center gap-3 mb-6">
+                <Shield className="w-5 h-5 text-[#2552ca]" />
+                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  {t("البيانات والخصوصية", "Data & Privacy")}
+                </h2>
+              </div>
+              <p className="text-sm text-slate-500 mb-5">
+                {t(
+                  "بموجب نظام PDPL يمكنك تصدير جميع بياناتك أو حذف حسابك نهائياً.",
+                  "Under PDPL you can export all your data or permanently delete your account."
+                )}
+              </p>
+              <div className="space-y-3">
+                {/* Export full data */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                  <div>
+                    <p className="font-label font-bold text-sm text-slate-800">
+                      {t("تصدير جميع بياناتي", "Export All My Data")}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {t("ملف JSON يحتوي على كل بياناتك", "A JSON file with all your data")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/user/export")
+                        if (!res.ok) throw new Error("Export failed")
+                        const blob = await res.blob()
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement("a")
+                        a.href = url
+                        a.download = "thakirni-data-export.json"
+                        a.click()
+                        URL.revokeObjectURL(url)
+                        toast.success(t("تم تصدير بياناتك بنجاح", "Data exported successfully"))
+                      } catch {
+                        toast.error(t("فشل التصدير", "Export failed"))
+                      }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#2552ca] text-[#2552ca] font-bold text-sm hover:bg-[#dce1ff] transition-colors font-label shrink-0"
+                  >
+                    <Download className="w-4 h-4" />
+                    {t("تصدير", "Export")}
+                  </button>
+                </div>
+
+                {/* Delete account via compliance route */}
+                <div className="flex items-center justify-between p-4 bg-red-50/50 rounded-xl border border-red-100">
+                  <div>
+                    <p className="font-label font-bold text-sm text-red-700">
+                      {t("حذف حسابي نهائياً", "Delete My Account")}
+                    </p>
+                    <p className="text-xs text-red-400 mt-0.5">
+                      {t("يحذف كل بياناتك ولا يمكن التراجع عنه", "Deletes all your data — irreversible")}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setDeleteOpen(true); setDeleteConfirm(""); }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors font-label shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {t("حذف", "Delete")}
+                  </button>
+                </div>
+
+                {/* Privacy policy link */}
+                <div className="text-center pt-1">
+                  <a
+                    href="/legal/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#2552ca] hover:underline font-label"
+                  >
+                    {t("قراءة سياسة الخصوصية", "Read Privacy Policy")}
+                  </a>
+                  {" · "}
+                  <a
+                    href="/legal/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-[#2552ca] hover:underline font-label"
+                  >
+                    {t("شروط الخدمة", "Terms of Service")}
+                  </a>
+                </div>
+              </div>
+            </SettingsCard>
+
           </div>
         </div>
         </div>{/* end px-8 pb-20 */}
