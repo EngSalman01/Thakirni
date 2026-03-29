@@ -812,6 +812,7 @@ RULE:
             : "Something went wrong, please try again 🙏"
     }
 
+    console.log("[WhatsApp] sending response:", aiResponse?.slice(0, 80))
     await Promise.all([
         supabase.from("conversations").insert({
             user_id: userId,
