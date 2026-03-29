@@ -3,6 +3,8 @@ import { requireAuth, checkPlanFeature } from "@/lib/api-auth"
 import { processMeetingRecording } from "@/lib/services/transcription.service"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 import { trackEvent } from "@/lib/analytics"
+import { enforceUsage } from "@/lib/usage/enforce"
+import { incrementUsage } from "@/lib/usage/increment"
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
@@ -12,9 +14,18 @@ export async function POST(req: NextRequest) {
   const rl = await limiters.upload(auth.userId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
-  const { allowed } = await checkPlanFeature(auth.userId, "meeting_summary")
-  if (!allowed) {
+  // Feature gate
+  const { allowed: featureAllowed } = await checkPlanFeature(auth.userId, "meeting_summary")
+  if (!featureAllowed) {
     return Response.json({ error: "upgrade_required", message: "هذه الميزة تحتاج اشتراك Pro أو أعلى", feature: "meeting_summary" }, { status: 403 })
+  }
+
+  // Usage enforcement
+  const enforcement = await enforceUsage(auth.userId, "meeting_summary")
+  if (!enforcement.allowed) {
+    if (enforcement.reason === "kill_switch") return Response.json({ error: "AI features temporarily unavailable" }, { status: 503 })
+    if (enforcement.reason === "upgrade_required") return Response.json({ error: "upgrade_required", feature: "meeting_summary" }, { status: 403 })
+    return Response.json({ error: "Monthly meeting summary limit reached. Upgrade for more.", code: "limit_exceeded", remaining: 0 }, { status: 429 })
   }
 
   try {
@@ -58,6 +69,8 @@ export async function POST(req: NextRequest) {
 
     if (error) return Response.json({ error: "Failed to save meeting" }, { status: 500 })
 
+    // Increment after success
+    incrementUsage(auth.userId, "meeting_summary").catch(() => {})
     trackEvent("meeting_uploaded")
 
     auth.service.from("timeline_events").insert({

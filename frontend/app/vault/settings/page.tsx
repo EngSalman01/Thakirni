@@ -155,6 +155,13 @@ export default function SettingsPage() {
     typeof window !== "undefined" ? localStorage.getItem("thakirni_deepfocus") === "true" : false
   );
 
+  const [changeEmailOpen, setChangeEmailOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [changingEmail, setChangingEmail] = useState(false);
+  const [changeEmailSent, setChangeEmailSent] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [sendingInvite, setSendingInvite] = useState(false);
+
   const [exportingPdf, setExportingPdf] = useState<string | null>(null);
   const [planConfig, setPlanConfig] = useState<Array<{ plan_key: string; price_sar: number; features: string[] }> | null>(null);
 
@@ -445,6 +452,53 @@ export default function SettingsPage() {
     }
   };
 
+  const handleChangeEmail = useCallback(async () => {
+    const trimmed = newEmail.trim().toLowerCase();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error(t("أدخل بريداً إلكترونياً صحيحاً", "Enter a valid email address"));
+      return;
+    }
+    setChangingEmail(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ email: trimmed });
+      if (error) throw error;
+      setChangeEmailSent(true);
+    } catch (err) {
+      console.error("[Settings] change email:", err);
+      toast.error(t("فشل تغيير البريد. حاول مرة أخرى.", "Failed to change email. Please try again."));
+    } finally {
+      setChangingEmail(false);
+    }
+  }, [newEmail, t]);
+
+  const handleSendInvite = useCallback(async () => {
+    const trimmed = inviteEmail.trim().toLowerCase();
+    if (!trimmed) return;
+    setSendingInvite(true);
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch("/api/invites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token ?? ""}`,
+        },
+        body: JSON.stringify({ email: trimmed, role: "member" }),
+      });
+      const json = await res.json() as { success?: boolean; error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Failed");
+      toast.success(t(`تم إرسال الدعوة إلى ${trimmed}`, `Invite sent to ${trimmed}`));
+      setInviteEmail("");
+    } catch (err) {
+      console.error("[Settings] send invite:", err);
+      toast.error(t("فشل إرسال الدعوة", "Failed to send invite"));
+    } finally {
+      setSendingInvite(false);
+    }
+  }, [inviteEmail, t]);
+
   async function handleExportPDF(type: "memories" | "plans" | "habits" | "goals") {
     setExportingPdf(type);
     try {
@@ -690,12 +744,16 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-1.5">
                     <Label className="font-label font-semibold text-slate-700">{t("البريد الإلكتروني", "Email")}</Label>
-                    <Input type="email" value={email} disabled dir="ltr"
-                      className="opacity-60 rounded-xl bg-white border-slate-200" />
-                    <p className="text-xs text-slate-500 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {t("لا يمكن تغيير البريد الإلكتروني", "Email cannot be changed")}
-                    </p>
+                    <div className="flex gap-2">
+                      <Input type="email" value={email} disabled dir="ltr"
+                        className="opacity-60 rounded-xl bg-white border-slate-200 flex-1" />
+                      <button
+                        onClick={() => { setChangeEmailOpen(true); setNewEmail(""); setChangeEmailSent(false); }}
+                        className="px-3 py-2 rounded-xl border border-[#2552ca]/30 text-[#2552ca] text-xs font-bold hover:bg-[#dce1ff] transition-colors shrink-0"
+                      >
+                        {t("تغيير", "Change")}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label className="font-label font-semibold text-slate-700">
@@ -820,6 +878,39 @@ export default function SettingsPage() {
                 </div>
               </div>
             </SettingsCard>
+            {/* ── Invite Team Members (TEAMS only) ── */}
+            {(resolvedTier === "teams") && (
+              <SettingsCard delay={0.2} className="border-l-4 border-[#2552ca]">
+                <div className="flex items-center gap-3 mb-6">
+                  <Mail className="w-5 h-5 text-[#2552ca]" />
+                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                    {t("دعوة أعضاء", "Invite Members")}
+                  </h2>
+                </div>
+                <p className="text-sm text-slate-500 mb-4">
+                  {t("ادعُ زملاءك لينضموا إلى فريقك.", "Invite teammates to join your team.")}
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder={t("البريد الإلكتروني", "Email address") as string}
+                    dir="ltr"
+                    className="rounded-xl bg-white border-slate-200 flex-1"
+                  />
+                  <button
+                    onClick={handleSendInvite}
+                    disabled={sendingInvite || !inviteEmail.trim()}
+                    className="px-5 py-2 rounded-full power-gradient text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
+                  >
+                    {sendingInvite
+                      ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                      : t("إرسال", "Send")}
+                  </button>
+                </div>
+              </SettingsCard>
+            )}
           </div>
 
           {/* ── Right column ── */}
@@ -1172,6 +1263,46 @@ export default function SettingsPage() {
         </div>
         </div>{/* end px-8 pb-20 */}
       </main>
+
+      {/* Change email dialog */}
+      <AlertDialog open={changeEmailOpen} onOpenChange={setChangeEmailOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("تغيير البريد الإلكتروني", "Change Email Address")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {changeEmailSent
+                ? t("تم إرسال رابط التأكيد إلى بريدك الجديد. افتح رسالة التأكيد لإتمام التغيير.", "A confirmation link was sent to your new email. Open the email to confirm the change.")
+                : t("أدخل بريدك الإلكتروني الجديد. سنرسل رابط تأكيد.", "Enter your new email address. We'll send a confirmation link.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {!changeEmailSent && (
+            <div className="py-2">
+              <Label className="text-sm text-slate-600">{t("البريد الجديد", "New email")}</Label>
+              <Input
+                type="email"
+                className="mt-2"
+                dir="ltr"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="new@example.com"
+                onKeyDown={(e) => { if (e.key === "Enter") handleChangeEmail(); }}
+              />
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={changingEmail}>{t("إلغاء", "Cancel")}</AlertDialogCancel>
+            {!changeEmailSent && (
+              <AlertDialogAction onClick={handleChangeEmail} disabled={changingEmail || !newEmail.trim()}>
+                {changingEmail
+                  ? <span className="flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" />{t("جاري الإرسال...", "Sending...")}</span>
+                  : t("إرسال رابط التأكيد", "Send Confirmation Link")}
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Sign out dialog */}
       <AlertDialog open={signOutOpen} onOpenChange={setSignOutOpen}>

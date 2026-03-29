@@ -1,8 +1,9 @@
-import React from "react"
+import React, { Suspense } from "react"
 import type { Metadata } from "next"
 import { ThemeSync } from "@/components/theme-sync"
 import { CommandPalette } from "@/components/thakirni/command-palette"
 import { UserIdentify } from "@/components/user-identify"
+import { ToastNotifier } from "@/components/thakirni/toast-notifier"
 
 export const dynamic = "force-dynamic"
 
@@ -23,6 +24,9 @@ export default function VaultLayout({
       <ThemeSync />
       <UserIdentify />
       <CommandPalette />
+      <Suspense>
+        <ToastNotifier />
+      </Suspense>
       {children}
     </>
   )
