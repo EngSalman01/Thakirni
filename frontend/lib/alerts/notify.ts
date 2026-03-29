@@ -1,3 +1,5 @@
+import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
+
 type AlertLevel = "info" | "warning" | "error" | "critical"
 
 interface Alert {
@@ -14,47 +16,26 @@ const EMOJI: Record<AlertLevel, string> = {
   critical: "🚨",
 }
 
-const DISCORD_COLOR: Record<AlertLevel, number> = {
-  info:     0x2552ca,
-  warning:  0xf59e0b,
-  error:    0xef4444,
-  critical: 0xdc2626,
-}
+const ADMIN_PHONE = "966555339782"
 
 /**
- * Send an alert to the configured webhook (Discord or generic Slack-style).
- * Set ALERT_WEBHOOK_URL in Vercel env vars.
- * Silently no-ops if the env var is not set.
+ * Send an alert via WhatsApp to the admin phone number.
+ * Fire-and-forget — never throws.
  */
 export async function sendAlert(alert: Alert): Promise<void> {
-  const webhookUrl = process.env.ALERT_WEBHOOK_URL
-  if (!webhookUrl) return
-
   try {
     const emoji = EMOJI[alert.level]
-    const body = webhookUrl.includes("discord.com/api/webhooks")
-      ? JSON.stringify({
-          embeds: [{
-            title: `${emoji} ${alert.title}`,
-            description: alert.message,
-            color: DISCORD_COLOR[alert.level],
-            timestamp: new Date().toISOString(),
-            fields: alert.metadata
-              ? Object.entries(alert.metadata).map(([name, value]) => ({
-                  name,
-                  value: String(value),
-                  inline: true,
-                }))
-              : [],
-          }],
-        })
-      : JSON.stringify({ text: `${emoji} *${alert.title}*\n${alert.message}` })
+    const metaLines = alert.metadata
+      ? Object.entries(alert.metadata).map(([k, v]) => `• ${k}: ${v}`).join("\n")
+      : ""
 
-    await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body,
-    })
+    const text = [
+      `${emoji} *${alert.title}*`,
+      alert.message,
+      metaLines,
+    ].filter(Boolean).join("\n")
+
+    await sendWhatsAppMessage(ADMIN_PHONE, text)
   } catch (err) {
     console.error("[alerts] Failed to send alert:", err)
   }
