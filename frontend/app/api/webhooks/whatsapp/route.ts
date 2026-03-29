@@ -805,7 +805,8 @@ RULE:
     })
     aiResponse = text
     } catch (err) {
-        console.error("[WhatsApp AI] generateText error:", err)
+        const e = err as Error & { cause?: unknown; statusCode?: number; responseBody?: string }
+        console.error("[WhatsApp AI] generateText error:", e?.message ?? String(err), "| cause:", JSON.stringify(e?.cause), "| status:", e?.statusCode, "| body:", e?.responseBody)
         aiResponse = lang === "ar"
             ? "صار شي غلط، جرب مرة ثانية 🙏"
             : "Something went wrong, please try again 🙏"
