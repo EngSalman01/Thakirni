@@ -14,9 +14,9 @@ export type UsageFeature =
   | "meeting_summary"
   | "voice_note"
 
-interface EnforceResult {
+export interface EnforceResult {
   allowed: boolean
-  reason?: "upgrade_required" | "limit_exceeded" | "kill_switch"
+  reason?: "upgrade_required" | "limit_exceeded" | "kill_switch" | "daily_cap"
   remaining?: number
   tier?: string
 }
@@ -35,7 +35,6 @@ const FEATURE_TO_DB_FIELD: Record<UsageFeature, string> = {
   voice_note:       "voice_note_minutes",
 }
 
-/** Check AI kill switch (feature_flags table) */
 async function isKillSwitchActive(): Promise<boolean> {
   try {
     const service = getServiceSupabase()
@@ -51,8 +50,11 @@ async function isKillSwitchActive(): Promise<boolean> {
 }
 
 /**
- * Check if a user is allowed to perform an AI action.
- * Call BEFORE executing the AI call.
+ * Full enforcement pipeline:
+ * 1. Global kill switch
+ * 2. Plan tier — feature access
+ * 3. Monthly limit
+ * 4. Daily request cap (hard absolute cap)
  */
 export async function enforceUsage(
   userId: string,
@@ -60,12 +62,12 @@ export async function enforceUsage(
 ): Promise<EnforceResult> {
   const service = getServiceSupabase()
 
-  // 1. Global kill switch
+  // 1. Kill switch
   if (await isKillSwitchActive()) {
     return { allowed: false, reason: "kill_switch" }
   }
 
-  // 2. Get user plan tier
+  // 2. Plan tier
   const { data: profile } = await service
     .from("profiles")
     .select("plan_tier")
@@ -75,7 +77,6 @@ export async function enforceUsage(
   const tier = (profile?.plan_tier ?? "FREE") as string
   const limits = getLimitsForTier(tier)
 
-  // 3. Check feature access (zero limit = not available)
   const limitKey = FEATURE_TO_MONTHLY_FIELD[feature]
   const monthlyLimit = limits[limitKey] as number
 
@@ -83,7 +84,7 @@ export async function enforceUsage(
     return { allowed: false, reason: "upgrade_required", tier }
   }
 
-  // 4. Check current month usage
+  // 3. Monthly limit
   const month = new Date().toISOString().slice(0, 7)
   const { data: usage } = await service
     .rpc("get_or_create_usage", { p_user_id: userId, p_month: month })
@@ -95,9 +96,41 @@ export async function enforceUsage(
     if (currentCount >= monthlyLimit) {
       return { allowed: false, reason: "limit_exceeded", remaining: 0, tier }
     }
-
-    return { allowed: true, remaining: monthlyLimit - currentCount, tier }
   }
 
-  return { allowed: true, remaining: monthlyLimit, tier }
+  // 4. Daily request cap (only for ai_chat to avoid per-document overhead)
+  if (feature === "ai_chat") {
+    const date = new Date().toISOString().slice(0, 10)
+    const { data: daily } = await service
+      .from("usage_daily")
+      .select("ai_chat_requests")
+      .eq("user_id", userId)
+      .eq("date", date)
+      .single()
+
+    const dailyCount = (daily as { ai_chat_requests: number } | null)?.ai_chat_requests ?? 0
+    if (dailyCount >= limits.aiChatRequestsPerDay) {
+      return { allowed: false, reason: "daily_cap", remaining: 0, tier }
+    }
+  }
+
+  // 5. Hard absolute daily request cap (all AI features)
+  const date = new Date().toISOString().slice(0, 10)
+  const { data: dailyTotal } = await service
+    .from("usage_daily")
+    .select("requests_total")
+    .eq("user_id", userId)
+    .eq("date", date)
+    .single()
+
+  const totalToday = (dailyTotal as { requests_total: number } | null)?.requests_total ?? 0
+  if (totalToday >= limits.maxRequestsPerDay) {
+    return { allowed: false, reason: "daily_cap", remaining: 0, tier }
+  }
+
+  const monthlyRemaining = usage
+    ? monthlyLimit - ((usage as Record<string, number>)[FEATURE_TO_DB_FIELD[feature]] ?? 0)
+    : monthlyLimit
+
+  return { allowed: true, remaining: monthlyRemaining, tier }
 }

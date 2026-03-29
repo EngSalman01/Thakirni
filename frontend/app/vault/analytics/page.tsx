@@ -68,6 +68,14 @@ export default function AnalyticsPage() {
   const [fetchError, setFetchError] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
 
+  const [usage, setUsage] = useState<{
+    tier: string
+    credits: number
+    usage: { aiChatRequests: number; documentUploads: number; meetingSummaries: number; voiceNoteMinutes: number }
+    limits: { aiChatRequests: number; documentUploads: number; meetingSummaries: number; voiceNoteMinutes: number }
+    pct: { aiChat: number; documents: number; meetings: number; voice: number }
+  } | null>(null)
+
   const weekOverWeek = useMemo(() => {
     if (days.length < 2) return null
     const half = Math.floor(days.length / 2)
@@ -150,6 +158,18 @@ export default function AnalyticsPage() {
         activeGoals: (goalsRes.data ?? []).filter(g => g.status === "active" || g.status === "in_progress").length,
       })
       setLoading(false)
+
+        // Fetch usage data
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          const usageRes = await fetch("/api/usage/me", {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+          if (usageRes.ok) {
+            const usageData = await usageRes.json()
+            setUsage(usageData)
+          }
+        }
       } catch (err) {
         console.error("[Analytics] load error:", err)
         setFetchError(true)
@@ -287,6 +307,139 @@ export default function AnalyticsPage() {
             </motion.div>
           </div>
         </section>
+
+        {/* ═══ AI USAGE ═══ */}
+        {usage && (
+        <section className="px-8 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="bg-[#f6f3f2] rounded-2xl p-8"
+            >
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <Brain className="w-5 h-5 text-[#2552ca]" />
+                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                    {t("استخدام الذكاء الاصطناعي", "AI Usage")}
+                  </h2>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#dce1ff] text-[#2552ca]">
+                    {usage.tier}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <span>{t("هذا الشهر", "This month")}</span>
+                  {usage.credits > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                      {usage.credits} {t("رصيد", "credits")}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  {
+                    label: t("محادثات AI", "AI Chats"),
+                    used: usage.usage.aiChatRequests,
+                    limit: usage.limits.aiChatRequests,
+                    pct: usage.pct.aiChat,
+                    icon: "🤖",
+                    limitZero: usage.limits.aiChatRequests === 0,
+                  },
+                  {
+                    label: t("مستندات", "Documents"),
+                    used: usage.usage.documentUploads,
+                    limit: usage.limits.documentUploads,
+                    pct: usage.pct.documents,
+                    icon: "📄",
+                    limitZero: usage.limits.documentUploads === 0,
+                  },
+                  {
+                    label: t("ملخصات اجتماعات", "Meetings"),
+                    used: usage.usage.meetingSummaries,
+                    limit: usage.limits.meetingSummaries,
+                    pct: usage.pct.meetings,
+                    icon: "🎙️",
+                    limitZero: usage.limits.meetingSummaries === 0,
+                  },
+                  {
+                    label: t("دقائق صوتية", "Voice mins"),
+                    used: usage.usage.voiceNoteMinutes,
+                    limit: usage.limits.voiceNoteMinutes,
+                    pct: usage.pct.voice,
+                    icon: "🎤",
+                    limitZero: usage.limits.voiceNoteMinutes === 0,
+                  },
+                ].map(({ label, used, limit, pct, icon, limitZero }) => (
+                  <div key={label as string} className="bg-white rounded-xl p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span>{icon}</span>
+                        <span className="text-sm font-label font-semibold text-slate-700">{label as string}</span>
+                      </div>
+                      {pct >= 100 && !limitZero && (
+                        <span className="text-[10px] font-bold uppercase bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
+                          {t("مكتمل", "Full")}
+                        </span>
+                      )}
+                      {pct >= 80 && pct < 100 && !limitZero && (
+                        <span className="text-[10px] font-bold uppercase bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full">
+                          {t("قريب", "80%")}
+                        </span>
+                      )}
+                    </div>
+
+                    {limitZero ? (
+                      <p className="text-xs text-slate-400">{t("يتطلب ترقية", "Requires upgrade")}</p>
+                    ) : (
+                      <>
+                        <div className="h-2 bg-[#e4e2e1] rounded-full overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(pct, 100)}%` }}
+                            transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
+                            className="h-full rounded-full"
+                            style={{
+                              background: pct >= 100
+                                ? "#ef4444"
+                                : pct >= 80
+                                ? "linear-gradient(90deg,#f59e0b,#ef4444)"
+                                : "linear-gradient(90deg,#2552ca,#ad1d7f)",
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-slate-500">
+                            {used} / {limit}
+                          </span>
+                          <span className={`text-xs font-bold ${pct >= 100 ? "text-red-500" : pct >= 80 ? "text-amber-500" : "text-slate-400"}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                      </>
+                    )}
+
+                    {pct >= 100 && !limitZero && (
+                      <button
+                        onClick={() => window.location.href = "/vault/settings"}
+                        className="w-full text-xs font-bold py-1.5 rounded-lg power-gradient text-white hover:opacity-90 transition-opacity"
+                      >
+                        {t("ترقية الخطة", "Upgrade Plan")}
+                      </button>
+                    )}
+                    {pct >= 80 && pct < 100 && !limitZero && (
+                      <p className="text-[11px] text-amber-600 font-medium">
+                        {t(`تبقى ${limit - used} فقط`, `${limit - used} remaining`)}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+        )}
 
         {/* ═══ CHARTS ═══ */}
         <section className="px-8 pb-24">
