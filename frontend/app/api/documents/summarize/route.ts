@@ -2,14 +2,25 @@ import { NextRequest } from "next/server"
 import { requireAuth, checkPlanFeature } from "@/lib/api-auth"
 import { getAiModel } from "@/lib/services/ai.service"
 import { generateText } from "ai"
+import { enforceUsage } from "@/lib/usage/enforce"
+import { incrementUsage } from "@/lib/usage/increment"
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  const { allowed } = await checkPlanFeature(auth.userId, "document_ai")
-  if (!allowed) {
+  // Feature gate (plan tier)
+  const { allowed: featureAllowed } = await checkPlanFeature(auth.userId, "document_ai")
+  if (!featureAllowed) {
     return Response.json({ error: "upgrade_required", message: "هذه الميزة تحتاج اشتراك Pro أو أعلى", feature: "document_ai" }, { status: 403 })
+  }
+
+  // Usage enforcement
+  const enforcement = await enforceUsage(auth.userId, "document_upload")
+  if (!enforcement.allowed) {
+    if (enforcement.reason === "kill_switch") return Response.json({ error: "AI features temporarily unavailable" }, { status: 503 })
+    if (enforcement.reason === "upgrade_required") return Response.json({ error: "upgrade_required", feature: "document_ai" }, { status: 403 })
+    return Response.json({ error: "Monthly document limit reached. Upgrade for more.", code: "limit_exceeded", remaining: 0 }, { status: 429 })
   }
 
   const formData = await req.formData()
@@ -56,6 +67,9 @@ export async function POST(req: NextRequest) {
       })
       .select()
       .single()
+
+    // Increment after success
+    incrementUsage(auth.userId, "document_upload").catch(() => {})
 
     if (error) return Response.json({ success: true, saved: false, ...result })
     return Response.json({ success: true, saved: true, document: doc, ...result })
