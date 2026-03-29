@@ -8,11 +8,11 @@ export function getGoogle() {
 }
 
 export function getAiModel() {
-  return _google("gemini-flash-latest")
+  return _google("gemini-2.0-flash")
 }
 
 export function getFastModel() {
-  return _google("gemini-flash-latest")
+  return _google("gemini-2.0-flash")
 }
 
 export function getHijriDate(timezone = "Asia/Riyadh"): string {
