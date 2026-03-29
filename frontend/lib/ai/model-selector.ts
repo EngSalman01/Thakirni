@@ -12,21 +12,21 @@ export function getModelForTier(tier: string, usageRatio?: number) {
   const normalized = tier.toUpperCase()
 
   if (normalized === "FREE") {
-    return google("gemini-2.0-flash-lite")
+    return google("gemini-2.5-flash-lite")
   }
 
   if (normalized === "PRO") {
     // Drop to lite model when > 90% monthly budget consumed
     if (usageRatio !== undefined && usageRatio >= 0.9) {
-      return google("gemini-2.0-flash-lite")
+      return google("gemini-2.5-flash-lite")
     }
-    return google("gemini-2.0-flash")
+    return google("gemini-2.5-flash-lite")
   }
 
   if (normalized === "TEAMS") {
-    return google("gemini-2.0-flash")
+    return google("gemini-2.5-flash-lite")
   }
 
   // Unknown / legacy tier — treat as FREE
-  return google("gemini-2.0-flash-lite")
+  return google("gemini-2.5-flash-lite")
 }

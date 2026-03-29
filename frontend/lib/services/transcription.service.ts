@@ -34,7 +34,7 @@ export async function transcribeAudio(
   const langInstruction = language ? `The audio is in ${language}.` : ""
 
   const { text } = await generateText({
-    model: getGoogle()("gemini-2.0-flash"),
+    model: getGoogle()("gemini-2.5-flash-lite"),
     messages: [{
       role: "user",
       content: [
