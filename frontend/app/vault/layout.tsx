@@ -4,6 +4,7 @@ import { ThemeSync } from "@/components/theme-sync"
 import { CommandPalette } from "@/components/thakirni/command-palette"
 import { UserIdentify } from "@/components/user-identify"
 import { ToastNotifier } from "@/components/thakirni/toast-notifier"
+import { ConsentModal } from "@/components/compliance/consent-modal"
 
 export const dynamic = "force-dynamic"
 
@@ -24,6 +25,7 @@ export default function VaultLayout({
       <ThemeSync />
       <UserIdentify />
       <CommandPalette />
+      <ConsentModal />
       <Suspense>
         <ToastNotifier />
       </Suspense>
