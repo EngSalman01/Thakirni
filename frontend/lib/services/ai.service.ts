@@ -9,7 +9,7 @@ export function getGoogle() {
 
 /** Default model — PRO tier quality (used where no userId is available) */
 export function getAiModel() {
-  return _google("gemini-2.0-flash")
+  return _google("gemini-2.5-flash-lite")
 }
 
 /** Tier-aware model — use this in API routes where userId is known */
@@ -19,9 +19,9 @@ export function getAiModelForTier(tier: string, usageRatio?: number) {
 
 /** Lite model — cheapest, for FREE plan or near-limit situations */
 export function getLiteModel() {
-  return _google("gemini-2.0-flash-lite")
+  return _google("gemini-2.5-flash-lite")
 }
 
 export function getFastModel() {
-  return _google("gemini-2.0-flash")
+  return _google("gemini-2.5-flash-lite")
 }
