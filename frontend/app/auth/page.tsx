@@ -193,9 +193,8 @@ function AuthForm() {
 
   const { t, isArabic } = useLanguage();
   const searchParams = useSearchParams();
-  const referralCode = searchParams.get("ref") ?? "";
-  const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next");
+  const referralCode = searchParams.get("ref") ?? "";
   const urlError = searchParams.get("error");
   const urlMessage = searchParams.get("message");
   const router  = useRouter();
