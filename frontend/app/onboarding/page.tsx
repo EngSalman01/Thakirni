@@ -35,39 +35,34 @@ export default function OnboardingPage() {
     )
   }
 
+  async function markOnboarded() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push("/auth"); return null }
+    await supabase.from("profiles")
+      .update({ onboarded_at: new Date().toISOString() })
+      .eq("id", user.id)
+    return user
+  }
+
   async function finish() {
     setLoading(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push("/auth"); return }
+      const user = await markOnboarded()
+      if (!user) return
 
-      // Update profile with name and onboarding timestamp
-      await supabase.from("profiles").update({
-        full_name: name || undefined,
-        onboarded_at: new Date().toISOString(),
-      }).eq("id", user.id)
+      // Update name if provided
+      if (name.trim()) {
+        await supabase.from("profiles")
+          .update({ full_name: name.trim() })
+          .eq("id", user.id)
+      }
 
-      // Auto-create first project based on use cases
-      const projectName = isArabic
-        ? selectedUseCases.length > 0
-          ? USE_CASES.find(u => u.id === selectedUseCases[0])?.ar ?? "مشروعي الأول"
-          : "مشروعي الأول"
-        : selectedUseCases.length > 0
-          ? USE_CASES.find(u => u.id === selectedUseCases[0])?.en ?? "My First Project"
-          : "My First Project"
-
-      await supabase.from("projects").insert({
-        user_id: user.id,
-        name: projectName,
-        color: "#2552ca",
-      })
-
-      // Log onboarding completion
-      await supabase.from("analytics_events").insert({
+      // Log onboarding completion (fire and forget)
+      supabase.from("analytics_events").insert({
         user_id: user.id,
         event_name: "onboarding_completed",
         properties: { use_cases: selectedUseCases, has_phone: !!phone },
-      })
+      }).then(() => {})
 
       // Send WhatsApp welcome if phone provided (fire and forget)
       if (phone.trim()) {
@@ -88,12 +83,7 @@ export default function OnboardingPage() {
 
   async function skip() {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase.from("profiles")
-          .update({ onboarded_at: new Date().toISOString() })
-          .eq("id", user.id)
-      }
+      await markOnboarded()
     } catch {}
     router.push("/vault")
   }
