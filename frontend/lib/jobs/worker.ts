@@ -102,14 +102,14 @@ export async function processJobs(limit = 20): Promise<{ processed: number; fail
 
   for (const job of jobs as JobRow[]) {
     // Claim the job atomically
-    const { count } = await supabase
+    const { data: claimed } = await supabase
       .from("jobs")
       .update({ status: "running", started_at: new Date().toISOString() })
       .eq("id", job.id)
       .eq("status", "pending") // only claim if still pending (prevents double-processing)
-      .select("id", { count: "exact", head: true })
+      .select("id")
 
-    if (!count) continue // another worker claimed it
+    if (!claimed?.length) continue // another worker claimed it
 
     try {
       await executeJob(job)
