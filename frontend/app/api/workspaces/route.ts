@@ -22,7 +22,7 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const workspaces = (memberships ?? []).map(m => ({
-    ...(m.workspace as Record<string, unknown>),
+    ...(m.workspace as unknown as Record<string, unknown>),
     member_role: m.role,
     joined_at:   m.joined_at,
   }))
