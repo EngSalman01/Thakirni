@@ -28,6 +28,7 @@ import {
 import { useLanguage } from "@/components/language-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 import { GlobalSearch } from "@/components/thakirni/global-search";
+import { WorkspaceSwitcher } from "@/components/thakirni/workspace-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import {
@@ -102,7 +103,7 @@ const navItems: NavItem[] = [
   { href: "/vault/analytics", icon: TrendingUp, labelAr: "التحليلات", labelEn: "Analytics" },
   { href: "/vault/focus", icon: Timer, labelAr: "التركيز", labelEn: "Focus Mode" },
   { href: "/vault/upload", icon: Waves, labelAr: "الذكريات", labelEn: "Memories" },
-  { href: "/vault/settings/teams/new", icon: Users, labelAr: "الفرق", labelEn: "Teams" },
+  { href: "/vault/settings/teams/new", icon: Users,     labelAr: "الفرق",        labelEn: "Teams" },
   { href: "/vault/settings", icon: Settings, labelAr: "الإعدادات", labelEn: "Settings" },
 ];
 
@@ -208,6 +209,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           <BrandLogo className="h-11 w-auto" />
         </Link>
       </div>
+
+      {/* Workspace switcher */}
+      <WorkspaceSwitcher />
 
       {/* Global search */}
       <div className="px-4 mb-2">
