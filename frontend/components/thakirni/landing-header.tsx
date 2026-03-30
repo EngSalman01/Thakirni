@@ -60,16 +60,22 @@ export function LandingHeader() {
             {t("المميزات", "Features")}
           </Link>
           <Link
+            href="/pricing"
+            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
+          >
+            {t("الأسعار", "Pricing")}
+          </Link>
+          <Link
+            href="/enterprise"
+            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
+          >
+            {t("للمؤسسات", "Enterprise")}
+          </Link>
+          <Link
             href="/help"
             className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
           >
-            {t("مركز المساعدة", "Help Center")}
-          </Link>
-          <Link
-            href="/#process"
-            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
-          >
-            {t("كيف يعمل", "How It Works")}
+            {t("المساعدة", "Help")}
           </Link>
         </nav>
 
@@ -119,9 +125,10 @@ export function LandingHeader() {
           >
             <div className="px-4 sm:px-8 py-5 flex flex-col gap-4">
               {[
-                { href: "/#features", ar: "المميزات", en: "Features" },
-                { href: "/help", ar: "مركز المساعدة", en: "Help Center" },
-                { href: "/#process", ar: "كيف يعمل", en: "How It Works" },
+                { href: "/#features",  ar: "المميزات",   en: "Features" },
+                { href: "/pricing",    ar: "الأسعار",    en: "Pricing" },
+                { href: "/enterprise", ar: "للمؤسسات",   en: "Enterprise" },
+                { href: "/help",       ar: "المساعدة",   en: "Help" },
               ].map(({ href, ar, en }) => (
                 <Link
                   key={href}

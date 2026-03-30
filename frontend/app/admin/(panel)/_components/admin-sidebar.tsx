@@ -14,6 +14,7 @@ import {
   ListTodo,
   ScrollText,
   Shield,
+  Building2,
 } from "lucide-react";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 
@@ -27,7 +28,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
-  { href: "/admin/discounts", icon: Tag, label: "Discounts" },
+  { href: "/admin/leads",     icon: Building2, label: "Leads (CRM)" },
+  { href: "/admin/discounts", icon: Tag,       label: "Discounts" },
   { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
   { href: "/admin/jobs", icon: ListTodo, label: "Job Queue" },
   { href: "/admin/logs", icon: ScrollText, label: "Request Logs" },

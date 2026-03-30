@@ -7,10 +7,10 @@ export function LandingFooter() {
   const { t } = useLanguage();
 
   const productLinks = [
-    { href: "#features", ar: "المميزات", en: "Features" },
-    { href: "#", ar: "التكاملات", en: "Integrations" },
-    { href: "/pricing", ar: "الأسعار", en: "Pricing" },
-    { href: "/help", ar: "مركز المساعدة", en: "Help Center" },
+    { href: "/#features",  ar: "المميزات",      en: "Features" },
+    { href: "/pricing",    ar: "الأسعار",        en: "Pricing" },
+    { href: "/enterprise", ar: "للمؤسسات",       en: "Enterprise" },
+    { href: "/help",       ar: "مركز المساعدة",  en: "Help Center" },
   ];
 
   const companyLinks = [
