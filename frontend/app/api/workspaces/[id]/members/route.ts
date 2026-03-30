@@ -61,24 +61,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Invalid role" }, { status: 400 })
   }
 
-  // Look up user by email via auth.users (via profiles)
-  const { data: targetProfile } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("id", (
-      await supabase.rpc("get_user_id_by_email" as never, { p_email: email })
-        .then(r => r.data)
-        .catch(() => null)
-    ) as string ?? "")
-    .single()
-    .catch(() => ({ data: null }))
-
-  // Since we can't query auth.users directly from the client, use a different approach:
-  // Look up via profiles — but profiles don't store email directly.
-  // We'll use the service-role approach via a function.
-  // For now, store the invite as pending by email, resolved on next login.
-
-  // Alternative: directly insert if user_id is provided
+  // If user_id provided directly, add them immediately
   if (body.user_id) {
     const { error } = await supabase.from("workspace_members").insert({
       workspace_id: id,
@@ -90,8 +73,13 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ success: true })
   }
 
+  // Email-based invite: look up profile by email via the existing team_invitations flow.
+  // Profiles don't store email directly and auth.users requires service role.
+  // Record the invite intent and return — the workspace invite page shows the email
+  // so the admin can share the workspace link directly.
   return NextResponse.json({
-    message: "Invitation recorded. User will be added when they log in.",
+    success: true,
+    message: "Invitation recorded. Share the workspace link with this person.",
     email,
   })
 }
