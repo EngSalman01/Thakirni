@@ -73,12 +73,14 @@ export async function GET(req: NextRequest) {
         }).catch((e) => console.error("[auth/callback] welcome email error:", e))
       }
 
-      // Build destination
-      const dest = toast
-        ? `${origin}/vault?toast=${toast}`
-        : type === "magiclink"
-          ? `${origin}/vault`
-          : `${origin}${next}`
+      // Build destination — new users go to onboarding
+      const dest = isNew
+        ? `${origin}/onboarding`
+        : toast
+          ? `${origin}/vault?toast=${toast}`
+          : type === "magiclink"
+            ? `${origin}/vault`
+            : `${origin}${next}`
 
       // Update the redirect URL on the already-built response
       return NextResponse.redirect(dest, { headers: response.headers })

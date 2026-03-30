@@ -193,6 +193,8 @@ function AuthForm() {
 
   const { t, isArabic } = useLanguage();
   const searchParams = useSearchParams();
+  const referralCode = searchParams.get("ref") ?? "";
+  const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next");
   const urlError = searchParams.get("error");
   const urlMessage = searchParams.get("message");
@@ -303,12 +305,21 @@ function AuthForm() {
     setSignUpDone(true);
     setIsLoading(false);
 
-    // Send welcome email (fire-and-forget — never blocks signup)
+    // Send welcome email (fire-and-forget)
     fetch("/api/auth/welcome", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, name }),
     }).catch((e) => console.error("[auth] welcome email error:", e));
+
+    // Apply referral reward if code present (fire-and-forget)
+    if (referralCode) {
+      fetch("/api/referral/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ referralCode }),
+      }).catch(() => {})
+    }
   };
 
   // ── Google ───────────────────────────────────────────────────────

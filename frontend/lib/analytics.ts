@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/nextjs"
+import { createClient } from "@/lib/supabase/client"
 
 type EventName =
   | "memory_created"
@@ -16,6 +17,11 @@ type EventName =
   | "search_performed"
   | "pdf_exported"
   | "account_deleted"
+  | "ai_chat_sent"
+  | "onboarding_completed"
+  | "whatsapp_welcome_sent"
+  | "referral_link_copied"
+  | "referral_signup"
 
 interface EventData {
   [key: string]: string | number | boolean | undefined
@@ -23,6 +29,7 @@ interface EventData {
 
 export function trackEvent(name: EventName, data?: EventData) {
   try {
+    // Sentry breadcrumb (existing behaviour)
     Sentry.addBreadcrumb({
       category: "user_action",
       message: name,
@@ -30,11 +37,19 @@ export function trackEvent(name: EventName, data?: EventData) {
       level: "info",
     })
 
-    // Also capture as a custom metric
     ;(Sentry as unknown as { metrics?: { increment: (key: string, value: number, opts?: object) => void } })
       .metrics?.increment(`thakirni.${name}`, 1, {
         tags: data as Record<string, string | number | boolean> | undefined,
       })
+
+    // Persist to analytics_events table (fire-and-forget)
+    const supabase = createClient()
+    supabase.from("analytics_events").insert({
+      event_name: name,
+      properties: data ?? {},
+    }).then(({ error }) => {
+      if (error) console.warn("[analytics] insert failed:", error.message)
+    })
   } catch {
     // Never let analytics crash the app
   }
