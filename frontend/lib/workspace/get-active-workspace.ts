@@ -94,15 +94,61 @@ export async function getActiveWorkspace(
 
 /**
  * Resolve the effective plan tier for a workspace.
- * - Personal workspace → owner's plan_tier
- * - Team workspace → workspace owner's plan_tier (billing is tied to the account that created/owns the ws)
+ *
+ * Source of truth: workspace_billing.subscription_tier (decoupled from ownership).
+ * Falls back to the owner's profiles.plan_tier if no billing row exists yet
+ * (e.g., new workspaces before the first Paddle event).
+ *
+ * This design allows future ownership transfers and enterprise billing
+ * without touching plan resolution logic.
  */
-export async function getWorkspacePlanTier(ownerId: string): Promise<string> {
+export async function getWorkspacePlanTier(
+  workspaceIdOrOwnerId: string,
+  isWorkspaceId = false
+): Promise<string> {
   const service = getServiceSupabase()
+
+  if (isWorkspaceId) {
+    // Resolve directly by workspace_id
+    const { data: billing } = await service
+      .from("workspace_billing")
+      .select("subscription_tier, subscription_status")
+      .eq("workspace_id", workspaceIdOrOwnerId)
+      .single()
+
+    if (billing && billing.subscription_status === "active") {
+      return billing.subscription_tier as string
+    }
+    // Inactive/cancelled subscription → treat as FREE
+    if (billing) return "FREE"
+
+    // No billing row — fall through to profile lookup via workspace owner
+    const { data: ws } = await service
+      .from("workspaces")
+      .select("owner_id")
+      .eq("id", workspaceIdOrOwnerId)
+      .single()
+    if (!ws) return "FREE"
+    return getWorkspacePlanTier(ws.owner_id, false)
+  }
+
+  // Legacy / fallback path: ownerId — find their personal workspace billing first
+  const { data: ws } = await service
+    .from("workspaces")
+    .select("id")
+    .eq("type", "personal")
+    .eq("owner_id", workspaceIdOrOwnerId)
+    .single()
+
+  if (ws) {
+    return getWorkspacePlanTier(ws.id, true)
+  }
+
+  // Ultimate fallback: owner's profile plan_tier
   const { data: profile } = await service
     .from("profiles")
     .select("plan_tier")
-    .eq("id", ownerId)
+    .eq("id", workspaceIdOrOwnerId)
     .single()
   return (profile?.plan_tier ?? "FREE") as string
 }
