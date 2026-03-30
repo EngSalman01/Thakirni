@@ -9,14 +9,18 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  // Feature gate (plan tier)
-  const { allowed: featureAllowed } = await checkPlanFeature(auth.userId, "document_ai")
+  // Feature gate — resolved from workspace owner's plan
+  const { allowed: featureAllowed } = await checkPlanFeature(auth.workspace?.ownerId ?? auth.userId, "document_ai")
   if (!featureAllowed) {
     return Response.json({ error: "upgrade_required", message: "هذه الميزة تحتاج اشتراك Pro أو أعلى", feature: "document_ai" }, { status: 403 })
   }
 
-  // Usage enforcement
-  const enforcement = await enforceUsage(auth.userId, "document_upload")
+  // Usage enforcement (workspace-scoped)
+  const enforcement = await enforceUsage(
+    auth.userId, "document_upload",
+    auth.workspace?.workspaceId,
+    auth.workspace?.ownerId
+  )
   if (!enforcement.allowed) {
     if (enforcement.reason === "kill_switch") return Response.json({ error: "AI features temporarily unavailable" }, { status: 503 })
     if (enforcement.reason === "upgrade_required") return Response.json({ error: "upgrade_required", feature: "document_ai" }, { status: 403 })
@@ -68,8 +72,8 @@ export async function POST(req: NextRequest) {
       .select()
       .single()
 
-    // Increment after success
-    incrementUsage(auth.userId, "document_upload").catch(() => {})
+    // Increment after success (workspace-scoped)
+    incrementUsage(auth.userId, "document_upload", 1, auth.workspace?.workspaceId).catch(() => {})
 
     if (error) return Response.json({ success: true, saved: false, ...result })
     return Response.json({ success: true, saved: true, document: doc, ...result })

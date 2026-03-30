@@ -14,8 +14,12 @@ export async function POST(req: NextRequest) {
   const rl = await limiters.chat(auth.userId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
-  // Usage enforcement (counts as an AI chat request)
-  const enforcement = await enforceUsage(auth.userId, "ai_chat")
+  // Usage enforcement (workspace-scoped)
+  const enforcement = await enforceUsage(
+    auth.userId, "ai_chat",
+    auth.workspace?.workspaceId,
+    auth.workspace?.ownerId
+  )
   if (!enforcement.allowed) {
     if (enforcement.reason === "kill_switch") return Response.json({ error: "AI features temporarily unavailable" }, { status: 503 })
     return Response.json({ error: "Monthly AI limit reached. Upgrade for more.", code: "limit_exceeded" }, { status: 429 })
@@ -33,7 +37,7 @@ export async function POST(req: NextRequest) {
   try {
     const { text } = await generateText({ model: getAiModel(), prompt })
 
-    incrementUsage(auth.userId, "ai_chat").catch(() => {})
+    incrementUsage(auth.userId, "ai_chat", 1, auth.workspace?.workspaceId).catch(() => {})
 
     const match = text.match(/\{[\s\S]*\}/)
     const parsed = match ? JSON.parse(match[0]) : { milestones: [] }

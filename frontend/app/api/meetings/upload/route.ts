@@ -14,14 +14,18 @@ export async function POST(req: NextRequest) {
   const rl = await limiters.upload(auth.userId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
-  // Feature gate
-  const { allowed: featureAllowed } = await checkPlanFeature(auth.userId, "meeting_summary")
+  // Feature gate — resolved from workspace owner's plan
+  const { allowed: featureAllowed } = await checkPlanFeature(auth.workspace?.ownerId ?? auth.userId, "meeting_summary")
   if (!featureAllowed) {
     return Response.json({ error: "upgrade_required", message: "هذه الميزة تحتاج اشتراك Pro أو أعلى", feature: "meeting_summary" }, { status: 403 })
   }
 
-  // Usage enforcement
-  const enforcement = await enforceUsage(auth.userId, "meeting_summary")
+  // Usage enforcement (workspace-scoped)
+  const enforcement = await enforceUsage(
+    auth.userId, "meeting_summary",
+    auth.workspace?.workspaceId,
+    auth.workspace?.ownerId
+  )
   if (!enforcement.allowed) {
     if (enforcement.reason === "kill_switch") return Response.json({ error: "AI features temporarily unavailable" }, { status: 503 })
     if (enforcement.reason === "upgrade_required") return Response.json({ error: "upgrade_required", feature: "meeting_summary" }, { status: 403 })
@@ -69,8 +73,8 @@ export async function POST(req: NextRequest) {
 
     if (error) return Response.json({ error: "Failed to save meeting" }, { status: 500 })
 
-    // Increment after success
-    incrementUsage(auth.userId, "meeting_summary").catch(() => {})
+    // Increment after success (workspace-scoped)
+    incrementUsage(auth.userId, "meeting_summary", 1, auth.workspace?.workspaceId).catch(() => {})
     trackEvent("meeting_uploaded")
 
     auth.service.from("timeline_events").insert({

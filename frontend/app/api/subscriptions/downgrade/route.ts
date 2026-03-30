@@ -1,5 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
-import { createServiceClient } from "@/lib/supabase/server"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 
 export async function POST() {
   const supabase = await createClient()
@@ -21,7 +20,7 @@ export async function POST() {
     return Response.json({ error: "Failed to update plan" }, { status: 500 })
   }
 
-  // Also cancel any active subscriptions in DB
+  // Cancel active subscriptions
   const { error: subError } = await service
     .from("subscriptions")
     .update({ cancel_at_period_end: true, updated_at: new Date().toISOString() })
@@ -29,6 +28,24 @@ export async function POST() {
     .eq("status", "active")
 
   if (subError) console.error("[subscriptions/downgrade] subscription update error:", subError)
+
+  // Sync workspace_billing — downgrade personal workspace to FREE
+  const { data: ws } = await service
+    .from("workspaces")
+    .select("id")
+    .eq("type", "personal")
+    .eq("owner_id", user.id)
+    .single()
+
+  if (ws?.id) {
+    await service.from("workspace_billing").upsert({
+      workspace_id:        ws.id,
+      subscription_tier:   "FREE",
+      subscription_status: "inactive",
+      cancel_at_period_end: false,
+      updated_at:          new Date().toISOString(),
+    }, { onConflict: "workspace_id" })
+  }
 
   return Response.json({ success: true })
 }

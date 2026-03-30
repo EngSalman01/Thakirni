@@ -51,18 +51,17 @@ export async function requireAuth(req: NextRequest): Promise<AuthResult | Respon
   }
 }
 
+/**
+ * Check if a plan-gated feature is allowed.
+ * @param planOwnerId - the workspace owner's user ID (governs the plan tier)
+ */
 export async function checkPlanFeature(
-  userId: string,
+  planOwnerId: string,
   feature: "meeting_summary" | "document_ai" | "voice_note"
 ): Promise<{ allowed: boolean; tier: string }> {
-  const service = getServiceSupabase()
-  const { data: profile } = await service
-    .from("profiles")
-    .select("plan_tier")
-    .eq("id", userId)
-    .single()
+  const { getWorkspacePlanTier } = await import("@/lib/workspace/get-active-workspace")
+  const tier = await getWorkspacePlanTier(planOwnerId)
 
-  const tier = (profile?.plan_tier ?? "FREE") as string
   const freeLimits: Record<string, boolean> = {
     meeting_summary: false,
     document_ai: false,

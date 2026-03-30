@@ -53,23 +53,29 @@ async function isKillSwitchActive(): Promise<boolean> {
 }
 
 /**
- * Full enforcement pipeline:
+ * Full enforcement pipeline (workspace-scoped):
  * 1. Global kill switch
  * 2. Global system budget (cached, 60s TTL)
- * 3. Plan tier — feature access (workspace-scoped: uses workspace owner's plan)
+ * 3. Plan tier — resolved from workspace owner's subscription
  * 4. Monthly limit (credits fallback if exceeded)
  * 5. Daily request cap (hard absolute cap)
  *
- * @param workspaceOwnerId - owner of the active workspace; if provided, plan tier is
- *   resolved from the workspace owner rather than the acting user. This allows team
- *   members to benefit from the workspace owner's subscription.
+ * @param userId         - the acting user (for credits fallback, attribution)
+ * @param feature        - which feature to check
+ * @param workspaceId    - the active workspace (primary dimension for usage)
+ * @param workspaceOwnerId - owner whose plan tier governs the workspace
  */
 export async function enforceUsage(
   userId: string,
   feature: UsageFeature,
+  workspaceId?: string,
   workspaceOwnerId?: string
 ): Promise<EnforceResult> {
   const service = getServiceSupabase()
+
+  // Resolve effective workspace (fall back to acting user's personal if not provided)
+  const effectiveWorkspaceId = workspaceId ?? null
+  const planOwner = workspaceOwnerId ?? userId
 
   // 1. Kill switch
   if (await isKillSwitchActive()) {
@@ -82,8 +88,7 @@ export async function enforceUsage(
     return { allowed: false, reason: "global_budget_exceeded" }
   }
 
-  // 3. Plan tier — resolve from workspace owner when available
-  const planOwner = workspaceOwnerId ?? userId
+  // 3. Plan tier — from workspace owner's subscription
   const tier = await getWorkspacePlanTier(planOwner)
   const limits = getLimitsForTier(tier)
 
@@ -93,7 +98,11 @@ export async function enforceUsage(
   if (monthlyLimit === 0) {
     // Feature not available on this plan — try credits
     const { data: creditsAllowed } = await service
-      .rpc("consume_credits", { p_user_id: userId, p_amount: 1 })
+      .rpc("consume_credits", {
+        p_user_id: userId,
+        p_amount: 1,
+        p_workspace_id: effectiveWorkspaceId ?? null,
+      })
     if (creditsAllowed) {
       incrementGlobalUsage().catch(() => {})
       return { allowed: true, remaining: 0, tier, usingCredits: true }
@@ -101,19 +110,41 @@ export async function enforceUsage(
     return { allowed: false, reason: "upgrade_required", tier }
   }
 
-  // 4. Monthly limit
+  // 4. Monthly limit (workspace-scoped)
   const month = new Date().toISOString().slice(0, 7)
-  const { data: usage } = await service
-    .rpc("get_or_create_usage", { p_user_id: userId, p_month: month })
+
+  let usage: Record<string, number> | null = null
+  if (effectiveWorkspaceId) {
+    const { data } = await service
+      .rpc("get_or_create_usage", {
+        p_workspace_id: effectiveWorkspaceId,
+        p_month: month,
+        p_user_id: userId,
+      })
+    usage = data as Record<string, number> | null
+  } else {
+    // Fallback: direct query by user_id (no workspace context available)
+    const { data } = await service
+      .from("usage")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("month", month)
+      .single()
+    usage = data as Record<string, number> | null
+  }
 
   if (usage) {
     const dbField = FEATURE_TO_DB_FIELD[feature]
-    const currentCount = (usage as Record<string, number>)[dbField] ?? 0
+    const currentCount = usage[dbField] ?? 0
 
     if (currentCount >= monthlyLimit) {
       // Try credits as fallback before blocking
       const { data: creditsAllowed } = await service
-        .rpc("consume_credits", { p_user_id: userId, p_amount: 1 })
+        .rpc("consume_credits", {
+          p_user_id: userId,
+          p_amount: 1,
+          p_workspace_id: effectiveWorkspaceId ?? null,
+        })
       if (creditsAllowed) {
         incrementGlobalUsage().catch(() => {})
         return { allowed: true, remaining: 0, tier, usingCredits: true }
@@ -122,38 +153,60 @@ export async function enforceUsage(
     }
   }
 
-  // 5. Daily request cap (only for ai_chat to avoid per-document overhead)
-  if (feature === "ai_chat") {
-    const date = new Date().toISOString().slice(0, 10)
-    const { data: daily } = await service
-      .from("usage_daily")
-      .select("ai_chat_requests")
-      .eq("user_id", userId)
-      .eq("date", date)
-      .single()
+  // 5. Daily request cap (workspace-scoped)
+  const date = new Date().toISOString().slice(0, 10)
 
-    const dailyCount = (daily as { ai_chat_requests: number } | null)?.ai_chat_requests ?? 0
+  if (feature === "ai_chat") {
+    let dailyCount = 0
+    if (effectiveWorkspaceId) {
+      const { data: daily } = await service
+        .from("usage_daily")
+        .select("ai_chat_requests")
+        .eq("workspace_id", effectiveWorkspaceId)
+        .eq("date", date)
+        .single()
+      dailyCount = (daily as { ai_chat_requests: number } | null)?.ai_chat_requests ?? 0
+    } else {
+      const { data: daily } = await service
+        .from("usage_daily")
+        .select("ai_chat_requests")
+        .eq("user_id", userId)
+        .eq("date", date)
+        .single()
+      dailyCount = (daily as { ai_chat_requests: number } | null)?.ai_chat_requests ?? 0
+    }
     if (dailyCount >= limits.aiChatRequestsPerDay) {
       return { allowed: false, reason: "daily_cap", remaining: 0, tier }
     }
   }
 
-  // 6. Hard absolute daily request cap (all AI features)
-  const date = new Date().toISOString().slice(0, 10)
-  const { data: dailyTotal } = await service
-    .from("usage_daily")
-    .select("requests_total")
-    .eq("user_id", userId)
-    .eq("date", date)
-    .single()
+  // 6. Hard absolute daily cap
+  let totalToday = 0
+  if (effectiveWorkspaceId) {
+    const { data: dailyTotal } = await service
+      .from("usage_daily")
+      .select("requests_total")
+      .eq("workspace_id", effectiveWorkspaceId)
+      .eq("date", date)
+      .single()
+    totalToday = (dailyTotal as { requests_total: number } | null)?.requests_total ?? 0
+  } else {
+    const { data: dailyTotal } = await service
+      .from("usage_daily")
+      .select("requests_total")
+      .eq("user_id", userId)
+      .eq("date", date)
+      .single()
+    totalToday = (dailyTotal as { requests_total: number } | null)?.requests_total ?? 0
+  }
 
-  const totalToday = (dailyTotal as { requests_total: number } | null)?.requests_total ?? 0
   if (totalToday >= limits.maxRequestsPerDay) {
     return { allowed: false, reason: "daily_cap", remaining: 0, tier }
   }
 
+  const dbField = FEATURE_TO_DB_FIELD[feature]
   const monthlyRemaining = usage
-    ? monthlyLimit - ((usage as Record<string, number>)[FEATURE_TO_DB_FIELD[feature]] ?? 0)
+    ? monthlyLimit - (usage[dbField] ?? 0)
     : monthlyLimit
 
   incrementGlobalUsage().catch(() => {})
