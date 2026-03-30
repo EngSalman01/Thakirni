@@ -13,15 +13,19 @@ export async function logAuditEvent(
   userId: string,
   event: AuditEvent,
   description?: string,
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
+  workspaceId?: string
 ): Promise<void> {
   try {
     const service = getServiceSupabase()
+    const meta = workspaceId
+      ? { ...( metadata ?? {}), workspace_id: workspaceId }
+      : (metadata ?? {})
     await service.rpc("create_audit_log", {
       p_user_id: userId,
       p_event_type: event,
       p_description: description ?? null,
-      p_metadata: metadata ?? {},
+      p_metadata: meta,
     })
   } catch {
     // fire-and-forget, never throws

@@ -29,10 +29,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
   const { data: members } = await supabase
     .from("workspace_members")
     .select(`
-      role, joined_at,
+      id, role, joined_at,
       profile:profiles (id, full_name, avatar_url, plan_tier)
     `)
     .eq("workspace_id", id)
+    .order("joined_at", { ascending: true })
 
   return NextResponse.json({ workspace, members, my_role: member.role })
 }
