@@ -11,8 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
-import { Plus, Upload, Sparkles, ArrowRight, Network } from "lucide-react";
+import { Plus, Upload, Sparkles, ArrowRight } from "lucide-react";
 import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
+import { AIVaultHero } from "@/components/thakirni/ai-vault-hero";
+import { UsageWidget } from "@/components/thakirni/usage-widget";
+import { WhatsAppBanner } from "@/components/thakirni/whatsapp-banner";
 
 // ── Particles ─────────────────────────────────────────────────────────────────
 
@@ -48,77 +51,6 @@ function VaultSkeleton() {
           {[0,1,2].map(i => <Skeleton key={i} className="h-64 rounded-2xl" />)}
         </div>
       </main>
-    </div>
-  );
-}
-
-// ── Memory Map Stats ──────────────────────────────────────────────────────────
-
-function MemoryMapStats({ stats }: { stats: { memories: number; plans: number; habits: number; goals: number } }) {
-  const { t } = useLanguage();
-  const [memories, setMemories] = useState<Array<{ id: string; title: string }>>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const supabase = createClient();
-    (async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        const { data } = await supabase.from("memories").select("id, title").eq("user_id", user.id).order("created_at", { ascending: false }).limit(3);
-        setMemories(data ?? []);
-      } catch (err) {
-        console.error("[MemoryMapStats] failed to fetch memories:", err);
-      } finally { setLoading(false); }
-    })();
-  }, []);
-
-  const statItems = [
-    { value: stats.memories, label: t("ذكريات", "Memories"),      icon: "🧠", color: "bg-[#dce1ff] text-[#2552ca]",    href: "/vault/new-memory" },
-    { value: stats.plans,    label: t("خطط اليوم", "Plans today"), icon: "📋", color: "bg-[#ffd8e9] text-[#ad1d7f]",    href: "/vault/plans" },
-    { value: stats.habits,   label: t("عادات", "Habits"),          icon: "🔥", color: "bg-emerald-50 text-emerald-700", href: "/vault/habits" },
-    { value: stats.goals,    label: t("أهداف", "Goals"),           icon: "🎯", color: "bg-amber-50 text-amber-700",     href: "/vault/goals" },
-  ];
-
-  const dotColors = ["bg-[#2552ca]", "bg-[#ad1d7f]", "bg-emerald-500", "bg-amber-500"];
-
-  return (
-    <div className="relative bg-white rounded-2xl p-6 shadow-card hover-lift">
-      {/* 2×2 live stats grid */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {statItems.map(({ value, label, icon, color, href }) => (
-          <Link key={href} href={href}>
-            <motion.div whileHover={{ scale: 1.03 }} className={`flex flex-col gap-1 p-4 rounded-xl cursor-pointer transition-all ${color}`}>
-              <span className="text-xl">{icon}</span>
-              <span className="text-3xl font-headline font-extrabold leading-none">{value}</span>
-              <span className="text-xs font-bold opacity-80">{label}</span>
-            </motion.div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Recent memories list */}
-      <div>
-        <p className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">{t("آخر الذكريات", "Recent Memories")}</p>
-        <div className="space-y-1.5">
-          {loading
-            ? [1, 2, 3].map(i => <Skeleton key={i} className="h-8 rounded-lg" />)
-            : memories.length === 0
-            ? <p className="text-xs text-slate-400 text-center py-3">{t("لا توجد ذكريات بعد", "No memories yet")}</p>
-            : memories.map(({ id, title }, i) => (
-              <motion.div key={id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.07 }}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#f6f3f2] transition-colors">
-                <span className={`w-2 h-2 rounded-full shrink-0 ${dotColors[i % dotColors.length]}`} />
-                <span className="text-sm text-slate-700 truncate font-medium">{title}</span>
-              </motion.div>
-            ))
-          }
-        </div>
-        <Link href="/vault/new-memory" className="mt-3 flex items-center gap-1.5 text-xs font-bold text-[#2552ca] hover:underline">
-          {t("عرض الكل", "View all")} <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
-
     </div>
   );
 }
@@ -196,13 +128,13 @@ function RecentCaptures() {
   return (
     <div className="h-full flex flex-col">
       <span className="text-4xl text-[#2552ca] mb-6 block">🧠</span>
-      <h3 className="text-3xl font-headline font-bold mb-2 text-slate-900">{t("التقاطات أخيرة", "Recent Captures")}</h3>
-      <p className="text-lg text-slate-500 mb-8">{t("آخر الذكريات المحفوظة", "Your latest saved memories")}</p>
+      <h3 className="text-3xl font-headline font-bold mb-2 text-slate-900">{t("شغلك", "Your Work")}</h3>
+      <p className="text-lg text-slate-500 mb-8">{t("آخر اللي حفظته", "Your latest saved memories")}</p>
       <div className="flex-1 space-y-2">
         {loading ? [1,2,3].map(i => <Skeleton key={i} className="h-12 rounded-xl" />) :
          memories.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <p className="text-slate-400 text-sm">{t("لا توجد ذكريات بعد", "No memories yet")}</p>
+            <p className="text-slate-400 text-sm">{t("واضح إنك توك تبدأ 👀 خلنا نضبطها لك بسرعة", "Looks like you're just getting started 👀 let's set you up fast")}</p>
             <Link href="/vault/assistant" className="mt-2 text-xs font-bold text-[#2552ca] hover:underline flex items-center gap-1">
               {t("جرّب المساعد الذكي", "Try AI Assistant")} <ArrowRight className="w-3 h-3" />
             </Link>
@@ -371,69 +303,68 @@ function VaultPageInner() {
       <main className="lg:ml-72">
 
         {/* ── HERO ── */}
-        <section className="relative pt-32 pb-24 px-8 overflow-hidden">
+        <section className="relative pt-24 pb-12 px-8 overflow-hidden">
           <ParticleLayer />
           <div className="absolute -top-20 right-0 w-96 h-96 bg-[#2552ca]/8 rounded-full blur-[120px] pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#ad1d7f]/6 rounded-full blur-[100px] pointer-events-none" />
 
-          <div className="max-w-7xl mx-auto relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="max-w-3xl mx-auto relative z-10">
+            {/* Top controls */}
+            <div className="hidden lg:flex justify-end gap-3 mb-8">
+              <ThemeToggle /><LanguageToggle />
+            </div>
 
-              {/* Copy */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-8">
-                <div className="hidden lg:flex justify-end gap-3">
-                  <ThemeToggle /><LanguageToggle />
+            {/* WhatsApp banner */}
+            <WhatsAppBanner />
+
+            {/* Title */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#dce1ff] rounded-full mb-5">
+                <Sparkles className="w-4 h-4 text-[#2552ca]" />
+                <span className="text-sm font-bold text-[#2552ca]">{t("مساعدك الذكي", "Your AI Assistant")}</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-headline font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15] mb-4">
+                {t("شغلك ", "Your ")}<span className="gradient-text">{t("اليوم", "Today")}</span>
+              </h1>
+              <p className="text-lg text-slate-500 leading-relaxed max-w-xl">
+                {t(
+                  "كل اللي تحتاجه في مكان واحد — جرّب الذكاء الاصطناعي أو ابدأ بذكرى جديدة.",
+                  "Everything you need in one place — try AI or start a new memory."
+                )}
+              </p>
+            </motion.div>
+
+            {/* AI hero input */}
+            <AIVaultHero />
+
+            {/* Stat pills */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="flex flex-wrap gap-3 mt-6"
+            >
+              {[
+                { value: stats.memories, label: t("ذكريات", "Memories"),  color: "bg-[#dce1ff] text-[#2552ca]" },
+                { value: stats.plans,    label: t("خطط اليوم", "Today"),   color: "bg-[#ffd8e9] text-[#ad1d7f]" },
+                { value: stats.habits,   label: t("عادات", "Habits"),      color: "bg-emerald-50 text-emerald-700" },
+                { value: stats.goals,    label: t("أهداف", "Goals"),       color: "bg-amber-50 text-amber-700" },
+              ].map(({ value, label, color }) => (
+                <div key={label as string} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-sm ${color}`}>
+                  <span className="text-base font-headline font-extrabold tabular">{value}</span>
+                  <span className="opacity-80">{label as string}</span>
                 </div>
+              ))}
+            </motion.div>
 
-                <div>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#dce1ff] rounded-full mb-6">
-                    <Network className="w-4 h-4 text-[#2552ca]" />
-                    <span className="text-sm font-bold text-[#2552ca]">{t("الفولت", "Your Vault")}</span>
-                  </div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
-                    {t("خريطة ", "Memory ")}<span className="gradient-text">{t("الذاكرة", "Map")}</span>
-                  </h1>
-                  <p className="text-xl text-slate-500 mt-5 leading-relaxed max-w-lg">
-                    {t("كل ذكرياتك وخططك وعاداتك وأهدافك في مكان واحد.", "All your memories, plans, habits, and goals — connected and always accessible.")}
-                  </p>
-                </div>
-
-                {/* Stat pills */}
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { value: stats.memories, label: t("ذكريات", "Memories"), color: "bg-[#dce1ff] text-[#2552ca]" },
-                    { value: stats.plans,    label: t("خطط اليوم", "Today"),   color: "bg-[#ffd8e9] text-[#ad1d7f]" },
-                    { value: stats.habits,   label: t("عادات", "Habits"),      color: "bg-emerald-50 text-emerald-700" },
-                    { value: stats.goals,    label: t("أهداف", "Goals"),       color: "bg-amber-50 text-amber-700" },
-                  ].map(({ value, label, color }) => (
-                    <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
-                      <span className="text-xl font-headline font-extrabold">{value}</span>
-                      <span className="opacity-80">{label as string}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTAs */}
-                <div className="flex flex-wrap gap-4">
-                  <Link href="/vault/new-memory">
-                    <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                      className="px-8 py-4 rounded-full power-gradient text-white font-bold text-base shadow-xl btn-glow font-label flex items-center gap-2">
-                      <Plus className="w-5 h-5" /> {t("ذكرى جديدة", "New Memory")}
-                    </motion.button>
-                  </Link>
-                  <Link href="/vault/assistant">
-                    <motion.button whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.97 }}
-                      className="px-8 py-4 rounded-full bg-[#eae8e7] text-[#2552ca] font-bold text-base hover:bg-[#e4e2e1] transition-all font-label flex items-center gap-2">
-                      <Sparkles className="w-5 h-5" /> {t("المساعد الذكي", "AI Assistant")}
-                    </motion.button>
-                  </Link>
-                </div>
-              </motion.div>
-
-              {/* Stats panel */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }} className="relative hidden lg:block">
-                <MemoryMapStats stats={stats} />
-              </motion.div>
+            {/* Usage widget */}
+            <div className="mt-6">
+              <UsageWidget />
             </div>
           </div>
         </section>
