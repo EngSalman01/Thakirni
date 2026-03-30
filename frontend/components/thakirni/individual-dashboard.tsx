@@ -7,7 +7,6 @@ import {
   Clock,
   Calendar,
   Bookmark,
-  Plus,
   Search,
   TrendingUp,
   Zap,
@@ -17,16 +16,15 @@ import {
   MoreHorizontal,
   CheckCircle2,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePlans } from "@/hooks/use-plans";
 import { useMemories } from "@/hooks/use-memories";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/components/language-provider";
 
 interface Memory {
   id: string;
@@ -38,7 +36,20 @@ interface Memory {
   completed?: boolean;
 }
 
+function getGreeting(isArabic: boolean): string {
+  const hour = new Date().getHours();
+  if (isArabic) {
+    if (hour < 12) return "صباح الخير ☀️";
+    if (hour < 17) return "مساء الخير 🌤️";
+    return "مساء النور 🌙";
+  }
+  if (hour < 12) return "Good morning ☀️";
+  if (hour < 17) return "Good afternoon 🌤️";
+  return "Good evening 🌙";
+}
+
 export function IndividualDashboard() {
+  const { t, isArabic } = useLanguage();
   const [quickCapture, setQuickCapture] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { plans, addPlan } = usePlans();
@@ -78,10 +89,10 @@ export function IndividualDashboard() {
           status: "pending",
           priority: "medium",
         });
-        toast.success("Captured successfully!");
+        toast.success(t("تم الحفظ ✅", "Saved ✅"));
         setQuickCapture("");
       } catch {
-        toast.error("Failed to capture");
+        toast.error(t("ما قدرنا نحفظ — جرّب مرة ثانية", "Failed to save — try again"));
       }
     }
   };
@@ -119,10 +130,10 @@ export function IndividualDashboard() {
             <Brain className="h-8 w-8 text-white" />
           </div>
           <h1 className="text-3xl font-headline font-bold text-on-surface mb-2">
-            Your Second Brain
+            {getGreeting(isArabic)}
           </h1>
           <p className="text-on-surface-variant">
-            Capture thoughts, save memories, never forget
+            {t("وش تبغى تسوي اليوم؟", "What do you want to get done today?")}
           </p>
         </motion.div>
 
@@ -134,13 +145,13 @@ export function IndividualDashboard() {
           className="grid grid-cols-3 gap-4"
         >
           {[
-            { icon: TrendingUp, value: memories.length + plans.length, label: "Total Memories", color: "text-primary" },
-            { icon: Zap, value: memories.length, label: "This Week", color: "text-secondary" },
-            { icon: Bookmark, value: upcomingReminders.length, label: "Active Reminders", color: "text-tertiary" },
+            { icon: TrendingUp, value: memories.length + plans.length, label: t("المجموع", "Total"),           color: "text-primary" },
+            { icon: Zap,        value: memories.length,                 label: t("هذا الأسبوع", "This Week"),  color: "text-secondary" },
+            { icon: Bookmark,   value: upcomingReminders.length,        label: t("تذكيرات", "Reminders"),      color: "text-tertiary" },
           ].map((stat, i) => (
             <div key={i} className="bg-surface-container-lowest rounded-xl p-4 text-center shadow-ambient">
               <stat.icon className={`h-5 w-5 mx-auto mb-2 ${stat.color}`} />
-              <p className="text-2xl font-headline font-bold text-on-surface">{stat.value}</p>
+              <p className="text-2xl font-headline font-bold text-on-surface tabular">{stat.value}</p>
               <p className="text-xs text-on-surface-variant">{stat.label}</p>
             </div>
           ))}
@@ -155,19 +166,22 @@ export function IndividualDashboard() {
           <div className="bg-surface-container-lowest rounded-xl p-6 shadow-ambient border border-outline-variant/30">
             <form onSubmit={handleQuickCapture} className="space-y-3">
               <Textarea
-                placeholder="What's on your mind? Capture a thought, reminder, or idea..."
+                placeholder={t(
+                  "وش في بالك؟ سجّل فكرة، تذكير، أو ملاحظة...",
+                  "What's on your mind? Capture a thought, reminder, or idea..."
+                )}
                 value={quickCapture}
                 onChange={(e) => setQuickCapture(e.target.value)}
-                className="min-h-[100px] text-base resize-none bg-surface-container-low border-0 focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg"
+                className="min-h-[100px] text-base resize-none bg-surface-container-low border-0 focus-visible:ring-2 focus-visible:ring-primary/40 rounded-lg font-arabic"
               />
               <div className="flex items-center justify-between">
                 <div className="flex gap-2">
                   {[
-                    { icon: Clock, label: "Reminder" },
-                    { icon: ImageIcon, label: "Image" },
-                    { icon: LinkIcon, label: "Link" },
+                    { icon: Clock,    label: t("تذكير", "Reminder") },
+                    { icon: ImageIcon, label: t("صورة", "Image") },
+                    { icon: LinkIcon,  label: t("رابط", "Link") },
                   ].map(({ icon: Icon, label }) => (
-                    <Button key={label} type="button" variant="ghost" size="sm"
+                    <Button key={String(label)} type="button" variant="ghost" size="sm"
                       className="text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-full">
                       <Icon className="h-4 w-4 me-1.5" />
                       {label}
@@ -177,7 +191,7 @@ export function IndividualDashboard() {
                 <Button type="submit"
                   className="power-gradient text-white font-bold rounded-full px-6 shadow-ambient">
                   <Sparkles className="h-4 w-4 me-2" />
-                  Save
+                  {t("احفظ", "Save")}
                 </Button>
               </div>
             </form>
@@ -195,10 +209,14 @@ export function IndividualDashboard() {
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-headline font-semibold text-on-surface mb-1">Daily Insight</h3>
+              <h3 className="font-headline font-semibold text-on-surface mb-1">
+                {t("رؤية اليوم", "Today's Insight")}
+              </h3>
               <p className="text-sm text-on-surface-variant leading-relaxed">
-                You've captured <strong className="text-on-surface">{memoriesData.length} memories</strong> recently.
-                You have <strong className="text-on-surface">{upcomingReminders.length} reminders</strong> coming up.
+                {t(
+                  `حفظت ${memoriesData.length} ذكرى — وعندك ${upcomingReminders.length} تذكير قادم.`,
+                  `You've captured ${memoriesData.length} memories — ${upcomingReminders.length} reminder${upcomingReminders.length !== 1 ? "s" : ""} coming up.`
+                )}
               </p>
             </div>
           </div>
@@ -213,10 +231,10 @@ export function IndividualDashboard() {
         >
           <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-5 w-5 text-on-surface-variant" />
           <Input
-            placeholder="Search your memories..."
+            placeholder={t("دوّر في ذكرياتك...", "Search your memories...")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="ps-12 h-12 bg-surface-container-lowest border-outline-variant/50 rounded-full focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="ps-12 h-12 bg-surface-container-lowest border-outline-variant/50 rounded-full focus-visible:ring-2 focus-visible:ring-primary/40 font-arabic"
           />
         </motion.div>
 
@@ -224,65 +242,72 @@ export function IndividualDashboard() {
         <Tabs defaultValue="all" className="space-y-4">
           <TabsList className="bg-surface-container-high rounded-full p-1 w-full grid grid-cols-3">
             <TabsTrigger value="all" className="rounded-full data-[state=active]:bg-surface-container-lowest data-[state=active]:shadow-ambient">
-              All Memories
+              {t("كل الذكريات", "All Memories")}
             </TabsTrigger>
             <TabsTrigger value="reminders" className="rounded-full data-[state=active]:bg-surface-container-lowest data-[state=active]:shadow-ambient">
-              Reminders ({upcomingReminders.length})
+              {t(`التذكيرات (${upcomingReminders.length})`, `Reminders (${upcomingReminders.length})`)}
             </TabsTrigger>
             <TabsTrigger value="recent" className="rounded-full data-[state=active]:bg-surface-container-lowest data-[state=active]:shadow-ambient">
-              Recent
+              {t("الأخيرة", "Recent")}
             </TabsTrigger>
           </TabsList>
 
           {/* All Memories */}
           <TabsContent value="all" className="space-y-3">
-            {memoriesData.map((memory) => {
-              const Icon = getMemoryIcon(memory.type);
-              return (
-                <div key={memory.id}
-                  className="bg-surface-container-lowest rounded-xl p-4 shadow-ambient hover-lift cursor-pointer group flex gap-4">
-                  <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getMemoryColor(memory.type)}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <p className="text-sm text-on-surface leading-relaxed flex-1">{memory.content}</p>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {memory.type === "reminder" && !memory.completed && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-primary/10">
-                            <CheckCircle2 className="h-4 w-4 text-primary" />
+            {memoriesData.length === 0 ? (
+              <div className="text-center py-12 text-on-surface-variant">
+                <Brain className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                <p>{t("واضح إنك توك تبدأ 👀 خلنا نضبطها لك بسرعة", "Looks like you're just getting started — let's set you up!")}</p>
+              </div>
+            ) : (
+              memoriesData.map((memory) => {
+                const Icon = getMemoryIcon(memory.type);
+                return (
+                  <div key={memory.id}
+                    className="bg-surface-container-lowest rounded-xl p-4 shadow-ambient hover-lift cursor-pointer group flex gap-4">
+                    <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${getMemoryColor(memory.type)}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p className="text-sm text-on-surface leading-relaxed flex-1">{memory.content}</p>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {memory.type === "reminder" && !memory.completed && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full hover:bg-primary/10">
+                              <CheckCircle2 className="h-4 w-4 text-primary" />
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
+                            <MoreHorizontal className="h-4 w-4 text-on-surface-variant" />
                           </Button>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap text-xs text-on-surface-variant">
+                        <span>{memory.timestamp}</span>
+                        {memory.dueDate && (
+                          <>
+                            <span>·</span>
+                            <span className="text-secondary font-medium">{t("موعد:", "Due:")} {memory.dueDate}</span>
+                          </>
                         )}
-                        <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full">
-                          <MoreHorizontal className="h-4 w-4 text-on-surface-variant" />
-                        </Button>
+                        {memory.tags && memory.tags.length > 0 && (
+                          <>
+                            <span>·</span>
+                            <div className="flex gap-1">
+                              {memory.tags.map((tag) => (
+                                <span key={tag} className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap text-xs text-on-surface-variant">
-                      <span>{memory.timestamp}</span>
-                      {memory.dueDate && (
-                        <>
-                          <span>·</span>
-                          <span className="text-secondary font-medium">Due: {memory.dueDate}</span>
-                        </>
-                      )}
-                      {memory.tags && memory.tags.length > 0 && (
-                        <>
-                          <span>·</span>
-                          <div className="flex gap-1">
-                            {memory.tags.map((tag) => (
-                              <span key={tag} className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </TabsContent>
 
           {/* Reminders */}
@@ -310,7 +335,7 @@ export function IndividualDashboard() {
             ) : (
               <div className="text-center py-12 text-on-surface-variant">
                 <Clock className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                <p>No upcoming reminders</p>
+                <p>{t("ما عندك تذكيرات قادمة — استمتع 😊", "No upcoming reminders — enjoy your day 😊")}</p>
               </div>
             )}
           </TabsContent>

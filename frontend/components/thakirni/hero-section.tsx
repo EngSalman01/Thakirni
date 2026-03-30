@@ -54,13 +54,15 @@ export function HeroSection() {
             <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-headline font-extrabold tracking-tight leading-[1.2] text-slate-900 dark:text-white">
               {isArabic ? (
                 <span>
-                  أنت <span className="text-[#2552ca] italic pb-1">لست</span>
-                  {" "}مصمماً لتتذكر كل شيء.
+                  رتّب حياتك…{" "}
+                  <span className="gradient-text">وخلي الذكاء الاصطناعي</span>
+                  {" "}يسوي الشغل الثقيل
                 </span>
               ) : (
                 <span>
-                  You are <span className="text-[#2552ca] italic">not</span>{" "}
-                  designed to remember everything.
+                  Organise your life…{" "}
+                  <span className="gradient-text">let AI</span>
+                  {" "}do the heavy lifting
                 </span>
               )}
             </h1>
@@ -68,8 +70,8 @@ export function HeroSection() {
             {/* Sub */}
             <p className="text-base sm:text-lg md:text-xl text-slate-500 font-light max-w-xl leading-relaxed">
               {t(
-                "ذكرني يحفظ مواعيدك وملاحظاتك ويساعدك تنظم حياتك — كل شي في مكان واحد. ويشتغل بعد على واتساب — ما تحتاج تنزّل شي.",
-                "Thakirni is your AI personal assistant. It remembers your plans, saves your notes, and helps you stay organised — all in one place. Also works on WhatsApp — no app needed."
+                "من مهامك اليومية لاجتماعاتك… خلنا ننظمها لك بسهولة. ويشتغل كمان على واتساب — ما تحتاج تنزّل شي.",
+                "From your daily tasks to your meetings — we'll organise it all for you. Also works on WhatsApp — no app needed."
               )}
             </p>
 
@@ -81,7 +83,7 @@ export function HeroSection() {
                   whileTap={{ scale: 0.97 }}
                   className="px-7 py-4 sm:px-10 sm:py-5 rounded-full power-gradient text-white font-bold text-base sm:text-lg shadow-xl btn-glow font-label"
                 >
-                  {t("جرّب مجاناً", "Try for Free")}
+                  {t("ابدأ الحين", "Start Now")}
                 </motion.button>
               </Link>
               <Link href="/vault">

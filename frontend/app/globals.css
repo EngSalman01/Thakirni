@@ -288,6 +288,13 @@
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 82, 202, 0); }
     50% { transform: scale(1.05); box-shadow: 0 0 30px 10px rgba(37, 82, 202, 0.1); }
   }
+
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(37, 214, 102, 0); }
+    50% { box-shadow: 0 0 0 8px rgba(37, 214, 102, 0.15); }
+  }
 }
 
 /* ─── Base ─────────────────────────────────────────────────────────────────── */
@@ -400,8 +407,26 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   .hover-lift:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 20px 40px -10px rgba(37, 82, 202, 0.15);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 24px 48px -8px rgba(37, 82, 202, 0.18);
+  }
+
+  /* Press scale — use with whileTap or on interactive elements */
+  .press-scale {
+    transition: transform 0.15s ease;
+  }
+  .press-scale:active {
+    transform: scale(0.97);
+  }
+
+  /* Input glow focus */
+  .input-glow-active {
+    filter: drop-shadow(0 0 16px rgba(37, 82, 202, 0.18));
+  }
+
+  /* WhatsApp / success pulse glow */
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
   }
 
   /* Animations */
