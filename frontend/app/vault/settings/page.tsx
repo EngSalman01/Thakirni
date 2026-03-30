@@ -25,6 +25,7 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { useSubscription, type PlanTier } from "@/hooks/use-subscription";
 import { BillingModal } from "@/components/thakirni/billing-modal";
+import { ReferralCard } from "@/components/thakirni/referral-card";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -1500,6 +1501,11 @@ export default function SettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Referral card */}
+      <div className="mb-6">
+        <ReferralCard />
+      </div>
 
       {/* Billing / upgrade modal */}
       <BillingModal
