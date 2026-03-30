@@ -16,7 +16,7 @@ const EMOJI: Record<AlertLevel, string> = {
   critical: "🚨",
 }
 
-const ADMIN_PHONE = "[phone removed]"
+const ADMIN_PHONE = process.env.ADMIN_WHATSAPP_PHONE!
 
 /**
  * Send an alert via WhatsApp to the admin phone number.
