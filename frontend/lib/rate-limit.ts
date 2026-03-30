@@ -114,21 +114,30 @@ export function rateLimitResponse(reset: number): Response {
 
 /**
  * Preconfigured limiters for common endpoints.
- * Note: these return Promises since Upstash is async.
+ *
+ * Where a workspaceId is available, use workspace-scoped keys so all members
+ * of a team workspace share the same bucket. This prevents one workspace from
+ * consuming another's quota and correctly pools team capacity.
+ *
+ * userId-only overloads remain for auth endpoints where workspace context
+ * is not yet available.
  */
 export const limiters = {
-  /** AI chat — 20 requests per minute per user */
-  chat: (userId: string) => rateLimit(`chat:${userId}`, 20, 60_000),
+  /** AI chat — 20 req/min. Team members share the workspace bucket. */
+  chat: (userId: string, workspaceId?: string | null) =>
+    rateLimit(workspaceId ? `chat:ws:${workspaceId}` : `chat:${userId}`, 20, 60_000),
 
-  /** File uploads — 10 per hour per user */
-  upload: (userId: string) => rateLimit(`upload:${userId}`, 10, 3_600_000),
+  /** File uploads — 10/hr. Team members share the workspace bucket. */
+  upload: (userId: string, workspaceId?: string | null) =>
+    rateLimit(workspaceId ? `upload:ws:${workspaceId}` : `upload:${userId}`, 10, 3_600_000),
 
-  /** Auth / waitlist — 5 per 10 min per IP */
+  /** Auth / waitlist — 5 per 10 min per IP (no workspace context at auth time) */
   auth: (ip: string) => rateLimit(`auth:${ip}`, 5, 600_000),
 
-  /** Admin actions — 60 per minute per admin */
+  /** Admin actions — 60 req/min per admin user */
   admin: (userId: string) => rateLimit(`admin:${userId}`, 60, 60_000),
 
-  /** General API — 100 per minute per user */
-  api: (userId: string) => rateLimit(`api:${userId}`, 100, 60_000),
+  /** General API — 100 req/min, workspace-scoped when available */
+  api: (userId: string, workspaceId?: string | null) =>
+    rateLimit(workspaceId ? `api:ws:${workspaceId}` : `api:${userId}`, 100, 60_000),
 }

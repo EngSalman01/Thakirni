@@ -17,10 +17,11 @@ export async function GET(req: NextRequest) {
 
   const service = getServiceSupabase()
   const workspaceId = auth.workspace?.workspaceId
-  const planOwner   = auth.workspace?.ownerId ?? auth.userId
 
-  // Plan tier resolved from workspace owner
-  const tier   = await getWorkspacePlanTier(planOwner)
+  // Plan tier resolved from workspace_billing (source of truth)
+  const tier = workspaceId
+    ? await getWorkspacePlanTier(workspaceId, true)
+    : await getWorkspacePlanTier(auth.userId, false)
   const limits = getLimitsForTier(tier)
 
   // Current month usage — workspace-scoped when possible

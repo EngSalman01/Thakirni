@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  // Rate limit
-  const rl = await limiters.chat(auth.userId)
+  // Rate limit (workspace-scoped)
+  const rl = await limiters.chat(auth.userId, auth.workspace?.workspaceId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
   // Usage enforcement (workspace-scoped)

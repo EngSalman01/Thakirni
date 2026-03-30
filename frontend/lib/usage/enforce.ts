@@ -56,26 +56,23 @@ async function isKillSwitchActive(): Promise<boolean> {
  * Full enforcement pipeline (workspace-scoped):
  * 1. Global kill switch
  * 2. Global system budget (cached, 60s TTL)
- * 3. Plan tier — resolved from workspace owner's subscription
+ * 3. Plan tier — resolved from workspace_billing (not owner profile)
  * 4. Monthly limit (credits fallback if exceeded)
  * 5. Daily request cap (hard absolute cap)
  *
- * @param userId         - the acting user (for credits fallback, attribution)
- * @param feature        - which feature to check
- * @param workspaceId    - the active workspace (primary dimension for usage)
- * @param workspaceOwnerId - owner whose plan tier governs the workspace
+ * @param userId      - the acting user (for credits fallback, attribution)
+ * @param feature     - which feature to check
+ * @param workspaceId - the active workspace (primary dimension for usage + billing)
  */
 export async function enforceUsage(
   userId: string,
   feature: UsageFeature,
   workspaceId?: string,
-  workspaceOwnerId?: string
+  _workspaceOwnerId?: string  // deprecated — kept for call-site compat, ignored
 ): Promise<EnforceResult> {
   const service = getServiceSupabase()
 
-  // Resolve effective workspace (fall back to acting user's personal if not provided)
   const effectiveWorkspaceId = workspaceId ?? null
-  const planOwner = workspaceOwnerId ?? userId
 
   // 1. Kill switch
   if (await isKillSwitchActive()) {
@@ -88,8 +85,10 @@ export async function enforceUsage(
     return { allowed: false, reason: "global_budget_exceeded" }
   }
 
-  // 3. Plan tier — from workspace owner's subscription
-  const tier = await getWorkspacePlanTier(planOwner)
+  // 3. Plan tier — read from workspace_billing (source of truth), not owner profile
+  const tier = effectiveWorkspaceId
+    ? await getWorkspacePlanTier(effectiveWorkspaceId, true)
+    : await getWorkspacePlanTier(userId, false)
   const limits = getLimitsForTier(tier)
 
   const limitKey = FEATURE_TO_MONTHLY_FIELD[feature]

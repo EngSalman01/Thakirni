@@ -10,8 +10,8 @@ export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  // Rate limit: 10 uploads per hour per user
-  const rl = await limiters.upload(auth.userId)
+  // Rate limit: 10 uploads per hour (workspace-scoped)
+  const rl = await limiters.upload(auth.userId, auth.workspace?.workspaceId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
   // Feature gate — resolved from workspace owner's plan
