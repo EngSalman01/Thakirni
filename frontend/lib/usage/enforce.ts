@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js"
 import { getLimitsForTier } from "./limits"
 import { checkGlobalBudget, incrementGlobalUsage } from "./global-budget"
+import { getWorkspacePlanTier } from "@/lib/workspace/get-active-workspace"
 
 function getServiceSupabase() {
   return createClient(
@@ -55,13 +56,18 @@ async function isKillSwitchActive(): Promise<boolean> {
  * Full enforcement pipeline:
  * 1. Global kill switch
  * 2. Global system budget (cached, 60s TTL)
- * 3. Plan tier — feature access
+ * 3. Plan tier — feature access (workspace-scoped: uses workspace owner's plan)
  * 4. Monthly limit (credits fallback if exceeded)
  * 5. Daily request cap (hard absolute cap)
+ *
+ * @param workspaceOwnerId - owner of the active workspace; if provided, plan tier is
+ *   resolved from the workspace owner rather than the acting user. This allows team
+ *   members to benefit from the workspace owner's subscription.
  */
 export async function enforceUsage(
   userId: string,
-  feature: UsageFeature
+  feature: UsageFeature,
+  workspaceOwnerId?: string
 ): Promise<EnforceResult> {
   const service = getServiceSupabase()
 
@@ -76,14 +82,9 @@ export async function enforceUsage(
     return { allowed: false, reason: "global_budget_exceeded" }
   }
 
-  // 3. Plan tier
-  const { data: profile } = await service
-    .from("profiles")
-    .select("plan_tier")
-    .eq("id", userId)
-    .single()
-
-  const tier = (profile?.plan_tier ?? "FREE") as string
+  // 3. Plan tier — resolve from workspace owner when available
+  const planOwner = workspaceOwnerId ?? userId
+  const tier = await getWorkspacePlanTier(planOwner)
   const limits = getLimitsForTier(tier)
 
   const limitKey = FEATURE_TO_MONTHLY_FIELD[feature]

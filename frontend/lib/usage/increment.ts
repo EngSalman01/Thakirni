@@ -22,7 +22,8 @@ const FEATURE_TO_FIELD: Record<UsageFeature, string> = {
 export async function incrementUsage(
   userId: string,
   feature: UsageFeature,
-  amount = 1
+  amount = 1,
+  _workspaceId?: string   // reserved for workspace-scoped tracking
 ): Promise<void> {
   try {
     const service = getServiceSupabase()
@@ -44,7 +45,8 @@ export async function incrementUsage(
 export async function incrementDailyUsage(
   userId: string,
   field: "ai_chat_requests" | "plans_created" | "requests_total",
-  amount = 1
+  amount = 1,
+  _workspaceId?: string   // reserved for workspace-scoped tracking
 ): Promise<void> {
   try {
     const service = getServiceSupabase()

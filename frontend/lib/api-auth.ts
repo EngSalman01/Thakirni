@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
+import { getActiveWorkspace, type WorkspaceContext } from "@/lib/workspace/get-active-workspace"
 
 function getServiceSupabase() {
   return createClient(
@@ -21,6 +22,7 @@ export interface AuthResult {
   accessToken: string
   supabase: ReturnType<typeof getUserSupabase>
   service: ReturnType<typeof getServiceSupabase>
+  workspace: WorkspaceContext | null
 }
 
 export async function requireAuth(req: NextRequest): Promise<AuthResult | Response> {
@@ -37,11 +39,15 @@ export async function requireAuth(req: NextRequest): Promise<AuthResult | Respon
     return Response.json({ error: "Unauthorized — invalid token" }, { status: 401 })
   }
 
+  const headerWorkspaceId = req.headers.get("x-workspace-id")
+  const workspace = await getActiveWorkspace(user.id, headerWorkspaceId)
+
   return {
     userId: user.id,
     accessToken: token,
     supabase,
     service: getServiceSupabase(),
+    workspace,
   }
 }
 

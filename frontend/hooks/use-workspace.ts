@@ -66,7 +66,17 @@ export function useWorkspace() {
       setLoading(true)
       fetch("/api/workspaces")
         .then(r => r.json())
-        .then(data => setWorkspaces(data.workspaces ?? []))
+        .then(data => {
+          const list: Workspace[] = data.workspaces ?? []
+          setWorkspaces(list)
+          // Preserve active if it still exists in the refreshed list
+          setActiveState(prev => {
+            if (prev && list.some(w => w.id === prev.id)) return prev
+            const stored = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null
+            const storedWs = stored ? list.find(w => w.id === stored) : null
+            return storedWs ?? list.find(w => w.type === "personal") ?? list[0] ?? null
+          })
+        })
         .finally(() => setLoading(false))
     },
   }
