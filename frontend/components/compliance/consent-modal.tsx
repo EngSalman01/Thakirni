@@ -18,8 +18,13 @@ export function ConsentModal() {
 
     // Check server-side consent status
     fetch("/api/user/consent")
-      .then((r) => r.json())
-      .then((d: { consented?: boolean }) => {
+      .then((r) => {
+        // Don't show modal for unauthenticated users (401) or any error
+        if (!r.ok) return null
+        return r.json() as Promise<{ consented?: boolean }>
+      })
+      .then((d) => {
+        if (!d) return
         if (!d.consented) {
           setOpen(true)
         } else {
@@ -28,7 +33,7 @@ export function ConsentModal() {
         }
       })
       .catch(() => {
-        // If unauthenticated (e.g. public page), don't show
+        // Network error or unauthenticated — don't show
       })
   }, [])
 
@@ -42,19 +47,20 @@ export function ConsentModal() {
       })
       if (res.ok) {
         localStorage.setItem(CONSENT_KEY, "accepted")
-        setOpen(false)
       }
     } catch (err) {
       console.error("[ConsentModal] accept error:", err)
     } finally {
       setAccepting(false)
+      // Always dismiss — consent will be re-requested on next load if the API failed
+      setOpen(false)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-lg rounded-2xl border border-[#e4e2e1]"
+        className="max-w-lg rounded-2xl border border-[#e4e2e1] [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
