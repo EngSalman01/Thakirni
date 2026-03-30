@@ -1,0 +1,291 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import {
+  Building2, Mail, Phone, Users, Clock, ChevronDown,
+  RefreshCw, StickyNote, Loader2, Trash2, CheckCircle2,
+} from "lucide-react"
+
+const STATUSES = [
+  { value: "",              label: "All",            color: "bg-slate-100 text-slate-600" },
+  { value: "new",           label: "New",            color: "bg-blue-100 text-blue-700" },
+  { value: "contacted",     label: "Contacted",      color: "bg-yellow-100 text-yellow-700" },
+  { value: "qualified",     label: "Qualified",      color: "bg-purple-100 text-purple-700" },
+  { value: "demo_scheduled",label: "Demo Scheduled", color: "bg-indigo-100 text-indigo-700" },
+  { value: "closed_won",    label: "Won ✓",          color: "bg-green-100 text-green-700" },
+  { value: "closed_lost",   label: "Lost",           color: "bg-red-100 text-red-700" },
+]
+
+function statusColor(status: string) {
+  return STATUSES.find(s => s.value === status)?.color ?? "bg-slate-100 text-slate-600"
+}
+
+interface Lead {
+  id: string
+  name: string
+  email: string
+  company: string | null
+  phone: string | null
+  team_size: string | null
+  use_case: string | null
+  message: string | null
+  status: string
+  notes: string | null
+  source: string
+  created_at: string
+}
+
+export default function AdminLeadsPage() {
+  const [leads, setLeads]     = useState<Lead[]>([])
+  const [total, setTotal]     = useState(0)
+  const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState("")
+  const [page, setPage]       = useState(0)
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const [saving, setSaving]   = useState<string | null>(null)
+  const [editNotes, setEditNotes] = useState<Record<string, string>>({})
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ page: String(page) })
+      if (statusFilter) params.set("status", statusFilter)
+      const res = await fetch(`/api/admin/leads?${params}`)
+      const data = await res.json()
+      setLeads(data.leads ?? [])
+      setTotal(data.total ?? 0)
+    } finally {
+      setLoading(false)
+    }
+  }, [page, statusFilter])
+
+  useEffect(() => { load() }, [load])
+
+  async function updateStatus(id: string, status: string) {
+    setSaving(id)
+    await fetch("/api/admin/leads", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    })
+    setSaving(null)
+    load()
+  }
+
+  async function saveNotes(id: string) {
+    setSaving(id)
+    await fetch("/api/admin/leads", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, notes: editNotes[id] }),
+    })
+    setSaving(null)
+    load()
+  }
+
+  async function deleteLead(id: string) {
+    if (!confirm("Delete this lead?")) return
+    await fetch(`/api/admin/leads?id=${id}`, { method: "DELETE" })
+    load()
+  }
+
+  const PAGE_SIZE = 25
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-[#2552ca]" />
+            Enterprise Leads
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">{total} total leads in pipeline</p>
+        </div>
+        <button
+          onClick={load}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-all"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </button>
+      </div>
+
+      {/* Pipeline summary */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        {STATUSES.filter(s => s.value).map(s => {
+          const count = leads.filter(l => l.status === s.value).length
+          return (
+            <button
+              key={s.value}
+              onClick={() => { setStatusFilter(statusFilter === s.value ? "" : s.value); setPage(0) }}
+              className={`p-3 rounded-xl text-center transition-all border-2 ${
+                statusFilter === s.value ? "border-[#2552ca] bg-[#2552ca]/5" : "border-transparent bg-white"
+              }`}
+            >
+              <div className="text-lg font-bold text-slate-800">{count}</div>
+              <div className={`text-xs font-semibold px-1.5 py-0.5 rounded-full inline-block mt-1 ${s.color}`}>
+                {s.label}
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Leads table */}
+      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-6 h-6 animate-spin text-[#2552ca]" />
+          </div>
+        ) : leads.length === 0 ? (
+          <div className="text-center py-20 text-slate-400">
+            <Building2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
+            No leads yet. Share your /enterprise page!
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-50">
+            {leads.map(lead => (
+              <div key={lead.id}>
+                {/* Lead row */}
+                <div className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <button
+                    onClick={() => setExpanded(expanded === lead.id ? null : lead.id)}
+                    className="flex-1 min-w-0 flex items-center gap-4 text-start"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-[#2552ca]/10 flex items-center justify-center text-[#2552ca] font-bold text-sm flex-shrink-0">
+                      {lead.name[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-800 text-sm truncate">{lead.name}</div>
+                      <div className="text-xs text-slate-500 truncate">{lead.email}</div>
+                    </div>
+                    <div className="hidden sm:block text-sm text-slate-600 min-w-0 flex-1">
+                      <span className="font-medium">{lead.company || "—"}</span>
+                      {lead.team_size && <span className="text-slate-400 ml-2">· {lead.team_size}</span>}
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform ${expanded === lead.id ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {/* Status selector */}
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={lead.status}
+                      onChange={e => updateStatus(lead.id, e.target.value)}
+                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus:ring-2 focus:ring-[#2552ca]/30 cursor-pointer ${statusColor(lead.status)}`}
+                    >
+                      {STATUSES.filter(s => s.value).map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
+                    {saving === lead.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#2552ca]" />}
+                    <button
+                      onClick={() => deleteLead(lead.id)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded details */}
+                {expanded === lead.id && (
+                  <div className="px-6 pb-5 bg-slate-50 border-t border-slate-100 space-y-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
+                      {lead.phone && (
+                        <a href={`https://wa.me/966${lead.phone}`} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#25d366] transition-colors">
+                          <Phone className="w-4 h-4" />
+                          +966{lead.phone}
+                        </a>
+                      )}
+                      <a href={`mailto:${lead.email}`}
+                        className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#2552ca] transition-colors">
+                        <Mail className="w-4 h-4" />
+                        {lead.email}
+                      </a>
+                      {lead.team_size && (
+                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                          <Users className="w-4 h-4" />
+                          {lead.team_size}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <Clock className="w-4 h-4" />
+                        {new Date(lead.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+
+                    {lead.use_case && (
+                      <div className="text-sm">
+                        <span className="font-semibold text-slate-700">Use case: </span>
+                        <span className="text-slate-600">{lead.use_case}</span>
+                      </div>
+                    )}
+
+                    {lead.message && (
+                      <div className="text-sm bg-white rounded-xl p-3 text-slate-600 border border-slate-100">
+                        {lead.message}
+                      </div>
+                    )}
+
+                    {/* Notes */}
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                        <StickyNote className="w-3.5 h-3.5" />
+                        Internal Notes
+                      </label>
+                      <textarea
+                        rows={2}
+                        defaultValue={lead.notes ?? ""}
+                        onChange={e => setEditNotes(n => ({ ...n, [lead.id]: e.target.value }))}
+                        placeholder="Add notes about this lead..."
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 resize-none"
+                      />
+                      <button
+                        onClick={() => saveNotes(lead.id)}
+                        disabled={saving === lead.id}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2552ca] text-white text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-60"
+                      >
+                        {saving === lead.id
+                          ? <Loader2 className="w-3 h-3 animate-spin" />
+                          : <CheckCircle2 className="w-3 h-3" />
+                        }
+                        Save Notes
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Pagination */}
+      {total > PAGE_SIZE && (
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-slate-500">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+          </span>
+          <div className="flex gap-2">
+            <button
+              disabled={page === 0}
+              onClick={() => setPage(p => p - 1)}
+              className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-all"
+            >
+              Previous
+            </button>
+            <button
+              disabled={(page + 1) * PAGE_SIZE >= total}
+              onClick={() => setPage(p => p + 1)}
+              className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-all"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

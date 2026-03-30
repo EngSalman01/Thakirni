@@ -3,6 +3,7 @@ import { LandingHeader } from "@/components/thakirni/landing-header"
 import { HeroSection } from "@/components/thakirni/hero-section"
 import { FeaturesSection } from "@/components/thakirni/features-section"
 import { TrustSignals } from "@/components/thakirni/trust-signals"
+import { TestimonialsSection } from "@/components/thakirni/testimonials-section"
 import { CTASection } from "@/components/thakirni/cta-section"
 import { LandingFooter } from "@/components/thakirni/landing-footer"
 
@@ -28,6 +29,7 @@ export default function Home() {
       <HeroSection />
       <FeaturesSection />
       <TrustSignals />
+      <TestimonialsSection />
       <CTASection />
       <LandingFooter />
       {/* Server-rendered policy links — required for Google OAuth verification */}

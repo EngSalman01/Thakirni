@@ -26,6 +26,7 @@ import { useLanguage } from "@/components/language-provider";
 import { useSubscription, type PlanTier } from "@/hooks/use-subscription";
 import { BillingModal } from "@/components/thakirni/billing-modal";
 import { ReferralCard } from "@/components/thakirni/referral-card";
+import { AffiliateCard } from "@/components/thakirni/affiliate-card";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
@@ -1505,6 +1506,11 @@ export default function SettingsPage() {
       {/* Referral card */}
       <div className="mb-6">
         <ReferralCard />
+      </div>
+
+      {/* Affiliate program */}
+      <div className="mb-6">
+        <AffiliateCard />
       </div>
 
       {/* Billing / upgrade modal */}
