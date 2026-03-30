@@ -119,10 +119,10 @@ export default function EnterprisePage() {
                 {t("ذكرني للمؤسسات", "Thakirni for Enterprise")}
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 leading-tight mb-6">
-                {t(
-                  <>مساعد ذكاء اصطناعي <span className="gradient-text">لكامل فريقك</span></>,
-                  <>AI Memory <span className="gradient-text">for Your Whole Team</span></>
-                )}
+                مساعد ذكاء اصطناعي{" "}
+                <span className="gradient-text">
+                  {t("لكامل فريقك", "for Your Whole Team")}
+                </span>
               </h1>
               <p className="text-lg text-slate-600 leading-relaxed mb-8">
                 {t(
