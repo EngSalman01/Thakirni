@@ -103,7 +103,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
       <VaultSidebar />
-      <main className="lg:ml-72 pt-20 lg:pt-8 px-4 sm:px-8 pb-20">
+      <main className="pt-20 px-4 sm:px-8 pb-20">
         <div className="max-w-3xl mx-auto space-y-6">
 
           {loading ? (

@@ -226,18 +226,8 @@ export default function MeetingsPage() {
     <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
 
-      {/* Fixed header */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl power-gradient flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-            <Mic className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-headline font-extrabold gradient-text">{t("ملخص الاجتماعات", "Meeting Summaries")}</span>
-        </div>
-        <div className="flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
-      </header>
 
-      <main className="lg:ml-72 pt-14 lg:pt-0 transition-all duration-300">
+      <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">
@@ -337,8 +327,8 @@ export default function MeetingsPage() {
                 <div className="w-20 h-20 rounded-3xl power-gradient flex items-center justify-center mx-auto mb-6 opacity-30">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا يوجد اجتماعات بعد", "No meetings yet")}</h3>
-                <p className="text-slate-500">{t("ارفع أول تسجيل لك أعلاه", "Upload your first recording above")}</p>
+                <h3 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("ما عندك اجتماعات للحين 🎙️", "No meetings yet")}</h3>
+                <p className="text-slate-500">{t("ارفع تسجيل ونرتب لك كل شي بالذكاء الاصطناعي", "Upload a recording and we'll organize everything with AI")}</p>
               </motion.div>
             ) : (
               <div className="space-y-6">

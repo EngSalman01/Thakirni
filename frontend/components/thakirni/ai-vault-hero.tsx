@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 
-const CHIPS_AR = ["سو لي خطة أسبوعية", "لخص هذا المحتوى", "رتب مهامي", "وش أنجزت هذا الأسبوع؟"];
+const CHIPS_AR = ["أضف اجتماع الأحد", "ذكرني أشتري أغراض", "وش عندي اليوم؟", "رتب لي يومي"];
 const CHIPS_EN = ["Make me a weekly plan", "Summarise this content", "Organise my tasks", "What did I achieve this week?"];
 
 export function AIVaultHero() {

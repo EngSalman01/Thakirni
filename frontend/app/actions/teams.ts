@@ -7,7 +7,7 @@ import { Resend } from "resend";
 import type { Team, TeamMember, TeamRole } from "@/lib/types";
 
 // Team creation
-export async function createTeam(name: string, slug: string) {
+export async function createTeam(name: string, slug: string, description?: string) {
   try {
     // Verify auth via user client (cookie-based)
     const supabase = await createClient();
@@ -38,6 +38,7 @@ export async function createTeam(name: string, slug: string) {
         slug,
         owner_id: user.id,
         plan_tier: "FREE",
+        ...(description ? { description } : {}),
       })
       .select()
       .single();

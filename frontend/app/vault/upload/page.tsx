@@ -254,18 +254,8 @@ export default function UploadPage() {
     <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
 
-      {/* Fixed header */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <button onClick={() => router.back()} className="w-9 h-9 rounded-xl bg-[#f6f3f2] flex items-center justify-center hover:bg-[#e4e2e1] transition-colors">
-            <ArrowLeft className="w-4 h-4 text-slate-600 rtl:rotate-180" />
-          </button>
-          <span className="text-xl font-headline font-extrabold gradient-text">{t('رفع ذكريات', 'Upload Memories')}</span>
-        </div>
-        <div className="flex items-center gap-2"><ThemeToggle /><LanguageToggle /></div>
-      </header>
 
-      <main className="lg:ml-72 pt-14 lg:pt-0 transition-all duration-300">
+      <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">

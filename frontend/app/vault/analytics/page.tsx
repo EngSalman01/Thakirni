@@ -183,7 +183,7 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
         <VaultSidebar />
-        <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20">
+        <main className="pt-24 px-6 lg:px-12 pb-20">
           <div className="max-w-5xl mx-auto space-y-6">
             {[1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
           </div>
@@ -196,7 +196,7 @@ export default function AnalyticsPage() {
     return (
       <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
         <VaultSidebar />
-        <main className="lg:ml-72 pt-24 px-6 lg:px-12 pb-20 flex items-center justify-center">
+        <main className="pt-24 px-6 lg:px-12 pb-20 flex items-center justify-center">
           <div className="text-center space-y-4">
             <p className="text-2xl">⚠️</p>
             <p className="text-slate-700 font-semibold">{t("فشل تحميل التحليلات", "Failed to load analytics")}</p>
@@ -214,28 +214,19 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
 
-      {/* Fixed header */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl power-gradient flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-            <TrendingUp className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-headline font-extrabold gradient-text">{t("التحليلات", "Analytics")}</span>
+      {/* Period picker */}
+      <div className="fixed top-14 inset-x-0 z-30 bg-background/90 backdrop-blur-sm border-b border-border/60 px-6 py-2 hidden lg:flex items-center justify-end gap-2">
+        <div className="flex items-center gap-1 bg-muted rounded-xl p-1 border border-border">
+          {([7, 14, 30] as const).map(p => (
+            <button key={p} onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${period === p ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              {p}d
+            </button>
+          ))}
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-[#f6f3f2] rounded-xl p-1 border border-[#e4e2e1]">
-            {([7, 14, 30] as const).map(p => (
-              <button key={p} onClick={() => setPeriod(p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-label font-semibold transition-all duration-200 ${period === p ? "bg-white text-[#2552ca] shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
-                {p}d
-              </button>
-            ))}
-          </div>
-          <ThemeToggle /><LanguageToggle />
-        </div>
-      </header>
+      </div>
 
-      <main className="lg:ml-72 pt-14 lg:pt-0 transition-all duration-300">
+      <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">

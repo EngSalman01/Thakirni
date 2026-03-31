@@ -29,9 +29,9 @@ export default function AssistantPage() {
     <ErrorBoundary>
       <div className="min-h-screen bg-background">
         <VaultSidebar />
-        <main className="lg:ml-72 transition-all duration-300 pt-4 px-4 sm:px-6 lg:px-8 pb-8">
+        <main className="pt-16 transition-all duration-300 px-4 sm:px-6 lg:px-8 pb-8">
           {/* Header */}
-          <div className="mb-6 pt-16 lg:pt-8">
+          <div className="mb-6 pt-16">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
                 <Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
