@@ -61,7 +61,7 @@ function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
       <VaultSidebar />
-      <main className="lg:ml-72 pt-16 p-4 md:p-8 lg:pt-4">
+      <main className="pt-16 p-4 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
           <div className="space-y-2">
             <Skeleton className="h-8 w-32" />
@@ -84,6 +84,7 @@ export default function NewTeamPage() {
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
   const [slugEdited, setSlugEdited] = useState(false); // track if user manually edited slug
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -143,7 +144,7 @@ export default function NewTeamPage() {
     setLoading(true);
 
     try {
-      const result = await createTeam(name.trim(), slug);
+      const result = await createTeam(name.trim(), slug, description.trim() || undefined);
 
       if (result.error) {
         // Slug taken is a common error — surface it on the field
@@ -175,7 +176,7 @@ export default function NewTeamPage() {
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="lg:ml-72 transition-all duration-300 pt-16 p-4 md:p-8 lg:pt-4">
+      <main className="pt-16 transition-all duration-300 p-4 md:p-8">
         <div className="max-w-xl mx-auto">
 
           {/* Back */}
@@ -224,11 +225,7 @@ export default function NewTeamPage() {
                         {t("تفاصيل الفريق", "Team Details")}
                       </CardTitle>
                       <CardDescription>
-                        {subscriptionType === "team"
-                          ? t("باقة الفرق: حتى ١٠ أعضاء", "Team plan: up to 10 members")
-                          : subscriptionType === "company"
-                            ? t("باقة الشركات: أعضاء غير محدودين", "Company plan: unlimited members")
-                            : t("يتطلب ترقية الباقة", "Requires plan upgrade")}
+                        {t("أنشئ فريقك وابدأ التعاون", "Create your team and start collaborating")}
                       </CardDescription>
                     </div>
                   </div>
@@ -349,6 +346,25 @@ export default function NewTeamPage() {
                       )}
                     </div>
 
+                    {/* Description */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="description">
+                        {t("وصف الفريق", "Team Description")}
+                        <span className="text-muted-foreground text-xs ms-1">{t("(اختياري)", "(optional)")}</span>
+                      </Label>
+                      <textarea
+                        id="description"
+                        placeholder={t("اكتب وصفاً مختصراً لفريقك...", "Write a short description of your team...")}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        maxLength={200}
+                        rows={3}
+                        disabled={!canCreate || loading}
+                        className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none disabled:opacity-60"
+                      />
+                      <p className="text-xs text-muted-foreground text-end">{description.length}/200</p>
+                    </div>
+
                   </fieldset>
 
                   {/* Global error */}
@@ -373,7 +389,7 @@ export default function NewTeamPage() {
                     <Button
                       type="submit"
                       disabled={!canCreate || loading}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white"
+                      className="flex-1 power-gradient text-white border-0 hover:opacity-90 transition-opacity"
                     >
                       {loading ? (
                         <span className="flex items-center gap-2">

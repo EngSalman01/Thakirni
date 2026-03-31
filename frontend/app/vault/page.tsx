@@ -45,7 +45,7 @@ function VaultSkeleton() {
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72 pt-40 pb-32 px-8 max-w-7xl mx-auto space-y-8">
+      <main className="pt-40 pb-32 px-8 max-w-7xl mx-auto space-y-8">
         <Skeleton className="h-16 w-80 rounded-2xl" />
         <div className="grid grid-cols-3 gap-6">
           {[0,1,2].map(i => <Skeleton key={i} className="h-64 rounded-2xl" />)}
@@ -300,7 +300,7 @@ function VaultPageInner() {
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72">
+      <main className="pt-16">
 
         {/* ── HERO ── */}
         <section className="relative pt-24 pb-12 px-8 overflow-hidden">

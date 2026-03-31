@@ -221,7 +221,7 @@ export default function VoiceNotePage() {
     <div className="min-h-screen bg-background">
       <VaultSidebar />
 
-      <main className="lg:ml-72 pt-16 px-4 pb-8 lg:pt-8">
+      <main className="pt-16 px-4 pb-8">
         <div className="max-w-xl mx-auto">
 
           {/* Back */}

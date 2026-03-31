@@ -144,7 +144,7 @@ export default function GoalsPage() {
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72">
+      <main className="pt-16">
 
         {/* ── HERO ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">

@@ -18,8 +18,9 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown,
+  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown, User,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
@@ -73,7 +74,7 @@ function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72 pt-32 px-8 pb-20">
+      <main className="pt-32 px-8 pb-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
           {[7, 5, 7, 5].map((span, i) => (
             <Skeleton key={i} className={`h-64 rounded-2xl md:col-span-${span}`} />
@@ -581,21 +582,8 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
       <VaultSidebar />
 
-      {/* Fixed header */}
-      <header className="fixed top-0 left-72 right-0 z-30 bg-white/70 backdrop-blur-xl flex justify-between items-center px-8 h-20 shadow-ambient hidden lg:flex border-b border-white/40">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl power-gradient flex items-center justify-center shadow-lg shadow-[#2552ca]/30">
-            <Crown className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-headline font-extrabold gradient-text">{t("الإعدادات", "Settings")}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <LanguageToggle />
-          <ThemeToggle />
-        </div>
-      </header>
 
-      <main className="lg:ml-72 pt-14 lg:pt-0 transition-all duration-300">
+      <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-32 pb-16 px-8 hero-mesh overflow-hidden">
@@ -672,11 +660,31 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        <div className="px-8 pb-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        <div className="px-4 sm:px-8 pb-20">
+        <div className="max-w-3xl mx-auto">
 
-          {/* ── Left column ── */}
-          <div className="md:col-span-7 space-y-8">
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="w-full mb-8 bg-[#f6f3f2] p-1 rounded-2xl h-auto grid grid-cols-4 gap-1">
+            <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+              <User className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">{t("الملف الشخصي", "Profile")}</span>
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+              <Bell className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">{t("الإشعارات", "Notifications")}</span>
+            </TabsTrigger>
+            <TabsTrigger value="security" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+              <Shield className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">{t("الأمان", "Security")}</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+              <Crown className="w-4 h-4 shrink-0" />
+              <span className="hidden sm:inline">{t("الاشتراك", "Subscription")}</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* ── Tab: Profile ── */}
+          <TabsContent value="profile" className="space-y-8">
 
             {/* Cognitive Profile */}
             <SettingsCard delay={0.05}>
@@ -834,146 +842,13 @@ export default function SettingsPage() {
               </div>
             </SettingsCard>
 
-            {/* Privacy & Security */}
-            <SettingsCard delay={0.15} className="border-l-4 border-[#ad1d7f]">
-              <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-[#ad1d7f]" />
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
-                  {t("الخصوصية والأمان", "Privacy & Security")}
-                </h2>
-              </div>
-              <div className="space-y-4">
-                {/* Change password */}
-                <div className="p-5 bg-[#f6f3f2] rounded-xl flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-slate-900 text-sm">{t("كلمة المرور", "Password")}</p>
-                    <p className="text-slate-500 text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
-                  </div>
-                  <Link href="/vault/settings/security/change-password"
-                    className="px-4 py-2 rounded-full border border-[#ad1d7f] text-[#ad1d7f] font-bold text-sm hover:bg-[#ffd8e9] transition-colors font-label">
-                    {t("تغيير", "Change")}
-                  </Link>
-                </div>
-                <div className="p-6 bg-red-50/50 rounded-xl border border-red-200/30">
-                  <h3 className="text-red-600 font-headline font-bold mb-2">
-                    {t("منطقة الخطر", "Danger Zone")}
-                  </h3>
-                  <p className="text-slate-500 text-sm mb-4">
-                    {t("هذه الإجراءات دائمة ولا يمكن التراجع عنها.", "These actions are permanent and cannot be reversed.")}
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <button
-                      onClick={() => setSignOutOpen(true)}
-                      className="px-5 py-2.5 rounded-full border border-red-300 text-red-600 font-bold text-sm hover:bg-red-50 transition-colors font-label flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {t("تسجيل الخروج من كل الأجهزة", "Sign Out All Devices")}
-                    </button>
-                    <button
-                      onClick={() => { setDeleteOpen(true); setDeleteConfirm(""); }}
-                      className="px-5 py-2.5 rounded-full bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors font-label flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      {t("حذف الحساب", "Delete Account")}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </SettingsCard>
-            {/* ── Invite Team Members (TEAMS only) ── */}
-            {(resolvedTier === "teams") && (
-              <SettingsCard delay={0.2} className="border-l-4 border-[#2552ca]">
-                <div className="flex items-center gap-3 mb-6">
-                  <Mail className="w-5 h-5 text-[#2552ca]" />
-                  <h2 className="text-2xl font-headline font-bold text-slate-900">
-                    {t("دعوة أعضاء", "Invite Members")}
-                  </h2>
-                </div>
-                <p className="text-sm text-slate-500 mb-4">
-                  {t("ادعُ زملاءك لينضموا إلى فريقك.", "Invite teammates to join your team.")}
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    placeholder={t("البريد الإلكتروني", "Email address") as string}
-                    dir="ltr"
-                    className="rounded-xl bg-white border-slate-200 flex-1"
-                  />
-                  <button
-                    onClick={handleSendInvite}
-                    disabled={sendingInvite || !inviteEmail.trim()}
-                    className="px-5 py-2 rounded-full power-gradient text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
-                  >
-                    {sendingInvite
-                      ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
-                      : t("إرسال", "Send")}
-                  </button>
-                </div>
-              </SettingsCard>
-            )}
-          </div>
+          </TabsContent>
 
-          {/* ── Right column ── */}
-          <div className="md:col-span-5 space-y-8">
-
-            {/* Subscription */}
-            <SettingsCard delay={0.08} className="relative overflow-hidden group">
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-2xl font-headline font-bold text-slate-900">
-                    {t("الاشتراك", "Subscription")}
-                  </h2>
-                  <span
-                    className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
-                    style={{ background: planBadge.bg, color: planBadge.color }}
-                  >
-                    {planBadge.label}
-                  </span>
-                </div>
-                <p className="text-slate-500 text-sm mb-6">
-                  {resolvedTier === "free"
-                    ? t("أنت على الخطة المجانية", "You're on the Free plan")
-                    : resolvedTier === "pro"
-                    ? t(`أنت على خطة برو — ${proPrice} ر.س / شهر`, `You're on Pro — ${proPrice} SAR/mo`)
-                    : t(`أنت على خطة الفرق — ${teamsPrice} ر.س / شهر / مستخدم`, `You're on Teams — ${teamsPrice} SAR/mo per user`)}
-                </p>
-                <div className="space-y-3 mb-8">
-                  {planFeatures.map(({ ar, en }) => (
-                    <div key={en} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-[#ad1d7f] shrink-0 mt-0.5" />
-                      <p className="text-sm">{t(ar, en)}</p>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setBillingOpen(true)}
-                  className="w-full py-4 rounded-full bg-white text-slate-800 font-headline font-bold shadow-sm hover:shadow-md transition-all"
-                >
-                  {t("إدارة الفواتير", "Manage Billing")}
-                </button>
-                {isPaid && !subscription?.cancel_at_period_end && (
-                  <button
-                    onClick={() => setCancelOpen(true)}
-                    className="w-full mt-3 text-xs text-red-400 hover:text-red-600 transition-colors text-center"
-                  >
-                    {t("إلغاء الاشتراك", "Cancel subscription")}
-                  </button>
-                )}
-                {subscription?.cancel_at_period_end && (
-                  <p className="w-full mt-3 text-xs text-slate-400 text-center">
-                    {t("تم جدولة الإلغاء — نشط حتى نهاية فترة الفوترة", "Cancellation scheduled — active until end of billing period")}
-                  </p>
-                )}
-              </div>
-              <div className="absolute -top-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                <Sparkles className="w-40 h-40 text-[#ad1d7f]" />
-              </div>
-            </SettingsCard>
+          {/* ── Tab: Notifications ── */}
+          <TabsContent value="notifications" className="space-y-8">
 
             {/* Connected Apps */}
-            <SettingsCard delay={0.12}>
+            <SettingsCard delay={0.08}>
               <div className="flex items-center gap-3 mb-6">
                 <RefreshCw className="w-5 h-5 text-[#2552ca]" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
@@ -1010,11 +885,8 @@ export default function SettingsPage() {
                   </div>
                   {calendarConnected ? (
                     <button
-                      onClick={async () => {
-                        await fetch("/api/google-calendar/events", { method: "DELETE" });
-                        setCalendarConnected(false);
-                        toast.success(t("تم إلغاء ربط Google Calendar", "Google Calendar disconnected"));
-                      }}
+                      onClick={handleDisconnectCalendar}
+                      disabled={calendarLoading}
                       className="px-3 py-1.5 rounded-full border border-red-200 text-red-500 text-xs font-bold hover:bg-red-50 transition-colors"
                     >
                       {t("إلغاء الربط", "Disconnect")}
@@ -1035,7 +907,6 @@ export default function SettingsPage() {
                   )}
                 </div>
 
-                {/* Google Calendar preferences — only show when connected */}
                 {calendarConnected && (
                   <div className="bg-white rounded-xl divide-y divide-slate-100 overflow-hidden">
                     {([
@@ -1125,6 +996,58 @@ export default function SettingsPage() {
                 ))}
               </div>
             </SettingsCard>
+
+          </TabsContent>
+
+          {/* ── Tab: Security ── */}
+          <TabsContent value="security" className="space-y-8">
+
+            {/* Privacy & Security */}
+            <SettingsCard delay={0.05} className="border-l-4 border-[#ad1d7f]">
+              <div className="flex items-center gap-3 mb-6">
+                <Shield className="w-5 h-5 text-[#ad1d7f]" />
+                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  {t("الخصوصية والأمان", "Privacy & Security")}
+                </h2>
+              </div>
+              <div className="space-y-4">
+                <div className="p-5 bg-[#f6f3f2] rounded-xl flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-slate-900 text-sm">{t("كلمة المرور", "Password")}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
+                  </div>
+                  <Link href="/vault/settings/security/change-password"
+                    className="px-4 py-2 rounded-full border border-[#ad1d7f] text-[#ad1d7f] font-bold text-sm hover:bg-[#ffd8e9] transition-colors font-label">
+                    {t("تغيير", "Change")}
+                  </Link>
+                </div>
+                <div className="p-6 bg-red-50/50 rounded-xl border border-red-200/30">
+                  <h3 className="text-red-600 font-headline font-bold mb-2">
+                    {t("منطقة الخطر", "Danger Zone")}
+                  </h3>
+                  <p className="text-slate-500 text-sm mb-4">
+                    {t("هذه الإجراءات دائمة ولا يمكن التراجع عنها.", "These actions are permanent and cannot be reversed.")}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => setSignOutOpen(true)}
+                      className="px-5 py-2.5 rounded-full border border-red-300 text-red-600 font-bold text-sm hover:bg-red-50 transition-colors font-label flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      {t("تسجيل الخروج من كل الأجهزة", "Sign Out All Devices")}
+                    </button>
+                    <button
+                      onClick={() => { setDeleteOpen(true); setDeleteConfirm(""); }}
+                      className="px-5 py-2.5 rounded-full bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition-colors font-label flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t("حذف الحساب", "Delete Account")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </SettingsCard>
+
 
             {/* Export Data */}
             <SettingsCard delay={0.2}>
@@ -1352,9 +1275,105 @@ export default function SettingsPage() {
               </div>
             </SettingsCard>
 
-          </div>
+          </TabsContent>
+
+          {/* ── Tab: Subscription ── */}
+          <TabsContent value="subscription" className="space-y-8">
+
+            <SettingsCard delay={0.08} className="relative overflow-hidden group">
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-1">
+                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                    {t("الاشتراك", "Subscription")}
+                  </h2>
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
+                    style={{ background: planBadge.bg, color: planBadge.color }}
+                  >
+                    {planBadge.label}
+                  </span>
+                </div>
+                <p className="text-slate-500 text-sm mb-6">
+                  {resolvedTier === "free"
+                    ? t("أنت على الخطة المجانية", "You're on the Free plan")
+                    : resolvedTier === "pro"
+                    ? t(`أنت على خطة برو — ${proPrice} ر.س / شهر`, `You're on Pro — ${proPrice} SAR/mo`)
+                    : t(`أنت على خطة الفرق — ${teamsPrice} ر.س / شهر / مستخدم`, `You're on Teams — ${teamsPrice} SAR/mo per user`)}
+                </p>
+                <div className="space-y-3 mb-8">
+                  {planFeatures.map(({ ar, en }) => (
+                    <div key={en} className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-[#ad1d7f] shrink-0 mt-0.5" />
+                      <p className="text-sm">{t(ar, en)}</p>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setBillingOpen(true)}
+                  className="w-full py-4 rounded-full bg-white text-slate-800 font-headline font-bold shadow-sm hover:shadow-md transition-all"
+                >
+                  {t("إدارة الفواتير", "Manage Billing")}
+                </button>
+                {isPaid && !subscription?.cancel_at_period_end && (
+                  <button
+                    onClick={() => setCancelOpen(true)}
+                    className="w-full mt-3 text-xs text-red-400 hover:text-red-600 transition-colors text-center"
+                  >
+                    {t("إلغاء الاشتراك", "Cancel subscription")}
+                  </button>
+                )}
+                {subscription?.cancel_at_period_end && (
+                  <p className="w-full mt-3 text-xs text-slate-400 text-center">
+                    {t("تم جدولة الإلغاء — نشط حتى نهاية فترة الفوترة", "Cancellation scheduled — active until end of billing period")}
+                  </p>
+                )}
+              </div>
+              <div className="absolute -top-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                <Sparkles className="w-40 h-40 text-[#ad1d7f]" />
+              </div>
+            </SettingsCard>
+
+            {(resolvedTier === "teams") && (
+              <SettingsCard delay={0.12} className="border-l-4 border-[#2552ca]">
+                <div className="flex items-center gap-3 mb-6">
+                  <Mail className="w-5 h-5 text-[#2552ca]" />
+                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                    {t("دعوة أعضاء", "Invite Members")}
+                  </h2>
+                </div>
+                <p className="text-sm text-slate-500 mb-4">
+                  {t("ادعُ زملاءك لينضموا إلى فريقك.", "Invite teammates to join your team.")}
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    placeholder={t("البريد الإلكتروني", "Email address") as string}
+                    dir="ltr"
+                    className="rounded-xl bg-white border-slate-200 flex-1"
+                  />
+                  <button
+                    onClick={handleSendInvite}
+                    disabled={sendingInvite || !inviteEmail.trim()}
+                    className="px-5 py-2 rounded-full power-gradient text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
+                  >
+                    {sendingInvite
+                      ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
+                      : t("إرسال", "Send")}
+                  </button>
+                </div>
+              </SettingsCard>
+            )}
+
+            <ReferralCard />
+            <AffiliateCard />
+
+          </TabsContent>
+
+        </Tabs>
         </div>
-        </div>{/* end px-8 pb-20 */}
+        </div>{/* end px-4 sm:px-8 pb-20 */}
       </main>
 
       {/* Change email dialog */}
@@ -1502,16 +1521,6 @@ export default function SettingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Referral card */}
-      <div className="mb-6">
-        <ReferralCard />
-      </div>
-
-      {/* Affiliate program */}
-      <div className="mb-6">
-        <AffiliateCard />
-      </div>
 
       {/* Billing / upgrade modal */}
       <BillingModal

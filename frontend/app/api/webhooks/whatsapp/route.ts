@@ -185,8 +185,41 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
                 return
             }
         }
+    } else if (msgType === "document") {
+        const docObj = message.document as Record<string, unknown> | undefined
+        const mediaUrl = (docObj?.url ?? message.media_url) as string | undefined
+        const mimeType = (docObj?.mime_type ?? "application/octet-stream") as string
+
+        if (!mediaUrl) {
+            await sendWhatsAppMessage(phone, "ما قدرت أحصل على الملف. جرب مرة ثانية 🙏")
+            return
+        }
+
+        if (!mimeType.includes("pdf")) {
+            await sendWhatsAppMessage(phone, "للحين ما أدعم هذا النوع من الملفات — أرسل PDF أو رسالة نصية أو صوتية 🙏")
+            return
+        }
+
+        try {
+            const fileBuffer = await downloadKapsoMedia(mediaUrl)
+            const { text: summary } = await generateText({
+                model: google("gemini-2.5-flash-lite"),
+                messages: [{
+                    role: "user",
+                    content: [
+                        { type: "text", text: "Extract and summarize the key points from this PDF document in the same language as the document. Be concise but comprehensive. Format with bullet points." },
+                        { type: "file", data: fileBuffer, mimeType: "application/pdf" },
+                    ],
+                }],
+            })
+            messageText = `[PDF المرفق]\n${summary}`
+        } catch (err: unknown) {
+            console.error("[WhatsApp] PDF extraction failed:", (err as Error)?.message)
+            await sendWhatsAppMessage(phone, "ما قدرت أقرأ الـ PDF. تأكد إن الملف واضح وجرب مرة ثانية 🙏")
+            return
+        }
     } else {
-        await sendWhatsAppMessage(phone, "عذراً، لا أدعم هذا النوع من الرسائل بعد. أرسل نصاً أو رسالة صوتية 🙏")
+        await sendWhatsAppMessage(phone, "للحين ما أدعم هذا النوع من الرسائل — أرسل نص أو رسالة صوتية أو PDF 🙏")
         return
     }
 

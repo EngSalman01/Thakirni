@@ -15,10 +15,10 @@ import useSWR from "swr"
 import { motion } from "framer-motion"
 
 const SESSION_TYPES = [
-  { value: "pomodoro",    label: "بومودورو 🍅",      labelEn: "Pomodoro 🍅",      minutes: 25, color: "#e53e3e" },
-  { value: "short_break", label: "استراحة قصيرة ☕", labelEn: "Short Break ☕",   minutes: 5,  color: "#38a169" },
-  { value: "long_break",  label: "استراحة طويلة 🌿", labelEn: "Long Break 🌿",    minutes: 15, color: "#3182ce" },
-  { value: "deep_work",   label: "عمل عميق 🔱",      labelEn: "Deep Work 🔱",     minutes: 50, color: "#805ad5" },
+  { value: "pomodoro",      label: "بومودورو 🍅",       labelEn: "Pomodoro 🍅",      minutes: 25, color: "#e53e3e" },
+  { value: "short_break",   label: "راحة قصيرة ☕",     labelEn: "Short Break ☕",   minutes: 5,  color: "#38a169" },
+  { value: "long_break",    label: "راحة طويلة 🌿",     labelEn: "Long Break 🌿",    minutes: 30, color: "#3182ce" },
+  { value: "deep_work",     label: "عمل عميق 🔱",       labelEn: "Deep Work 🔱",     minutes: 50, color: "#805ad5" },
 ]
 
 async function fetchStats() {
@@ -169,7 +169,7 @@ export default function FocusPage() {
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="lg:ml-72">
+      <main className="pt-16">
 
         {/* ── HERO: Timer as centerpiece ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">
@@ -181,7 +181,6 @@ export default function FocusPage() {
 
               {/* Copy */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
-                <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
                 <div>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
                     {t("وضع ", "Focus")}{" "}<span className="gradient-text">{t("التركيز", "Mode")}</span>

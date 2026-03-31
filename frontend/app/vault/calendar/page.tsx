@@ -96,7 +96,7 @@ export default function CalendarPage() {
     <div className="min-h-screen bg-background text-foreground">
       <VaultSidebar />
 
-      <main className="lg:ml-72 pt-16 p-4 md:p-6 lg:p-8 transition-all duration-300">
+      <main className="pt-16 p-4 md:p-6 lg:p-8 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{t("التقويم", "Calendar")}</h1>
