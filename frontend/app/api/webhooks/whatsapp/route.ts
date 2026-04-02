@@ -44,6 +44,27 @@ function detectLanguage(text: string): "ar" | "en" {
     return /[\u0600-\u06FF]/.test(text) ? "ar" : "en"
 }
 
+// ─── Common Typo Corrections (Arabic) ────────────────────────────────────────
+
+function fixCommonTypos(text: string): string {
+    return text
+        .replace(/\bشكرني\b/g, "ذكرني")
+        .replace(/\bشكّرني\b/g, "ذكّرني")
+        .replace(/\bالحفص\b/g, "الفحص")
+        .replace(/\bوقتي\b/g, "وقتي")       // already correct, no-op example
+        .replace(/\bابدأ\b/g, "ابدأ")
+        .replace(/ذكرن([يى])\b/g, "ذكرني") // normalize ذكرنى → ذكرني
+        .replace(/\bضيقني\b/g, "ذكرني")
+        .replace(/\bذكران\b/g, "ذكرني")
+}
+
+// ─── Structured Logging ───────────────────────────────────────────────────────
+
+function log(event: string, phone: string, detail?: string) {
+    const ts = new Date().toISOString()
+    console.log(`[WA:${event}] ${ts} | ${phone}${detail ? " | " + detail : ""}`)
+}
+
 // ─── Signature Verification ───────────────────────────────────────────────────
 
 async function verifySignature(
@@ -172,16 +193,20 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         const voiceObj = message.voice as Record<string, unknown> | undefined
         const mediaUrl = (audioObj?.url ?? voiceObj?.url ?? message.media_url) as string | undefined
         if (mediaUrl) {
+            log("voice_received", phone)
+            await sendWhatsAppMessage(phone, "سمعتك 👀 ثانية...")
             try {
                 const audioBuffer = await downloadKapsoMedia(mediaUrl)
-                messageText = await transcribeAudio(audioBuffer, "audio/ogg")
+                if (audioBuffer.length > 25 * 1024 * 1024) {
+                    await sendWhatsAppMessage(phone, "الفويس طويل شوي 😅 حاول تختصره وأرسله مرة ثانية")
+                    return
+                }
+                const mimeType = (audioObj?.mime_type ?? voiceObj?.mime_type ?? "audio/ogg") as string
+                messageText = await transcribeAudio(audioBuffer, mimeType)
+                log("voice_transcribed", phone, `"${messageText.slice(0, 50)}"`)
             } catch (err: unknown) {
-                console.error("[WhatsApp] Transcription failed:", (err as Error)?.message)
-                await sendWhatsAppMessage(phone,
-                    detectLanguage("") === "ar"
-                        ? "عذراً، لم أتمكن من معالجة الرسالة الصوتية. حاول مرة أخرى أو أرسل نصاً."
-                        : "Sorry, I couldn't process the voice message. Please try again or send text."
-                )
+                log("voice_error", phone, (err as Error)?.message)
+                await sendWhatsAppMessage(phone, "ما ضبط معي الصوت 😅 جرّب مرة ثانية أو أرسل نص")
                 return
             }
         }
@@ -191,39 +216,54 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         const mimeType = (docObj?.mime_type ?? "application/octet-stream") as string
 
         if (!mediaUrl) {
-            await sendWhatsAppMessage(phone, "ما قدرت أحصل على الملف. جرب مرة ثانية 🙏")
+            await sendWhatsAppMessage(phone, "ما قدرت أحصل على الملف 🙏 جرّب مرة ثانية")
             return
         }
 
         if (!mimeType.includes("pdf")) {
-            await sendWhatsAppMessage(phone, "للحين ما أدعم هذا النوع من الملفات — أرسل PDF أو رسالة نصية أو صوتية 🙏")
+            await sendWhatsAppMessage(phone, "للحين ما أدعم هذا النوع — أرسل PDF أو نص أو فويس 🙏")
             return
         }
 
+        log("pdf_received", phone)
+        await sendWhatsAppMessage(phone, "جالس أقرأ الملف 👀 لحظة...")
+
         try {
             const fileBuffer = await downloadKapsoMedia(mediaUrl)
+            if (fileBuffer.length > 20 * 1024 * 1024) {
+                await sendWhatsAppMessage(phone, "الملف كبير شوي 😅 حاول ترسل نسخة أصغر")
+                return
+            }
             const { text: summary } = await generateText({
                 model: google("gemini-2.5-flash-lite"),
                 messages: [{
                     role: "user",
                     content: [
-                        { type: "text", text: "Extract and summarize the key points from this PDF document in the same language as the document. Be concise but comprehensive. Format with bullet points." },
+                        { type: "text", text: "Extract and summarize the key points from this PDF document in the same language as the document. Be concise but comprehensive. Format with bullet points. If the PDF is unreadable or empty, respond only with: UNREADABLE" },
                         { type: "file", data: fileBuffer, mimeType: "application/pdf" },
                     ],
                 }],
             })
-            messageText = `[PDF المرفق]\n${summary}`
+            if (summary.trim().toUpperCase() === "UNREADABLE") {
+                await sendWhatsAppMessage(phone, "ما قدرت أستخرج شي واضح 🤔 جرّب ملف ثاني")
+                return
+            }
+            log("pdf_processed", phone, `${fileBuffer.length} bytes`)
+            messageText = `[هذا ملخص الملف 👇]\n${summary}`
         } catch (err: unknown) {
-            console.error("[WhatsApp] PDF extraction failed:", (err as Error)?.message)
-            await sendWhatsAppMessage(phone, "ما قدرت أقرأ الـ PDF. تأكد إن الملف واضح وجرب مرة ثانية 🙏")
+            log("pdf_error", phone, (err as Error)?.message)
+            await sendWhatsAppMessage(phone, "ما قدرت أقرأ الـ PDF 😅 تأكد إن الملف واضح وجرّب مرة ثانية")
             return
         }
     } else {
-        await sendWhatsAppMessage(phone, "للحين ما أدعم هذا النوع من الرسائل — أرسل نص أو رسالة صوتية أو PDF 🙏")
+        await sendWhatsAppMessage(phone, "أرسل:\n\n✍️ نص\n🎤 فويس\nأو 📄 PDF\nوأرتبها لك 👌")
         return
     }
 
     if (!messageText.trim()) return
+
+    // ── Fix common Arabic typos ─────────────────────────────────────────────────
+    messageText = fixCommonTypos(messageText)
 
     // ── Look up user by phone number ────────────────────────────────────────────
     const { data: profile } = await supabase
@@ -436,7 +476,10 @@ Keep it clean and readable
 
 🚨 إذا قال "سلام" أو "هلا" أو "مرحبا" أو "hey" أو "hi" أو أي تحية:
 → هذه تحية فقط — لا تستدعي أي tool إطلاقاً
-→ رد بشكل طبيعي واسأله كيفه
+→ رد بتحية مناسبة لوقت اليوم:
+  • صباح الخير / صباح النور / صبحك الله بالخير → "صباح النور! 😄"
+  • مساء الخير / مسكم الله بالخير → "مساء النور! 🌙"
+  • السلام عليكم → "وعليكم السلام 😄"
 → إذا في جدول اليوم محمّل أعلاه، اذكر أهم شيء باختصار
 → لا تقول "تم تسجيل" أو "ضفت" أبداً عند التحية
 → مثال: "وعليكم السلام 😄 كيفك؟ عندك [X] اليوم"
@@ -529,6 +572,51 @@ ERRORS
 → "مدري 100% بس أحس..."
 
 ════════════════════
+قواعد التذكيرات (مهم)
+════════════════════
+
+عنوان التذكير يكون:
+✅ "اجتماع العميل"
+✅ "دواء الضغط"
+✅ "نادي — لا تنسى معداتك"
+❌ "لا تنسى أن تتذكر اجتماعك المهم جداً"
+❌ "تذكير: اجتماع"
+
+الرسالة اللي تُرسل للمستخدم وقت التذكير تكون نظيفة ومباشرة.
+
+إذا طلب تذكيرات متعددة في رسالة واحدة → استدع set_reminder مرة لكل تذكير.
+
+تفسير الأوقات:
+→ "بكره" = غداً
+→ "الصبح" = 8:00 الصبح إذا ما حدد
+→ "بعد الظهر" = 14:00 إذا ما حدد
+→ "العصر" = 16:00 إذا ما حدد
+→ "المغرب" = وقت المغرب تقريباً (17:30 شتاء، 18:30 صيف)
+→ "العشا" = 20:00 إذا ما حدد
+
+════════════════════
+نظام التأكيد
+════════════════════
+
+إذا الطلب غامض أو فيه أكثر من تفسير:
+→ لا تنفذ مباشرة
+→ اسأل سؤال واحد واضح
+→ مثال: "ضيف اجتماع" → "اي ساعة؟" أو "متى؟"
+
+إذا الطلب واضح جداً → نفذ مباشرة بدون سؤال
+
+════════════════════
+قدراتك الحالية
+════════════════════
+
+أنت تقدر تعالج:
+✍️ نص عادي
+🎤 فويس — تفهمه وتحوله لنص
+📄 PDF — تقرأه وتلخصه وتشتغل عليه
+
+لا تقول "ما أقدر أسمع" أو "ما أعرف أقرأ ملفات" — هذا خطأ.
+
+════════════════════
 TOOLS
 ════════════════════
 
@@ -542,13 +630,14 @@ save_memory
 search_memories
 store_fact
 get_my_facts
-set_reminder
+set_reminder → استدع مرة واحدة فقط لكل تذكير
 
 RULE:
 → لا تقول اسم التول
 → لا تطلع JSON
 → بس رد زي انسان طبيعي
 → إذا المستخدم قال احذف/عدّل شي باسمه → استخدم search_plans أول تحصل على ID
+→ لا تخمّن بيانات المستخدم — ارجع للداتابيز أو اسأله
 
 `,
 
@@ -631,13 +720,18 @@ RULE:
                         } catch (err) { console.error("[API] silent catch:", err) }
                     }
 
-                    // Auto WhatsApp reminder 30 min before timed events
+                    // Auto WhatsApp reminders for timed events
                     if (input.plan_time && !input.is_all_day) {
                         try {
                             const eventMs = new Date(`${input.plan_date}T${input.plan_time}:00`).getTime() - 3 * 60 * 60 * 1000
+                            // 30-min pre-reminder for all timed events
                             const remindMs = eventMs - 30 * 60 * 1000
                             if (remindMs > Date.now()) {
-                                supabase.from("reminders").insert({ user_id: userId, title: input.title, remind_at: new Date(remindMs).toISOString(), plan_id: data.id, channel: "whatsapp", is_sent: false }).then(undefined, (e) => console.error("[whatsapp] reminder insert error:", e))
+                                supabase.from("reminders").insert({ user_id: userId, title: `${input.title} — بعد 30 دقيقة`, remind_at: new Date(remindMs).toISOString(), plan_id: data.id, channel: "whatsapp", is_sent: false }).then(undefined, (e) => console.error("[whatsapp] reminder insert error:", e))
+                            }
+                            // At-event reminder for meetings and health appointments
+                            if (["meeting", "health"].includes(input.category) && eventMs > Date.now()) {
+                                supabase.from("reminders").insert({ user_id: userId, title: input.title, remind_at: new Date(eventMs).toISOString(), plan_id: data.id, channel: "whatsapp", is_sent: false }).then(undefined, (e) => console.error("[whatsapp] at-event reminder insert error:", e))
                             }
                         } catch (err) { console.error("[API] silent catch:", err) }
                     }
@@ -816,13 +910,14 @@ RULE:
             }),
 
             set_reminder: tool({
-                description: "Schedule a reminder to be sent via WhatsApp at a specific time. CRITICAL: Call this tool ONLY ONCE per reminder request. Never call it again even if the user confirms or repeats — one call is enough.",
+                description: "Schedule a reminder to be sent via WhatsApp at a specific time. CRITICAL: Call this tool ONLY ONCE per reminder request. Never call it again even if the user confirms or repeats — one call is enough. Optionally add a pre-reminder N minutes before the main reminder.",
                 parameters: z.object({
-                    title: z.string().describe("Reminder message"),
+                    title: z.string().describe("Short, clean reminder title. No filler words."),
                     remind_at: z.string().describe("ISO datetime in Riyadh time e.g. 2026-03-25T15:00:00"),
                     plan_id: z.string().optional(),
+                    pre_reminder_minutes: z.number().optional().describe("If set, also send a reminder this many minutes BEFORE remind_at. E.g. 30 for a heads-up 30 min early."),
                 }),
-                execute: async ({ title, remind_at, plan_id }) => {
+                execute: async ({ title, remind_at, plan_id, pre_reminder_minutes }) => {
                     const remindMs = new Date(remind_at).getTime() - 3 * 60 * 60 * 1000 // Riyadh to UTC
                     if (remindMs <= Date.now()) return { success: false, message: "Reminder time is in the past." }
                     const { error } = await supabase.from("reminders").insert({
@@ -834,6 +929,20 @@ RULE:
                         is_sent: false,
                     })
                     if (error) return { success: false, message: error.message }
+                    // Optional pre-reminder
+                    if (pre_reminder_minutes && pre_reminder_minutes > 0) {
+                        const preMs = remindMs - pre_reminder_minutes * 60 * 1000
+                        if (preMs > Date.now()) {
+                            supabase.from("reminders").insert({
+                                user_id: userId,
+                                title: `${title} — بعد ${pre_reminder_minutes} دقيقة`,
+                                remind_at: new Date(preMs).toISOString(),
+                                plan_id: plan_id ?? null,
+                                channel: "whatsapp",
+                                is_sent: false,
+                            }).then(undefined, (e) => console.error("[whatsapp] pre-reminder insert error:", e))
+                        }
+                    }
                     const when = new Date(remindMs).toLocaleString(lang === "ar" ? "ar-SA" : "en-GB", { timeZone: "Asia/Riyadh", dateStyle: "short", timeStyle: "short" })
                     return { success: true, message: `Reminder set for ${when}` }
                 },
