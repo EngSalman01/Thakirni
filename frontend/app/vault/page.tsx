@@ -125,7 +125,7 @@ function SummaryBar({ stats }: { stats: { memories: number; plans: number; habit
     <motion.div
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
       className="flex flex-wrap items-center justify-between gap-4 px-4 sm:px-8 py-4 bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/6"
     >
       {/* Left: greeting + date */}
@@ -447,7 +447,7 @@ function VaultPageInner() {
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
               className="mb-6"
             >
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 rounded-full mb-4">
@@ -511,7 +511,7 @@ function VaultPageInner() {
                   <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.08 + i * 0.05, ease: [0.2,1,0.3,1] }}
+                    transition={{ delay: 0.08 + i * 0.05, ease: [0.22, 1, 0.36, 1] }}
                     whileHover={{ scale: 1.06, y: -4 }}
                     whileTap={{ scale: 0.96 }}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl bg-gradient-to-br ${from} ${to} text-white shadow-lg cursor-pointer`}
@@ -536,7 +536,7 @@ function VaultPageInner() {
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.7, ease: [0.2,1,0.3,1] }}
+                transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -3 }}
                 className="md:col-span-2 bg-white dark:bg-white/[0.04] rounded-2xl p-8 relative overflow-hidden border border-slate-100 dark:border-white/8 shadow-soft hover:shadow-[0_12px_40px_rgba(79,70,229,0.10)] transition-all duration-300"
               >
@@ -549,7 +549,7 @@ function VaultPageInner() {
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.7, delay: 0.1, ease: [0.2,1,0.3,1] }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -3 }}
                 className="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-2xl p-8 relative overflow-hidden shadow-[0_8px_32px_rgba(79,70,229,0.35)] transition-all duration-300"
               >
@@ -562,7 +562,7 @@ function VaultPageInner() {
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.7, delay: 0.15, ease: [0.2,1,0.3,1] }}
+                transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -3 }}
                 className="bg-white dark:bg-white/[0.04] rounded-2xl p-8 relative overflow-hidden border border-slate-100 dark:border-white/8 shadow-soft hover:shadow-[0_12px_40px_rgba(124,58,237,0.10)] transition-all duration-300"
               >
@@ -575,7 +575,7 @@ function VaultPageInner() {
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.7, delay: 0.2, ease: [0.2,1,0.3,1] }}
+                transition={{ duration: 0.7, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -3 }}
                 className="bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-2xl p-8 flex flex-col justify-between shadow-lg transition-all duration-300"
               >
@@ -598,7 +598,7 @@ function VaultPageInner() {
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.7, delay: 0.25, ease: [0.2,1,0.3,1] }}
+                transition={{ duration: 0.7, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -3 }}
                 className="bg-white dark:bg-white/[0.04] rounded-2xl p-8 flex flex-col border border-slate-100 dark:border-white/8 shadow-soft hover:shadow-[0_12px_40px_rgba(236,72,153,0.10)] transition-all duration-300"
               >

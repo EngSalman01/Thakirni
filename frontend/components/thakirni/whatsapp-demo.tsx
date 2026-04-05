@@ -59,7 +59,7 @@ function Bubble({ msg, isArabic, delay }: { msg: Msg; isArabic: boolean; delay: 
       initial={{ opacity: 0, y: 10, scale: 0.96 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true }}
-      transition={{ delay, duration: 0.35, ease: [0.2, 1, 0.3, 1] }}
+      transition={{ delay, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       className={`flex ${isUser ? "justify-end" : "justify-start"}`}
     >
       {!isUser && (
@@ -98,7 +98,7 @@ export function WhatsAppDemo() {
             initial={{ opacity: 0, x: isArabic ? 32 : -32 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-6"
           >
             <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400">
@@ -151,7 +151,7 @@ export function WhatsAppDemo() {
             initial={{ opacity: 0, x: isArabic ? -32 : 32 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.2, 1, 0.3, 1] }}
+            transition={{ duration: 0.25, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
             className="flex justify-center"
           >
             <div className="relative w-full max-w-sm">

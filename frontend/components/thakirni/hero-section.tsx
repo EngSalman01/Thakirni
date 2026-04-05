@@ -234,7 +234,7 @@ export function HeroSection() {
             <motion.div
               initial={{ opacity: 0, y: 32 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
               className="space-y-6 sm:space-y-8"
             >
               {/* Badge */}

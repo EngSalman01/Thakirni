@@ -38,7 +38,7 @@ export function LandingHeader() {
       ref={menuRef}
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
           ? "shadow-ambient backdrop-blur-xl bg-white/90 dark:bg-[#0B0F1A]/90"
@@ -120,7 +120,7 @@ export function LandingHeader() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="md:hidden border-t border-slate-100 dark:border-white/8 bg-white/95 dark:bg-[#0B0F1A]/95 backdrop-blur-xl overflow-hidden z-50"
           >
             <div className="px-4 sm:px-8 py-5 flex flex-col gap-4">

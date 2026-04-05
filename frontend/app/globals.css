@@ -300,15 +300,32 @@
   }
 
   @keyframes soft-pulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
-    50% { transform: scale(1.05); box-shadow: 0 0 30px 10px rgba(79, 70, 229, 0.1); }
+    /* Only animate transform — box-shadow forces non-composited layer */
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
   }
 
   --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 
   @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(37, 214, 102, 0); }
-    50% { box-shadow: 0 0 0 8px rgba(37, 214, 102, 0.15); }
+    /* Use opacity-based glow via a pseudo-element — not animating box-shadow */
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+  }
+
+  /* GPU-safe particle drift — only animates transform */
+  @keyframes particle-drift {
+    0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
+    25%  { transform: translate(calc(var(--drift-x, 0px) * 0.5), calc(var(--drift-y, 0px) * 0.5)) scale(1.05); opacity: 0.9; }
+    50%  { transform: translate(var(--drift-x, 0px), var(--drift-y, 0px)) scale(0.95); opacity: 0.7; }
+    75%  { transform: translate(calc(var(--drift-x, 0px) * 0.5), calc(var(--drift-y, 0px) * 0.5)) scale(1.02); opacity: 0.8; }
+    100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  }
+
+  /* GPU-safe aura rotation */
+  @keyframes aura-rotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
 }
 
@@ -399,6 +416,7 @@
     -webkit-backdrop-filter: blur(24px);
     background-color: color-mix(in srgb, var(--card) 90%, transparent);
     border: 1px solid var(--border);
+    transform: translateZ(0); /* promote to own compositing layer */
   }
 
   /* Ambient shadows */
@@ -410,13 +428,24 @@
     box-shadow: var(--shadow-card);
   }
 
-  /* Button glow */
+  /* Button glow — pseudo-element approach: opacity-only, GPU-safe */
   .btn-glow {
-    box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
-    transition: box-shadow 0.25s ease;
+    position: relative;
+    isolation: isolate;
   }
-  .btn-glow:hover {
-    box-shadow: 0 0 32px rgba(124, 58, 237, 0.45);
+  .btn-glow::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 40%, #EC4899 100%);
+    opacity: 0;
+    filter: blur(12px);
+    transition: opacity 0.2s ease;
+    z-index: -1;
+  }
+  .btn-glow:hover::after {
+    opacity: 0.45;
   }
 
   /* Shadow glow utility */
@@ -445,21 +474,36 @@
       var(--background);
   }
 
-  /* Hover lift */
+  /* Hover lift — only transform, no box-shadow (non-composited) */
   .hover-lift {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
   }
   .hover-lift:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 24px 48px -8px rgba(79, 70, 229, 0.18);
+    transform: translateY(-4px) scale(1.01);
   }
 
-  /* Press scale — use with whileTap or on interactive elements */
+  /* Press scale — transform only, GPU-composited */
   .press-scale {
-    transition: transform 0.15s ease;
+    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
   }
   .press-scale:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
+  }
+
+  /* GPU acceleration helper — forces hardware compositing layer */
+  .smooth-animation {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  /* For elements that scale/move on hover */
+  .gpu-hover {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
   }
 
   /* Input glow focus */

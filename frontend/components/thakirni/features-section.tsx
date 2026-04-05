@@ -9,7 +9,7 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, delay: i * 0.1, ease: [0.2, 1, 0.3, 1] },
+    transition: { duration: 0.25, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] },
   }),
 }
 
@@ -83,15 +83,19 @@ const SMALL_CARDS = [
 
 // ── Waveform animation ──────────────────────────────────────────────────────
 
+// Waveform — uses scaleY (GPU-composited) instead of height (layout-triggering)
+const WAVE_HEIGHTS = [8, 24, 16, 32, 12, 28, 20, 10, 22]
+
 function Waveform() {
   return (
     <div className="mt-8 h-14 bg-white/10 rounded-xl flex items-center justify-center px-4">
-      <div className="flex gap-1 items-center h-8">
-        {[8, 24, 16, 32, 12, 28, 20, 10, 22].map((maxH, i) => (
+      <div className="flex gap-1 items-end h-8">
+        {WAVE_HEIGHTS.map((maxH, i) => (
           <motion.div
             key={i}
             className="w-1.5 bg-white/80 rounded-full"
-            animate={{ height: [4, maxH, 4] }}
+            style={{ height: maxH, originY: 1 }}
+            animate={{ scaleY: [4 / maxH, 1, 4 / maxH] }}
             transition={{
               duration: 0.8 + i * 0.07,
               repeat: Infinity,
@@ -99,7 +103,6 @@ function Waveform() {
               ease: "easeInOut",
               delay: i * 0.09,
             }}
-            style={{ height: 4 }}
           />
         ))}
       </div>
@@ -164,7 +167,7 @@ export function FeaturesSection() {
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-3xl mx-auto mb-12 sm:mb-20"
         >
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-3">

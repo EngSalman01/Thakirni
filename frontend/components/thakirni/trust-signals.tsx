@@ -56,7 +56,7 @@ function StatsBar({ isArabic }: { isArabic: boolean }) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
       className="grid grid-cols-3 gap-4 mb-16 sm:mb-24 max-w-2xl mx-auto"
     >
       {STATS.map((s) => (
@@ -96,7 +96,7 @@ export function TrustSignals() {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-2xl mx-auto mb-12 sm:mb-16"
         >
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-3">
@@ -127,7 +127,7 @@ export function TrustSignals() {
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.7, delay: i * 0.15, ease: [0.2, 1, 0.3, 1] }}
+                transition={{ duration: 0.25, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -4 }}
                 className={`relative bg-white dark:bg-white/[0.04] rounded-2xl p-7 sm:p-9 border border-slate-100 dark:border-white/8 shadow-soft hover:shadow-[0_12px_40px_rgba(79,70,229,0.12)] transition-all duration-300 ring-1 ${ring}`}
               >
