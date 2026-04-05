@@ -113,7 +113,7 @@ export function CTASection() {
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="text-center mb-10 sm:mb-16"
           >
             <p className="text-sm font-semibold uppercase tracking-widest text-indigo-400 mb-3">
@@ -134,7 +134,7 @@ export function CTASection() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.08 }}
+                transition={{ duration: 0.25, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
               >
                 <FAQItem {...faq} />
               </motion.div>
@@ -145,7 +145,7 @@ export function CTASection() {
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            transition={{ duration: 0.25, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-center"
           >
             <Link
@@ -178,7 +178,7 @@ export function CTASection() {
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Icon */}
             <motion.div

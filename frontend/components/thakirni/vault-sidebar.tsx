@@ -116,7 +116,7 @@ function DrawerNav({ onClose }: { onClose: () => void }) {
           return (
             <Link key={item.href} href={item.href} onClick={onClose}
               className={cn(
-                "flex items-center gap-3 px-5 py-2.5 text-sm font-semibold transition-all",
+                "flex items-center gap-3 px-5 py-2.5 text-sm font-semibold transition-colors duration-150",
                 isActive
                   ? "bg-primary/10 text-primary border-s-2 border-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -136,7 +136,7 @@ function DrawerNav({ onClose }: { onClose: () => void }) {
           </span>
         </div>
         <Link href="/vault/settings" onClick={onClose}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-150">
           <Settings className="w-4 h-4" />
           {t("الإعدادات", "Settings")}
         </Link>
@@ -181,7 +181,7 @@ export function VaultSidebar() {
               return (
                 <Link key={item.href} href={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-all whitespace-nowrap group",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors duration-150 whitespace-nowrap group",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"

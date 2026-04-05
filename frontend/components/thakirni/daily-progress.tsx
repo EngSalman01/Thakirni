@@ -56,11 +56,11 @@ export function DailyProgress() {
             </p>
           </motion.div>
         ) : (
-          <div className="bg-[#f6f3f2] rounded-2xl px-4 py-3 space-y-2.5">
+          <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/8 rounded-2xl px-4 py-3 space-y-2.5">
             {/* Progress row */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <Target className="w-4 h-4 text-[#2552ca] shrink-0" />
+                <Target className="w-4 h-4 text-indigo-500 shrink-0" />
                 <p className="text-sm font-label font-semibold text-slate-700 truncate">
                   {hasPlans
                     ? isArabic
@@ -80,15 +80,16 @@ export function DailyProgress() {
               )}
             </div>
 
-            {/* Progress bar */}
+            {/* Progress bar — scaleX is GPU-composited unlike width */}
             {hasPlans && (
-              <div className="relative h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div className="relative h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                 <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${pct}%` }}
-                  transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1], delay: 0.2 }}
-                  className={`absolute inset-y-0 start-0 rounded-full ${
-                    pct >= 80 ? "bg-emerald-500" : pct >= 40 ? "bg-[#2552ca]" : "bg-[#ad1d7f]"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: pct / 100 }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+                  style={{ originX: 0 }}
+                  className={`absolute inset-0 rounded-full ${
+                    pct >= 80 ? "bg-emerald-500" : pct >= 40 ? "bg-indigo-500" : "bg-pink-500"
                   }`}
                 />
               </div>
@@ -98,7 +99,7 @@ export function DailyProgress() {
             {!hasPlans && (
               <Link
                 href="/vault/plans"
-                className="text-xs font-bold text-[#2552ca] hover:underline"
+                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 {isArabic ? "أضف مهامك اليوم →" : "Add today's tasks →"}
               </Link>

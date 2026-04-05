@@ -125,11 +125,11 @@ function BillingToggle({
         className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${annual ? "power-gradient" : "bg-slate-200 dark:bg-slate-700"}`}
         aria-label="Toggle billing"
       >
+        {/* translateX is GPU-composited; animating left causes layout */}
         <motion.div
-          layout
-          className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-          animate={{ left: annual ? "calc(100% - 1.375rem)" : "0.125rem" }}
-          transition={{ type: "spring", stiffness: 500, damping: 40 }}
+          className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow"
+          animate={{ x: annual ? "calc(3rem - 1.375rem - 0.125rem)" : "0px" }}
+          transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
         />
       </button>
       <span className={`text-sm font-medium ${annual ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>

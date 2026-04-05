@@ -89,7 +89,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
+      transition={{ delay: index * 0.06, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -3 }}
       className={`relative rounded-2xl p-5 overflow-hidden border border-white/8 transition-all duration-300 ${gradient ?? "bg-white/[0.04]"} hover:border-white/15 hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]`}
     >
@@ -255,7 +255,7 @@ export default function AdminDashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="flex items-start justify-between"
       >
         <div>
@@ -294,7 +294,7 @@ export default function AdminDashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          transition={{ delay: 0.15, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="lg:col-span-2 bg-white/[0.03] border border-white/8 rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-6">
@@ -333,7 +333,7 @@ export default function AdminDashboardPage() {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
+          transition={{ delay: 0.2, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 flex flex-col gap-3"
         >
           <div className="flex items-center gap-2 mb-2">
@@ -355,7 +355,7 @@ export default function AdminDashboardPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
+        transition={{ delay: 0.25, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
         className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden"
       >
         {/* Table header */}
