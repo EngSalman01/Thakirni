@@ -5,6 +5,7 @@ import { CommandPalette } from "@/components/thakirni/command-palette"
 import { UserIdentify } from "@/components/user-identify"
 import { ToastNotifier } from "@/components/thakirni/toast-notifier"
 import { ConsentModal } from "@/components/compliance/consent-modal"
+import { MobileBottomNav } from "@/components/thakirni/mobile-bottom-nav"
 
 export const dynamic = "force-dynamic"
 
@@ -29,7 +30,8 @@ export default function VaultLayout({
       <Suspense>
         <ToastNotifier />
       </Suspense>
-      {children}
+      <div className="pb-20 md:pb-0">{children}</div>
+      <MobileBottomNav />
     </>
   )
 }

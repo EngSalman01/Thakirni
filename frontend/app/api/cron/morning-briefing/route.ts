@@ -287,25 +287,22 @@ export async function GET(req: NextRequest) {
 
       if (isEmpty) {
         if (isArabic) {
-          message = `صباح النور ${name} ☀️\n\nيومك فاضي 😄 تبغى أرتب لك شي؟`
+          message = `صباح النور ☀️ ${name} — جاهز نكسر اليوم؟ 👀\n\nيومك فاضي — تبغى أرتب لك شي؟`
         } else {
-          message = `Good morning ${name} ☀️\n\nYou have nothing scheduled today 😄 Want me to plan something for you?`
+          message = `Good morning ${name} ☀️ Ready to crush today? 👀\n\nYou have nothing scheduled — want me to plan something?`
         }
       } else {
         const lines: string[] = []
 
         // Header — minimal vs detailed based on A/B experiment
         if (briefingVariant === "b") {
-          if (isArabic) {
-            lines.push(`صباح النور ${name} ☀️`)
-            lines.push(isArabic ? "هذا يومك:" : "Here's your day:")
-          } else {
-            lines.push(`Good morning ${name} ☀️`)
-            lines.push("Here's your day:")
-          }
+          lines.push(isArabic
+            ? `صباح النور ☀️ ${name} — جاهز نكسر اليوم؟ 👀\n\nهذا يومك:`
+            : `Good morning ${name} ☀️ Ready to crush today? 👀\n\nHere's your day:`)
         } else {
-          // minimal variant
-          lines.push(isArabic ? `صباح النور ${name} ☀️\n\nعندك اليوم:` : `Good morning ${name} ☀️\n\nToday:`)
+          lines.push(isArabic
+            ? `صباح النور ☀️ ${name} — جاهز نكسر اليوم؟ 👀\n\nعندك اليوم:`
+            : `Good morning ${name} ☀️ Ready to crush today? 👀\n\nToday:`)
         }
 
         // 📅 Timed events
@@ -391,6 +388,14 @@ export async function GET(req: NextRequest) {
             message += note
           }
         }
+      }
+
+      // Occasionally remind users about voice messages (once per week)
+      const dayOfWeek = new Date().toLocaleDateString("en-US", { timeZone: "Asia/Riyadh", weekday: "short" })
+      if (dayOfWeek === "Mon") {
+        message += isArabic
+          ? "\n\n🎤 جرب ترسل فويس — ما تحتاج تكتب!"
+          : "\n\n🎤 Try sending a voice message — no typing needed!"
       }
 
       await sendWhatsAppMessage(profile.phone_number, message)

@@ -43,6 +43,7 @@ interface Profile {
   notification_friday: boolean;
   gcal_auto_sync: boolean;
   gcal_whatsapp_reminders: boolean;
+  whatsapp_welcomed: boolean;
 }
 
 // ── Card wrapper ──────────────────────────────────────────────────────────────
@@ -193,7 +194,7 @@ export default function SettingsPage() {
 
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, full_name, avatar_url, phone_number, notification_email, notification_push, notification_friday, gcal_auto_sync, gcal_whatsapp_reminders")
+          .select("id, full_name, avatar_url, phone_number, notification_email, notification_push, notification_friday, gcal_auto_sync, gcal_whatsapp_reminders, whatsapp_welcomed")
           .eq("id", user.id)
           .single();
 
@@ -256,9 +257,23 @@ export default function SettingsPage() {
         .eq("id", user.id);
 
       if (error) throw error;
+
+      const isNewPhone = normPhone && !origPhone;
+      const notYetWelcomed = !profile?.whatsapp_welcomed;
+
       setOrigName(name.trim()); setOrigPhone(normPhone || ""); setPhone(normPhone || "");
       setProfile((p) => p ? { ...p, full_name: name.trim(), phone_number: normPhone || null } : null);
       toast.success(t("تم حفظ التغييرات", "Changes saved"));
+
+      // Auto-welcome on first phone addition
+      if (isNewPhone && notYetWelcomed) {
+        toast.success(t("تم الربط 👌 شيك واتساب 👀", "Connected 👌 Check WhatsApp 👀"), { duration: 5000 });
+        fetch("/api/whatsapp/send-welcome", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: normPhone, name: name.trim() }),
+        }).catch(() => {});
+      }
     } catch (err) {
       console.error("[Settings] save:", err);
       toast.error(t("فشل الحفظ", "Failed to save"));
