@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
+import { buildViralAppend, logViralCTASent } from "@/lib/growth/viral"
 
 export const maxDuration = 60
 
@@ -50,7 +51,7 @@ export async function GET(req: NextRequest) {
   const userIds = [...new Set(reminders.map((r) => r.user_id))]
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, phone_number, preferred_language")
+    .select("id, phone_number, preferred_language, referral_code")
     .in("id", userIds)
 
   const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
@@ -121,9 +122,19 @@ export async function GET(req: NextRequest) {
 
       } else {
         // ── Regular reminder ──────────────────────────────────────────────────
-        const message = isArabic
+        let message = isArabic
           ? `🔔 ${reminder.title}`
           : `🔔 ${reminder.title}`
+
+        // Append viral CTA occasionally (perfect value moment — they just got value)
+        const referralCode = (profile as { referral_code?: string })?.referral_code
+        if (referralCode) {
+          const viralAppend = await buildViralAppend(reminder.user_id, referralCode, isArabic)
+          if (viralAppend) {
+            message += viralAppend
+            logViralCTASent(reminder.user_id).catch(() => {})
+          }
+        }
 
         await sendWhatsAppMessage(phone, message)
         log("reminder_sent", `user=${reminder.user_id} title="${reminder.title.slice(0, 40)}"`)

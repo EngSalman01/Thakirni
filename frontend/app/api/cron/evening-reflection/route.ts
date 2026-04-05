@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
       const isArabic = (profile.preferred_language ?? "ar") !== "en"
       const firstName = (profile.full_name ?? "").split(" ")[0] || (isArabic ? "صديقي" : "there")
 
-      // Fetch today's plans
+      // Fetch today's plans (status values: "pending" | "done")
       const [pendingResult, doneResult] = await Promise.all([
         supabase
           .from("plans")
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
           .select("id")
           .eq("user_id", profile.id)
           .eq("plan_date", riyadhDate)
-          .eq("status", "completed")
+          .eq("status", "done")
           .limit(50),
       ])
 
@@ -98,19 +98,38 @@ export async function GET(req: NextRequest) {
 
       let message: string
 
+      const total = doneCount + pendingCount
+
       if (pendingCount === 0 && doneCount === 0) {
         // Nothing was planned today
         if (isArabic) {
-          message = `مساء الخير ${firstName} 🌙\n\nكيف كان يومك؟ تبغى أرتب لك غداً بكرة؟ 👀`
+          message = [
+            `كيف كان يومك ${firstName}؟ 👀`,
+            "",
+            "خلصت كل شي؟",
+            "• قول لي \"خلصت\" أو \"باقي\" 👌",
+          ].join("\n")
         } else {
-          message = `Good evening ${firstName} 🌙\n\nHow was your day? Want me to plan tomorrow for you? 👀`
+          message = `How was your day ${firstName}? 👀\n\nDid you get everything done?\n• Reply \"done\" or \"still going\" 👌`
         }
       } else if (pendingCount === 0) {
-        // All tasks done!
+        // All tasks done! 🔥
         if (isArabic) {
-          message = `مساء الخير ${firstName} 🌙\n\n${doneCount > 0 ? `خلصت ${doneCount} ${doneCount === 1 ? "مهمة" : "مهام"} اليوم ✅` : "يوم ممتاز!"}\n\nالله يعطيك العافية 👏 تبغى أرتب لك غداً؟`
+          message = [
+            `${firstName} 🔥`,
+            "",
+            `خلصت ${doneCount} ${doneCount === 1 ? "مهمة" : "مهام"} اليوم — كفو! 👏`,
+            "",
+            "تبغى أرتب لك غداً؟ 👀",
+          ].join("\n")
         } else {
-          message = `Good evening ${firstName} 🌙\n\n${doneCount > 0 ? `You completed ${doneCount} task${doneCount > 1 ? "s" : ""} today ✅` : "Great day!"}\n\nWell done 👏 Want me to plan tomorrow?`
+          message = [
+            `${firstName} 🔥`,
+            "",
+            `You completed ${doneCount} task${doneCount > 1 ? "s" : ""} today — well done! 👏`,
+            "",
+            "Want me to plan tomorrow? 👀",
+          ].join("\n")
         }
       } else {
         // Some tasks still pending
@@ -119,27 +138,35 @@ export async function GET(req: NextRequest) {
           .map((t: { title: string }) => `• ${t.title}`)
           .join("\n")
         const more = pendingCount > 3 ? (isArabic ? `\n+ ${pendingCount - 3} أخرى` : `\n+ ${pendingCount - 3} more`) : ""
+        const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0
 
         if (isArabic) {
           message = [
-            `مساء الخير ${firstName} 🌙`,
+            `كيف كان يومك ${firstName}؟ 👀`,
             "",
-            `باقي لك ${pendingCount} ${pendingCount === 1 ? "مهمة" : "مهام"}:`,
+            `أنجزت ${doneCount} من ${total} مهام (${pct}%) ✅`,
+            "",
+            `باقي لك:`,
             taskList + more,
             "",
             "تبغاني أرتبها لك لبكرة؟ 👀",
           ].join("\n")
         } else {
           message = [
-            `Good evening ${firstName} 🌙`,
+            `How was your day ${firstName}? 👀`,
             "",
-            `You still have ${pendingCount} task${pendingCount > 1 ? "s" : ""} pending:`,
+            `You got ${doneCount}/${total} done (${pct}%) ✅`,
+            "",
+            `Still pending:`,
             taskList + more,
             "",
             "Want me to reschedule them for tomorrow? 👀",
           ].join("\n")
         }
       }
+
+      // Refresh daily streak async
+      supabase.rpc("refresh_daily_streak", { p_user_id: profile.id }).then(undefined, () => {})
 
       await sendWhatsAppMessage(profile.phone_number, message)
 

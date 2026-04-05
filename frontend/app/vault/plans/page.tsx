@@ -114,6 +114,18 @@ export default function PlansPage() {
   const completedCount = plans.filter(p => p.status === "done").length;
   const pendingCount = plans.filter(p => p.status === "pending").length;
 
+  const COMPLETION_TOASTS_AR = ["خلصناها 👍🔥", "أبدعت اليوم 👏", "ممتاز! كملت واحدة ✅", "برافو! مشينا 💪"];
+  const COMPLETION_TOASTS_EN = ["Done! 👍🔥", "Nailed it! 👏", "Great work! ✅", "Keep going! 💪"];
+
+  const handleToggleStatus = async (id: string, checked: boolean) => {
+    await updatePlanStatus(id, checked ? "done" : "pending");
+    if (checked) {
+      const pool = isArabic ? COMPLETION_TOASTS_AR : COMPLETION_TOASTS_EN;
+      const msg = pool[Math.floor(Math.random() * pool.length)];
+      toast.success(msg, { duration: 2000 });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
@@ -256,8 +268,12 @@ export default function PlansPage() {
                         <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] rounded-full flex items-center justify-center">
                           <CheckCircle2 className="w-10 h-10 text-[#2552ca]/40" />
                         </div>
-                        <h3 className="text-xl font-headline font-bold text-slate-700">{t("لا توجد مهام هنا", "No tasks here yet")}</h3>
-                        <p className="text-slate-500 mt-2">{t("أضف مهمة جديدة لتبدأ", "Add a new task to get started")}</p>
+                        <h3 className="text-xl font-headline font-bold text-slate-700">
+                          {t("ما عندك مهام للحين 👀", "No tasks yet 👀")}
+                        </h3>
+                        <p className="text-slate-500 mt-2">
+                          {t("خلني أرتب لك أول وحدة 👌", "Let me help you add your first one 👌")}
+                        </p>
                       </div>
                     ) : (
                       <AnimatePresence mode="popLayout">
@@ -271,7 +287,7 @@ export default function PlansPage() {
                               <input type="checkbox" checked={selectedIds.has(plan.id)} onChange={() => toggleSelect(plan.id)} onClick={e => e.stopPropagation()}
                                 className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer" />
                             </div>
-                            <Checkbox checked={plan.status === "done"} onCheckedChange={c => updatePlanStatus(plan.id, c ? "done" : "pending")} className="mt-1" />
+                            <Checkbox checked={plan.status === "done"} onCheckedChange={c => handleToggleStatus(plan.id, !!c)} className="mt-1" />
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center gap-2">
                                 <span className={cn("font-semibold truncate", plan.status === "done" ? "line-through text-slate-400" : "text-slate-800")}>

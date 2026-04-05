@@ -16,6 +16,9 @@ import { BulkActionBar } from "@/components/thakirni/bulk-action-bar";
 import { AIVaultHero } from "@/components/thakirni/ai-vault-hero";
 import { UsageWidget } from "@/components/thakirni/usage-widget";
 import { WhatsAppBanner } from "@/components/thakirni/whatsapp-banner";
+import { DailyProgress } from "@/components/thakirni/daily-progress";
+import { ReferralShare } from "@/components/thakirni/referral-share";
+import { UpgradeNudge } from "@/components/thakirni/upgrade-nudge";
 
 // ── Particles ─────────────────────────────────────────────────────────────────
 
@@ -300,7 +303,7 @@ function VaultPageInner() {
   return (
     <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
       <VaultSidebar />
-      <main className="pt-16">
+      <main className="pt-16 pb-20 md:pb-0">
 
         {/* ── HERO ── */}
         <section className="relative pt-24 pb-12 px-8 overflow-hidden">
@@ -362,9 +365,24 @@ function VaultPageInner() {
               ))}
             </motion.div>
 
+            {/* Daily progress */}
+            <div className="mt-4">
+              <DailyProgress />
+            </div>
+
             {/* Usage widget */}
-            <div className="mt-6">
+            <div className="mt-3">
               <UsageWidget />
+            </div>
+
+            {/* Upgrade nudge */}
+            <div className="mt-3">
+              <UpgradeNudge />
+            </div>
+
+            {/* Referral share */}
+            <div className="mt-3">
+              <ReferralShare />
             </div>
           </div>
         </section>
@@ -446,11 +464,11 @@ function VaultPageInner() {
           </div>
         </section>
 
-        {/* FAB */}
+        {/* FAB — sits above mobile bottom nav */}
         <Link href="/vault/new-memory">
           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
-            className="fixed bottom-8 right-8 w-16 h-16 rounded-full power-gradient text-white shadow-2xl shadow-[#2552ca]/30 flex items-center justify-center z-50 group btn-glow">
-            <Plus className="w-7 h-7 group-hover:rotate-90 transition-transform duration-300" />
+            className="fixed bottom-8 md:bottom-8 bottom-[calc(4rem+1.5rem)] right-6 md:right-8 w-14 h-14 md:w-16 md:h-16 rounded-full power-gradient text-white shadow-2xl shadow-[#2552ca]/30 flex items-center justify-center z-40 group btn-glow">
+            <Plus className="w-6 h-6 md:w-7 md:h-7 group-hover:rotate-90 transition-transform duration-300" />
           </motion.button>
         </Link>
 

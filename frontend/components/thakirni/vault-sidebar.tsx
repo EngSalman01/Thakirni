@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Menu, LogOut, Settings, ChevronDown,
+  LayoutDashboard, CheckSquare, Mic, Sparkles, BarChart2,
+  Target, Flame, Brain, Calendar,
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
@@ -36,21 +38,21 @@ export function useSidebar() { return useContext(SidebarContext); }
 // ── Nav config ────────────────────────────────────────────────────────────────
 
 const PRIMARY_NAV = [
-  { href: "/vault",           labelAr: "لوحتك",      labelEn: "Dashboard" },
-  { href: "/vault/plans",     labelAr: "خططك",        labelEn: "Plans"     },
-  { href: "/vault/meetings",  labelAr: "اجتماعاتك",  labelEn: "Meetings"  },
-  { href: "/vault/assistant", labelAr: "الذكاء",      labelEn: "AI"        },
-  { href: "/vault/analytics", labelAr: "تحليلات",     labelEn: "Analytics" },
+  { href: "/vault",           icon: LayoutDashboard, labelAr: "لوحتك",      labelEn: "Dashboard" },
+  { href: "/vault/plans",     icon: CheckSquare,     labelAr: "خططك",       labelEn: "Plans"     },
+  { href: "/vault/meetings",  icon: Mic,             labelAr: "اجتماعاتك", labelEn: "Meetings"  },
+  { href: "/vault/assistant", icon: Sparkles,        labelAr: "الذكاء",     labelEn: "AI"        },
+  { href: "/vault/analytics", icon: BarChart2,       labelAr: "تحليلات",    labelEn: "Analytics" },
 ];
 
 const ALL_NAV = [
   ...PRIMARY_NAV,
-  { href: "/vault/goals",    labelAr: "أهدافي",    labelEn: "Goals"     },
-  { href: "/vault/habits",   labelAr: "عاداتي",    labelEn: "Habits"    },
-  { href: "/vault/focus",    labelAr: "التركيز",   labelEn: "Focus"     },
-  { href: "/vault/upload",   labelAr: "الذكريات",  labelEn: "Memories"  },
-  { href: "/vault/calendar", labelAr: "التقويم",   labelEn: "Calendar"  },
-  { href: "/vault/settings", labelAr: "الإعدادات", labelEn: "Settings"  },
+  { href: "/vault/goals",    icon: Target,    labelAr: "أهدافي",    labelEn: "Goals"     },
+  { href: "/vault/habits",   icon: Flame,     labelAr: "عاداتي",    labelEn: "Habits"    },
+  { href: "/vault/focus",    icon: Brain,     labelAr: "التركيز",   labelEn: "Focus"     },
+  { href: "/vault/upload",   icon: Brain,     labelAr: "الذكريات",  labelEn: "Memories"  },
+  { href: "/vault/calendar", icon: Calendar,  labelAr: "التقويم",   labelEn: "Calendar"  },
+  { href: "/vault/settings", icon: Settings,  labelAr: "الإعدادات", labelEn: "Settings"  },
 ];
 
 // ── Profile hook ──────────────────────────────────────────────────────────────
@@ -110,14 +112,16 @@ function DrawerNav({ onClose }: { onClose: () => void }) {
       <nav className="flex-1 overflow-y-auto py-3" aria-label="Navigation">
         {ALL_NAV.map((item) => {
           const isActive = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
+          const Icon = item.icon;
           return (
             <Link key={item.href} href={item.href} onClick={onClose}
               className={cn(
-                "flex items-center px-5 py-2.5 text-sm font-semibold transition-colors",
+                "flex items-center gap-3 px-5 py-2.5 text-sm font-semibold transition-all",
                 isActive
                   ? "bg-primary/10 text-primary border-s-2 border-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}>
+              <Icon className="w-4 h-4 shrink-0" />
               {isArabic ? item.labelAr : item.labelEn}
             </Link>
           );
@@ -173,15 +177,17 @@ export function VaultSidebar() {
               const isActive = item.href === "/vault"
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
+              const Icon = item.icon;
               return (
                 <Link key={item.href} href={item.href}
                   className={cn(
-                    "px-3 py-1.5 rounded-md text-sm font-semibold transition-all whitespace-nowrap",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-all whitespace-nowrap group",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                   aria-current={isActive ? "page" : undefined}>
+                  <Icon className={cn("w-3.5 h-3.5 transition-transform group-hover:scale-110", isActive && "stroke-[2.5]")} />
                   {isArabic ? item.labelAr : item.labelEn}
                 </Link>
               );

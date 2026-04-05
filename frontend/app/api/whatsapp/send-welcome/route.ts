@@ -79,8 +79,11 @@ export async function POST(req: NextRequest) {
 
     await sendWhatsAppMessage(normalized, message)
 
-    // Mark milestones
-    await supabase.rpc("mark_onboarding_step", { p_user_id: user.id, p_step: "connected_whatsapp" })
+    // Mark welcomed + onboarding milestone (idempotent)
+    await Promise.all([
+      supabase.rpc("mark_whatsapp_welcomed", { p_user_id: user.id }),
+      supabase.rpc("mark_onboarding_step", { p_user_id: user.id, p_step: "connected_whatsapp" }),
+    ])
 
     // Track analytics
     supabase.from("analytics_events").insert({

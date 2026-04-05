@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
+import { buildViralAppend, logViralCTASent } from "@/lib/growth/viral"
 
 export const maxDuration = 60
 
@@ -9,6 +10,7 @@ interface Profile {
   full_name: string | null
   phone_number: string
   preferred_language: string | null
+  referral_code: string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -40,7 +42,7 @@ export async function GET(req: NextRequest) {
   // Fetch all users with a phone number
   const { data: profiles, error: profilesError } = await supabase
     .from("profiles")
-    .select("id, full_name, phone_number, preferred_language")
+    .select("id, full_name, phone_number, preferred_language, referral_code")
     .not("phone_number", "is", null)
 
   if (profilesError) {
@@ -122,6 +124,15 @@ export async function GET(req: NextRequest) {
         message = `📊 ملخص أسبوعك يا ${name}!\n\n✅ مهام أنجزتها: ${donePlans}\n🧠 ذكريات حفظتها: ${memories}\n🔥 عادات هذا الأسبوع: ${completedHabitLogs}/${totalHabits}\n📅 مواعيد الأسبوع القادم: ${upcoming}\n\nأسبوع جديد مبارك! 🌟`
       } else {
         message = `📊 Your weekly summary, ${name}!\n\n✅ Tasks completed: ${donePlans}\n🧠 Memories saved: ${memories}\n🔥 Habits this week: ${completedHabitLogs}/${totalHabits}\n📅 Next week's plans: ${upcoming}\n\nHave a great week! 🌟`
+      }
+
+      // Append viral CTA if eligible (weekly summary is a perfect value moment)
+      if (profile.referral_code) {
+        const viralAppend = await buildViralAppend(profile.id, profile.referral_code, isArabic)
+        if (viralAppend) {
+          message += viralAppend
+          logViralCTASent(profile.id).catch(() => {})
+        }
       }
 
       await sendWhatsAppMessage(profile.phone_number, message)
