@@ -225,9 +225,9 @@ export function AffiliateCard() {
               <div key={conv.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5">
                 <div>
                   <span className="text-sm font-medium text-slate-700">{conv.plan_purchased ?? "Subscription"}</span>
-                  <span className="text-xs text-slate-400 ml-2">{new Date(conv.created_at).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-400 ms-2">{new Date(conv.created_at).toLocaleDateString()}</span>
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div className="text-sm font-bold text-green-600">+${conv.commission.toFixed(2)}</div>
                   <div className={`text-xs ${conv.status === "confirmed" ? "text-green-500" : "text-amber-500"}`}>
                     {conv.status}

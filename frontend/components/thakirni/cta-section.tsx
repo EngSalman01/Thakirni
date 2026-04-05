@@ -64,7 +64,7 @@ function FAQItem({
       }`}
     >
       <button
-        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-start hover:bg-white/5 transition-colors"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >

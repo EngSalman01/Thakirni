@@ -85,7 +85,7 @@ export default async function ProjectPage({
 
         <div className="flex items-center gap-3">
           {/* Mock Member Avatars - In real app, fetch from team_members */}
-          <div className="flex -space-x-2 mr-2">
+          <div className="flex -space-x-2 me-2">
             <Avatar className="w-8 h-8 border-2 border-background">
               <AvatarFallback>AH</AvatarFallback>
             </Avatar>

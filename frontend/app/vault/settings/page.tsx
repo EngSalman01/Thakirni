@@ -1498,7 +1498,7 @@ export default function SettingsPage() {
               disabled={deleteConfirm !== "DELETE" || deleting}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
               {t("حذف حسابي نهائياً", "Delete My Account")}
             </AlertDialogAction>
           </AlertDialogFooter>

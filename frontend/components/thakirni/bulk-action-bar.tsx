@@ -36,7 +36,7 @@ export function BulkActionBar({ selectedCount, onDelete, onClear, deleting }: Bu
             disabled={deleting}
             className="text-red-400 hover:text-red-300 hover:bg-white/10 h-8 px-3 rounded-xl font-label"
           >
-            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+            <Trash2 className="w-3.5 h-3.5 me-1.5" />
             {deleting ? t("جار الحذف...", "Deleting...") : t("حذف", "Delete")}
           </Button>
           <button onClick={onClear} className="text-white/50 hover:text-white transition-colors">

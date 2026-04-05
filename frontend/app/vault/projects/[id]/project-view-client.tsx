@@ -117,7 +117,7 @@ export function ProjectViewClient({
             <Button
               variant="outline"
               size="icon"
-              className="h-8 w-8 rounded-full ml-1 border-dashed bg-transparent"
+              className="h-8 w-8 rounded-full ms-1 border-dashed bg-transparent"
               onClick={() => setInviteOpen(true)}
             >
               <UserPlus className="w-4 h-4 text-muted-foreground" />
@@ -155,10 +155,10 @@ export function ProjectViewClient({
 
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search className="w-4 h-4 absolute start-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search tasks..."
-              className="h-8 w-[200px] pl-8 bg-background text-xs"
+              className="h-8 w-[200px] ps-8 bg-background text-xs"
             />
           </div>
           <Button variant="outline" size="sm" className="h-8 gap-2 text-xs">
