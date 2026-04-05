@@ -15,6 +15,7 @@ import {
   ScrollText,
   Shield,
   Building2,
+  BarChart2,
 } from "lucide-react";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
 
@@ -26,6 +27,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/analytics", icon: BarChart2, label: "Analytics" },
   { href: "/admin/users", icon: Users, label: "Users" },
   { href: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
   { href: "/admin/leads",     icon: Building2, label: "Leads (CRM)" },

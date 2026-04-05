@@ -22,6 +22,14 @@ type EventName =
   | "whatsapp_welcome_sent"
   | "referral_link_copied"
   | "referral_signup"
+  // Intelligence & retention
+  | "user_memory_stored"
+  | "predictive_nudge_sent"
+  | "predictive_nudge_actioned"
+  | "upgrade_nudge_shown"
+  | "upgrade_nudge_converted"
+  | "daily_briefing_sent"
+  | "context_memory_used"
 
 interface EventData {
   [key: string]: string | number | boolean | undefined

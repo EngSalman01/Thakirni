@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
         next_billed_at?: string
         paused_at?: string
         items?: Array<{ price?: { id: string }; totals?: { total?: string; currency_code?: string } }>
-        custom_data?: { user_id?: string }
+        custom_data?: { user_id?: string; type?: string; credits_amount?: number }
         billing_details?: { invoice_number?: string }
       }
     }
@@ -183,6 +183,35 @@ export async function POST(req: NextRequest) {
             }).catch(console.error)
           }
         }
+        break
+      }
+
+      case "transaction.completed": {
+        // Credits purchase — only if custom_data.type === "credits"
+        if (d.custom_data?.type !== "credits") break
+        const userId = d.custom_data?.user_id
+        const creditsAmount = d.custom_data?.credits_amount
+        if (!userId || !creditsAmount) break
+
+        // Add credits to user
+        await service.rpc("add_credits", { p_user_id: userId, p_amount: creditsAmount })
+
+        // Record in credits table audit trail
+        await service.from("credit_transactions").insert({
+          user_id: userId,
+          amount: creditsAmount,
+          transaction_type: "purchase",
+          reference_id: d.id,
+        }).maybeSingle()
+
+        // Track analytics
+        await service.from("analytics_events").insert({
+          user_id: userId,
+          event_name: "subscription_upgraded",
+          properties: { type: "credits_purchase", credits: creditsAmount, paddle_tx_id: d.id },
+        })
+
+        console.log(`[Paddle] credits_purchase | user=${userId} credits=${creditsAmount}`)
         break
       }
 

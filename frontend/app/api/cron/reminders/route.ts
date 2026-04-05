@@ -4,8 +4,22 @@ import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
 
 export const maxDuration = 60
 
+// Follow-up title encoding: [FU:generation:originalSentAt] CleanTitle
+// generation = 1 or 2, originalSentAt = ISO timestamp when original reminder fired
+const FU_REGEX = /^\[FU:(\d):([0-9T:.Z+-]+)\] ([\s\S]+)$/
+
+function isQuietHours(): boolean {
+  const hour = parseInt(
+    new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Riyadh", hour12: false }).slice(0, 2)
+  )
+  return hour >= 23 || hour < 7
+}
+
+function log(event: string, detail?: string) {
+  console.log(`[Cron/Reminders:${event}] ${new Date().toISOString()}${detail ? " | " + detail : ""}`)
+}
+
 export async function GET(req: NextRequest) {
-  // Verify Vercel cron secret
   const authHeader = req.headers.get("authorization")
   if (authHeader?.toLowerCase() !== `bearer ${process.env.CRON_SECRET?.toLowerCase()}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -14,13 +28,13 @@ export async function GET(req: NextRequest) {
   const supabase = createServiceClient()
   const now = new Date().toISOString()
 
-  // Atomically mark reminders as sent and return them — prevents double-send on overlapping cron runs
+  // Atomically claim due reminders — prevents double-send on overlapping cron runs
   const { data: reminders, error } = await supabase
     .from("reminders")
     .update({ is_sent: true, sent_at: now })
     .lte("remind_at", now)
     .eq("is_sent", false)
-    .select("id, user_id, title, channel, remind_at")
+    .select("id, user_id, title, channel, remind_at, plan_id")
     .limit(50)
 
   if (error) {
@@ -32,38 +46,103 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ sent: 0 })
   }
 
-  // Fetch profiles for all reminder owners in one query
+  // Batch-fetch profiles
   const userIds = [...new Set(reminders.map((r) => r.user_id))]
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, phone_number, preferred_language")
     .in("id", userIds)
 
-  const profileMap = new Map(
-    (profiles ?? []).map((p) => [p.id, p])
-  )
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
 
   let sent = 0
 
   for (const reminder of reminders) {
     const profile = profileMap.get(reminder.user_id) ?? null
     const phone = profile?.phone_number
+    if (!phone) continue
+    if (reminder.channel !== "whatsapp" && reminder.channel !== "push") continue
+
     const isArabic = (profile?.preferred_language ?? "ar") !== "en"
+    const fuMatch = FU_REGEX.exec(reminder.title)
 
     try {
-      if ((reminder.channel === "whatsapp" || reminder.channel === "push") && phone) {
-        const locale = isArabic ? "ar-SA" : "en-GB"
-        const reminderTime = new Date(reminder.remind_at).toLocaleString(locale, {
-          timeZone: "Asia/Riyadh",
-          dateStyle: "short",
-          timeStyle: "short",
-        })
-        const message = isArabic
-          ? `🔔 تذكير: ${reminder.title}\n⏰ ${reminderTime}`
-          : `🔔 Reminder: ${reminder.title}\n⏰ ${reminderTime}`
+      if (fuMatch) {
+        // ── Follow-up reminder ────────────────────────────────────────────────
+        const generation = parseInt(fuMatch[1]) // 1 or 2
+        const originalSentAt = fuMatch[2]
+        const cleanTitle = fuMatch[3]
+
+        // Respect quiet hours for proactive follow-ups
+        if (isQuietHours()) {
+          log("fu_skipped_quiet", `user=${reminder.user_id} gen=${generation}`)
+          continue
+        }
+
+        // Check if user has replied since the original reminder fired
+        const { data: replies } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("user_id", reminder.user_id)
+          .eq("role", "user")
+          .gte("created_at", originalSentAt)
+          .limit(1)
+
+        if (replies && replies.length > 0) {
+          // User already responded — drop this follow-up silently
+          log("fu_skipped_replied", `user=${reminder.user_id} gen=${generation}`)
+          continue
+        }
+
+        const message = generation === 1
+          ? isArabic
+            ? `ها بشرت؟ خلصت ولا للحين؟ 👀\n(${cleanTitle})`
+            : `Did you get to it? (${cleanTitle}) 👀`
+          : isArabic
+            ? `ترى باقي لك: ${cleanTitle} 👀`
+            : `Still on your list: ${cleanTitle} 👀`
+
         await sendWhatsAppMessage(phone, message)
+        log("follow_up_sent", `user=${reminder.user_id} gen=${generation} title="${cleanTitle.slice(0, 40)}"`)
         sent++
+
+        // Gen 1 → schedule Gen 2 (30 min later); Gen 2 → stop
+        if (generation === 1) {
+          const fu2At = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+          supabase.from("reminders").insert({
+            user_id: reminder.user_id,
+            title: `[FU:2:${originalSentAt}] ${cleanTitle}`,
+            remind_at: fu2At,
+            plan_id: reminder.plan_id ?? null,
+            channel: "whatsapp",
+            is_sent: false,
+          }).then(undefined, (e) => console.error("[Cron/Reminders] FU2 insert error:", e))
+        }
+
+      } else {
+        // ── Regular reminder ──────────────────────────────────────────────────
+        const message = isArabic
+          ? `🔔 ${reminder.title}`
+          : `🔔 ${reminder.title}`
+
+        await sendWhatsAppMessage(phone, message)
+        log("reminder_sent", `user=${reminder.user_id} title="${reminder.title.slice(0, 40)}"`)
+        sent++
+
+        // Schedule FU1 (30 min later) for WhatsApp plan reminders
+        if (reminder.plan_id && reminder.channel === "whatsapp") {
+          const fu1At = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+          supabase.from("reminders").insert({
+            user_id: reminder.user_id,
+            title: `[FU:1:${now}] ${reminder.title}`,
+            remind_at: fu1At,
+            plan_id: reminder.plan_id,
+            channel: "whatsapp",
+            is_sent: false,
+          }).then(undefined, (e) => console.error("[Cron/Reminders] FU1 insert error:", e))
+        }
       }
+
     } catch (err) {
       console.error(`[Cron/Reminders] failed to send reminder ${reminder.id}:`, err)
     }
