@@ -36,12 +36,23 @@ CREATE TABLE IF NOT EXISTS public.announcements (
   message     text        NOT NULL,
   target      text        NOT NULL DEFAULT 'all',
   channel     text        NOT NULL DEFAULT 'banner',
+  is_active   boolean     NOT NULL DEFAULT true,
+  starts_at   timestamptz,
+  ends_at     timestamptz,
   sent_at     timestamptz,
   sent_count  integer     NOT NULL DEFAULT 0,
   created_by  uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at  timestamptz NOT NULL DEFAULT now(),
   updated_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Backfill columns if table already existed without them (idempotent)
+ALTER TABLE public.announcements
+  ADD COLUMN IF NOT EXISTS is_active   boolean     NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS starts_at   timestamptz,
+  ADD COLUMN IF NOT EXISTS ends_at     timestamptz,
+  ADD COLUMN IF NOT EXISTS sent_at     timestamptz,
+  ADD COLUMN IF NOT EXISTS sent_count  integer     NOT NULL DEFAULT 0;
 
 -- RLS
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
