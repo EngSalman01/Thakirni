@@ -23,21 +23,28 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  group?: string;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/admin", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/analytics", icon: BarChart2, label: "Analytics" },
-  { href: "/admin/users", icon: Users, label: "Users" },
-  { href: "/admin/subscriptions", icon: CreditCard, label: "Subscriptions" },
-  { href: "/admin/leads",     icon: Building2, label: "Leads (CRM)" },
-  { href: "/admin/discounts", icon: Tag,       label: "Discounts" },
-  { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
-  { href: "/admin/jobs", icon: ListTodo, label: "Job Queue" },
-  { href: "/admin/logs", icon: ScrollText, label: "Request Logs" },
-  { href: "/admin/compliance", icon: Shield, label: "Compliance" },
-  { href: "/admin/settings", icon: Settings, label: "Settings" },
+  { href: "/admin",               icon: LayoutDashboard, label: "Dashboard",     group: "main" },
+  { href: "/admin/analytics",     icon: BarChart2,       label: "Analytics",     group: "main" },
+  { href: "/admin/users",         icon: Users,           label: "Users",         group: "main" },
+  { href: "/admin/subscriptions", icon: CreditCard,      label: "Subscriptions", group: "main" },
+  { href: "/admin/leads",         icon: Building2,       label: "Leads (CRM)",   group: "ops"  },
+  { href: "/admin/discounts",     icon: Tag,             label: "Discounts",     group: "ops"  },
+  { href: "/admin/announcements", icon: Megaphone,       label: "Announcements", group: "ops"  },
+  { href: "/admin/jobs",          icon: ListTodo,        label: "Job Queue",     group: "sys"  },
+  { href: "/admin/logs",          icon: ScrollText,      label: "Request Logs",  group: "sys"  },
+  { href: "/admin/compliance",    icon: Shield,          label: "Compliance",    group: "sys"  },
+  { href: "/admin/settings",      icon: Settings,        label: "Settings",      group: "sys"  },
 ];
+
+const GROUP_LABELS: Record<string, string> = {
+  main: "Overview",
+  ops:  "Operations",
+  sys:  "System",
+};
 
 interface AdminSidebarProps {
   fullName: string;
@@ -46,54 +53,68 @@ interface AdminSidebarProps {
 export function AdminSidebar({ fullName }: AdminSidebarProps) {
   const pathname = usePathname();
 
+  const groups = Array.from(new Set(NAV_ITEMS.map((i) => i.group ?? "main")));
+
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-white border-r border-[#e4e2e1] flex flex-col z-40">
+    <aside className="fixed inset-y-0 left-0 w-64 bg-[#0B0F1A] border-r border-white/8 flex flex-col z-40">
+
       {/* Logo */}
-      <div className="p-6 border-b border-[#e4e2e1]">
-        <BrandLogo />
-        <p className="text-xs font-label font-semibold text-[#2552ca] uppercase tracking-widest mt-3">
-          Admin Panel
-        </p>
+      <div className="px-5 py-5 border-b border-white/8">
+        <BrandLogo variant="full" iconSize={28} />
+        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/25">
+          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Admin Panel</span>
+        </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) => {
-          const isActive =
-            item.href === "/admin"
-              ? pathname === "/admin"
-              : pathname.startsWith(item.href);
-          const Icon = item.icon;
-
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+        {groups.map((group) => {
+          const items = NAV_ITEMS.filter((i) => (i.group ?? "main") === group);
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-label font-medium transition-all",
-                isActive
-                  ? "bg-[#2552ca] text-white shadow-sm"
-                  : "text-slate-600 hover:bg-[#f6f3f2] hover:text-slate-900"
-              )}
-            >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
-            </Link>
+            <div key={group}>
+              <p className="px-3 mb-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                {GROUP_LABELS[group] ?? group}
+              </p>
+              <div className="space-y-0.5">
+                {items.map((item) => {
+                  const isActive =
+                    item.href === "/admin"
+                      ? pathname === "/admin"
+                      : pathname.startsWith(item.href);
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
+                        isActive
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                          : "text-slate-400 hover:bg-white/6 hover:text-white"
+                      )}
+                    >
+                      <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-white" : "text-slate-500")} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           );
         })}
       </nav>
 
       {/* User / footer */}
-      <div className="p-4 border-t border-[#e4e2e1] space-y-3">
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-[#2552ca] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+      <div className="p-4 border-t border-white/8 space-y-3">
+        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/4">
+          <div className="w-8 h-8 rounded-full power-gradient flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {fullName?.charAt(0)?.toUpperCase() ?? "A"}
           </div>
-          <div className="min-w-0">
-            <p className="text-sm font-label font-semibold text-slate-800 truncate">
-              {fullName || "Admin"}
-            </p>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-white truncate">{fullName || "Admin"}</p>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400">
               Admin
             </span>
           </div>
@@ -101,7 +122,7 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
 
         <Link
           href="/vault"
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-label text-slate-500 hover:bg-[#f6f3f2] hover:text-slate-700 transition-all"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-slate-500 hover:bg-white/6 hover:text-slate-300 transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Vault
