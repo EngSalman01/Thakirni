@@ -1,21 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { createClient } from "@/lib/supabase/client"
 import { useLanguage } from "@/components/language-provider"
 
-const STEPS = 4
+const STEPS = 5
 
 const USE_CASES = [
-  { id: "goals",        ar: "تحقيق الأهداف",         en: "Achieve goals",       icon: "🎯" },
-  { id: "habits",       ar: "بناء عادات يومية",       en: "Build daily habits",  icon: "🔄" },
-  { id: "tasks",        ar: "تنظيم المهام",            en: "Organize tasks",      icon: "✅" },
-  { id: "meetings",     ar: "تلخيص الاجتماعات",       en: "Summarize meetings",  icon: "🎙️" },
-  { id: "reminders",    ar: "تذكيرات ذكية",            en: "Smart reminders",     icon: "⏰" },
-  { id: "notes",        ar: "حفظ الأفكار والملاحظات", en: "Save notes & ideas",  icon: "📝" },
+  { id: "goals",     ar: "تحقيق الأهداف",         en: "Achieve goals",      icon: "🎯" },
+  { id: "habits",    ar: "بناء عادات يومية",       en: "Build daily habits", icon: "🔄" },
+  { id: "tasks",     ar: "تنظيم المهام",            en: "Organize tasks",     icon: "✅" },
+  { id: "meetings",  ar: "تلخيص الاجتماعات",       en: "Summarize meetings", icon: "🎙️" },
+  { id: "reminders", ar: "تذكيرات ذكية",            en: "Smart reminders",    icon: "⏰" },
+  { id: "notes",     ar: "حفظ الأفكار والملاحظات", en: "Save notes & ideas", icon: "📝" },
 ]
+
+interface QuickCreateResult {
+  type: "task" | "reminder" | "note"
+  emoji: string
+  titleAr: string
+  titleEn: string
+}
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -25,6 +32,8 @@ export default function OnboardingPage() {
   const [phone, setPhone] = useState("")
   const [name, setName] = useState("")
   const [loading, setLoading] = useState(false)
+  const [createdItem, setCreatedItem] = useState<QuickCreateResult | null>(null)
+  const [creating, setCreating] = useState(false)
   const supabase = createClient()
 
   const progress = ((step - 1) / (STEPS - 1)) * 100
@@ -33,6 +42,32 @@ export default function OnboardingPage() {
     setSelectedUseCases(prev =>
       prev.includes(id) ? prev.filter(u => u !== id) : [...prev, id]
     )
+  }
+
+  // Step 4: auto-trigger quick-create when user arrives
+  useEffect(() => {
+    if (step === 4 && !createdItem && !creating) {
+      triggerQuickCreate()
+    }
+  }, [step]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function triggerQuickCreate() {
+    setCreating(true)
+    try {
+      const res = await fetch("/api/onboarding/quick-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ useCases: selectedUseCases, isArabic }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setCreatedItem(data.result ?? null)
+      }
+    } catch {
+      // Non-fatal — user still proceeds
+    } finally {
+      setCreating(false)
+    }
   }
 
   async function markOnboarded() {
@@ -50,26 +85,30 @@ export default function OnboardingPage() {
       const user = await markOnboarded()
       if (!user) return
 
-      // Update name if provided
       if (name.trim()) {
         await supabase.from("profiles")
           .update({ full_name: name.trim() })
           .eq("id", user.id)
       }
 
-      // Log onboarding completion (fire and forget)
+      // Log use-case selection for activation tracking
+      fetch("/api/onboarding/progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ useCases: selectedUseCases }),
+      }).catch(() => {})
+
       supabase.from("analytics_events").insert({
         user_id: user.id,
         event_name: "onboarding_completed",
         properties: { use_cases: selectedUseCases, has_phone: !!phone },
       }).then(() => {})
 
-      // Send WhatsApp welcome if phone provided (fire and forget)
       if (phone.trim()) {
         fetch("/api/whatsapp/send-welcome", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: phone.trim(), name }),
+          body: JSON.stringify({ phone: phone.trim(), name, useCases: selectedUseCases }),
         }).catch(() => {})
       }
 
@@ -82,15 +121,12 @@ export default function OnboardingPage() {
   }
 
   async function skip() {
-    try {
-      await markOnboarded()
-    } catch {}
+    try { await markOnboarded() } catch {}
     router.push("/vault")
   }
 
   return (
     <div className="min-h-screen bg-[#fbf9f8] flex flex-col items-center justify-center px-4 py-12" dir={isArabic ? "rtl" : "ltr"}>
-
       {/* Progress bar */}
       <div className="w-full max-w-lg mb-8">
         <div className="flex justify-between items-center mb-2">
@@ -112,7 +148,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         <AnimatePresence mode="wait">
 
-          {/* Step 1: Welcome */}
+          {/* Step 1: Welcome + name */}
           {step === 1 && (
             <motion.div key="s1"
               initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
@@ -123,10 +159,7 @@ export default function OnboardingPage() {
                 {t("أهلاً بك في ذكرني!", "Welcome to Thakirni!")}
               </h1>
               <p className="text-slate-600 text-lg leading-relaxed">
-                {t(
-                  "سنساعدك على الإعداد في أقل من دقيقتين.",
-                  "We'll get you set up in under 2 minutes."
-                )}
+                {t("سنرتب لك أول شي خلال دقيقتين.", "We'll set up your first item in under 2 minutes.")}
               </p>
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-700 text-start">
@@ -142,12 +175,12 @@ export default function OnboardingPage() {
               </div>
               <button onClick={() => setStep(2)}
                 className="w-full py-3 rounded-xl text-white font-semibold power-gradient btn-glow transition-all hover:opacity-90">
-                {t("هيا نبدأ!", "Let's go!")}
+                {t("هيا نبدأ! →", "Let's go! →")}
               </button>
             </motion.div>
           )}
 
-          {/* Step 2: Use case selection */}
+          {/* Step 2: Use case */}
           {step === 2 && (
             <motion.div key="s2"
               initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
@@ -155,7 +188,7 @@ export default function OnboardingPage() {
             >
               <div>
                 <h2 className="text-2xl font-bold text-slate-800">
-                  {t("ماذا تريد أن تحقق؟", "What do you want to achieve?")}
+                  {t("وش تبغاني أساعدك فيه؟ 👀", "What do you need help with? 👀")}
                 </h2>
                 <p className="text-slate-500 mt-1 text-sm">
                   {t("اختر كل ما ينطبق عليك", "Select all that apply")}
@@ -192,7 +225,7 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* Step 3: Optional phone */}
+          {/* Step 3: Phone */}
           {step === 3 && (
             <motion.div key="s3"
               initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
@@ -205,8 +238,8 @@ export default function OnboardingPage() {
                 </h2>
                 <p className="text-slate-500 mt-2 text-sm leading-relaxed">
                   {t(
-                    "أضف رقم واتساب لتلقي تذكيراتك مباشرةً على هاتفك. (اختياري)",
-                    "Add your WhatsApp number to receive reminders directly on your phone. (optional)"
+                    "أضف رقمك وأرسل لك ملخص يومك كل صباح مباشرة على واتساب. (اختياري)",
+                    "Add your number and I'll send your daily briefing straight to WhatsApp. (optional)"
                   )}
                 </p>
               </div>
@@ -225,12 +258,6 @@ export default function OnboardingPage() {
                     className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-slate-800 font-mono"
                   />
                 </div>
-                <p className="text-xs text-slate-400">
-                  {t(
-                    "لن يُستخدم رقمك إلا للتذكيرات التي تطلبها",
-                    "Your number will only be used for reminders you request"
-                  )}
-                </p>
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setStep(2)}
@@ -245,9 +272,76 @@ export default function OnboardingPage() {
             </motion.div>
           )}
 
-          {/* Step 4: All set */}
+          {/* Step 4: AHA MOMENT — auto-create first item */}
           {step === 4 && (
             <motion.div key="s4"
+              initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
+              className="glass-card rounded-3xl p-8 text-center space-y-6"
+            >
+              {creating ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                    className="text-5xl mx-auto w-fit"
+                  >
+                    ⚙️
+                  </motion.div>
+                  <h2 className="text-xl font-bold text-slate-800">
+                    {t("جاري أرتب لك أول شي...", "Setting up your first item...")}
+                  </h2>
+                  <p className="text-slate-500 text-sm">
+                    {t("ثانية واحدة 👌", "One moment 👌")}
+                  </p>
+                </>
+              ) : createdItem ? (
+                <>
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", damping: 10, stiffness: 200 }}
+                    className="text-6xl"
+                  >
+                    {createdItem.emoji}
+                  </motion.div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">
+                      {t("خلصنا أول شي لك 👍", "Done — your first item is ready 👍")}
+                    </h2>
+                    <p className="text-[#2552ca] font-semibold mt-2">
+                      {isArabic ? createdItem.titleAr : createdItem.titleEn}
+                    </p>
+                  </div>
+                  <div className="bg-[#2552ca]/5 border border-[#2552ca]/15 rounded-2xl p-4 text-sm text-slate-600 leading-relaxed">
+                    {t(
+                      "تقدر تعدله، تكمله، أو تضيف المزيد — أنا موجود لما تحتاجني 👌",
+                      "You can edit it, complete it, or add more — I'm here when you need me 👌"
+                    )}
+                  </div>
+                  <button onClick={() => setStep(5)}
+                    className="w-full py-3 rounded-xl text-white font-semibold power-gradient btn-glow hover:opacity-90 transition-all">
+                    {t("ممتاز، كمل →", "Nice, continue →")}
+                  </button>
+                </>
+              ) : (
+                // Fallback if quick-create failed
+                <>
+                  <div className="text-5xl">✅</div>
+                  <h2 className="text-xl font-bold text-slate-800">
+                    {t("حسابك جاهز!", "Your account is ready!")}
+                  </h2>
+                  <button onClick={() => setStep(5)}
+                    className="w-full py-3 rounded-xl text-white font-semibold power-gradient btn-glow hover:opacity-90 transition-all">
+                    {t("كمل →", "Continue →")}
+                  </button>
+                </>
+              )}
+            </motion.div>
+          )}
+
+          {/* Step 5: All set */}
+          {step === 5 && (
+            <motion.div key="s5"
               initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
               className="glass-card rounded-3xl p-8 text-center space-y-6"
             >
@@ -263,30 +357,50 @@ export default function OnboardingPage() {
               </h2>
               <p className="text-slate-500 leading-relaxed">
                 {t(
-                  "تم إنشاء مشروعك الأول. ابدأ بإضافة مهامك أو حدّث مع مساعد الذكاء الاصطناعي.",
-                  "Your first project is ready. Start adding tasks or chat with your AI assistant."
+                  "مساعدك الذكي جاهز. راسله متى ما احتجت وأعطيه أوامرك.",
+                  "Your AI assistant is ready. Text it whenever you need and give it instructions."
                 )}
               </p>
+
+              {/* Quick-action hints */}
               <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-start">
-                {selectedUseCases.slice(0, 3).map(id => {
-                  const uc = USE_CASES.find(u => u.id === id)
-                  if (!uc) return null
-                  return (
-                    <div key={id} className="flex items-center gap-2 text-sm text-slate-600">
-                      <span>{uc.icon}</span>
-                      <span>{isArabic ? uc.ar : uc.en}</span>
-                      <span className="text-[#2552ca] mr-auto">✓</span>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
+                  {t("جرب قول:", "Try saying:")}
+                </p>
+                {isArabic ? (
+                  <>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="bg-[#2552ca]/10 text-[#2552ca] px-2 py-0.5 rounded-lg text-xs font-mono">وش عندي اليوم؟</span>
                     </div>
-                  )
-                })}
-                {phone && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span>📱</span>
-                    <span>{t("تذكيرات واتساب مفعّلة", "WhatsApp reminders enabled")}</span>
-                    <span className="text-[#2552ca] mr-auto">✓</span>
-                  </div>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="bg-[#2552ca]/10 text-[#2552ca] px-2 py-0.5 rounded-lg text-xs font-mono">ذكرني بالموعد الساعة 4</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="bg-[#2552ca]/10 text-[#2552ca] px-2 py-0.5 rounded-lg text-xs font-mono">رتب لي يومي</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="bg-[#2552ca]/10 text-[#2552ca] px-2 py-0.5 rounded-lg text-xs font-mono">What do I have today?</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="bg-[#2552ca]/10 text-[#2552ca] px-2 py-0.5 rounded-lg text-xs font-mono">Remind me at 4pm</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <span className="bg-[#2552ca]/10 text-[#2552ca] px-2 py-0.5 rounded-lg text-xs font-mono">Plan my day</span>
+                    </div>
+                  </>
                 )}
               </div>
+
+              {phone && (
+                <div className="flex items-center gap-2 justify-center text-sm text-green-700 bg-green-50 rounded-xl px-4 py-2">
+                  <span>📱</span>
+                  <span>{t("واتساب مفعّل — ستصلك رسالة الصبح كل يوم", "WhatsApp enabled — you'll get a morning briefing daily")}</span>
+                </div>
+              )}
+
               <button onClick={finish} disabled={loading}
                 className="w-full py-3 rounded-xl text-white font-semibold power-gradient btn-glow hover:opacity-90 transition-all disabled:opacity-60">
                 {loading

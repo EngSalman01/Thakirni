@@ -4,7 +4,7 @@ import { processJobs } from "@/lib/jobs/worker"
 export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
-  const secret = req.headers.get("authorization")?.replace("Bearer ", "")
+  const secret = req.headers.get("authorization")?.replace(/bearer /i, "")
   if (secret !== process.env.CRON_SECRET) {
     return new Response("Unauthorized", { status: 401 })
   }
