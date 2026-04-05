@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS public.announcements (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   title       text        NOT NULL,
   message     text        NOT NULL,
-  target      text        NOT NULL DEFAULT 'all',
-  channel     text        NOT NULL DEFAULT 'banner',
+  target      text        NOT NULL DEFAULT 'all'   CHECK (target  = ANY (ARRAY['all','free','pro','teams'])),
+  channel     text        NOT NULL DEFAULT 'banner' CHECK (channel = ANY (ARRAY['banner','whatsapp','both','email','push'])),
   is_active   boolean     NOT NULL DEFAULT true,
   starts_at   timestamptz,
   ends_at     timestamptz,
@@ -53,6 +53,14 @@ ALTER TABLE public.announcements
   ADD COLUMN IF NOT EXISTS ends_at     timestamptz,
   ADD COLUMN IF NOT EXISTS sent_at     timestamptz,
   ADD COLUMN IF NOT EXISTS sent_count  integer     NOT NULL DEFAULT 0;
+
+-- Fix check constraints (drop old narrow ones, add correct ones)
+ALTER TABLE public.announcements
+  DROP CONSTRAINT IF EXISTS announcements_channel_check,
+  DROP CONSTRAINT IF EXISTS announcements_target_check;
+ALTER TABLE public.announcements
+  ADD CONSTRAINT announcements_channel_check CHECK (channel = ANY (ARRAY['banner','whatsapp','both','email','push'])),
+  ADD CONSTRAINT announcements_target_check  CHECK (target  = ANY (ARRAY['all','free','pro','teams']));
 
 -- RLS
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
