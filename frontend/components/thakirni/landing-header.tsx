@@ -41,9 +41,9 @@ export function LandingHeader() {
       transition={{ duration: 0.6 }}
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? "h-auto shadow-ambient"
-          : "h-auto"
-      } bg-white dark:bg-slate-900 shadow-ambient`}
+          ? "shadow-ambient backdrop-blur-xl bg-white/90 dark:bg-[#0B0F1A]/90"
+          : "bg-white/80 dark:bg-[#0B0F1A]/60 backdrop-blur-sm"
+      }`}
     >
       <div className={`flex items-center justify-between px-4 sm:px-8 max-w-7xl mx-auto ${scrolled ? "h-16" : "h-20"}`}>
         {/* Logo */}
@@ -55,25 +55,25 @@ export function LandingHeader() {
         <nav className="hidden md:flex items-center gap-8">
           <Link
             href="/#features"
-            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
+            className="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 text-sm"
           >
             {t("المميزات", "Features")}
           </Link>
           <Link
             href="/pricing"
-            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
+            className="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 text-sm"
           >
             {t("الأسعار", "Pricing")}
           </Link>
           <Link
             href="/enterprise"
-            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
+            className="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 text-sm"
           >
             {t("للمؤسسات", "Enterprise")}
           </Link>
           <Link
             href="/help"
-            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors duration-300 font-label text-sm"
+            className="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300 text-sm"
           >
             {t("المساعدة", "Help")}
           </Link>
@@ -85,7 +85,7 @@ export function LandingHeader() {
           <ThemeToggle />
           <Link
             href="/auth"
-            className="text-slate-600 font-medium hover:text-[#2552ca] transition-colors text-sm font-label px-4 py-2"
+            className="text-slate-600 dark:text-slate-400 font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm px-4 py-2"
           >
             {t("تسجيل الدخول", "Login")}
           </Link>
@@ -105,7 +105,7 @@ export function LandingHeader() {
           <ThemeToggle />
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="p-2 text-slate-600 hover:text-[#2552ca] transition-colors rounded-full"
+            className="p-2 text-slate-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors rounded-full"
             aria-label={t("القائمة", "Menu")}
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -121,7 +121,7 @@ export function LandingHeader() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden z-50"
+            className="md:hidden border-t border-slate-100 dark:border-white/8 bg-white/95 dark:bg-[#0B0F1A]/95 backdrop-blur-xl overflow-hidden z-50"
           >
             <div className="px-4 sm:px-8 py-5 flex flex-col gap-4">
               {[
@@ -134,7 +134,7 @@ export function LandingHeader() {
                   key={href}
                   href={href}
                   onClick={() => setMobileOpen(false)}
-                  className="text-slate-700 hover:text-[#2552ca] transition-colors py-1 text-sm font-medium font-label"
+                  className="text-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors py-1 text-sm font-medium font-label"
                 >
                   {t(ar, en)}
                 </Link>
