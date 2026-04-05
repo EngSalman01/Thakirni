@@ -1,18 +1,23 @@
-<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e47b8"/>
-      <stop offset="55%" stop-color="#5b35d5"/>
-      <stop offset="100%" stop-color="#b8185d"/>
+    <linearGradient id="a" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4F46E5"/>
+      <stop offset=".4" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#EC4899"/>
     </linearGradient>
-    <clipPath id="c">
-      <rect x="0" y="0" width="120" height="120" rx="28"/>
-    </clipPath>
+    <radialGradient id="b" cx="36%" cy="26%" r="58%" gradientUnits="objectBoundingBox">
+      <stop stop-color="#fff" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".13"/>
+    </linearGradient>
   </defs>
-
-  <rect x="0" y="0" width="120" height="120" rx="28" fill="url(#g)"/>
-  <circle cx="120" cy="0" r="58" fill="white" fill-opacity="0.15" clip-path="url(#c)"/>
-
-  <path d="M60,32 L67.8,52.2 L88,60 L67.8,67.8 L60,88 L52.2,67.8 L32,60 L52.2,52.2 Z"
-        fill="white" fill-opacity="0.96"/>
+  <rect width="32" height="32" rx="8" fill="url(#a)"/>
+  <rect width="32" height="32" rx="8" fill="url(#b)"/>
+  <rect width="32" height="32" rx="8" fill="url(#c)"/>
+  <path transform="rotate(12 16 16)"
+        d="M16 9.25 17.88 14.12 22.75 16 17.88 17.88 16 22.75 14.12 17.88 9.25 16 14.12 14.12z"
+        fill="#fff" fill-opacity=".94"/>
 </svg>
