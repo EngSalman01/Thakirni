@@ -17,6 +17,9 @@
   <rect width="32" height="32" rx="8" fill="url(#a)"/>
   <rect width="32" height="32" rx="8" fill="url(#b)"/>
   <rect width="32" height="32" rx="8" fill="url(#c)"/>
+  <!-- Scaled spark (outer r=6.75, inner=1.88 @45°, rotated 12°) -->
+  <!-- center (16,16): top(16,9.25) UR(17.88,14.12) right(22.75,16) LR(17.88,17.88)
+                       bottom(16,22.75) LL(14.12,17.88) left(9.25,16) UL(14.12,14.12) -->
   <path transform="rotate(12 16 16)"
         d="M16 9.25 17.88 14.12 22.75 16 17.88 17.88 16 22.75 14.12 17.88 9.25 16 14.12 14.12z"
         fill="#fff" fill-opacity=".94"/>
