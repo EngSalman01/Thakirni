@@ -81,7 +81,7 @@ export function TestimonialsSection() {
   const { t, isArabic } = useLanguage()
 
   return (
-    <section className="py-20 overflow-hidden bg-[#fbf9f8]" dir={isArabic ? "rtl" : "ltr"}>
+    <section className="py-20 overflow-hidden bg-slate-50 dark:bg-[#0d1117]" dir={isArabic ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -90,7 +90,10 @@ export function TestimonialsSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-14"
         >
-          <h2 className="text-3xl font-bold text-slate-900 mb-3">
+          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-3">
+            {t("آراء المستخدمين", "User reviews")}
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-headline font-bold text-slate-900 dark:text-white mb-3">
             {t("ماذا يقول مستخدمونا", "What our users say")}
           </h2>
           <p className="text-slate-500">

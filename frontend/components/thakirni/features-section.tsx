@@ -1,7 +1,8 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
-import { useLanguage } from "@/components/language-provider";
+import { motion } from "framer-motion"
+import { Bell, Mic, FileText, Sunrise, Target, Zap } from "lucide-react"
+import { useLanguage } from "@/components/language-provider"
 
 const cardVariants = {
   hidden: { opacity: 0, y: 28 },
@@ -10,30 +11,169 @@ const cardVariants = {
     y: 0,
     transition: { duration: 0.7, delay: i * 0.1, ease: [0.2, 1, 0.3, 1] },
   }),
-};
+}
+
+// ── Feature card data ───────────────────────────────────────────────────────
+
+const CARDS = [
+  {
+    wide: true,
+    icon: Zap,
+    iconBg: "bg-indigo-100 dark:bg-indigo-950",
+    iconColor: "text-indigo-600 dark:text-indigo-400",
+    bg: "bg-indigo-50 dark:bg-indigo-950/30",
+    border: "border-indigo-100 dark:border-indigo-900/50",
+    accent: "from-indigo-500/20 to-violet-500/10",
+    titleAr: "المساعد الذكي",
+    titleEn: "AI Assistant",
+    bodyAr: "تكلم ذكّرني بالطبيعي وهو يضيف المواعيد ويحفظ الملاحظات. يفهمك ويتذكر كل شي قلته — بالعامية.",
+    bodyEn: "Chat naturally to add reminders, schedule meetings, and save notes. Thakirni understands you and remembers everything.",
+    emoji: "✦",
+  },
+  {
+    wide: false,
+    icon: Mic,
+    iconBg: "bg-violet-600",
+    iconColor: "text-white",
+    bg: "bg-gradient-to-br from-violet-600 to-purple-600",
+    border: "border-violet-500/30",
+    dark: true,
+    titleAr: "فويس → تنفيذ 🎤",
+    titleEn: "Voice → Execute 🎤",
+    bodyAr: "سجّل صوتية وذكّرني يحوّلها لمهام ومواعيد فوراً. ما تحتاج تكتب.",
+    bodyEn: "Record a voice note and Thakirni turns it into tasks and reminders instantly. No typing needed.",
+    waveform: true,
+  },
+]
+
+// ── Bottom 3 cards ──────────────────────────────────────────────────────────
+
+const SMALL_CARDS = [
+  {
+    icon: Target,
+    gradient: "from-pink-500 to-rose-500",
+    titleAr: "متابعة تلقائية",
+    titleEn: "Smart Follow-up",
+    bodyAr: "ذكّرني يتابع مهامك تلقائياً ويرسل لك تنبيهات ذكية.",
+    bodyEn: "Thakirni auto-tracks your tasks and sends smart alerts.",
+    bg: "bg-slate-50 dark:bg-white/[0.03]",
+    border: "border-slate-100 dark:border-white/8",
+  },
+  {
+    icon: FileText,
+    gradient: "from-indigo-500 to-blue-500",
+    titleAr: "تلخيص PDF 📄",
+    titleEn: "PDF Summary 📄",
+    bodyAr: "ارفع أي مستند وذكّرني يلخّصه لك في ثواني.",
+    bodyEn: "Upload any document and Thakirni summarises it in seconds.",
+    bg: "bg-slate-50 dark:bg-white/[0.03]",
+    border: "border-slate-100 dark:border-white/8",
+  },
+  {
+    icon: Sunrise,
+    gradient: "from-amber-400 to-orange-500",
+    titleAr: "رسالة صباحية ☀️",
+    titleEn: "Morning Briefing ☀️",
+    bodyAr: "كل صبح يوصلك ملخص يومك مباشرة على واتساب.",
+    bodyEn: "Every morning, get a summary of your day sent directly to WhatsApp.",
+    bg: "bg-slate-50 dark:bg-white/[0.03]",
+    border: "border-slate-100 dark:border-white/8",
+  },
+]
+
+// ── Waveform animation ──────────────────────────────────────────────────────
+
+function Waveform() {
+  return (
+    <div className="mt-8 h-14 bg-white/10 rounded-xl flex items-center justify-center px-4">
+      <div className="flex gap-1 items-center h-8">
+        {[8, 24, 16, 32, 12, 28, 20, 10, 22].map((maxH, i) => (
+          <motion.div
+            key={i}
+            className="w-1.5 bg-white/80 rounded-full"
+            animate={{ height: [4, maxH, 4] }}
+            transition={{
+              duration: 0.8 + i * 0.07,
+              repeat: Infinity,
+              repeatType: "loop",
+              ease: "easeInOut",
+              delay: i * 0.09,
+            }}
+            style={{ height: 4 }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ── WhatsApp feature card (green) ────────────────────────────────────────────
+
+function WhatsAppCard({ t, isArabic }: { t: ReturnType<typeof useLanguage>["t"]; isArabic: boolean }) {
+  return (
+    <motion.div
+      custom={4}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-50px" }}
+      variants={cardVariants}
+      whileHover={{ y: -4 }}
+      className="md:col-span-2 bg-[#075e54] text-white rounded-2xl p-7 sm:p-10 grid md:grid-cols-2 gap-6 items-center border border-[#128c7e]/30 transition-all duration-300"
+    >
+      <div>
+        <div className="w-10 h-10 rounded-xl bg-[#25d366] flex items-center justify-center mb-5">
+          <Bell className="w-5 h-5 text-white" />
+        </div>
+        <h3 className="text-xl sm:text-2xl font-headline font-bold mb-3">
+          {t("تذكيرات ذكية على واتساب 💬", "Smart Reminders on WhatsApp 💬")}
+        </h3>
+        <p className="text-[#b2dfdb] text-sm sm:text-base leading-relaxed">
+          {t(
+            "تكلم ذكّرني على واتساب وهو يتكفل بالباقي. أضف مواعيد، احفظ ملاحظات، وخلّه يذكرك — ما تحتاج تفتح التطبيق.",
+            "Chat with Thakirni on WhatsApp and it handles the rest. Add plans, save notes, get reminders — without opening the app."
+          )}
+        </p>
+      </div>
+      <div className="space-y-2">
+        {[
+          { ar: "✓ يشتغل بدون تطبيق", en: "✓ Works without an app" },
+          { ar: "✓ فويس + كتابة", en: "✓ Voice + text" },
+          { ar: "✓ متاح ٢٤/٧", en: "✓ Available 24/7" },
+          { ar: "✓ ردود فورية", en: "✓ Instant responses" },
+        ].map((f) => (
+          <div key={f.en} className="text-sm text-[#b2dfdb] font-medium">
+            {isArabic ? f.ar : f.en}
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Features Section ────────────────────────────────────────────────────────
 
 export function FeaturesSection() {
-  const { t, isArabic } = useLanguage();
+  const { t, isArabic } = useLanguage()
 
   return (
-    <section className="py-16 sm:py-32 bg-[#fbf9f8] dark:bg-slate-900" id="features">
+    <section className="py-16 sm:py-32 bg-white dark:bg-[#0B0F1A]" id="features">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
 
-        {/* Section header */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.7, ease: [0.2, 1, 0.3, 1] }}
-          className="text-center max-w-3xl mx-auto mb-10 sm:mb-20"
+          className="text-center max-w-3xl mx-auto mb-12 sm:mb-20"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 sm:mb-6 tracking-tight text-slate-900 dark:text-white">
-            {t(
-              "كل اللي تحتاجه في مكان واحد",
-              "Everything you need to stay on top of your life"
-            )}
+          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-3">
+            {t("المميزات", "Features")}
+          </p>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-slate-900 dark:text-white">
+            {t("كل اللي تحتاجه في مكان واحد", "Everything you need in one place")}
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-slate-500">
+          <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400">
             {t(
               "أضف مواعيد، احفظ ملاحظات، وتكلم مع مساعدك الذكي — في ثواني.",
               "Add plans, save memories, and chat with your AI assistant — in seconds."
@@ -41,176 +181,124 @@ export function FeaturesSection() {
           </p>
         </motion.div>
 
-        {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+        {/* Bento grid row 1 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-4 sm:mb-5">
 
-          {/* Card 1 — Semantic Threading (wide) */}
+          {/* Card: AI Assistant (wide) */}
           <motion.div
             custom={0}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="md:col-span-2 bg-[#f6f3f2] rounded-2xl p-6 sm:p-10 md:p-12 relative overflow-hidden group hover-lift cursor-default"
+            whileHover={{ y: -4 }}
+            className="md:col-span-2 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl p-7 sm:p-10 relative overflow-hidden border border-indigo-100 dark:border-indigo-900/50 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(79,70,229,0.12)]"
           >
-            <div className="relative z-10 flex flex-col h-full justify-between">
-              <div>
-                <span className="text-4xl text-[#2552ca] mb-6 block">✦</span>
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4 text-slate-900">
-                  {t("المساعد الذكي", "AI Assistant")}
-                </h3>
-                <p className="text-base sm:text-lg text-slate-500 max-w-md">
-                  {t(
-                    "تكلم ذكرني بالطبيعي وهو يضيف المواعيد ويحفظ الملاحظات. يفهمك ويتذكر كل شي قلته.",
-                    "Chat naturally to add reminders, schedule meetings, and save notes. Thakirni understands you and remembers everything you tell it."
-                  )}
-                </p>
+            <div className="relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center mb-5">
+                <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
               </div>
-              <div className="mt-12" />
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-3 text-slate-900 dark:text-white">
+                {t("المساعد الذكي", "AI Assistant")}
+              </h3>
+              <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-md leading-relaxed">
+                {t(
+                  "تكلم ذكّرني بالطبيعي وهو يضيف المواعيد ويحفظ الملاحظات. يفهمك بالعامية ويتذكر كل شي قلته.",
+                  "Chat naturally to add reminders, schedule meetings, and save notes. Understands everyday language and remembers everything."
+                )}
+              </p>
             </div>
-            {/* Decorative bg element */}
-            <div className="absolute right-0 bottom-0 w-1/2 translate-y-8 translate-x-8 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-40">
-              <div className="w-full h-48 bg-gradient-to-tl from-[#2552ca]/20 to-[#fd65c2]/20 rounded-tl-2xl" />
-            </div>
+            {/* Decorative gradient */}
+            <div className="absolute -bottom-8 -end-8 w-48 h-48 rounded-full bg-gradient-to-tl from-indigo-500/15 to-violet-500/10 blur-2xl pointer-events-none" />
           </motion.div>
 
-          {/* Card 2 — Ambient Capture */}
+          {/* Card: Voice */}
           <motion.div
             custom={1}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={cardVariants}
-            className="bg-[#456ce4] text-white rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col justify-between hover-lift cursor-default"
+            whileHover={{ y: -4 }}
+            className="bg-gradient-to-br from-violet-600 to-purple-700 text-white rounded-2xl p-7 sm:p-10 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_12px_40px_rgba(124,58,237,0.3)]"
           >
             <div>
-              <span className="text-4xl mb-6 block">🎙️</span>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4">
-                {t("تسجيل صوتي", "Voice Notes")}
-              </h3>
-              <p className="text-base sm:text-lg opacity-90">
-                {t(
-                  "سجّل صوتية وذكرني يحفظها لك على طول. ترجع لها متى تبي من الفولت.",
-                  "Record a voice note and Thakirni saves it instantly to your Second Brain. Access it anytime from your vault."
-                )}
-              </p>
-            </div>
-            {/* Waveform */}
-            <div className="h-16 bg-white/10 rounded-xl flex items-center justify-center mt-8">
-              <div className="flex gap-1 items-center h-10">
-                {[10, 28, 18, 36, 14, 32, 22, 12, 26].map((maxH, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-1.5 bg-white rounded-full"
-                    animate={{ height: [6, maxH, 6] }}
-                    transition={{
-                      duration: 0.8 + i * 0.07,
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      ease: "easeInOut",
-                      delay: i * 0.09,
-                    }}
-                    style={{ height: 6 }}
-                  />
-                ))}
+              <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-5">
+                <Mic className="w-5 h-5 text-white" />
               </div>
-            </div>
-          </motion.div>
-
-          {/* Card 3 — Privacy */}
-          <motion.div
-            custom={2}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={cardVariants}
-            className="bg-[#f6f3f2] rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col items-center text-center hover-lift cursor-default"
-          >
-            <div className="w-20 h-20 rounded-full bg-[#fd65c2] flex items-center justify-center mb-8 animate-soft-pulse">
-              <span className="text-white text-3xl">🔒</span>
-            </div>
-            <h3 className="text-2xl font-headline font-bold mb-4 text-slate-900">
-              {t("خصوصية بالتصميم", "Privacy by Design")}
-            </h3>
-            <p className="text-slate-500">
-              {t(
-                "عقلك خاص. بياناتك مشفرة محليًا وأنت وحدك تملك المفاتيح.",
-                "Your mind is private. Your data is encrypted locally and only you hold the keys. No AI training on your private life."
-              )}
-            </p>
-          </motion.div>
-
-          {/* Card 4 — Cognitive Dashboard (wide) */}
-          <motion.div
-            custom={3}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={cardVariants}
-            className="md:col-span-2 bg-[#e4e2e1] rounded-2xl p-6 sm:p-10 md:p-12 grid md:grid-cols-2 gap-6 md:gap-12 items-center hover-lift cursor-default"
-          >
-            <div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4 text-slate-900">
-                {t("لوحة التحكم", "Smart Dashboard")}
+              <h3 className="text-xl sm:text-2xl font-headline font-bold mb-3">
+                {t("فويس → تنفيذ 🎤", "Voice → Execute 🎤")}
               </h3>
-              <p className="text-slate-500 leading-relaxed">
+              <p className="text-sm sm:text-base text-violet-100 leading-relaxed">
                 {t(
-                  "شوف مواعيدك القادمة وآخر ملاحظاتك — كل شي في شاشة وحدة تتحدث بشكل لحظي.",
-                  "See your upcoming plans, recent memories, and daily focus — all on one clean dashboard that updates in real time."
+                  "سجّل صوتية وذكّرني يحوّلها لمهام ومواعيد فوراً. ما تحتاج تكتب.",
+                  "Record a voice note and Thakirni converts it to tasks and reminders instantly."
                 )}
               </p>
             </div>
-            {/* Progress bars */}
-            <div className="space-y-4">
-              {[
-                { color: "bg-[#2552ca]", width: "75%", label: t("احتفاظ", "Retention") },
-                { color: "bg-[#ad1d7f]", width: "50%", label: t("وضوح", "Clarity") },
-                { color: "bg-[#456ce4]", width: "83%", label: t("تركيز", "Focus") },
-              ].map(({ color, width, label }) => (
-                <div key={label as string}>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-xs font-bold text-slate-700">{label}</span>
-                    <span className="text-xs text-slate-500">{width}</span>
-                  </div>
-                  <div className="h-3 w-full bg-white/60 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      whileInView={{ width }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
-                      className={`h-full ${color} rounded-full`}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Card 5 — WhatsApp */}
-          <motion.div
-            custom={4}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={cardVariants}
-            className="bg-[#25d366] text-white rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col justify-between hover-lift cursor-default"
-          >
-            <div>
-              <span className="text-4xl mb-6 block">💬</span>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-headline font-bold mb-4">
-                {t("يشتغل على واتساب", "Works on WhatsApp")}
-              </h3>
-              <p className="text-base sm:text-lg opacity-90">
-                {t(
-                  "تكلم ذكرني على واتساب وهو يتكفل بالباقي. أضف مواعيد، احفظ ملاحظات، وخلّه يذكرك — ما تحتاج تفتح التطبيق أبد.",
-                  "Chat with your Thakirni assistant directly on WhatsApp. Add plans, save notes, and get reminders — without opening the app."
-                )}
-              </p>
-            </div>
+            <Waveform />
           </motion.div>
 
         </div>
+
+        {/* Bento grid row 2 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-4 sm:mb-5">
+
+          {SMALL_CARDS.map(({ icon: Icon, gradient, titleAr, titleEn, bodyAr, bodyEn, bg, border }, i) => (
+            <motion.div
+              key={titleEn}
+              custom={i + 2}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={cardVariants}
+              whileHover={{ y: -4 }}
+              className={`${bg} rounded-2xl p-7 sm:p-9 border ${border} transition-all duration-300 hover:shadow-soft`}
+            >
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-5 shadow-sm`}>
+                <Icon className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-lg sm:text-xl font-headline font-bold mb-2 text-slate-900 dark:text-white">
+                {isArabic ? titleAr : titleEn}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                {isArabic ? bodyAr : bodyEn}
+              </p>
+            </motion.div>
+          ))}
+
+        </div>
+
+        {/* WhatsApp row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+          <WhatsAppCard t={t} isArabic={isArabic} />
+
+          {/* Privacy */}
+          <motion.div
+            custom={5}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={cardVariants}
+            whileHover={{ y: -4 }}
+            className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-7 sm:p-9 flex flex-col items-center text-center border border-slate-100 dark:border-white/8 transition-all duration-300 hover:shadow-soft"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-5 shadow-md animate-soft-pulse">
+              <span className="text-white text-2xl">🔒</span>
+            </div>
+            <h3 className="text-lg sm:text-xl font-headline font-bold mb-2 text-slate-900 dark:text-white">
+              {t("خصوصية بالتصميم", "Privacy by Design")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              {t(
+                "بياناتك مشفرة بالكامل. أنت وحدك تملك المفاتيح.",
+                "Your data is fully encrypted. Only you hold the keys."
+              )}
+            </p>
+          </motion.div>
+        </div>
+
       </div>
     </section>
-  );
+  )
 }

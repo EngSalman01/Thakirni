@@ -1,16 +1,16 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLanguage } from "@/components/language-provider";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import Link from "next/link"
+import { motion, AnimatePresence } from "framer-motion"
+import { useLanguage } from "@/components/language-provider"
+import { useState } from "react"
+import { ChevronDown, ArrowLeft, ArrowRight, Sparkles } from "lucide-react"
 
 const faqs = [
   {
-    qAr: "ما هو ذكرني؟",
+    qAr: "ما هو ذكّرني؟",
     qEn: "What is Thakirni?",
-    aAr: "ذكرني هو مساعدك الذكي الشخصي — مصمم لمساعدتك على تنظيم خططك اليومية، حفظ ذكرياتك، تتبع عاداتك وأهدافك، وتلخيص اجتماعاتك. كل ذلك بمساعدة الذكاء الاصطناعي.",
+    aAr: "ذكّرني هو مساعدك الذكي الشخصي — مصمم لمساعدتك على تنظيم خططك اليومية، حفظ ذكرياتك، تتبع عاداتك وأهدافك، وتلخيص اجتماعاتك. كل ذلك بمساعدة الذكاء الاصطناعي.",
     aEn: "Thakirni is your personal AI assistant — designed to help you organise your daily plans, preserve memories, track habits and goals, and summarise meetings. All powered by AI.",
   },
   {
@@ -24,6 +24,7 @@ const faqs = [
     qEn: "What can I do with the free plan?",
     aAr: "الخطة المجانية تشمل ١٠ خطط يومية، ٢٥ ذاكرة، مشروع واحد، محادثة AI أساسية، وتتبع العادات والأهداف — كل ذلك مجاناً بدون بطاقة ائتمانية.",
     aEn: "The free plan includes 10 daily plans, 25 memories, 1 project, basic AI chat, and habit & goal tracking — all free with no credit card required.",
+    highlight: true,
   },
   {
     qAr: "كيف يساعدني المساعد الذكي؟",
@@ -32,12 +33,12 @@ const faqs = [
     aEn: "The AI assistant understands the context of your day — it reads your plans, memories, and habits to help you plan, answer questions, and suggest practical steps toward your goals.",
   },
   {
-    qAr: "هل يعمل ذكرني على الهاتف المحمول؟",
+    qAr: "هل يعمل ذكّرني على الهاتف المحمول؟",
     qEn: "Does Thakirni work on mobile?",
-    aAr: "نعم. ذكرني يعمل بالكامل على متصفح الهاتف. يمكنك أيضاً إضافته للشاشة الرئيسية كـ PWA للحصول على تجربة تشبه التطبيق.",
+    aAr: "نعم. ذكّرني يعمل بالكامل على متصفح الهاتف. يمكنك أيضاً إضافته للشاشة الرئيسية كـ PWA للحصول على تجربة تشبه التطبيق.",
     aEn: "Yes. Thakirni works fully in your mobile browser. You can also add it to your home screen as a PWA for an app-like experience.",
   },
-];
+]
 
 function FAQItem({
   qAr,
@@ -46,21 +47,22 @@ function FAQItem({
   aEn,
   highlight,
 }: {
-  qAr: string;
-  qEn: string;
-  aAr: string;
-  aEn: string;
-  highlight?: boolean;
+  qAr: string
+  qEn: string
+  aAr: string
+  aEn: string
+  highlight?: boolean
 }) {
-  const { t } = useLanguage();
-  const [open, setOpen] = useState(false);
+  const { t } = useLanguage()
+  const [open, setOpen] = useState(false)
+
   return (
     <motion.div
       layout
       className={`rounded-2xl overflow-hidden transition-all duration-300 ${
         highlight
-          ? "bg-white/5 border border-[#2552ca]/50 hover:border-[#2552ca]"
-          : "bg-white/5 border border-white/10 hover:border-white/30"
+          ? "bg-white/5 border border-indigo-500/40 hover:border-indigo-500/70"
+          : "bg-white/5 border border-white/8 hover:border-white/20"
       }`}
     >
       <button
@@ -82,24 +84,29 @@ function FAQItem({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="px-6 pb-5 text-slate-400 leading-relaxed text-sm border-t border-white/10 pt-4">
+            <div className="px-6 pb-5 text-slate-400 leading-relaxed text-sm border-t border-white/8 pt-4">
               {t(aAr, aEn)}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
-  );
+  )
 }
 
 export function CTASection() {
-  const { t } = useLanguage();
+  const { t, isArabic } = useLanguage()
+  const ArrowIcon = isArabic ? ArrowLeft : ArrowRight
 
   return (
     <>
-      {/* FAQ section */}
-      <section className="py-16 sm:py-32 bg-slate-900 text-white relative overflow-hidden" id="faq">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#2552ca,transparent_70%)] opacity-30 pointer-events-none" />
+      {/* ── FAQ ── */}
+      <section className="py-16 sm:py-32 bg-[#0B0F1A] text-white relative overflow-hidden" id="faq">
+        {/* Background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-indigo-600/8 blur-[100px]" />
+          <div className="absolute top-1/4 right-0 w-64 h-64 rounded-full bg-pink-600/6 blur-[80px]" />
+        </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-8 relative z-10">
           <motion.div
@@ -107,16 +114,16 @@ export function CTASection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7 }}
-            className="text-center mb-8 sm:mb-16"
+            className="text-center mb-10 sm:mb-16"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-headline font-bold mb-4 tracking-tight">
-              {t("أسئلة شائعة", "Frequently Asked Questions")}
+            <p className="text-sm font-semibold uppercase tracking-widest text-indigo-400 mb-3">
+              {t("أسئلة شائعة", "FAQ")}
+            </p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight">
+              {t("عندك سؤال؟", "Have a question?")}
             </h2>
             <p className="text-base sm:text-xl text-slate-400">
-              {t(
-                "إجابات على أكثر الأسئلة التي تصلنا.",
-                "Answers to the questions we hear most."
-              )}
+              {t("إجابات على أكثر الأسئلة التي تصلنا.", "Answers to the questions we hear most.")}
             </p>
           </motion.div>
 
@@ -129,7 +136,7 @@ export function CTASection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.08 }}
               >
-                <FAQItem {...faq} highlight={i === 2} />
+                <FAQItem {...faq} />
               </motion.div>
             ))}
           </div>
@@ -143,44 +150,85 @@ export function CTASection() {
           >
             <Link
               href="/help"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium underline underline-offset-4 decoration-slate-600 hover:decoration-white"
+              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium underline underline-offset-4 decoration-slate-700 hover:decoration-white"
             >
-              {t("عرض جميع الأسئلة الشائعة ←", "View all FAQs →")}
+              {t("عرض جميع الأسئلة الشائعة", "View all FAQs")}
+              <ArrowIcon className="w-3.5 h-3.5" />
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 sm:py-32 bg-slate-900 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(253,101,194,0.05)_0,transparent_50%)] pointer-events-none" />
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center relative z-10">
+      {/* ── Final CTA ── */}
+      <section className="py-20 sm:py-36 bg-[#0B0F1A] relative overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div
+            className="absolute inset-0 opacity-40"
+            style={{
+              background:
+                "radial-gradient(ellipse 70% 60% at 50% 100%, rgba(79,70,229,0.20) 0%, transparent 70%)",
+            }}
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-violet-600/10 blur-[80px]" />
+        </div>
+
+        <div className="max-w-3xl mx-auto px-4 sm:px-8 text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
           >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-headline font-extrabold text-white mb-8 sm:mb-10 leading-tight">
-              {t("جاهز تنظم حياتك؟", "Ready to get organised?")}
+            {/* Icon */}
+            <motion.div
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="text-5xl sm:text-6xl mb-8 block"
+            >
+              👀
+            </motion.div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-headline font-extrabold text-white mb-6 leading-tight">
+              {isArabic ? (
+                <>
+                  جاهز تخلي{" "}
+                  <span className="gradient-text">يومك أسهل؟</span>
+                </>
+              ) : (
+                <>
+                  Ready to make{" "}
+                  <span className="gradient-text">your day easier?</span>
+                </>
+              )}
             </h2>
+
+            <p className="text-base sm:text-xl text-slate-400 mb-10 max-w-xl mx-auto">
+              {t(
+                "انضم لآلاف المستخدمين في السعودية اللي خلّوا ذكّرني يرتب حياتهم.",
+                "Join thousands of users in Saudi Arabia who let Thakirni organise their lives."
+              )}
+            </p>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth">
                 <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="px-8 py-4 sm:px-12 sm:py-5 rounded-full power-gradient text-white font-bold text-base sm:text-xl shadow-2xl btn-glow"
+                  whileHover={{ scale: 1.05, y: -3 }}
+                  whileTap={{ scale: 0.96 }}
+                  className="inline-flex items-center gap-2.5 px-10 py-5 rounded-full power-gradient text-white font-bold text-lg shadow-2xl btn-glow"
                 >
-                  {t("ابدأ مجاناً", "Get Started for Free")}
+                  <Sparkles className="w-5 h-5" />
+                  {t("ابدأ الآن", "Start Now")}
                 </motion.button>
               </Link>
             </div>
-            <p className="mt-8 text-slate-500 italic">
-              {t("انضم لذكرني اليوم.", "Join Thakirni today.")}
+
+            <p className="mt-6 text-slate-500 text-sm">
+              {t("مجاناً — بدون بطاقة ائتمانية.", "Free — no credit card required.")}
             </p>
           </motion.div>
         </div>
       </section>
     </>
-  );
+  )
 }
