@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -40,19 +39,15 @@ export function useAdminConfirm() {
     if (!password) return;
     setVerifying(true);
     try {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user?.email) throw new Error("No session");
-
-      const { error } = await supabase.auth.signInWithPassword({
-        email: user.email,
-        password,
+      const res = await fetch("/api/admin/verify-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
       });
 
-      if (error) {
-        console.error("[AdminConfirm] signInWithPassword error:", error.message, error.status)
-        const isRateLimit = error.status === 429 || error.message?.toLowerCase().includes("rate")
-        toast.error(isRateLimit ? "Too many attempts — wait a moment and try again" : "Incorrect password")
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        toast.error(data.error ?? "Incorrect password");
         setVerifying(false);
         return;
       }
