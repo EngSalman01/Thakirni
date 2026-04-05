@@ -139,7 +139,7 @@ function RecentCaptures() {
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <p className="text-slate-400 text-sm">{t("واضح إنك توك تبدأ 👀 خلنا نضبطها لك بسرعة", "Looks like you're just getting started 👀 let's set you up fast")}</p>
             <Link href="/vault/assistant" className="mt-2 text-xs font-bold text-[#2552ca] hover:underline flex items-center gap-1">
-              {t("جرّب المساعد الذكي", "Try AI Assistant")} <ArrowRight className="w-3 h-3" />
+              {t("جرّب المساعد الذكي", "Try AI Assistant")} <ArrowRight className="w-3 h-3 rtl:rotate-180" />
             </Link>
           </div>
         ) : (
@@ -163,7 +163,7 @@ function RecentCaptures() {
       <BulkActionBar selectedCount={selectedIds.size} onDelete={handleBulkDelete} onClear={() => setSelectedIds(new Set())} deleting={bulkDeleting} />
       <div className="mt-8 pt-4 border-t border-slate-200">
         <Link href="/vault/upload" className="flex items-center gap-2 text-sm font-bold text-[#2552ca] hover:underline">
-          {t("رفع ذكرى جديدة", "Upload a memory")} <ArrowRight className="w-4 h-4" />
+          {t("رفع ذكرى جديدة", "Upload a memory")} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
         </Link>
       </div>
       {/* Decorative */}
@@ -220,7 +220,7 @@ function FocusStream() {
       </div>
       <div className="mt-8 pt-4 border-t border-slate-200">
         <Link href="/vault/plans" className="flex items-center gap-2 text-sm font-bold text-[#ad1d7f] hover:underline">
-          {t("عرض كل الخطط", "View all plans")} <ArrowRight className="w-4 h-4" />
+          {t("عرض كل الخطط", "View all plans")} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
         </Link>
       </div>
     </div>
@@ -272,7 +272,7 @@ function AIInsight() {
       <Link href={btn.href} className="mt-8">
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           className="w-full py-3 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-sm font-bold text-white transition-all flex items-center justify-center gap-2">
-          {t(btn.ar, btn.en)} <ArrowRight className="w-4 h-4" />
+          {t(btn.ar, btn.en)} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
         </motion.button>
       </Link>
       {/* Decorative blobs */}
@@ -456,7 +456,7 @@ function VaultPageInner() {
                 <h3 className="text-3xl font-headline font-bold mb-4 text-slate-900">{t("ملخص الاجتماعات", "Meeting Summary")}</h3>
                 <p className="text-lg text-slate-500 flex-1">{t("سجّل اجتماعاتك وذكرني يلخصها ويستخرج نقاط العمل تلقائياً.", "Record your meetings and get automatic summaries with action items.")}</p>
                 <Link href="/vault/meetings" className="mt-8 flex items-center gap-2 text-sm font-bold text-[#2552ca] hover:underline">
-                  {t("ابدأ التسجيل", "Start recording")} <ArrowRight className="w-4 h-4" />
+                  {t("ابدأ التسجيل", "Start recording")} <ArrowRight className="w-4 h-4 rtl:rotate-180" />
                 </Link>
               </motion.div>
 

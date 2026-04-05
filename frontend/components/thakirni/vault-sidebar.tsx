@@ -105,7 +105,7 @@ function DrawerNav({ onClose }: { onClose: () => void }) {
   return (
     <div className="flex flex-col h-full bg-background">
       <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-border">
-        <Link href="/" onClick={onClose}><BrandLogo className="h-8 w-auto" /></Link>
+        <Link href="/" onClick={onClose}><BrandLogo variant="full" className="h-8 w-auto" /></Link>
         <div className="flex items-center gap-1"><LanguageToggle /><ThemeToggle /></div>
       </div>
 
@@ -168,7 +168,7 @@ export function VaultSidebar() {
 
           {/* Logo */}
           <Link href="/" className="shrink-0 me-2">
-            <BrandLogo className="h-7 w-auto" />
+            <BrandLogo variant="auto" className="h-7" />
           </Link>
 
           {/* Desktop primary nav */}

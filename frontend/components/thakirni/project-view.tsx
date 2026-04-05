@@ -62,14 +62,14 @@ export function ProjectView({
               value="list"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-1 pb-2"
             >
-              <LayoutList className="w-4 h-4 mr-2" />
+              <LayoutList className="w-4 h-4 me-2" />
               List
             </TabsTrigger>
             <TabsTrigger
               value="board"
               className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-1 pb-2"
             >
-              <KanbanSquare className="w-4 h-4 mr-2" />
+              <KanbanSquare className="w-4 h-4 me-2" />
               Board
             </TabsTrigger>
           </TabsList>
@@ -249,7 +249,7 @@ export function ProjectView({
                       variant="ghost"
                       className="w-full text-muted-foreground border-dashed border"
                     >
-                      <Plus className="w-4 h-4 mr-2" /> Add Task
+                      <Plus className="w-4 h-4 me-2" /> Add Task
                     </Button>
                   </div>
                 </div>

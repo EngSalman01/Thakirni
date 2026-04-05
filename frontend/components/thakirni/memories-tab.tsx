@@ -89,7 +89,7 @@ export function MemoriesTab({ teamId }: MemoriesTabProps) {
             placeholder={t("Search memories...", "ابحث عن الذكريات...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="ps-9"
           />
         </div>
         <Button

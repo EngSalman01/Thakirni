@@ -156,7 +156,7 @@ export function TeamDashboardMain() {
                   className="flex-1 h-12 text-base"
                 />
                 <Button type="submit" size="lg" className="px-6">
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <Sparkles className="h-4 w-4 me-2" />
                   Capture
                 </Button>
               </form>
@@ -332,7 +332,7 @@ export function TeamDashboardMain() {
                 <Link href="/vault/plans">
                   <Button variant="outline" className="w-full mt-3" size="sm">
                     View All Tasks
-                    <ArrowRight className="h-3 w-3 ml-2" />
+                    <ArrowRight className="h-3 w-3 ms-2 rtl:rotate-180" />
                   </Button>
                 </Link>
               </CardContent>

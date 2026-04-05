@@ -214,7 +214,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                 disabled={processing === "free"}
                 className="rounded-xl"
               >
-                {processing === "free" ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                {processing === "free" ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
                 {t("تأكيد التخفيض", "Confirm Downgrade")}
               </Button>
             </div>
@@ -285,7 +285,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                     <p className="text-xl font-bold mt-1" style={{ color: plan.accent }}>
                       {plan.id === "free" ? plan.price : `${planPrices[plan.id] ?? (plan.id === "pro" ? 29.99 : 59.99)} SAR/mo`}
                       {plan.noteSuffixEn && (
-                        <span className="text-xs text-slate-400 font-normal ml-1">
+                        <span className="text-xs text-slate-400 font-normal ms-1">
                           {t(plan.noteSuffixAr!, plan.noteSuffixEn)}
                         </span>
                       )}
@@ -313,7 +313,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                       className="w-full rounded-xl text-white font-bold"
                       style={{ background: `linear-gradient(135deg, #2552ca, ${plan.accent})` }}
                     >
-                      {processing === plan.id ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                      {processing === plan.id ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
                       {t(`ترقية إلى ${t(plan.nameAr, plan.nameEn)}`, `Upgrade to ${plan.nameEn}`)}
                     </Button>
                   )}
