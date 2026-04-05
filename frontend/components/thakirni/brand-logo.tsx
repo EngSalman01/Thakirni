@@ -80,6 +80,7 @@ export function BrandLogo({
         className="inline-flex shrink-0 select-none"
         animate={animate ? animValues : undefined}
         transition={animate ? transition : undefined}
+        style={{ willChange: "transform", backfaceVisibility: "hidden" }}
       >
         <Image
           src={iconSrc}
@@ -145,6 +146,7 @@ export function BrandLogo({
         className="hidden md:inline-flex"
         animate={animate ? animValues : undefined}
         transition={animate ? transition : undefined}
+        style={{ willChange: "transform", backfaceVisibility: "hidden" }}
       >
         <FullLogo h={iconSize ?? 36} />
       </motion.span>
