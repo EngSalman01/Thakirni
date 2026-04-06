@@ -9,6 +9,7 @@
  *   - If the same insight was sent in the last 24 hours
  */
 
+import { requireCronSecret } from "@/lib/cron-auth"
 import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
@@ -28,10 +29,8 @@ function isQuietHours(): boolean {
 }
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization")
-  if (authHeader?.toLowerCase() !== `bearer ${process.env.CRON_SECRET?.toLowerCase()}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const authErr = requireCronSecret(req)
+  if (authErr) return authErr
 
   if (isQuietHours()) {
     return NextResponse.json({ skipped: "quiet_hours" })
