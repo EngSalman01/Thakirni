@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import useSWR from "swr"
 import { motion } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ConfirmationPop } from "@/components/thakirni/motion-primitives"
 
 const HABIT_ICONS = ["✅","🏃","💧","📚","🧘","🍎","💪","☀️","🧠","🎯","💤","🙏"]
 
@@ -202,9 +203,9 @@ export default function HabitsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {habits.map((h: Record<string, unknown>, i) => (
                   <motion.div key={h.id as string}
-                    custom={i} initial={{ opacity: 0, y: 28 }}
-                    whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
+                    custom={i} initial={{ opacity: 0, y: 12 }}
+                    whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-32px" }}
+                    transition={{ duration: 0.28, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
                     className={`relative bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
                     onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}>
                     {/* Color stripe */}
@@ -213,9 +214,11 @@ export default function HabitsPage() {
                       <div className="flex items-start justify-between mb-4">
                         <span className="text-5xl">{h.icon as string}</span>
                         <div className="flex items-center gap-2">
-                          {h.completed_today
-                            ? <CheckCircle2 className="w-7 h-7 text-emerald-500" />
-                            : <Circle className="w-7 h-7 text-slate-300" />}
+                          <ConfirmationPop triggerKey={h.completed_today as boolean}>
+                            {h.completed_today
+                              ? <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+                              : <Circle className="w-7 h-7 text-slate-300" />}
+                          </ConfirmationPop>
                           <Button variant="ghost" size="icon" aria-label="Delete habit" className="h-8 w-8 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
                             onClick={e => { e.stopPropagation(); deleteHabit(h.id as string) }}>
                             <Trash2 className="w-4 h-4" />

@@ -4,6 +4,12 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { motion, type Transition, type TargetAndTransition } from "framer-motion"
 import { cn } from "@/lib/utils"
+import {
+  breathingAnimate, breathingTransition,
+  sparkAnimate, sparkTransition,
+  voicePulseAnimate, voicePulseTransition,
+  ease, duration,
+} from "@/lib/motion"
 
 // ── Animation presets ──────────────────────────────────────────────────────────
 
@@ -20,20 +26,20 @@ const ANIM: Record<LogoState, {
   transition: Transition
 }> = {
   idle: {
-    animate: { scale: [1, 1.06, 1] },
-    transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+    animate: breathingAnimate,
+    transition: breathingTransition,
   },
   action: {
-    animate: { scale: [1, 1.18, 0.94, 1] },
-    transition: { duration: 0.5, ease: [0.2, 1, 0.3, 1] },
+    animate: sparkAnimate,
+    transition: sparkTransition,
   },
   voice: {
-    animate: { scale: [1, 1.08, 0.96, 1.08, 1], rotate: [0, -4, 4, -4, 0] },
-    transition: { duration: 0.85, repeat: Infinity },
+    animate: voicePulseAnimate,
+    transition: voicePulseTransition,
   },
   thinking: {
-    animate: { opacity: [1, 0.55, 1] },
-    transition: { duration: 1.3, repeat: Infinity, ease: "easeInOut" },
+    animate: { opacity: [1, 0.5, 1] },
+    transition: { duration: duration.voice, repeat: Infinity, ease: "easeInOut" },
   },
 }
 
