@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { Environment, Paddle, LogLevel } from "@paddle/paddle-node-sdk"
+import { rateLimit, rateLimitResponse } from "@/lib/rate-limit"
 
 const CREDIT_PACKS = [
   { id: "small",  credits: 50,  priceEnv: "PADDLE_PRICE_CREDITS_50",  labelAr: "٥٠ رسالة",  labelEn: "50 messages" },
@@ -51,8 +52,13 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const { pack } = await req.json() as { pack: "small" | "medium" | "large" }
-    const packConfig = CREDIT_PACKS.find(p => p.id === pack)
+    // Prevent payment-spam: 10 checkout attempts per hour per user
+    const rl = await rateLimit(`credits_purchase:${user.id}`, 10, 3_600_000)
+    if (!rl.success) return rateLimitResponse(rl.reset)
+
+    const body = await req.json().catch(() => ({})) as { pack?: unknown }
+    const { pack } = body
+    const packConfig = CREDIT_PACKS.find(p => p.id === String(pack ?? ""))
     if (!packConfig) return NextResponse.json({ error: "Invalid pack" }, { status: 400 })
 
     const priceId = process.env[packConfig.priceEnv]

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { requireAdmin } from "@/lib/admin-auth";
 import { limiters, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp, parseBody } from "@/lib/validate";
@@ -26,7 +27,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing password" }, { status: 400 });
   }
 
-  if (password !== secret) {
+  // Timing-safe comparison — prevents brute-force timing oracle
+  let match = false;
+  try {
+    const a = Buffer.from(password);
+    const b = Buffer.from(secret);
+    match = a.length === b.length && timingSafeEqual(a, b);
+  } catch {
+    match = false;
+  }
+  if (!match) {
     return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
   }
 

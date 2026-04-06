@@ -1,15 +1,12 @@
+import { requireCronSecret } from "@/lib/cron-auth"
 import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 
 export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization")
-  const cronSecret = process.env.CRON_SECRET
-
-  if (!cronSecret || authHeader?.toLowerCase() !== `bearer ${cronSecret.toLowerCase()}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const authErr = requireCronSecret(req)
+  if (authErr) return authErr
 
   const service = createServiceClient()
 

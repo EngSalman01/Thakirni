@@ -1,3 +1,4 @@
+import { requireCronSecret } from "@/lib/cron-auth"
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"

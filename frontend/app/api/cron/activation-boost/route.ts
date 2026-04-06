@@ -15,6 +15,7 @@
  * Only targets users who provided a phone number during onboarding.
  */
 
+import { requireCronSecret } from "@/lib/cron-auth"
 import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
@@ -22,10 +23,8 @@ import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
 export const maxDuration = 30
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization")
-  if (authHeader?.toLowerCase() !== `bearer ${process.env.CRON_SECRET?.toLowerCase()}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const authErr = requireCronSecret(req)
+  if (authErr) return authErr
 
   const supabase = createServiceClient()
   const now = Date.now()

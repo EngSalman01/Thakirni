@@ -7,6 +7,7 @@
  * Anti-spam: once per workspace per 14 days (via nudge_log, workspace_id as user_id).
  */
 
+import { requireCronSecret } from "@/lib/cron-auth"
 import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
@@ -14,10 +15,8 @@ import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
 export const maxDuration = 60
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization")
-  if (authHeader?.toLowerCase() !== `bearer ${process.env.CRON_SECRET?.toLowerCase()}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const authErr = requireCronSecret(req)
+  if (authErr) return authErr
 
   const supabase = createServiceClient()
 
