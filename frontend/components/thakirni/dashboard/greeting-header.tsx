@@ -1,43 +1,42 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { useLanguage } from "@/components/language-provider"
 
-function getGreeting(isArabic: boolean): { title: string; sub: string } {
+function getGreeting(isArabic: boolean): string {
   const h = new Date().getHours()
   if (isArabic) {
-    if (h >= 5 && h < 12)
-      return { title: "صباح النور ☀️", sub: "جاهز نكسر اليوم؟ 👀" }
-    if (h >= 12 && h < 14)
-      return { title: "الله يعطيك العافية 💪", sub: "وش عندك اليوم؟" }
-    if (h >= 14 && h < 18)
-      return { title: "مساك الله بالخير 🌤️", sub: "وش باقي عليك؟" }
-    if (h >= 18 && h < 21)
-      return { title: "مساء النور 🌙", sub: "كيف يومك جاء؟" }
-    return { title: "الليل طويل 🌙", sub: "وش تبغى ترتب قبل تنام؟" }
+    if (h >= 5 && h < 12) return "صباح النور ☀️ جاهز نكسر اليوم؟"
+    if (h >= 12 && h < 18) return "مساك الله بالخير 👋 وش عندك اليوم؟"
+    return "مساء النور 🌙 كيف كان يومك؟"
   }
-  if (h >= 5 && h < 12)
-    return { title: "Good morning ☀️", sub: "Ready to crush today?" }
-  if (h >= 12 && h < 18)
-    return { title: "Good afternoon 🌤️", sub: "How's the day going?" }
-  return { title: "Good evening 🌙", sub: "What's still on your plate?" }
+  if (h >= 5 && h < 12) return "Good morning ☀️ Ready to crush today?"
+  if (h >= 12 && h < 18) return "Good afternoon 👋 What's on your plate?"
+  return "Good evening 🌙 How was your day?"
+}
+
+function getDateLine(isArabic: boolean): string {
+  const now = new Date()
+  const locale = isArabic ? "ar-SA" : "en-US"
+  const dateStr = now.toLocaleDateString(locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  })
+  const city = isArabic ? "الخبر" : "Khobar"
+  return `${dateStr} · ${city}`
 }
 
 export function GreetingHeader() {
   const { isArabic } = useLanguage()
-  const { title, sub } = getGreeting(isArabic)
+  const greeting = getGreeting(isArabic)
+  const dateLine = getDateLine(isArabic)
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-      dir={isArabic ? "rtl" : "ltr"}
-    >
+    <div dir={isArabic ? "rtl" : "ltr"}>
       <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100 leading-snug">
-        {title}
+        {greeting}
       </h1>
-      <p className="text-sm text-muted-foreground mt-0.5">{sub}</p>
-    </motion.div>
+      <p className="text-sm text-muted-foreground mt-1">{dateLine}</p>
+    </div>
   )
 }

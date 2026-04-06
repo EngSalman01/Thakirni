@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { FileText, Mic, ImageIcon, Clock } from "lucide-react"
+import { FileText, Mic, ImageIcon, Clock, Inbox } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/components/language-provider"
 import { useMemories } from "@/hooks/use-memories"
@@ -39,25 +39,22 @@ export function RecentActivity() {
   const { t, isArabic } = useLanguage()
   const { memories, isLoading } = useMemories()
 
-  // Last 3 memories only (most recent first, already sorted by created_at desc)
   const recent = memories.slice(0, 3)
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
+    <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-white dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden"
+      // Secondary card — border only, no shadow
+      className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           {t("آخر نشاط", "Recent Activity")}
         </h2>
         <Link
           href="/vault/memories"
-          className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+          className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
         >
           {t("عرض الكل", "View all")}
         </Link>
@@ -78,10 +75,17 @@ export function RecentActivity() {
             ))}
           </div>
         ) : recent.length === 0 ? (
-          <div className="px-5 py-8 text-center">
+          <div className="px-5 py-10 text-center space-y-3">
+            <Inbox className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
             <p className="text-sm text-muted-foreground">
-              {t("ما في نشاط بعد 📭", "No activity yet 📭")}
+              {t("ما في نشاط بعد", "No activity yet")}
             </p>
+            <Link
+              href="/vault/plans"
+              className="inline-block text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+            >
+              {t("أضف أول مهمة ←", "Add your first task →")}
+            </Link>
           </div>
         ) : (
           recent.map((memory, i) => {
@@ -95,7 +99,7 @@ export function RecentActivity() {
                 key={memory.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: 0.18 + i * 0.05 }}
                 className="flex items-start gap-3 px-5 py-3.5 group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
@@ -117,6 +121,6 @@ export function RecentActivity() {
           })
         )}
       </div>
-    </motion.section>
+    </section>
   )
 }
