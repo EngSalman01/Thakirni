@@ -131,8 +131,8 @@ export const limiters = {
   upload: (userId: string, workspaceId?: string | null) =>
     rateLimit(workspaceId ? `upload:ws:${workspaceId}` : `upload:${userId}`, 10, 3_600_000),
 
-  /** Auth / waitlist — 5 per 10 min per IP (no workspace context at auth time) */
-  auth: (ip: string) => rateLimit(`auth:${ip}`, 5, 600_000),
+  /** Auth / waitlist — 5 per 15 min per IP (no workspace context at auth time) */
+  auth: (ip: string) => rateLimit(`auth:${ip}`, 5, 900_000),
 
   /** Admin actions — 60 req/min per admin user */
   admin: (userId: string) => rateLimit(`admin:${userId}`, 60, 60_000),
@@ -140,4 +140,13 @@ export const limiters = {
   /** General API — 100 req/min, workspace-scoped when available */
   api: (userId: string, workspaceId?: string | null) =>
     rateLimit(workspaceId ? `api:ws:${workspaceId}` : `api:${userId}`, 100, 60_000),
+
+  /** Password / verify endpoints — 5 attempts per 15 min per IP, prevents brute-force */
+  verifyPassword: (ip: string) => rateLimit(`verify:${ip}`, 5, 900_000),
+
+  /** Destructive operations (account deletion, bulk delete) — 5 per hour per user */
+  destroy: (userId: string) => rateLimit(`destroy:${userId}`, 5, 3_600_000),
+
+  /** Contact / demo forms — 5 per hour per IP */
+  form: (ip: string) => rateLimit(`form:${ip}`, 5, 3_600_000),
 }
