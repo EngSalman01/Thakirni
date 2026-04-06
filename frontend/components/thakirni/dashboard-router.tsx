@@ -68,8 +68,9 @@ export function DashboardRouter() {
     );
   }
 
-  // Show team dashboard if user has team/company plan OR is member of any team
-  const showTeamDashboard = planTier === "COMPANY" || hasTeam;
+  // Only show the team kanban dashboard for COMPANY plan holders who are actively in a team.
+  // Individual users who happen to be team members still get the personal dashboard.
+  const showTeamDashboard = planTier === "COMPANY" && hasTeam;
 
   return showTeamDashboard ? <TeamDashboardMain /> : <IndividualDashboard />;
 }
