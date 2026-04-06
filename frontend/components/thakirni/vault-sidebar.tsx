@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Menu, LogOut, Settings, ChevronDown,
-  LayoutDashboard, CheckSquare, Mic, Sparkles, BarChart2,
+  LayoutDashboard, CheckSquare, Mic, BarChart2,
   Target, Flame, Brain, Calendar,
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
@@ -41,7 +41,6 @@ const PRIMARY_NAV = [
   { href: "/vault",           icon: LayoutDashboard, labelAr: "لوحتك",      labelEn: "Dashboard" },
   { href: "/vault/plans",     icon: CheckSquare,     labelAr: "خططك",       labelEn: "Plans"     },
   { href: "/vault/meetings",  icon: Mic,             labelAr: "اجتماعاتك", labelEn: "Meetings"  },
-  { href: "/vault/assistant", icon: Sparkles,        labelAr: "الذكاء",     labelEn: "AI"        },
   { href: "/vault/analytics", icon: BarChart2,       labelAr: "تحليلات",    labelEn: "Analytics" },
 ];
 

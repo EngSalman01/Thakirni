@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { CheckCircle2, Circle, CalendarDays, Plus } from "lucide-react"
+import { CheckCircle2, Circle, CalendarDays, Plus, CalendarX } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/components/language-provider"
 import { usePlans } from "@/hooks/use-plans"
@@ -15,7 +15,6 @@ function priorityDot(priority: Plan["priority"]) {
 
 function formatTime(time?: string | null) {
   if (!time) return null
-  // time is "HH:MM" or "HH:MM:SS"
   const [h, m] = time.split(":")
   const hour = parseInt(h, 10)
   const suffix = hour >= 12 ? "م" : "ص"
@@ -27,10 +26,7 @@ export function TodayFocus() {
   const { t, isArabic } = useLanguage()
   const { nextUp, plans, isLoading, updatePlanStatus } = usePlans()
 
-  // Top 3 pending from nextUp (tasks + meetings) — already sorted by date
   const focusItems = nextUp.slice(0, 3)
-
-  // Next upcoming meeting (closest plan_date that is a meeting)
   const today = new Date().toISOString().split("T")[0]
   const nextMeeting = plans
     .filter(
@@ -49,21 +45,19 @@ export function TodayFocus() {
   const isEmpty = !isLoading && focusItems.length === 0 && !nextMeeting
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
+    <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-white dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden"
+      // Primary card — shadow-sm for lift
+      className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
           {t("وش أسوي الحين؟", "What to do now")}
         </h2>
         <Link
-          href="/vault/plans/new"
-          className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+          href="/vault/plans"
+          className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           {t("إضافة", "Add")}
@@ -80,14 +74,15 @@ export function TodayFocus() {
           </div>
         ) : isEmpty ? (
           <div className="px-5 py-10 text-center space-y-3">
+            <CalendarX className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
             <p className="text-sm text-muted-foreground">
-              {t("ما عندك شي اليوم 👌", "Nothing on your plate 👌")}
+              {t("ما عندك شي مجدول اليوم", "You have nothing scheduled")}
             </p>
             <Link
               href="/vault/assistant?prompt=%D8%B1%D8%AA%D8%A8+%D9%84%D9%8A+%D9%8A%D9%88%D9%85%D9%8A"
-              className="inline-block text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="inline-block text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
             >
-              {t("تبغى أرتب لك؟ →", "Want me to plan it? →")}
+              {t("خلني الذكاء يرتب لك ←", "Let AI plan your day →")}
             </Link>
           </div>
         ) : (
@@ -95,14 +90,14 @@ export function TodayFocus() {
             {focusItems.map((plan) => (
               <motion.div
                 key={plan.id}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className="flex items-center gap-3 px-5 py-3.5 cursor-pointer group"
+                whileHover={{ scale: 1.005 }}
+                whileTap={{ scale: 0.995 }}
+                className="flex items-center gap-3 px-5 py-3.5 cursor-pointer group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
                 onClick={() => updatePlanStatus(plan.id, plan.status === "done" ? "pending" : "done")}
                 style={{ willChange: "transform" }}
               >
                 <button
-                  className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 transition-colors"
+                  className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-purple-500 transition-colors"
                   aria-label="Toggle done"
                 >
                   {plan.status === "done"
@@ -130,10 +125,9 @@ export function TodayFocus() {
               </motion.div>
             ))}
 
-            {/* Next meeting callout — only if not already in focusItems */}
             {nextMeeting && !focusItems.some((p) => p.id === nextMeeting.id) && (
-              <div className="flex items-center gap-3 px-5 py-3.5 bg-indigo-50/60 dark:bg-indigo-950/20">
-                <CalendarDays className="w-4 h-4 text-indigo-500 shrink-0" />
+              <div className="flex items-center gap-3 px-5 py-3.5 bg-violet-50/60 dark:bg-violet-950/20">
+                <CalendarDays className="w-4 h-4 text-violet-500 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                     {nextMeeting.title}
@@ -142,7 +136,7 @@ export function TodayFocus() {
                     <p className="text-xs text-muted-foreground">{formatTime(nextMeeting.plan_time)}</p>
                   )}
                 </div>
-                <span className="text-xs text-indigo-600 dark:text-indigo-400 font-medium shrink-0">
+                <span className="text-xs text-violet-600 dark:text-violet-400 font-medium shrink-0">
                   {t("اجتماع", "Meeting")}
                 </span>
               </div>
@@ -151,7 +145,6 @@ export function TodayFocus() {
         )}
       </div>
 
-      {/* Footer link */}
       {!isEmpty && !isLoading && (
         <div className="px-5 py-3 border-t border-slate-50 dark:border-white/[0.04]">
           <Link
@@ -162,6 +155,6 @@ export function TodayFocus() {
           </Link>
         </div>
       )}
-    </motion.section>
+    </section>
   )
 }

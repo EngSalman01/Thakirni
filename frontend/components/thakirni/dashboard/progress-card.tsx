@@ -29,11 +29,11 @@ export function ProgressCard() {
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-white dark:bg-white/[0.04] border border-slate-100 dark:border-white/[0.08] rounded-2xl shadow-sm p-5 space-y-4"
+      className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 space-y-4"
     >
-      <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+      <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
         {t("إنجازك اليوم", "Today's Progress")}
       </h2>
 
