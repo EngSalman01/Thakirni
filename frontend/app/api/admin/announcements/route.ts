@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     let phoneQuery = supabase
       .from("profiles")
       .select("phone_number")
-      .like("phone_number", "966%");
+      .not("phone_number", "is", null);
 
     // Filter by target plan
     if (target && target !== "all") {
