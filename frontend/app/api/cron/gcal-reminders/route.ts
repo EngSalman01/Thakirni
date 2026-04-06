@@ -106,7 +106,11 @@ export async function GET(req: NextRequest) {
         )
       )
 
-      const upcomingEvents = results.flatMap(r => r.status === "fulfilled" ? r.value : []) as GCalEvent[]
+      // Skip all-day events — they have start.date but no start.dateTime.
+      // The "starts in 30 minutes" message is wrong for them, and the GCal API
+      // returns them for the entire day which causes infinite repeat sends.
+      const upcomingEvents = (results.flatMap(r => r.status === "fulfilled" ? r.value : []) as GCalEvent[])
+        .filter(e => !!e.start?.dateTime)
       if (upcomingEvents.length === 0) continue
 
       // Check which events we've already sent reminders for
