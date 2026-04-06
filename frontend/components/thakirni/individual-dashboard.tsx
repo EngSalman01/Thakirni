@@ -7,6 +7,10 @@ import { TodayFocus } from "@/components/thakirni/dashboard/today-focus"
 import { ProgressCard } from "@/components/thakirni/dashboard/progress-card"
 import { SmartCard } from "@/components/thakirni/dashboard/smart-card"
 import { RecentActivity } from "@/components/thakirni/dashboard/recent-activity"
+import { WhatsAppBanner } from "@/components/thakirni/whatsapp-banner"
+import { UpgradeNudge } from "@/components/thakirni/upgrade-nudge"
+import { ReferralShare } from "@/components/thakirni/referral-share"
+import { UsageWidget } from "@/components/thakirni/usage-widget"
 
 export function IndividualDashboard() {
   const { isArabic } = useLanguage()
@@ -18,10 +22,15 @@ export function IndividualDashboard() {
     >
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-10">
 
+        {/* Engagement banners — non-intrusive, top of feed */}
+        <WhatsAppBanner />
+
         <GreetingHeader />
 
+        {/* PRIMARY ACTION — visually dominant */}
         <AIInputBox />
 
+        {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main column — 2/3 width */}
           <div className="lg:col-span-2 space-y-6">
@@ -32,8 +41,15 @@ export function IndividualDashboard() {
           {/* Sidebar — 1/3 width */}
           <div className="space-y-6">
             <ProgressCard />
+            <UsageWidget />
             <SmartCard />
           </div>
+        </div>
+
+        {/* Growth + monetization — below the fold */}
+        <div className="space-y-4">
+          <UpgradeNudge />
+          <ReferralShare />
         </div>
 
       </div>
