@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[#fbf9f8]">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-16">
         {/* Back link */}
         <Link
@@ -21,7 +21,7 @@ export default function TermsPage() {
 
         <div className="bg-white rounded-2xl border border-[#e4e2e1] overflow-hidden">
           {/* Header */}
-          <div className="bg-[#2552ca] px-8 py-10 text-white">
+          <div className="bg-indigo-600 px-8 py-10 text-white">
             <h1 className="text-3xl font-headline font-extrabold mb-2">
               شروط الخدمة
             </h1>
@@ -49,7 +49,7 @@ export default function TermsPage() {
             </section>
 
             {/* Section 1 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 1. Service Description
               </h3>
@@ -79,7 +79,7 @@ export default function TermsPage() {
             </section>
 
             {/* Section 2 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 2. Acceptable Use
               </h3>
@@ -114,7 +114,7 @@ export default function TermsPage() {
             </section>
 
             {/* Section 3 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 3. Subscription & Billing
               </h3>
@@ -143,7 +143,7 @@ export default function TermsPage() {
             </section>
 
             {/* Section 4 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 4. Data Ownership
               </h3>
@@ -168,7 +168,7 @@ export default function TermsPage() {
             </section>
 
             {/* Section 5 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 5. Limitation of Liability
               </h3>
@@ -181,8 +181,8 @@ export default function TermsPage() {
             </section>
 
             {/* Section 6 */}
-            <section className="space-y-4 rounded-xl bg-[#2552ca]/5 border border-[#2552ca]/20 p-6">
-              <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#2552ca]/20 pb-2">
+            <section className="space-y-4 rounded-xl bg-indigo-600/5 border border-indigo-600/20 p-6">
+              <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-indigo-600/20 pb-2">
                 القانون الحاكم / Governing Law
               </h3>
               <p className="text-slate-600 leading-relaxed" dir="rtl">
@@ -203,7 +203,7 @@ export default function TermsPage() {
               </h3>
               <a
                 href="mailto:support@thakirni.com"
-                className="inline-block font-bold text-[#2552ca] hover:underline"
+                className="inline-block font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 dir="ltr"
               >
                 support@thakirni.com

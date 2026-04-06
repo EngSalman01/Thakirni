@@ -66,7 +66,7 @@ export function ConsentModal() {
       >
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-[#2552ca] flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <DialogTitle className="text-right leading-snug font-headline text-slate-900 text-base">
@@ -77,7 +77,7 @@ export function ConsentModal() {
 
         <div className="space-y-4 text-sm">
           {/* Arabic */}
-          <div dir="rtl" className="bg-[#f6f3f2] rounded-xl p-4 space-y-2">
+          <div dir="rtl" className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
             <p className="font-label font-semibold text-slate-800">عزيزي المستخدم،</p>
             <p className="text-slate-600 leading-relaxed">
               تستخدم منصة <strong>ذاكرني</strong> تقنيات الذكاء الاصطناعي لمعالجة
@@ -95,14 +95,14 @@ export function ConsentModal() {
             <p className="text-slate-500 text-xs">
               للاطلاع على سياسة الخصوصية كاملةً،{" "}
               <a href="/legal/privacy" target="_blank" rel="noopener noreferrer"
-                className="text-[#2552ca] underline inline-flex items-center gap-1">
+                className="text-indigo-600 dark:text-indigo-400 underline inline-flex items-center gap-1">
                 اضغط هنا <ExternalLink className="w-3 h-3" />
               </a>
             </p>
           </div>
 
           {/* English */}
-          <div dir="ltr" className="bg-[#f6f3f2] rounded-xl p-4 space-y-2">
+          <div dir="ltr" className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
             <p className="font-label font-semibold text-slate-800">Dear User,</p>
             <p className="text-slate-600 leading-relaxed">
               <strong>Thakirni</strong> uses AI to process your inputs and deliver
@@ -120,7 +120,7 @@ export function ConsentModal() {
             <p className="text-slate-500 text-xs">
               Read the full Privacy Policy{" "}
               <a href="/legal/privacy" target="_blank" rel="noopener noreferrer"
-                className="text-[#2552ca] underline inline-flex items-center gap-1">
+                className="text-indigo-600 dark:text-indigo-400 underline inline-flex items-center gap-1">
                 here <ExternalLink className="w-3 h-3" />
               </a>
             </p>
@@ -131,7 +131,7 @@ export function ConsentModal() {
           <Button
             onClick={handleAccept}
             disabled={accepting}
-            className="w-full rounded-full bg-[#2552ca] hover:bg-[#1e42a8] text-white font-label font-bold py-6 text-base"
+            className="w-full rounded-full bg-indigo-600 hover:bg-[#1e42a8] text-white font-label font-bold py-6 text-base"
           >
             {accepting ? (
               <span className="flex items-center gap-2">

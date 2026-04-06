@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,7 +61,7 @@ function SettingsCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
-      className={`bg-[#f6f3f2] rounded-2xl p-8 relative overflow-hidden ${className}`}
+      className={`bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 relative overflow-hidden ${className}`}
     >
       {children}
     </motion.div>
@@ -73,8 +72,7 @@ function SettingsCard({
 
 function SettingsSkeleton() {
   return (
-    <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
-      <VaultSidebar />
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
       <main className="pt-32 px-8 pb-20">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
           {[7, 5, 7, 5].map((span, i) => (
@@ -594,10 +592,7 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
-      <VaultSidebar />
-
-
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
@@ -617,8 +612,8 @@ export default function SettingsPage() {
             {/* Left copy */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <Crown className="w-4 h-4 text-[#2552ca]" />
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Crown className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-sm font-label font-medium text-slate-700" style={{ background: planBadge.bg, color: planBadge.color, padding: '2px 10px', borderRadius: '999px', fontWeight: 700 }}>{planBadge.label}</span>
               </motion.div>
 
@@ -633,8 +628,8 @@ export default function SettingsPage() {
 
               <div className="flex flex-wrap gap-3">
                 {[
-                  { icon: '👤', label: t('الملف الشخصي', 'Profile'), color: 'bg-[#dce1ff] text-[#2552ca]' },
-                  { icon: '🔔', label: t('الإشعارات', 'Notifications'), color: 'bg-[#ffd8e9] text-[#ad1d7f]' },
+                  { icon: '👤', label: t('الملف الشخصي', 'Profile'), color: 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400' },
+                  { icon: '🔔', label: t('الإشعارات', 'Notifications'), color: 'bg-[#ffd8e9] text-violet-600 dark:text-violet-400' },
                   { icon: '🔒', label: t('الأمان', 'Security'), color: 'bg-emerald-50 text-emerald-700' },
                   { icon: '📊', label: t('الاشتراك', 'Subscription'), color: 'bg-amber-50 text-amber-700' },
                 ].map(({ icon, label, color }) => (
@@ -660,15 +655,15 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 {planFeatures.slice(0, 3).map(({ ar, en }) => (
-                  <div key={en} className="flex items-center gap-3 p-3 bg-[#f6f3f2] rounded-xl">
-                    <CheckCircle2 className="w-4 h-4 text-[#ad1d7f] shrink-0" />
+                  <div key={en} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl">
+                    <CheckCircle2 className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
                     <p className="text-sm font-label text-slate-700">{t(ar, en)}</p>
                   </div>
                 ))}
               </div>
               <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                 className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#2552ca]" />
+                <Mail className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-xs font-bold text-slate-900">{t('محمي', 'Secured')}</span>
               </motion.div>
             </motion.div>
@@ -679,7 +674,7 @@ export default function SettingsPage() {
         <div className="max-w-3xl mx-auto">
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="w-full mb-8 bg-[#f6f3f2] p-1 rounded-2xl h-auto grid grid-cols-4 gap-1">
+          <TabsList className="w-full mb-8 bg-slate-50 dark:bg-white/[0.03] p-1 rounded-2xl h-auto grid grid-cols-4 gap-1">
             <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
               <User className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("الملف الشخصي", "Profile")}</span>
@@ -725,7 +720,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={avatarUploading}
-                      className="absolute bottom-0 end-0 w-7 h-7 rounded-full bg-[#2552ca] text-white flex items-center justify-center shadow-md hover:bg-[#1a3fa0] transition-colors disabled:opacity-50"
+                      className="absolute bottom-0 end-0 w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-md hover:bg-[#1a3fa0] transition-colors disabled:opacity-50"
                       aria-label={t("تغيير الصورة", "Change photo")}
                     >
                       {avatarUploading
@@ -746,7 +741,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={avatarUploading}
-                      className="text-[#2552ca] font-bold text-sm hover:underline font-label disabled:opacity-50 flex items-center gap-1"
+                      className="text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:underline font-label disabled:opacity-50 flex items-center gap-1"
                     >
                       <Camera className="w-3.5 h-3.5" />
                       {avatarUploading
@@ -764,7 +759,7 @@ export default function SettingsPage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder={t("أدخل اسمك", "Enter your name")}
                       maxLength={60}
-                      className="rounded-xl bg-white border-slate-200 focus-visible:ring-[#2552ca]/40"
+                      className="rounded-xl bg-white border-slate-200 focus-visible:ring-indigo-600/40"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -774,7 +769,7 @@ export default function SettingsPage() {
                         className="opacity-60 rounded-xl bg-white border-slate-200 flex-1" />
                       <button
                         onClick={() => { setChangeEmailOpen(true); setNewEmail(""); setChangeEmailSent(false); }}
-                        className="px-3 py-2 rounded-xl border border-[#2552ca]/30 text-[#2552ca] text-xs font-bold hover:bg-[#dce1ff] transition-colors shrink-0"
+                        className="px-3 py-2 rounded-xl border border-indigo-600/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:bg-indigo-100 dark:bg-indigo-950/60 transition-colors shrink-0"
                       >
                         {t("تغيير", "Change")}
                       </button>
@@ -792,7 +787,7 @@ export default function SettingsPage() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="05xxxxxxxx"
-                        className="ps-10 rounded-xl bg-white border-slate-200 focus-visible:ring-[#2552ca]/40"
+                        className="ps-10 rounded-xl bg-white border-slate-200 focus-visible:ring-indigo-600/40"
                         dir="ltr"
                       />
                     </div>
@@ -812,13 +807,13 @@ export default function SettingsPage() {
                 </div>
               </div>
               {/* Decorative blob */}
-              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#2552ca]/5 rounded-full blur-3xl" />
+              <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-600/5 rounded-full blur-3xl" />
             </SettingsCard>
 
             {/* Aura Personalization */}
             <SettingsCard delay={0.1}>
               <div className="flex items-center gap-3 mb-8">
-                <span className="text-[#ad1d7f] text-xl">🎨</span>
+                <span className="text-violet-600 dark:text-violet-400 text-xl">🎨</span>
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
                   {t("التخصيص", "Personalization")}
                 </h2>
@@ -865,7 +860,7 @@ export default function SettingsPage() {
             {/* Connected Apps */}
             <SettingsCard delay={0.08}>
               <div className="flex items-center gap-3 mb-6">
-                <RefreshCw className="w-5 h-5 text-[#2552ca]" />
+                <RefreshCw className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
                   {t("التطبيقات المرتبطة", "Connected Apps")}
                 </h2>
@@ -936,7 +931,7 @@ export default function SettingsPage() {
                         <button
                           onClick={() => handleToggleGcalPref(key)}
                           disabled={savingGcalPref === key}
-                          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${gcalPrefs[key] ? "bg-[#2552ca]" : "bg-slate-200"} disabled:opacity-50`}
+                          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${gcalPrefs[key] ? "bg-indigo-600" : "bg-slate-200"} disabled:opacity-50`}
                         >
                           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${gcalPrefs[key] ? "left-5" : "left-0.5"}`} />
                         </button>
@@ -989,7 +984,7 @@ export default function SettingsPage() {
             {/* Notifications */}
             <SettingsCard delay={0.16}>
               <div className="flex items-center gap-3 mb-6">
-                <Bell className="w-5 h-5 text-[#2552ca]" />
+                <Bell className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
                   {t("الإشعارات", "Notifications")}
                 </h2>
@@ -1020,19 +1015,19 @@ export default function SettingsPage() {
             {/* Privacy & Security */}
             <SettingsCard delay={0.05} className="border-l-4 border-[#ad1d7f]">
               <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-[#ad1d7f]" />
+                <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
                   {t("الخصوصية والأمان", "Privacy & Security")}
                 </h2>
               </div>
               <div className="space-y-4">
-                <div className="p-5 bg-[#f6f3f2] rounded-xl flex items-center justify-between">
+                <div className="p-5 bg-slate-50 dark:bg-white/[0.03] rounded-xl flex items-center justify-between">
                   <div>
                     <p className="font-bold text-slate-900 text-sm">{t("كلمة المرور", "Password")}</p>
                     <p className="text-slate-500 text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
                   </div>
                   <Link href="/vault/settings/security/change-password"
-                    className="px-4 py-2 rounded-full border border-[#ad1d7f] text-[#ad1d7f] font-bold text-sm hover:bg-[#ffd8e9] transition-colors font-label">
+                    className="px-4 py-2 rounded-full border border-[#ad1d7f] text-violet-600 dark:text-violet-400 font-bold text-sm hover:bg-[#ffd8e9] transition-colors font-label">
                     {t("تغيير", "Change")}
                   </Link>
                 </div>
@@ -1067,7 +1062,7 @@ export default function SettingsPage() {
             {/* Export Data */}
             <SettingsCard delay={0.2}>
               <div className="flex items-center gap-3 mb-6">
-                <Download className="w-5 h-5 text-[#2552ca]" />
+                <Download className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
                   {t("تصدير البيانات", "Export Data")}
                 </h2>
@@ -1101,7 +1096,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("plans")}
                     disabled={exportingPdf === "plans"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "plans" ? (
@@ -1135,7 +1130,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("memories")}
                     disabled={exportingPdf === "memories"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "memories" ? (
@@ -1160,7 +1155,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("habits")}
                     disabled={exportingPdf === "habits"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "habits" ? (
@@ -1185,7 +1180,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("goals")}
                     disabled={exportingPdf === "goals"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-[#2552ca] hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-indigo-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "goals" ? (
@@ -1200,9 +1195,9 @@ export default function SettingsPage() {
             </SettingsCard>
 
             {/* Data & Privacy (PDPL) */}
-            <SettingsCard delay={0.24} className="border-l-4 border-[#2552ca]">
+            <SettingsCard delay={0.24} className="border-l-4 border-indigo-600">
               <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-[#2552ca]" />
+                <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 <h2 className="text-2xl font-headline font-bold text-slate-900">
                   {t("البيانات والخصوصية", "Data & Privacy")}
                 </h2>
@@ -1241,7 +1236,7 @@ export default function SettingsPage() {
                         toast.error(t("فشل التصدير", "Export failed"))
                       }
                     }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#2552ca] text-[#2552ca] font-bold text-sm hover:bg-[#dce1ff] transition-colors font-label shrink-0"
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-600 text-indigo-600 dark:text-indigo-400 font-bold text-sm hover:bg-indigo-100 dark:bg-indigo-950/60 transition-colors font-label shrink-0"
                   >
                     <Download className="w-4 h-4" />
                     {t("تصدير", "Export")}
@@ -1273,7 +1268,7 @@ export default function SettingsPage() {
                     href="/legal/privacy"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-[#2552ca] hover:underline font-label"
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-label"
                   >
                     {t("قراءة سياسة الخصوصية", "Read Privacy Policy")}
                   </a>
@@ -1282,7 +1277,7 @@ export default function SettingsPage() {
                     href="/legal/terms"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-[#2552ca] hover:underline font-label"
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-label"
                   >
                     {t("شروط الخدمة", "Terms of Service")}
                   </a>
@@ -1318,7 +1313,7 @@ export default function SettingsPage() {
                 <div className="space-y-3 mb-8">
                   {planFeatures.map(({ ar, en }) => (
                     <div key={en} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-[#ad1d7f] shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-5 h-5 text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
                       <p className="text-sm">{t(ar, en)}</p>
                     </div>
                   ))}
@@ -1344,14 +1339,14 @@ export default function SettingsPage() {
                 )}
               </div>
               <div className="absolute -top-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                <Sparkles className="w-40 h-40 text-[#ad1d7f]" />
+                <Sparkles className="w-40 h-40 text-violet-600 dark:text-violet-400" />
               </div>
             </SettingsCard>
 
             {(resolvedTier === "teams") && (
-              <SettingsCard delay={0.12} className="border-l-4 border-[#2552ca]">
+              <SettingsCard delay={0.12} className="border-l-4 border-indigo-600">
                 <div className="flex items-center gap-3 mb-6">
-                  <Mail className="w-5 h-5 text-[#2552ca]" />
+                  <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <h2 className="text-2xl font-headline font-bold text-slate-900">
                     {t("دعوة أعضاء", "Invite Members")}
                   </h2>

@@ -13,7 +13,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { arSA, enUS } from "date-fns/locale";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 
@@ -94,8 +93,6 @@ export default function CalendarPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <VaultSidebar />
-
       <main className="pt-16 p-4 md:p-6 lg:p-8 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

@@ -74,7 +74,7 @@ export default function JoinTeamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] flex items-center justify-center p-4" dir="ltr">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4" dir="ltr">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
@@ -82,7 +82,7 @@ export default function JoinTeamPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 text-[#2552ca] font-headline font-bold text-2xl">
+          <div className="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-headline font-bold text-2xl">
             <span>Thakirni</span>
             <span className="text-slate-400 font-normal text-xl">ذكرني</span>
           </div>
@@ -91,7 +91,7 @@ export default function JoinTeamPage() {
         <div className="bg-white rounded-3xl shadow-xl p-8">
           {loading ? (
             <div className="flex flex-col items-center py-8 gap-4">
-              <Loader2 className="w-10 h-10 text-[#2552ca] animate-spin" />
+              <Loader2 className="w-10 h-10 text-indigo-600 dark:text-indigo-400 animate-spin" />
               <p className="text-slate-500 text-sm">Loading invitation...</p>
             </div>
           ) : joined ? (
@@ -117,21 +117,21 @@ export default function JoinTeamPage() {
             <div className="space-y-6">
               {/* Team info */}
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-16 h-16 bg-[#2552ca]/10 rounded-2xl flex items-center justify-center">
-                  <Users className="w-8 h-8 text-[#2552ca]" />
+                <div className="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center">
+                  <Users className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <div>
                   <h2 className="text-xl font-headline font-bold text-slate-900">
                     You&apos;re invited to join
                   </h2>
-                  <p className="text-2xl font-headline font-bold text-[#2552ca] mt-1">
+                  <p className="text-2xl font-headline font-bold text-indigo-600 dark:text-indigo-400 mt-1">
                     {invite.teamName}
                   </p>
                 </div>
               </div>
 
               {/* Details */}
-              <div className="bg-[#f6f3f2] rounded-xl p-4 space-y-3">
+              <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500">Role</span>
                   <span className="font-bold text-slate-800 capitalize">
@@ -170,7 +170,7 @@ export default function JoinTeamPage() {
                   <Button
                     onClick={handleAccept}
                     disabled={joining}
-                    className="w-full bg-[#2552ca] hover:bg-[#1e42a0] text-white rounded-xl py-6 font-headline font-bold text-base"
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-6 font-headline font-bold text-base"
                   >
                     {joining ? (
                       <Loader2 className="w-5 h-5 animate-spin" />

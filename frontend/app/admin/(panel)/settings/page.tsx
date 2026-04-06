@@ -94,7 +94,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {/* Config form */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-6 space-y-5">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-5">
         <div className="space-y-1.5">
           <Label>App Name</Label>
           <Input
@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-[#2552ca] hover:bg-[#1e42a0] text-white rounded-xl font-label"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-label"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Save All
@@ -158,7 +158,7 @@ export default function AdminSettingsPage() {
       <AdminConfirmDialog {...dialogProps} />
 
       {/* Database Setup */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-6 space-y-3">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-3">
         <h2 className="text-base font-headline font-semibold text-slate-900">
           Database Setup
         </h2>

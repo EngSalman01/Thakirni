@@ -62,7 +62,7 @@ function PlanCard({
   const accent = accentMap[plan.plan_key] ?? "#2552ca";
 
   return (
-    <div className="bg-[#f6f3f2] rounded-2xl p-6 flex flex-col gap-4">
+    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div
@@ -255,8 +255,8 @@ export default function SubscriptionsPage() {
           ))}
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-[#f6f3f2] rounded-2xl p-12 text-center">
-          <Loader2 className="w-6 h-6 animate-spin text-[#2552ca] mx-auto mb-3" />
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-12 text-center">
+          <Loader2 className="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
           <p className="text-slate-500 font-label">Initializing plans...</p>
         </div>
       ) : (
@@ -272,7 +272,7 @@ export default function SubscriptionsPage() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[#2552ca]" />
+              <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               Confirm Changes
             </DialogTitle>
           </DialogHeader>
@@ -306,7 +306,7 @@ export default function SubscriptionsPage() {
             <Button
               onClick={confirmSave}
               disabled={verifying || !password}
-              className="bg-[#2552ca] hover:bg-[#1e42a0] text-white"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               {verifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Confirm & Save

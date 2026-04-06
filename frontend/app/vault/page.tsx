@@ -3,13 +3,10 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useSubscription } from "@/hooks/use-subscription";
 import { createClient } from "@/lib/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import {
   Plus, Upload, Sparkles, ArrowRight, CalendarDays,
@@ -52,7 +49,6 @@ function ParticleLayer() {
 function VaultSkeleton() {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <VaultSidebar />
       <main className="pt-40 pb-32 px-4 sm:px-8 max-w-7xl mx-auto space-y-8">
         <Skeleton className="h-16 w-80 rounded-2xl" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -417,8 +413,6 @@ function VaultPageInner() {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <VaultSidebar />
-
       <main className="pt-14 pb-20 md:pb-0">
 
         {/* ── Summary bar ── */}
@@ -435,11 +429,6 @@ function VaultPageInner() {
           <div className="absolute bottom-0 start-0 w-64 h-64 bg-violet-500/6 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-3xl mx-auto relative z-10">
-            {/* Top controls */}
-            <div className="hidden lg:flex justify-end gap-3 mb-6">
-              <ThemeToggle /><LanguageToggle />
-            </div>
-
             {/* WhatsApp banner */}
             <WhatsAppBanner />
 

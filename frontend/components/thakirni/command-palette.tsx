@@ -96,7 +96,7 @@ export function CommandPalette() {
                         key={cmd.id}
                         value={`${cmd.label} ${cmd.labelAr} ${cmd.keywords}`}
                         onSelect={cmd.action}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-[#f6f3f2] aria-selected:bg-[#f6f3f2] transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 dark:bg-white/[0.03] aria-selected:bg-slate-50 dark:bg-white/[0.03] transition-colors group"
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${cmd.color}18` }}>
                           <Icon className="w-4 h-4" style={{ color: cmd.color }} />

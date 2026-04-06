@@ -94,7 +94,7 @@ export function AdminConfirmDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-[#2552ca]" />
+            <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             Confirm Action
           </DialogTitle>
         </DialogHeader>
@@ -124,7 +124,7 @@ export function AdminConfirmDialog({
           <Button
             onClick={handleConfirm}
             disabled={verifying || !password}
-            className="bg-[#2552ca] hover:bg-[#1e42a0] text-white"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
           >
             {verifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Confirm

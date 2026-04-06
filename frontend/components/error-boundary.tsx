@@ -32,7 +32,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback ?? (
-        <div className="min-h-screen bg-[#fbf9f8] flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <div className="text-center space-y-4 max-w-md px-6">
             <p className="text-4xl">⚠️</p>
             <h2 className="text-xl font-headline font-bold text-slate-800">
@@ -41,7 +41,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             <p className="text-slate-500 text-sm">{this.state.message}</p>
             <button
               onClick={() => this.setState({ hasError: false, message: "" })}
-              className="px-6 py-2.5 rounded-full bg-[#2552ca] text-white text-sm font-bold font-label hover:opacity-90 transition-opacity"
+              className="px-6 py-2.5 rounded-full bg-indigo-600 text-white text-sm font-bold font-label hover:opacity-90 transition-opacity"
             >
               Try again
             </button>

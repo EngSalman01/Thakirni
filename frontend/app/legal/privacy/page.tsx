@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#fbf9f8]">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-16">
         {/* Back link */}
         <Link
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
         <div className="bg-white rounded-2xl border border-[#e4e2e1] overflow-hidden">
           {/* Header */}
-          <div className="bg-[#2552ca] px-8 py-10 text-white">
+          <div className="bg-indigo-600 px-8 py-10 text-white">
             <h1 className="text-3xl font-headline font-extrabold mb-2">
               سياسة الخصوصية
             </h1>
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Section 1 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 1. Data We Collect
               </h3>
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Section 2 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 2. Why We Collect This Data
               </h3>
@@ -119,7 +119,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Section 3 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 3. Third Parties
               </h3>
@@ -152,8 +152,8 @@ export default function PrivacyPage() {
                   { title: "الحذف", desc: "حذف حسابك وجميع بياناتك نهائياً في أي وقت" },
                   { title: "التصدير", desc: "تنزيل جميع بياناتك بصيغة JSON من صفحة الإعدادات" },
                 ].map(({ title, desc }) => (
-                  <div key={title} className="flex gap-3 p-3 bg-[#f6f3f2] rounded-xl">
-                    <div className="w-2 h-2 rounded-full bg-[#2552ca] mt-2 flex-shrink-0" />
+                  <div key={title} className="flex gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl">
+                    <div className="w-2 h-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0" />
                     <div>
                       <span className="font-label font-bold text-slate-900">{title}: </span>
                       <span className="text-slate-600">{desc}</span>
@@ -164,7 +164,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Section 4 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 4. Your Rights Under PDPL
               </h3>
@@ -179,7 +179,7 @@ export default function PrivacyPage() {
                   { title: "Export", desc: "Download all your data as JSON from the Settings page" },
                 ].map(({ title, desc }) => (
                   <div key={title} className="flex gap-3 p-3 bg-white rounded-xl">
-                    <div className="w-2 h-2 rounded-full bg-[#2552ca] mt-2 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0" />
                     <div>
                       <span className="font-label font-bold text-slate-900">{title}: </span>
                       <span className="text-slate-600">{desc}</span>
@@ -203,7 +203,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Section 5 EN */}
-            <section dir="ltr" className="space-y-4 bg-[#f6f3f2] rounded-xl p-6">
+            <section dir="ltr" className="space-y-4 bg-slate-50 dark:bg-white/[0.03] rounded-xl p-6">
               <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-[#e4e2e1] pb-2">
                 5. Data Retention
               </h3>
@@ -216,7 +216,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Contact */}
-            <section className="rounded-xl bg-[#2552ca]/5 border border-[#2552ca]/20 p-6 space-y-2">
+            <section className="rounded-xl bg-indigo-600/5 border border-indigo-600/20 p-6 space-y-2">
               <h3 className="font-headline font-bold text-slate-900">
                 التواصل معنا / Contact Us
               </h3>
@@ -228,7 +228,7 @@ export default function PrivacyPage() {
               </p>
               <a
                 href="mailto:support@thakirni.com"
-                className="inline-block font-bold text-[#2552ca] hover:underline"
+                className="inline-block font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                 dir="ltr"
               >
                 support@thakirni.com

@@ -1,9 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LanguageToggle } from "@/components/language-toggle"
 import { useLanguage } from "@/components/language-provider"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -125,7 +122,7 @@ function MeetingVisual({ t, latestMeeting }: {
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-4 py-2 flex items-center gap-2"
       >
-        <Sparkles className="w-4 h-4 text-[#ad1d7f]" />
+        <Sparkles className="w-4 h-4 text-violet-600 dark:text-violet-400" />
         <span className="text-xs font-bold text-slate-900">{t("تحليل ذكي", "AI Analysis")}</span>
       </motion.div>
 
@@ -136,7 +133,7 @@ function MeetingVisual({ t, latestMeeting }: {
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-4 py-2 flex items-center gap-2"
         >
-          <Users className="w-4 h-4 text-[#2552ca]" />
+          <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           <span className="text-xs font-bold text-slate-900">{meeting.speaker_count ?? 1} {t("متحدث", "speakers")}</span>
         </motion.div>
       )}
@@ -223,10 +220,7 @@ export default function MeetingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
-      <VaultSidebar />
-
-
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
@@ -236,8 +230,8 @@ export default function MeetingsPage() {
             {/* Left copy */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <Mic className="w-4 h-4 text-[#2552ca]" />
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Mic className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-sm font-label font-medium text-slate-700">{t("تحليل بالذكاء الاصطناعي", "AI-Powered Analysis")}</span>
               </motion.div>
 
@@ -267,7 +261,7 @@ export default function MeetingsPage() {
                 </motion.button>
 
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <span className="w-2 h-2 rounded-full bg-[#2552ca]" />
+                  <span className="w-2 h-2 rounded-full bg-indigo-600" />
                   MP3, WAV, M4A, MP4, WebM
                 </div>
               </div>
@@ -278,7 +272,7 @@ export default function MeetingsPage() {
                     <span className="text-sm font-label font-medium text-slate-700">
                       {uploadProgress < 30 ? t("جاري الرفع...", "Uploading...") : uploadProgress < 90 ? t("جاري التحليل...", "Analysing...") : t("اكتمل!", "Complete!")}
                     </span>
-                    <span className="text-sm font-bold text-[#2552ca]">{uploadProgress}%</span>
+                    <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{uploadProgress}%</span>
                   </div>
                   <Progress value={uploadProgress} className="h-2" />
                 </motion.div>
@@ -319,11 +313,11 @@ export default function MeetingsPage() {
               </motion.div>
             ) : meetingsLoading ? (
               <div className="space-y-4">
-                {[1,2,3].map(i => <div key={i} className="bg-[#f6f3f2] rounded-2xl h-28 animate-pulse" />)}
+                {[1,2,3].map(i => <div key={i} className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl h-28 animate-pulse" />)}
               </div>
             ) : meetings.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-[#f6f3f2] rounded-2xl p-16 text-center">
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-16 text-center">
                 <div className="w-20 h-20 rounded-3xl power-gradient flex items-center justify-center mx-auto mb-6 opacity-30">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
@@ -339,7 +333,7 @@ export default function MeetingsPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ delay: i * 0.06, duration: 0.5 }}
-                    className="bg-[#f6f3f2] rounded-2xl overflow-hidden hover-lift"
+                    className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden hover-lift"
                   >
                     {/* Colored top stripe */}
                     <div className="h-1.5 w-full power-gradient" />
@@ -396,11 +390,11 @@ export default function MeetingsPage() {
                         {m.speakers && Object.keys(m.speakers as Record<string, string>).length > 0 && (
                           <div>
                             <h4 className="font-headline font-bold text-slate-900 mb-3 flex items-center gap-2">
-                              <Users className="w-4 h-4 text-[#2552ca]" /> {t("المتحدثون", "Speakers")}
+                              <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t("المتحدثون", "Speakers")}
                             </h4>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(m.speakers as Record<string, string>).map(([key, name]) => (
-                                <Badge key={key} variant="outline" className="bg-[#f6f3f2] border-[#e4e2e1] text-slate-700">{name !== key ? `${name} (${key})` : key}</Badge>
+                                <Badge key={key} variant="outline" className="bg-slate-50 dark:bg-white/[0.03] border-[#e4e2e1] text-slate-700">{name !== key ? `${name} (${key})` : key}</Badge>
                               ))}
                             </div>
                           </div>
@@ -413,7 +407,7 @@ export default function MeetingsPage() {
                             <ul className="space-y-2">
                               {(m.key_points as string[]).map((pt, i) => (
                                 <li key={i} className="text-slate-600 flex items-start gap-2 text-sm">
-                                  <span className="text-[#2552ca] font-bold mt-0.5">•</span> {pt}
+                                  <span className="text-indigo-600 dark:text-indigo-400 font-bold mt-0.5">•</span> {pt}
                                 </li>
                               ))}
                             </ul>
@@ -436,9 +430,9 @@ export default function MeetingsPage() {
 
                         {/* Full summary */}
                         {m.summary && (
-                          <div className="bg-[#f6f3f2] rounded-2xl p-6 border-s-4 border-[#2552ca]">
+                          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 border-s-4 border-indigo-600">
                             <h4 className="font-headline font-bold text-slate-900 mb-3 flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-[#2552ca]" /> {t("الملخص الكامل", "Full Summary")}
+                              <FileText className="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> {t("الملخص الكامل", "Full Summary")}
                             </h4>
                             <p className="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">{m.summary}</p>
                           </div>
@@ -448,10 +442,10 @@ export default function MeetingsPage() {
                         {Array.isArray(m.transcript) && ((m.transcript ?? []) as NonNullable<Meeting["transcript"]>).length > 0 && (
                           <div>
                             <h4 className="font-headline font-bold text-slate-900 mb-3">📝 {t("النص الكامل (أول ١٠ قطع)", "Full Transcript (first 10 segments)")}</h4>
-                            <div className="space-y-2 max-h-64 overflow-y-auto bg-[#f6f3f2] rounded-2xl p-5 border border-[#e4e2e1]">
+                            <div className="space-y-2 max-h-64 overflow-y-auto bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5 border border-[#e4e2e1]">
                               {((m.transcript ?? []) as NonNullable<Meeting["transcript"]>).slice(0, 10).map((seg, i) => (
                                 <div key={i} className="text-sm flex gap-3">
-                                  <span className="text-[#2552ca] font-bold shrink-0 w-24">
+                                  <span className="text-indigo-600 dark:text-indigo-400 font-bold shrink-0 w-24">
                                     {seg.speaker as string ?? (isArabic ? `قطعة ${i + 1}` : `Segment ${i + 1}`)}:
                                   </span>
                                   <span className="text-slate-600">{seg.text as string}</span>

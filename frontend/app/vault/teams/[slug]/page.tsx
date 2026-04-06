@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { TeamDashboard } from "@/components/dashboards/team-dashboard";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useLanguage } from "@/components/language-provider";
@@ -33,7 +32,6 @@ interface TeamMember {
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
       <main className="pt-16 transition-all duration-300 p-6">
         {children}
       </main>

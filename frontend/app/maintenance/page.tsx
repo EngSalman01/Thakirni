@@ -3,14 +3,14 @@ import { BrandLogo } from "@/components/thakirni/brand-logo";
 
 export default function MaintenancePage() {
   return (
-    <div className="min-h-screen bg-[#fbf9f8] flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
       <div className="text-center max-w-md space-y-6">
         <BrandLogo />
 
-        <div className="bg-[#f6f3f2] rounded-2xl p-8 space-y-4">
-          <div className="w-16 h-16 bg-[#2552ca]/10 rounded-2xl flex items-center justify-center mx-auto">
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 space-y-4">
+          <div className="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center mx-auto">
             <svg
-              className="w-8 h-8 text-[#2552ca]"
+              className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -35,7 +35,7 @@ export default function MaintenancePage() {
 
         <p className="text-xs text-slate-400 font-label">
           Are you an admin?{" "}
-          <Link href="/auth" className="text-[#2552ca] hover:underline">
+          <Link href="/auth" className="text-indigo-600 dark:text-indigo-400 hover:underline">
             Sign in here
           </Link>
         </p>

@@ -72,7 +72,7 @@ function UserInitials({ name, avatarUrl }: { name: string | null; avatarUrl: str
     .join("")
     .toUpperCase();
   return (
-    <div className="w-8 h-8 rounded-full bg-[#2552ca] flex items-center justify-center text-white text-xs font-bold">
+    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
       {initials}
     </div>
   );
@@ -246,7 +246,7 @@ export default function UsersPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-start md:items-center">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-start md:items-center">
         {/* Search */}
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -287,7 +287,7 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -406,7 +406,7 @@ export default function UsersPage() {
                     <p className="text-red-500 font-semibold mb-2">Failed to load users</p>
                     <button
                       onClick={() => fetchUsers()}
-                      className="text-xs text-[#2552ca] underline hover:no-underline"
+                      className="text-xs text-indigo-600 dark:text-indigo-400 underline hover:no-underline"
                     >
                       Retry
                     </button>
@@ -456,7 +456,7 @@ export default function UsersPage() {
 
       {/* User View Sheet */}
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent className="w-full sm:max-w-md bg-[#fbf9f8]">
+        <SheetContent className="w-full sm:max-w-md bg-background">
           <SheetTitle className="sr-only">User Details</SheetTitle>
           {selectedUser && (
             <div className="space-y-6 pt-4">
@@ -475,7 +475,7 @@ export default function UsersPage() {
               </div>
 
               {/* Details */}
-              <div className="bg-[#f6f3f2] rounded-2xl p-4 space-y-3">
+              <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 space-y-3">
                 {[
                   { label: "Email", value: selectedUser.email || "—" },
                   { label: "Phone", value: selectedUser.phone_number ?? "—" },
@@ -499,7 +499,7 @@ export default function UsersPage() {
                   { label: "Memories", value: 0 },
                   { label: "Plans", value: 0 },
                 ].map((s) => (
-                  <div key={s.label} className="bg-[#f6f3f2] rounded-xl p-3 text-center">
+                  <div key={s.label} className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-3 text-center">
                     <p className="text-xl font-bold text-slate-900">{s.value}</p>
                     <p className="text-xs text-slate-500 font-label">{s.label}</p>
                   </div>
@@ -586,7 +586,7 @@ export default function UsersPage() {
             <Button
               onClick={handleSendMessage}
               disabled={sendingMessage || !messageText.trim()}
-              className="bg-[#2552ca] hover:bg-[#1e42a0] text-white"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               {sendingMessage ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Send

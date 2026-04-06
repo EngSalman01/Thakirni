@@ -11,7 +11,6 @@ import { ArrowLeft, Mic, Square, Play, Pause, Trash2, Save, AlertCircle } from '
 import { useLanguage } from '@/components/language-provider';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -219,8 +218,6 @@ export default function VoiceNotePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
-
       <main className="pt-16 px-4 pb-8">
         <div className="max-w-xl mx-auto">
 

@@ -193,7 +193,7 @@ export default function DiscountsPage() {
         </div>
         <Button
           onClick={() => { resetForm(); setCreateOpen(true); }}
-          className="bg-[#2552ca] hover:bg-[#1e42a0] text-white rounded-xl font-label"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-label"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create Code
@@ -208,7 +208,7 @@ export default function DiscountsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -244,7 +244,7 @@ export default function DiscountsPage() {
                             {c.code}
                           </code>
                         </td>
-                        <td className="py-3 px-4 font-label font-semibold text-[#2552ca]">
+                        <td className="py-3 px-4 font-label font-semibold text-indigo-600 dark:text-indigo-400">
                           {c.discount_percent}%
                         </td>
                         <td className="py-3 px-4 text-slate-500">
@@ -372,7 +372,7 @@ export default function DiscountsPage() {
             <Button
               onClick={handleCreate}
               disabled={submitting}
-              className="bg-[#2552ca] hover:bg-[#1e42a0] text-white"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Create

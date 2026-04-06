@@ -275,13 +275,13 @@ export default function HelpPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: i * 0.12 }}
-                  className="relative p-6 rounded-2xl border border-border/60 bg-background hover:border-[#2552ca]/50 hover:shadow-lg transition-all duration-300 group"
+                  className="relative p-6 rounded-2xl border border-border/60 bg-background hover:border-indigo-600/50 hover:shadow-lg transition-all duration-300 group"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-xl power-gradient flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
                       <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-3xl font-headline font-black text-[#2552ca]/20 select-none">
+                    <span className="text-3xl font-headline font-black text-indigo-600 dark:text-indigo-400/20 select-none">
                       0{i + 1}
                     </span>
                   </div>
@@ -321,7 +321,7 @@ export default function HelpPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: si * 0.08 }}
               >
-                <h3 className="text-sm font-bold uppercase tracking-widest text-[#2552ca] mb-4 px-1">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-4 px-1">
                   {t(section.category.ar, section.category.en)}
                 </h3>
                 <div className="space-y-3">
