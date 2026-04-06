@@ -1,14 +1,25 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { trackEvent } from "@/lib/analytics"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
+import { getClientIp } from "@/lib/validate"
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
+  // Brute-force / replay guard: 5 attempts per hour per IP
+  const ip = getClientIp(req)
+  const ipRl = await limiters.destroy(ip)
+  if (!ipRl.success) return rateLimitResponse(ipRl.reset)
+
   const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+
+  // Per-user destroy limit
+  const userRl = await limiters.destroy(user.id)
+  if (!userRl.success) return rateLimitResponse(userRl.reset)
 
   const service = createServiceClient()
 

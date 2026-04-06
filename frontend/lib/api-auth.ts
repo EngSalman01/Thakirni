@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import { getActiveWorkspace, type WorkspaceContext } from "@/lib/workspace/get-active-workspace"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 function getServiceSupabase() {
   return createClient(
@@ -41,6 +42,10 @@ export async function requireAuth(req: NextRequest): Promise<AuthResult | Respon
 
   const headerWorkspaceId = req.headers.get("x-workspace-id")
   const workspace = await getActiveWorkspace(user.id, headerWorkspaceId)
+
+  // General API rate limit: 100 req/min, workspace-scoped when available
+  const rl = await limiters.api(user.id, workspace?.workspaceId)
+  if (!rl.success) return rateLimitResponse(rl.reset)
 
   return {
     userId: user.id,

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { limiters, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function requireAdmin() {
   const supabase = await createClient();
@@ -22,5 +23,11 @@ export async function requireAdmin() {
       user: null,
       error: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
     };
+
+  // Rate-limit admin actions: 60 req/min per admin user
+  const rl = await limiters.admin(user.id);
+  if (!rl.success)
+    return { user: null, error: rateLimitResponse(rl.reset) };
+
   return { user, error: null };
 }

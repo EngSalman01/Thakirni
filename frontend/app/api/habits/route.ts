@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server"
 import { requireAuth } from "@/lib/api-auth"
+import { parseBody, sanitizeString } from "@/lib/validate"
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req)
@@ -28,27 +29,45 @@ export async function GET(req: NextRequest) {
   return Response.json({ habits: habitsWithStatus, date: today })
 }
 
+const VALID_FREQUENCIES = new Set(["daily", "weekly", "custom"])
+
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  const body = await req.json() as {
-    name: string; description?: string; icon?: string; color?: string;
-    frequency: "daily" | "weekly" | "custom"; frequency_days?: number[]; reminder_time?: string; category?: string
+  const [body, parseErr] = await parseBody<Record<string, unknown>>(req, 32_768)
+  if (parseErr) return parseErr
+
+  const name = sanitizeString(body.name, 200)
+  if (!name) return Response.json({ error: "name is required" }, { status: 400 })
+
+  const frequency = String(body.frequency ?? "")
+  if (!VALID_FREQUENCIES.has(frequency)) {
+    return Response.json({ error: "frequency must be daily, weekly, or custom" }, { status: 400 })
   }
+
+  const description = sanitizeString(body.description, 1000) ?? null
+  const icon        = sanitizeString(body.icon, 10) ?? "✅"
+  const color       = sanitizeString(body.color, 20) ?? "#6366f1"
+  const category    = sanitizeString(body.category, 100) ?? "general"
+  const reminderTime = sanitizeString(body.reminder_time, 20) ?? null
+
+  const freqDays = Array.isArray(body.frequency_days)
+    ? (body.frequency_days as unknown[]).filter((d) => typeof d === "number" && d >= 0 && d <= 6).slice(0, 7)
+    : []
 
   const { data, error } = await auth.supabase
     .from("habits")
     .insert({
       user_id: auth.userId,
-      name: body.name,
-      description: body.description ?? null,
-      icon: body.icon ?? "✅",
-      color: body.color ?? "#2552ca",
-      frequency: body.frequency,
-      frequency_days: body.frequency_days ?? [],
-      reminder_time: body.reminder_time ?? null,
-      category: body.category ?? "general",
+      name,
+      description,
+      icon,
+      color,
+      frequency,
+      frequency_days: freqDays,
+      reminder_time: reminderTime,
+      category,
       current_streak: 0,
       longest_streak: 0,
       is_active: true,
