@@ -2,19 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso";
+import { parseBody, isValidUUID, sanitizeString } from "@/lib/validate";
+import { logAuditEvent } from "@/lib/compliance/audit";
 
 export async function POST(request: NextRequest) {
-  const { error } = await requireAdmin();
+  const { user: adminUser, error } = await requireAdmin();
   if (error) return error;
 
-  const body = await request.json() as { userId?: string; message?: string };
-  const { userId, message } = body;
+  const [body, parseErr] = await parseBody<Record<string, unknown>>(request, 8192);
+  if (parseErr) return parseErr;
 
-  if (!userId || !message) {
-    return NextResponse.json(
-      { error: "userId and message are required" },
-      { status: 400 }
-    );
+  const userId = sanitizeString(body.userId, 36);
+  const message = sanitizeString(body.message, 4096);
+
+  if (!userId || !isValidUUID(userId)) {
+    return NextResponse.json({ error: "Valid userId (UUID) required" }, { status: 400 });
+  }
+  if (!message) {
+    return NextResponse.json({ error: "message is required" }, { status: 400 });
   }
 
   const supabase = createServiceClient();
@@ -49,9 +54,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Failed to send WhatsApp message" }, { status: 500 });
   }
 
-  return NextResponse.json({
-    success: true,
-    to: profile.phone_number,
-    name: profile.full_name,
-  });
+  // Audit log: admin messaging a specific user
+  await logAuditEvent(
+    adminUser!.id,
+    "admin_action",
+    `Admin sent WhatsApp message to user ${userId}`,
+    { targetUserId: userId, messageLength: message.length }
+  );
+
+  return NextResponse.json({ success: true, to: profile.phone_number, name: profile.full_name });
 }
