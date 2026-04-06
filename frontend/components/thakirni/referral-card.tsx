@@ -53,7 +53,7 @@ export function ReferralCard() {
 
       {/* Stats */}
       <div className="flex items-center gap-2 text-sm">
-        <span className="px-3 py-1 rounded-full bg-[#2552ca]/10 text-[#2552ca] font-medium">
+        <span className="px-3 py-1 rounded-full bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-medium">
           {data.count} {t("مدعوّ", data.count === 1 ? "referral" : "referrals")}
         </span>
         <span className="text-slate-400">·</span>

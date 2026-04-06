@@ -94,7 +94,7 @@ export function GlobalSearch() {
         <DialogContent className="p-0 gap-0 max-w-lg overflow-hidden rounded-2xl" dir={isArabic ? "rtl" : "ltr"}>
           <Command className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100">
-              {loading ? <Loader2 className="w-4 h-4 text-[#2552ca] animate-spin shrink-0" /> : <Search className="w-4 h-4 text-slate-400 shrink-0" />}
+              {loading ? <Loader2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin shrink-0" /> : <Search className="w-4 h-4 text-slate-400 shrink-0" />}
               <Command.Input
                 value={query}
                 onValueChange={setQuery}
@@ -133,7 +133,7 @@ export function GlobalSearch() {
                         key={result.id}
                         value={`${type}-${result.id}-${result.title}`}
                         onSelect={() => handleSelect(result)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-[#f6f3f2] aria-selected:bg-[#f6f3f2] transition-colors"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 dark:bg-white/[0.03] aria-selected:bg-slate-50 dark:bg-white/[0.03] transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${config.color}18` }}>
                           <Icon className="w-4 h-4" style={{ color: config.color }} />

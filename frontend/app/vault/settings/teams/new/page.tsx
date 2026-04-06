@@ -13,7 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createTeam } from "@/app/actions/teams";
 import { useLanguage } from "@/components/language-provider";
 import { useSubscription } from "@/hooks/use-subscription";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import {
   Building2, ArrowLeft, AlertCircle, CheckCircle2, Loader2,
 } from "lucide-react";
@@ -60,7 +59,7 @@ function isValidSlug(slug: string): boolean {
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
+
       <main className="pt-16 p-4 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
           <div className="space-y-2">
@@ -174,7 +173,7 @@ export default function NewTeamPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
+
 
       <main className="pt-16 transition-all duration-300 p-4 md:p-8">
         <div className="max-w-xl mx-auto">

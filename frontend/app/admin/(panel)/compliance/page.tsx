@@ -49,7 +49,7 @@ function StatCard({
   color?: string
 }) {
   return (
-    <div className="bg-[#f6f3f2] rounded-2xl p-6 flex items-center gap-4">
+    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 flex items-center gap-4">
       <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
         <Icon className={`w-6 h-6 ${color}`} />
       </div>
@@ -111,7 +111,7 @@ export default function CompliancePage() {
     <div className="space-y-8">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#2552ca] flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
           <Shield className="w-5 h-5 text-white" />
         </div>
         <div>
@@ -139,21 +139,21 @@ export default function CompliancePage() {
           label="Data Exports (recent)"
           value={eventCountsLast30Days.data_export ?? 0}
           icon={Download}
-          color="text-[#2552ca]"
+          color="text-indigo-600 dark:text-indigo-400"
         />
       </div>
 
       {/* Consent coverage */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-headline font-bold text-slate-900">Consent Coverage</h2>
-          <span className="text-2xl font-headline font-extrabold text-[#2552ca]">
+          <span className="text-2xl font-headline font-extrabold text-indigo-600 dark:text-indigo-400">
             {consent.coveragePct}%
           </span>
         </div>
         <div className="w-full bg-white rounded-full h-4 overflow-hidden border border-[#e4e2e1]">
           <div
-            className="h-full bg-[#2552ca] rounded-full transition-all duration-700"
+            className="h-full bg-indigo-600 rounded-full transition-all duration-700"
             style={{ width: `${consent.coveragePct}%` }}
           />
         </div>
@@ -163,7 +163,7 @@ export default function CompliancePage() {
       </div>
 
       {/* Event counts last 30 days */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
         <h2 className="font-headline font-bold text-slate-900 mb-4">Events — Last 30 Days</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {Object.entries(eventCountsLast30Days).map(([type, count]) => {
@@ -186,9 +186,9 @@ export default function CompliancePage() {
       {/* Quick panels: exports, deletions, incidents */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Data Exports */}
-        <div className="bg-[#f6f3f2] rounded-2xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Download className="w-4 h-4 text-[#2552ca]" />
+            <Download className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <h2 className="font-headline font-bold text-slate-900 text-sm">Recent Data Exports</h2>
           </div>
           {dataExports.length === 0 ? (
@@ -208,7 +208,7 @@ export default function CompliancePage() {
         </div>
 
         {/* Account Deletions */}
-        <div className="bg-[#f6f3f2] rounded-2xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <Trash2 className="w-4 h-4 text-red-500" />
             <h2 className="font-headline font-bold text-slate-900 text-sm">Recent Deletions</h2>
@@ -230,7 +230,7 @@ export default function CompliancePage() {
         </div>
 
         {/* Security Incidents */}
-        <div className="bg-[#f6f3f2] rounded-2xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <AlertTriangle className="w-4 h-4 text-red-500" />
             <h2 className="font-headline font-bold text-slate-900 text-sm">Security Incidents</h2>
@@ -253,7 +253,7 @@ export default function CompliancePage() {
       </div>
 
       {/* Full recent audit log table */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
         <h2 className="font-headline font-bold text-slate-900 mb-4">Recent Audit Log (last 50)</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

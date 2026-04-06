@@ -53,7 +53,7 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-2xl p-5 flex flex-col gap-3 ${highlight ? "bg-[#2552ca]/5 border border-[#2552ca]/20" : "bg-[#f6f3f2]"}`}
+      className={`rounded-2xl p-5 flex flex-col gap-3 ${highlight ? "bg-indigo-600/5 border border-indigo-600/20" : "bg-slate-50 dark:bg-white/[0.03]"}`}
     >
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -148,9 +148,9 @@ export default function AnalyticsPage() {
       )}
 
       {/* Retention */}
-      <div className="bg-[#f6f3f2] rounded-2xl p-6">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Activity className="w-5 h-5 text-[#2552ca]" />
+          <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h2 className="text-base font-headline font-semibold text-slate-900">Retention</h2>
         </div>
         {loading ? (
@@ -176,9 +176,9 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Feature usage */}
-        <div className="bg-[#f6f3f2] rounded-2xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-5">
-            <BarChart2 className="w-5 h-5 text-[#2552ca]" />
+            <BarChart2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-base font-headline font-semibold text-slate-900">Feature Usage (30d)</h2>
           </div>
           {loading ? (
@@ -198,9 +198,9 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Top events */}
-        <div className="bg-[#f6f3f2] rounded-2xl p-6">
+        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-5">
-            <MessageCircle className="w-5 h-5 text-[#2552ca]" />
+            <MessageCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <h2 className="text-base font-headline font-semibold text-slate-900">Top Events (30d)</h2>
           </div>
           {loading ? (

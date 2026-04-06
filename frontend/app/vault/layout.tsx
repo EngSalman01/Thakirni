@@ -7,6 +7,7 @@ import { ToastNotifier } from "@/components/thakirni/toast-notifier"
 import { ConsentModal } from "@/components/compliance/consent-modal"
 import { MobileBottomNav } from "@/components/thakirni/mobile-bottom-nav"
 import { PageTransition } from "@/components/thakirni/page-transition"
+import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 
 export const dynamic = "force-dynamic"
 
@@ -26,6 +27,7 @@ export default function VaultLayout({
     <>
       <ThemeSync />
       <UserIdentify />
+      <VaultSidebar />
       <CommandPalette />
       <ConsentModal />
       <Suspense>

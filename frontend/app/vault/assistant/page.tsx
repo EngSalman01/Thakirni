@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { Brain } from "lucide-react";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { useLanguage } from "@/components/language-provider";
 import { Sparkles } from "lucide-react";
@@ -28,7 +27,6 @@ export default function AssistantPage() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background">
-        <VaultSidebar />
         <main className="pt-16 transition-all duration-300 px-4 sm:px-6 lg:px-8 pb-8">
           {/* Header */}
           <div className="mb-6 pt-16">

@@ -2,9 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LanguageToggle } from "@/components/language-toggle"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLanguage } from "@/components/language-provider"
 import { createClient } from "@/lib/supabase/client"
@@ -181,8 +178,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
-        <VaultSidebar />
+      <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
         <main className="pt-24 px-6 lg:px-12 pb-20">
           <div className="max-w-5xl mx-auto space-y-6">
             {[1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
@@ -194,14 +190,13 @@ export default function AnalyticsPage() {
 
   if (fetchError) {
     return (
-      <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
-        <VaultSidebar />
+      <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
         <main className="pt-24 px-6 lg:px-12 pb-20 flex items-center justify-center">
           <div className="text-center space-y-4">
             <p className="text-2xl">⚠️</p>
             <p className="text-slate-700 font-semibold">{t("فشل تحميل التحليلات", "Failed to load analytics")}</p>
             <button onClick={() => { setFetchError(false); setRetryKey(k => k + 1); }}
-              className="px-4 py-2 rounded-xl bg-[#2552ca] text-white text-sm font-bold hover:bg-[#1e44a8] transition-colors">
+              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors">
               {t("إعادة المحاولة", "Retry")}
             </button>
           </div>
@@ -211,8 +206,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
-      <VaultSidebar />
+    <div className="min-h-screen bg-background overflow-x-hidden">
 
       {/* Period picker */}
       <div className="fixed top-14 inset-x-0 z-30 bg-background/90 backdrop-blur-sm border-b border-border/60 px-6 py-2 hidden lg:flex items-center justify-end gap-2">
@@ -235,8 +229,8 @@ export default function AnalyticsPage() {
             {/* Left copy */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <TrendingUp className="w-4 h-4 text-[#2552ca]" />
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-sm font-label font-medium text-slate-700">{t(`آخر ${period} أيام`, `Last ${period} days`)}</span>
               </motion.div>
 
@@ -280,7 +274,7 @@ export default function AnalyticsPage() {
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
               className="bg-[#e4e2e1] rounded-2xl p-8 relative overflow-hidden">
               {/* Decorative gradient */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#2552ca]/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-600/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
 
               <p className="text-sm font-label font-bold text-slate-500 mb-1">{t("إنجاز الخطط", "Plan Completion")}</p>
               <p className="text-3xl font-headline font-extrabold text-slate-900 mb-3">
@@ -306,15 +300,15 @@ export default function AnalyticsPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-[#f6f3f2] rounded-2xl p-8"
+              className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8"
             >
               <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                 <div className="flex items-center gap-3">
-                  <Brain className="w-5 h-5 text-[#2552ca]" />
+                  <Brain className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <h2 className="text-2xl font-headline font-bold text-slate-900">
                     {t("استخدام الذكاء الاصطناعي", "AI Usage")}
                   </h2>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#dce1ff] text-[#2552ca]">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
                     {usage.tier}
                   </span>
                 </div>
@@ -438,8 +432,8 @@ export default function AnalyticsPage() {
 
             {/* Plans chart */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
-              className="bg-[#f6f3f2] rounded-2xl p-10 relative overflow-hidden group hover-lift">
-              <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-[#2552ca]/8 to-transparent rounded-tl-3xl pointer-events-none transition-transform duration-500 group-hover:translate-y-0 translate-y-4 translate-x-4" />
+              className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden group hover-lift">
+              <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-indigo-600/8 to-transparent rounded-tl-3xl pointer-events-none transition-transform duration-500 group-hover:translate-y-0 translate-y-4 translate-x-4" />
               <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
                 📊 {t("إنجاز الخطط اليومي", "Daily Plan Completion")}
               </h2>
@@ -457,7 +451,7 @@ export default function AnalyticsPage() {
 
             {/* Memories chart */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, delay: 0.05 }}
-              className="bg-[#456ce4] rounded-2xl p-10 relative overflow-hidden group hover-lift">
+              className="bg-indigo-400 rounded-2xl p-10 relative overflow-hidden group hover-lift">
               <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-white/10 rounded-tl-3xl pointer-events-none" />
               <h2 className="text-2xl font-headline font-bold text-white mb-8">
                 🧠 {t("نشاط الذكريات", "Memory Activity")}
@@ -483,7 +477,7 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Habits */}
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
-                className="bg-[#f6f3f2] rounded-2xl p-10 hover-lift">
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
                 <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
                   🔥 {t("أداء العادات", "Habit Performance")}
                 </h2>
@@ -506,7 +500,7 @@ export default function AnalyticsPage() {
 
               {/* Goals */}
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, delay: 0.05 }}
-                className="bg-[#f6f3f2] rounded-2xl p-10 hover-lift">
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
                 <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
                   🎯 {t("تقدم الأهداف", "Goals Progress")}
                 </h2>
@@ -526,7 +520,7 @@ export default function AnalyticsPage() {
                             whileInView={{ width: `${g.progress}%` }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.08, duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
-                            className="h-full rounded-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2]"
+                            className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-[#fd65c2]"
                           />
                         </div>
                       </div>

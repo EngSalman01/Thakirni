@@ -9,7 +9,7 @@ export default function NotFound() {
 
   return (
     <div
-      className="min-h-screen bg-[#fbf9f8] flex items-center justify-center px-4"
+      className="min-h-screen bg-background flex items-center justify-center px-4"
       dir={isArabic ? "rtl" : "ltr"}
     >
       <motion.div
@@ -36,7 +36,7 @@ export default function NotFound() {
 
         {/* Card */}
         <motion.div
-          className="bg-[#f6f3f2] rounded-2xl p-8 shadow-sm border border-stone-200"
+          className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 shadow-sm border border-stone-200"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -65,7 +65,7 @@ export default function NotFound() {
 
             <Link
               href="/vault"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-[#2552ca] bg-white border border-[#2552ca]/30 transition-colors hover:bg-[#2552ca]/5"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white border border-indigo-600/30 transition-colors hover:bg-indigo-600/5"
             >
               {t("افتح الخزينة", "Open Vault")}
             </Link>

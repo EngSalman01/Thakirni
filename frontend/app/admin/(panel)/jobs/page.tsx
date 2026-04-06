@@ -120,7 +120,7 @@ export default function AdminJobsPage() {
         </TabsList>
       </Tabs>
 
-      <div className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}

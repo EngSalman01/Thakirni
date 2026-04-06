@@ -11,7 +11,6 @@ import {
 import { getTeamProjects } from "@/app/actions/projects";
 import { InviteMemberDialog } from "@/components/team/invite-member-dialog";
 import { CreateProjectDialog } from "@/components/team/create-project-dialog";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { useLanguage } from "@/components/language-provider";
 import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
@@ -124,7 +123,7 @@ function SubscriptionBadge({ status, t }: { status: SubscriptionStatus; t: (ar: 
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
+
       <main className="pt-16 p-4 md:p-8">
         <div className="max-w-6xl mx-auto space-y-6">
           <Skeleton className="h-12 w-64" />
@@ -236,7 +235,7 @@ export default function TeamSettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
+
 
       <main className="pt-16 transition-all duration-300 p-4 md:p-8">
         <div className="max-w-6xl mx-auto space-y-6">

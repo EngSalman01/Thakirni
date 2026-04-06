@@ -13,7 +13,6 @@ import {
   ShieldCheck, AlertCircle,
 } from 'lucide-react';
 import { useLanguage } from '@/components/language-provider';
-import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -115,7 +114,6 @@ function PasswordField({
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
       <main className="pt-16 p-6 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
           <Skeleton className="h-8 w-40" />
@@ -227,7 +225,6 @@ export default function ChangePasswordPage() {
   if (isOAuthUser) {
     return (
       <div className="min-h-screen bg-background">
-        <VaultSidebar />
         <main className="pt-16 p-6 md:p-8">
           <div className="max-w-xl mx-auto">
             <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-6 gap-2">
@@ -261,8 +258,6 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
-
       <main className="pt-16 p-6 md:p-8">
         <div className="max-w-xl mx-auto">
 

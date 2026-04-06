@@ -159,7 +159,7 @@ export default function AnnouncementsPage() {
         </div>
         <Button
           onClick={() => { resetForm(); setCreateOpen(true); }}
-          className="bg-[#2552ca] hover:bg-[#1e42a0] text-white rounded-xl font-label"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-label"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create Announcement
@@ -167,7 +167,7 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -304,7 +304,7 @@ export default function AnnouncementsPage() {
             <Button
               onClick={handleCreate}
               disabled={submitting}
-              className="bg-[#2552ca] hover:bg-[#1e42a0] text-white"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Send
@@ -329,7 +329,7 @@ export default function AnnouncementsPage() {
                   → {targetLabel(viewAnnouncement.target)}
                 </span>
               </div>
-              <div className="bg-[#f6f3f2] rounded-xl p-4 text-sm text-slate-700 font-label whitespace-pre-wrap">
+              <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 text-sm text-slate-700 font-label whitespace-pre-wrap">
                 {viewAnnouncement.message}
               </div>
               <p className="text-xs text-slate-400">

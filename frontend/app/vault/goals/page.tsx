@@ -1,9 +1,6 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
-import { ThemeToggle } from "@/components/theme-toggle"
-import { LanguageToggle } from "@/components/language-toggle"
 import { useLanguage } from "@/components/language-provider"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -142,20 +139,18 @@ export default function GoalsPage() {
   const avgProgress = goals.length ? Math.round(goals.reduce((s, g) => s + ((g as Record<string, unknown>).progress as number || 0), 0) / goals.length) : 0
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden">
-      <VaultSidebar />
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
       <main className="pt-16">
 
         {/* ── HERO ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">
           <ParticleLayer />
           <div className="absolute -top-20 right-0 w-80 h-80 bg-[#385b9b]/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#2552ca]/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
-                <div className="hidden lg:flex justify-end gap-3"><ThemeToggle /><LanguageToggle /></div>
                 <div>
                   <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
                     {t("أهدافي ", "My ")}<span className="gradient-text">{t("الكبيرة", "Goals")}</span>
@@ -166,8 +161,8 @@ export default function GoalsPage() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { value: goals.length,                       label: t("أهداف نشطة", "Active goals"),  color: "bg-[#dce1ff] text-[#2552ca]" },
-                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-[#ffd8e9] text-[#ad1d7f]" },
+                    { value: goals.length,                       label: t("أهداف نشطة", "Active goals"),  color: "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400" },
+                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-[#ffd8e9] text-violet-600 dark:text-violet-400" },
                     { value: goals.filter((g:any) => g.progress >= 100).length, label: t("مكتملة", "Completed"), color: "bg-emerald-50 text-emerald-700" },
                   ].map(({ value, label, color }) => (
                     <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
@@ -221,11 +216,11 @@ export default function GoalsPage() {
                         <Wand2 className="w-4 h-4" />{aiLoading ? t("جاري الاقتراح...", "Suggesting...") : t("اقترح خطوات بالذكاء الاصطناعي", "AI Suggest Milestones")}
                       </Button>
                       {suggestedMilestones.length > 0 && (
-                        <div className="bg-[#f6f3f2] rounded-xl p-3 space-y-1.5">
+                        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-3 space-y-1.5">
                           <p className="text-xs font-bold text-slate-600 mb-2">{t("خطوات مقترحة:", "Suggested milestones:")}</p>
                           {suggestedMilestones.map((m, i) => (
                             <div key={i} className="flex items-center gap-2 text-sm text-slate-700">
-                              <span className="w-5 h-5 rounded-full bg-[#dce1ff] text-[#2552ca] flex items-center justify-center text-xs font-bold">{i+1}</span>
+                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-bold">{i+1}</span>
                               {m.title}
                             </div>
                           ))}
@@ -245,7 +240,7 @@ export default function GoalsPage() {
                   {goals.length === 0
                     ? <p className="text-sm text-slate-500 text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>
                     : (goals as Array<{ id?: string; title: string; progress?: number }>).slice(0, 3).map((goal, i) => {
-                        const barColors = ["bg-[#2552ca]", "bg-[#ad1d7f]", "bg-[#456ce4]"];
+                        const barColors = ["bg-indigo-600", "bg-violet-600", "bg-indigo-400"];
                         const pct = Math.min(100, Math.round(goal.progress ?? 0));
                         return (
                           <div key={goal.id ?? i}>
@@ -282,7 +277,7 @@ export default function GoalsPage() {
             ) : goalsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+                  <div key={i} className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
                     <Skeleton className="h-2 w-full rounded-none" />
                     <div className="p-10 space-y-4">
                       <div className="flex items-start justify-between">
@@ -298,7 +293,7 @@ export default function GoalsPage() {
               </div>
             ) : goals.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-[#f6f3f2] rounded-2xl p-24 text-center hover-lift">
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
                 <Target className="w-16 h-16 mx-auto mb-4 text-[#385b9b]/30" />
                 <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا توجد أهداف بعد", "No goals yet")}</h2>
                 <p className="text-slate-500 mb-8">{t("أنشئ هدفك الأول وابدأ رحلتك نحو النجاح!", "Create your first goal and start your journey to success!")}</p>
@@ -323,9 +318,9 @@ export default function GoalsPage() {
                       custom={i} initial={{ opacity: 0, y: 28 }}
                       whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
                       transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
-                      className="relative bg-[#f6f3f2] rounded-2xl overflow-hidden group hover-lift">
+                      className="relative bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift">
                       {/* Color stripe */}
-                      <div className="h-2 w-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2]" />
+                      <div className="h-2 w-full bg-gradient-to-r from-indigo-600 to-[#fd65c2]" />
                       <div className="p-10">
                         <div className="flex items-start justify-between mb-4">
                           <span className="text-4xl">{cat.icon}</span>
@@ -350,7 +345,7 @@ export default function GoalsPage() {
                           <div className="h-2.5 bg-white/80 rounded-full overflow-hidden">
                             <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }}
                               transition={{ duration: 1, ease: "easeOut" }}
-                              className="h-full rounded-full bg-gradient-to-r from-[#2552ca] to-[#fd65c2]" />
+                              className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-[#fd65c2]" />
                           </div>
                         </div>
 
@@ -382,7 +377,7 @@ export default function GoalsPage() {
                       </div>
                       {/* Decorative */}
                       <div className="absolute right-0 bottom-0 w-1/2 translate-y-6 translate-x-6 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-20 pointer-events-none">
-                        <div className="w-full h-24 bg-gradient-to-tl from-[#2552ca]/30 to-[#fd65c2]/20 rounded-tl-2xl" />
+                        <div className="w-full h-24 bg-gradient-to-tl from-indigo-600/30 to-[#fd65c2]/20 rounded-tl-2xl" />
                       </div>
                     </motion.div>
                   )

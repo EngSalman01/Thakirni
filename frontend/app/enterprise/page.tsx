@@ -101,12 +101,12 @@ export default function EnterprisePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8]" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background" dir={isArabic ? "rtl" : "ltr"}>
       <LandingHeader />
 
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2552ca]/5 via-transparent to-[#fd65c2]/5 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/5 via-transparent to-[#fd65c2]/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Left */}
@@ -114,7 +114,7 @@ export default function EnterprisePage() {
               initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#2552ca]/10 text-[#2552ca] text-sm font-semibold mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 text-sm font-semibold mb-6">
                 <Building2 className="w-4 h-4" />
                 {t("ذكرني للمؤسسات", "Thakirni for Enterprise")}
               </div>
@@ -178,7 +178,7 @@ export default function EnterprisePage() {
               const Icon = item.icon
               return (
                 <div key={item.en} className="flex items-center gap-2 text-sm text-slate-600">
-                  <Icon className="w-4 h-4 text-[#2552ca]" />
+                  <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                   <span>{t(item.ar, item.en)}</span>
                 </div>
               )
@@ -215,8 +215,8 @@ export default function EnterprisePage() {
                 viewport={{ once: true }} transition={{ delay: i * 0.07 }}
                 className="glass-card rounded-2xl p-6 hover:shadow-md transition-shadow"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#2552ca]/10 flex items-center justify-center mb-4">
-                  <Icon className="w-5 h-5 text-[#2552ca]" />
+                <div className="w-10 h-10 rounded-xl bg-indigo-600/10 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
                 <h3 className="font-bold text-slate-800 mb-2">{content.title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{content.desc}</p>
@@ -283,7 +283,7 @@ export default function EnterprisePage() {
                 viewport={{ once: true }}
                 className={`rounded-2xl p-6 ${plan.highlight ? "power-gradient text-white shadow-lg" : "bg-white border border-slate-100"}`}
               >
-                <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${plan.highlight ? "text-white/70" : "text-[#2552ca]"}`}>
+                <div className={`text-xs font-semibold uppercase tracking-wider mb-1 ${plan.highlight ? "text-white/70" : "text-indigo-600 dark:text-indigo-400"}`}>
                   {plan.size} {t("موظف", "employees")}
                 </div>
                 <div className={`text-lg font-bold mb-1 ${plan.highlight ? "text-white" : "text-slate-800"}`}>{plan.tier}</div>
@@ -358,7 +358,7 @@ export default function EnterprisePage() {
                   value={formState.name}
                   onChange={e => setFormState(s => ({ ...s, name: e.target.value }))}
                   placeholder={t("محمد العمري", "Mohammed Al-Omari")}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm"
                 />
               </div>
               <div className="space-y-1.5">
@@ -371,7 +371,7 @@ export default function EnterprisePage() {
                   value={formState.email}
                   onChange={e => setFormState(s => ({ ...s, email: e.target.value }))}
                   placeholder="name@company.com"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm"
                 />
               </div>
             </div>
@@ -387,7 +387,7 @@ export default function EnterprisePage() {
                   value={formState.company}
                   onChange={e => setFormState(s => ({ ...s, company: e.target.value }))}
                   placeholder={t("شركة أبشر", "Absher Co.")}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm"
                 />
               </div>
               <div className="space-y-1.5">
@@ -402,7 +402,7 @@ export default function EnterprisePage() {
                     onChange={e => setFormState(s => ({ ...s, phone: e.target.value.replace(/\D/g,"") }))}
                     placeholder="5XXXXXXXX"
                     maxLength={9}
-                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm font-mono"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm font-mono"
                   />
                 </div>
               </div>
@@ -416,7 +416,7 @@ export default function EnterprisePage() {
                 <select
                   value={formState.team_size}
                   onChange={e => setFormState(s => ({ ...s, team_size: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm"
                 >
                   <option value="">{t("اختر...", "Select...")}</option>
                   {TEAM_SIZES.map(ts => (
@@ -431,7 +431,7 @@ export default function EnterprisePage() {
                 <select
                   value={formState.use_case}
                   onChange={e => setFormState(s => ({ ...s, use_case: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm"
                 >
                   <option value="">{t("اختر...", "Select...")}</option>
                   {USE_CASES.map(uc => (
@@ -453,7 +453,7 @@ export default function EnterprisePage() {
                   "ما التحديات التي يواجهها فريقك؟",
                   "What challenges is your team facing?"
                 )}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30 text-sm resize-none"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-sm resize-none"
               />
             </div>
 
@@ -501,7 +501,7 @@ export default function EnterprisePage() {
               <Phone className="w-5 h-5 text-[#25d366]" />
             </div>
             <div>
-              <div className="font-semibold text-slate-800 text-sm group-hover:text-[#2552ca] transition-colors">
+              <div className="font-semibold text-slate-800 text-sm group-hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                 {t("واتساب مباشر", "WhatsApp Direct")}
               </div>
               <div className="text-xs text-slate-500">+966 55 533 9782</div>
@@ -509,11 +509,11 @@ export default function EnterprisePage() {
           </a>
           <a href="mailto:enterprise@thakirni.com"
             className="flex items-center gap-4 p-5 glass-card rounded-2xl hover:shadow-md transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-[#2552ca]/10 flex items-center justify-center">
-              <Mail className="w-5 h-5 text-[#2552ca]" />
+            <div className="w-10 h-10 rounded-xl bg-indigo-600/10 flex items-center justify-center">
+              <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             <div>
-              <div className="font-semibold text-slate-800 text-sm group-hover:text-[#2552ca] transition-colors">
+              <div className="font-semibold text-slate-800 text-sm group-hover:text-indigo-600 dark:text-indigo-400 transition-colors">
                 {t("البريد الإلكتروني", "Email Us")}
               </div>
               <div className="text-xs text-slate-500">enterprise@thakirni.com</div>

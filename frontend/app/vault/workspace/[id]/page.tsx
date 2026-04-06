@@ -2,7 +2,6 @@
 
 import { useState, useEffect, use } from "react"
 import { motion } from "framer-motion"
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 import { useLanguage } from "@/components/language-provider"
 import {
   Users, Crown, Shield, User, Trash2, Loader2,
@@ -101,14 +100,13 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
   const canManage = ["owner", "admin"].includes(myRole)
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
-      <VaultSidebar />
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
       <main className="pt-20 px-4 sm:px-8 pb-20">
         <div className="max-w-3xl mx-auto space-y-6">
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 animate-spin text-[#2552ca]" />
+              <Loader2 className="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400" />
             </div>
           ) : !workspace ? (
             <div className="text-center py-20 text-slate-400">
@@ -141,10 +139,10 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
               <motion.div
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-[#f6f3f2] rounded-2xl p-6 space-y-4"
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Users className="w-5 h-5 text-[#2552ca]" />
+                  <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   <h2 className="font-bold text-slate-800">
                     {t("الأعضاء", "Members")}
                   </h2>
@@ -158,7 +156,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                         key={member.id}
                         className="flex items-center gap-3 bg-white rounded-xl px-4 py-3"
                       >
-                        <div className="w-9 h-9 rounded-full bg-[#2552ca]/10 flex items-center justify-center text-[#2552ca] font-bold text-sm flex-shrink-0 overflow-hidden">
+                        <div className="w-9 h-9 rounded-full bg-indigo-600/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm flex-shrink-0 overflow-hidden">
                           {member.profile?.avatar_url
                             ? <img src={member.profile.avatar_url} className="w-full h-full object-cover" alt="" />
                             : (member.profile?.full_name?.[0] ?? "U").toUpperCase()
@@ -200,10 +198,10 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                 <motion.div
                   initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-[#f6f3f2] rounded-2xl p-6 space-y-4"
+                  className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <UserPlus className="w-5 h-5 text-[#2552ca]" />
+                    <UserPlus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     <h2 className="font-bold text-slate-800">
                       {t("دعوة عضو", "Invite Member")}
                     </h2>
@@ -215,7 +213,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                       onChange={e => setInviteEmail(e.target.value)}
                       placeholder={t("البريد الإلكتروني", "Email address")}
                       required
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#2552ca]/30"
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/30"
                     />
                     <select
                       value={inviteRole}

@@ -14,9 +14,6 @@ import { useLanguage } from '@/components/language-provider';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { VaultSidebar } from '@/components/thakirni/vault-sidebar';
-import { ThemeToggle } from '@/components/theme-toggle';
-import { LanguageToggle } from '@/components/language-toggle';
 
 const MAX_FILE_SIZE_MB = 25;
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -92,7 +89,7 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
     return '🧠';
   }
 
-  const cardColors = ['from-[#2552ca] to-[#456ce4]', 'from-[#ad1d7f] to-[#fd65c2]', 'from-[#385b9b] to-[#2552ca]'];
+  const cardColors = ['from-indigo-600 to-indigo-400', 'from-[#ad1d7f] to-[#fd65c2]', 'from-[#385b9b] to-indigo-600'];
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.8 }}
@@ -135,7 +132,7 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
       {/* Floating badge */}
       <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute -top-3 -right-3 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-[#ad1d7f]" />
+        <Sparkles className="w-4 h-4 text-violet-600 dark:text-violet-400" />
         <span className="text-xs font-bold text-slate-900">{t('محفوظ في ذاكرتك', 'Saved to memory')}</span>
       </motion.div>
     </motion.div>
@@ -251,10 +248,7 @@ export default function UploadPage() {
   const pendingCount = items.filter((i) => i.status === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-[#fbf9f8] overflow-x-hidden">
-      <VaultSidebar />
-
-
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
@@ -264,8 +258,8 @@ export default function UploadPage() {
             {/* Left copy */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-[#2552ca]/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <Upload className="w-4 h-4 text-[#2552ca]" />
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Upload className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                 <span className="text-sm font-label font-medium text-slate-700">{t(`حتى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`, `Up to ${MAX_FILE_SIZE_MB} MB per file`)}</span>
               </motion.div>
 
@@ -291,7 +285,7 @@ export default function UploadPage() {
                   {t('اختر ملفات', 'Choose Files')}
                 </motion.button>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <span className="w-2 h-2 rounded-full bg-[#2552ca]" />
+                  <span className="w-2 h-2 rounded-full bg-indigo-600" />
                   {t('صور، فيديو، صوت، PDF', 'Images, video, audio, PDF')}
                 </div>
               </div>
@@ -313,11 +307,11 @@ export default function UploadPage() {
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.6 }}
                 onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} onClick={() => inputRef.current?.click()}
                 className={cn(
-                  'bg-[#f6f3f2] rounded-2xl p-12 text-center cursor-pointer relative overflow-hidden group hover-lift border-2 border-dashed transition-all duration-200',
-                  isDragging ? 'border-[#2552ca] bg-[#dce1ff]/30' : 'border-[#e4e2e1] hover:border-[#2552ca]/40'
+                  'bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-12 text-center cursor-pointer relative overflow-hidden group hover-lift border-2 border-dashed transition-all duration-200',
+                  isDragging ? 'border-indigo-600 bg-indigo-100 dark:bg-indigo-950/60/30' : 'border-[#e4e2e1] hover:border-indigo-600/40'
                 )}>
                 {/* Decorative corner */}
-                <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-[#2552ca]/8 to-transparent rounded-tl-3xl pointer-events-none" />
+                <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-indigo-600/8 to-transparent rounded-tl-3xl pointer-events-none" />
 
                 <motion.div animate={{ scale: isDragging ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   className="flex flex-col items-center gap-4 relative z-10">
@@ -337,7 +331,7 @@ export default function UploadPage() {
 
               {/* File list + actions */}
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.6, delay: 0.05 }}
-                className="bg-[#f6f3f2] rounded-2xl p-10 flex flex-col">
+                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 flex flex-col">
                 <h2 className="text-2xl font-headline font-bold text-slate-900 mb-6">
                   {t('الملفات المحددة', 'Selected Files')}
                   {items.length > 0 && <span className="ms-2 text-base font-normal text-slate-500">({items.length})</span>}
@@ -366,7 +360,7 @@ export default function UploadPage() {
                         <Input
                           placeholder={t('أضف وصفاً لهذه الملفات...', 'Add a description...')}
                           value={description} onChange={(e) => setDescription(e.target.value)}
-                          className="rounded-xl bg-white border-[#e4e2e1] focus-visible:ring-[#2552ca]/40" />
+                          className="rounded-xl bg-white border-[#e4e2e1] focus-visible:ring-indigo-600/40" />
                       </div>
                       <div className="flex gap-3">
                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}

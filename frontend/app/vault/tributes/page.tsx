@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { VaultSidebar } from "@/components/thakirni/vault-sidebar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,8 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -280,8 +277,6 @@ export default function TributesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <VaultSidebar />
-
       <main className="transition-all duration-300 pt-16">
         <div className="pt-16 p-6 md:p-8 max-w-6xl mx-auto space-y-6">
 
@@ -300,8 +295,6 @@ export default function TributesPage() {
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <LanguageToggle />
-              <ThemeToggle />
               <Button className="gap-2" onClick={() => router.push("/vault/upload")}>
                 <Plus className="w-4 h-4" />
                 {t("ذكرى جديدة", "New Memory")}

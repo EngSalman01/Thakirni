@@ -35,7 +35,7 @@ function StatCard({ icon: Icon, label, value, color = "#2552ca" }: {
   color?: string;
 }) {
   return (
-    <div className="bg-[#f6f3f2] rounded-2xl p-5 flex flex-col gap-2">
+    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5 flex flex-col gap-2">
       <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}18` }}>
         <Icon className="w-4 h-4" style={{ color }} />
       </div>
@@ -111,7 +111,7 @@ export default function AdminLogsPage() {
       {/* Top / Slowest endpoints */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-[#f6f3f2] rounded-2xl p-5">
+          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5">
             <h3 className="text-sm font-label font-semibold text-slate-700 mb-3">Top Endpoints (24h)</h3>
             {stats.topEndpoints.map(e => (
               <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/50 last:border-0">
@@ -120,7 +120,7 @@ export default function AdminLogsPage() {
               </div>
             ))}
           </div>
-          <div className="bg-[#f6f3f2] rounded-2xl p-5">
+          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5">
             <h3 className="text-sm font-label font-semibold text-slate-700 mb-3">Slowest Endpoints (24h)</h3>
             {stats.slowestEndpoints.map(e => (
               <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/50 last:border-0">
@@ -152,7 +152,7 @@ export default function AdminLogsPage() {
       </div>
 
       {/* Log Table */}
-      <div className="bg-[#f6f3f2] rounded-2xl overflow-hidden">
+      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 rounded-xl" />)}

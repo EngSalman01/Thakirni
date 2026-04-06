@@ -52,14 +52,14 @@ export function ReferralShare() {
   }
 
   return (
-    <div className="bg-[#f6f3f2] rounded-2xl overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>
       {/* Header — always visible */}
       <button
         onClick={() => setExpanded(v => !v)}
         className="w-full flex items-center gap-3 p-4 hover:bg-[#f0ede9] transition-colors"
       >
-        <div className="w-9 h-9 rounded-xl bg-[#2552ca]/10 flex items-center justify-center shrink-0">
-          <Gift className="w-4 h-4 text-[#2552ca]" />
+        <div className="w-9 h-9 rounded-xl bg-indigo-600/10 flex items-center justify-center shrink-0">
+          <Gift className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div className="flex-1 text-start">
           <p className="text-sm font-label font-semibold text-slate-800">
@@ -93,7 +93,7 @@ export function ReferralShare() {
           >
             <div className="px-4 pb-4 space-y-3">
               {/* Reward callout */}
-              <div className="bg-[#2552ca]/5 border border-[#2552ca]/15 rounded-xl px-3 py-2.5 text-sm font-label text-slate-700">
+              <div className="bg-indigo-600/5 border border-indigo-600/15 rounded-xl px-3 py-2.5 text-sm font-label text-slate-700">
                 {data.reward.description}
               </div>
 
@@ -104,7 +104,7 @@ export function ReferralShare() {
                 </div>
                 <button
                   onClick={copyLink}
-                  className="shrink-0 w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-[#2552ca] hover:text-white hover:border-[#2552ca] transition-all"
+                  className="shrink-0 w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
                 >
                   <AnimatePresence mode="wait">
                     {copied
