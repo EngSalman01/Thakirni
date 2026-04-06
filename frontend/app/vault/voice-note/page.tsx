@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { VoicePulse } from '@/components/thakirni/motion-primitives';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -282,23 +283,25 @@ export default function VoiceNotePage() {
 
                 {/* Record / Stop button */}
                 {(state === 'idle' || state === 'recording' || state === 'requesting') && (
-                  <motion.button
-                    whileTap={{ scale: 0.93 }}
-                    onClick={state === 'recording' ? stopRecording : startRecording}
-                    disabled={state === 'requesting'}
-                    className={[
-                      'w-24 h-24 rounded-full flex items-center justify-center',
-                      'shadow-lg transition-colors duration-200 disabled:opacity-50',
-                      state === 'recording'
-                        ? 'bg-red-600 hover:bg-red-500 shadow-red-500/30'
-                        : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/30',
-                    ].join(' ')}
-                  >
-                    {state === 'recording'
-                      ? <Square className="w-8 h-8 text-white" />
-                      : <Mic className="w-8 h-8 text-white" />
-                    }
-                  </motion.button>
+                  <VoicePulse recording={state === 'recording'}>
+                    <motion.button
+                      whileTap={{ scale: 0.93 }}
+                      onClick={state === 'recording' ? stopRecording : startRecording}
+                      disabled={state === 'requesting'}
+                      className={[
+                        'w-24 h-24 rounded-full flex items-center justify-center',
+                        'shadow-lg transition-colors duration-200 disabled:opacity-50',
+                        state === 'recording'
+                          ? 'bg-red-600 hover:bg-red-500 shadow-red-500/30'
+                          : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/30',
+                      ].join(' ')}
+                    >
+                      {state === 'recording'
+                        ? <Square className="w-8 h-8 text-white" />
+                        : <Mic className="w-8 h-8 text-white" />
+                      }
+                    </motion.button>
+                  </VoicePulse>
                 )}
               </div>
 
