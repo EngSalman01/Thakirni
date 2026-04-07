@@ -140,12 +140,15 @@ export async function POST(req: Request) {
     let factsBlock = ""
     let todayBlock = ""
     let profileName = ""
+    let planTier = "FREE"
+    let usageBlock = ""
     let googleCalendarBlock = ""
     let habitsBlock = ""
     let goalsBlock = ""
 
     if (user) {
-      const [factsRes, plansRes, profileRes, habitsRes, goalsRes] = await Promise.all([
+      const currentMonth = currentDate.slice(0, 7) // YYYY-MM
+      const [factsRes, plansRes, profileRes, habitsRes, goalsRes, usageRes] = await Promise.all([
         serviceSupabase
           .from("user_facts")
           .select("fact, category")
@@ -164,7 +167,7 @@ export async function POST(req: Request) {
 
         supabase
           .from("profiles")
-          .select("full_name, preferred_language, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at")
+          .select("full_name, preferred_language, plan_tier, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at")
           .eq("id", user.id)
           .single(),
 
@@ -184,11 +187,34 @@ export async function POST(req: Request) {
           .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(5),
+
+        // Monthly usage
+        serviceSupabase
+          .from("usage")
+          .select("ai_chat_requests, document_uploads, meeting_summaries, voice_note_minutes")
+          .eq("user_id", user.id)
+          .eq("month", currentMonth)
+          .single(),
       ])
 
       profileName = profileRes.data?.full_name ?? ""
+      planTier = (profileRes.data?.plan_tier ?? "FREE").toUpperCase()
       factsBlock = formatFactsBlock(factsRes.data ?? [])
       todayBlock = formatTodayBlock(plansRes.data ?? [], currentDate)
+
+      // ── Usage block ─────────────────────────────────────────────────────────
+      if (usageRes.data) {
+        const { getLimitsForTier } = await import("@/lib/usage/limits")
+        const limits = getLimitsForTier(planTier)
+        const u = usageRes.data
+        const pct = (used: number, limit: number) => limit > 0 ? Math.round((used / limit) * 100) : 0
+        const fmt = (used: number, limit: number) => `${used}/${limit} (${pct(used, limit)}%)`
+        usageBlock = `USAGE THIS MONTH:
+  AI chat: ${fmt(u.ai_chat_requests ?? 0, limits.aiChatRequests)}
+  Documents: ${fmt(u.document_uploads ?? 0, limits.documentUploads)}
+  Meeting summaries: ${fmt(u.meeting_summaries ?? 0, limits.meetingSummaries)}
+  Voice notes: ${fmt(u.voice_note_minutes ?? 0, limits.voiceNoteMinutes)} min`
+      }
 
       // ── Habits block ────────────────────────────────────────────────────────
       if (habitsRes.data && habitsRes.data.length > 0) {
@@ -354,6 +380,7 @@ Current detected intent: ${intent}
 
 You are Thakirni (ذكرني).
 ${profileName ? `The user's name is ${profileName}.` : ""}
+The user's current plan: ${planTier}
 
 If anyone asks who built you, who made you, or who is your developer:
 → In Arabic: قل "المهندس سلمان المناصير"
@@ -366,6 +393,7 @@ Hijri: ${hijriDate}
 ━━━━━━━━━━━━━━━━━━━━
 ${todayBlock}
 ━━━━━━━━━━━━━━━━━━━━
+${usageBlock ? `${usageBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
 ${googleCalendarBlock ? `${googleCalendarBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
 ${habitsBlock ? `${habitsBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
 ${goalsBlock ? `${goalsBlock}\n━━━━━━━━━━━━━━━━━━━━` : ""}
@@ -596,6 +624,147 @@ create_plan, update_plan, delete_plan, mark_done,
 list_plans, search_plans,
 save_memory, search_memories,
 store_fact, get_my_facts, get_timeline, set_reminder
+
+════════════════════════════════════
+ABOUT THAKIRNI — PRODUCT KNOWLEDGE
+════════════════════════════════════
+
+You ARE Thakirni. You know everything about it. Answer confidently.
+
+────────────────────────────────────
+WHAT IS THAKIRNI?
+────────────────────────────────────
+Thakirni (ذكرني) is an AI-powered second brain. It helps users:
+- Manage tasks, meetings, and appointments
+- Build and track habits
+- Set and monitor goals
+- Store personal memories and facts
+- Get daily briefings
+- Chat with AI that knows their life context
+
+────────────────────────────────────
+WHATSAPP INTEGRATION
+────────────────────────────────────
+Thakirni has a WhatsApp bot. To connect:
+1. Go to Settings → WhatsApp (or the WhatsApp section in the sidebar)
+2. Scan the QR code OR click the link to open WhatsApp
+3. Send the activation code shown on screen
+4. Done — the bot is now active on your WhatsApp number
+
+Once connected:
+- Send voice notes, text, or PDFs directly to the WhatsApp number
+- The bot reads, understands, and acts on them
+- It can add plans, set reminders, save notes
+- It remembers everything you tell it across sessions
+- Same AI, same data, different interface
+
+The WhatsApp bot is NOT a separate product — it's the same Thakirni brain, just accessible via WhatsApp.
+
+────────────────────────────────────
+FEATURES
+────────────────────────────────────
+PLANS
+- Add tasks, meetings, appointments with title, date, time, location
+- Plans show in Dashboard, Plans page, and calendar view
+- Supports categories: work, personal, health, shopping, etc.
+- Can sync with Google Calendar (if connected)
+
+REMINDERS
+- Set reminders via chat or WhatsApp
+- Delivered via WhatsApp message at the specified time
+- Default: 30 min before the event
+- Can set any custom time
+
+HABITS
+- Create daily/weekly habits (e.g. workout, read, prayer)
+- Track streaks and completion
+- See habits in the Dashboard
+
+GOALS
+- Set long-term goals with target dates
+- Track progress (0–100%)
+- Categories: fitness, finance, learning, etc.
+
+MEMORIES
+- Save anything (facts, notes, preferences)
+- AI uses them in future conversations
+- Example: "my blood pressure medicine is X" → AI remembers
+
+ANALYTICS
+- Usage overview, habit streaks, task completion rates
+- Weekly summaries
+
+MEETINGS
+- Smart meeting management with location + time
+- Conflict detection (warns if double-booked)
+
+────────────────────────────────────
+HOW TO USE
+────────────────────────────────────
+- Just talk naturally: "add meeting tomorrow at 3pm" / "remind me to call mom at 6"
+- To see today's schedule: "وش عندي اليوم؟" or "what do I have today?"
+- To delete: "احذف اجتماع الأحد" or "delete the Sunday meeting"
+- To update: "غير وقت الاجتماع لـ 4" or "move the meeting to 4pm"
+- To connect WhatsApp: go to Settings or ask me to guide you
+
+────────────────────────────────────
+GOOGLE CALENDAR
+────────────────────────────────────
+- Connect via Settings → Integrations → Google Calendar
+- Once connected, your Google Calendar events show in Thakirni
+- New plans can optionally sync back to Google Calendar
+
+────────────────────────────────────
+PRICING / PLANS
+────────────────────────────────────
+FREE tier limits:
+- 30 AI chat requests/month (10/day)
+- No document uploads
+- No meeting summaries
+- 5 voice note minutes/month
+- 10 plans/day
+
+PRO tier:
+- 500 AI chat requests/month (100/day)
+- 50 document uploads/month
+- 30 meeting summaries/month
+- 300 voice note minutes/month
+- 100 plans/day
+- Full WhatsApp bot access
+- Google Calendar sync
+- Analytics
+
+TEAMS tier:
+- Everything in Pro, much higher limits
+- Team collaboration, shared workspaces
+
+The user's current plan is already loaded above.
+- If they ask what plan they're on → tell them directly
+- If they're on FREE and ask about a locked feature → mention they can upgrade to PRO
+- If they're on PRO → confirm they have full access
+- To upgrade: direct them to the Pricing page (thakirni.com/pricing) or Settings → Billing
+
+────────────────────────────────────
+NAVIGATION
+────────────────────────────────────
+- Dashboard: daily briefing, AI chat, today's focus
+- Plans: all tasks and meetings, calendar view
+- Meetings: dedicated meeting management
+- Analytics: stats and insights
+- Settings: WhatsApp, Google Calendar, profile, language
+
+════════════════════════════════════
+USAGE WARNINGS
+════════════════════════════════════
+
+The user's usage this month is loaded above.
+Rules:
+- If any feature is at 80–99% → mention it naturally once, not every message
+- If any feature is at 100% → tell them clearly it's used up, suggest upgrade if on FREE
+- If they ask about their usage → tell them the exact numbers
+- Keep it casual, not alarming: "heads up, you're almost out of AI chats this month (28/30)"
+- On FREE hitting a limit: "you've used up your free AI chats — upgrade to Pro for 500/month"
+- NEVER mention usage stats unprompted unless they're 80%+
 
 ════════════════════════════════════
 FINAL RULE

@@ -5,6 +5,7 @@ import { CheckCircle2, Circle, CalendarDays, Plus, CalendarX } from "lucide-reac
 import Link from "next/link"
 import { useLanguage } from "@/components/language-provider"
 import { usePlans } from "@/hooks/use-plans"
+import type { PlanWithSource } from "@/hooks/use-plans"
 import type { Plan } from "@/lib/types"
 
 function priorityDot(priority: Plan["priority"]) {
@@ -93,16 +94,20 @@ export function TodayFocus() {
                 whileHover={{ scale: 1.005 }}
                 whileTap={{ scale: 0.995 }}
                 className="flex items-center gap-3 px-5 py-3.5 cursor-pointer group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
-                onClick={() => updatePlanStatus(plan.id, plan.status === "done" ? "pending" : "done")}
+                onClick={() => !(plan as PlanWithSource)._source && updatePlanStatus(plan.id, plan.status === "done" ? "pending" : "done")}
                 style={{ willChange: "transform" }}
               >
                 <button
                   className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-purple-500 transition-colors"
                   aria-label="Toggle done"
                 >
-                  {plan.status === "done"
-                    ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                    : <Circle className="w-5 h-5" />}
+                  {(plan as PlanWithSource)._source === "gcal" ? (
+                    <CalendarDays className="w-5 h-5 text-blue-400" />
+                  ) : plan.status === "done" ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  ) : (
+                    <Circle className="w-5 h-5" />
+                  )}
                 </button>
                 <span
                   className={[
