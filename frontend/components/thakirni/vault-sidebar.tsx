@@ -162,12 +162,12 @@ export function VaultSidebar() {
   return (
     <SidebarContext.Provider value={contextValue}>
       {/* ── TOP NAV BAR ── */}
-      <header className="fixed top-0 inset-x-0 z-40 h-14 bg-background/90 backdrop-blur-xl border-b border-border/60 shadow-[0_1px_0_0_rgba(0,0,0,0.04)]">
+      <header className="fixed top-0 inset-x-0 z-40 h-16 bg-background/90 backdrop-blur-xl border-b border-border/60 shadow-[0_1px_0_0_rgba(0,0,0,0.04)]">
         <div className="h-full px-4 sm:px-6 flex items-center gap-3">
 
           {/* Logo */}
           <Link href="/" className="shrink-0 me-2">
-            <BrandLogo variant="auto" className="h-7" />
+            <BrandLogo variant="auto" className="h-8" />
           </Link>
 
           {/* Desktop primary nav */}
@@ -180,13 +180,13 @@ export function VaultSidebar() {
               return (
                 <Link key={item.href} href={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold transition-colors duration-150 whitespace-nowrap group",
+                    "flex items-center gap-2 px-3.5 py-2 rounded-md text-base font-semibold transition-colors duration-150 whitespace-nowrap group",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                   aria-current={isActive ? "page" : undefined}>
-                  <Icon className={cn("w-3.5 h-3.5 transition-transform group-hover:scale-110", isActive && "stroke-[2.5]")} />
+                  <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "stroke-[2.5]")} />
                   {isArabic ? item.labelAr : item.labelEn}
                 </Link>
               );
