@@ -1601,6 +1601,25 @@ export default function SettingsPage() {
                 <p className="font-semibold text-slate-800">
                   {t("ابدأ محادثتك مع المساعد الذكي عبر واتساب:", "Start chatting with your AI assistant on WhatsApp:")}
                 </p>
+
+                {/* QR Code */}
+                <div className="flex flex-col items-center gap-2 py-2">
+                  <img
+                    src="/whatsapp-qr.png"
+                    alt="WhatsApp QR Code"
+                    className="w-44 h-44 rounded-xl border border-slate-200"
+                  />
+                  <p className="text-xs text-slate-500 text-center">
+                    {t("امسح الكود بكاميرا هاتفك للانتقال مباشرة", "Scan with your phone camera to open directly")}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <div className="flex-1 h-px bg-slate-200" />
+                  {t("أو", "or")}
+                  <div className="flex-1 h-px bg-slate-200" />
+                </div>
+
                 <ol className="space-y-3 list-none">
                   <li className="flex items-start gap-3">
                     <span className="w-6 h-6 rounded-full bg-[#25D366] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>

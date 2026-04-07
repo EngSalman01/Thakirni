@@ -66,31 +66,7 @@ function log(event: string, phone: string, detail?: string) {
 }
 
 // ─── Signature Verification ───────────────────────────────────────────────────
-
-async function verifySignature(
-    rawBody: string,
-    signature: string,
-    secret: string,
-): Promise<boolean> {
-    try {
-        const encoder = new TextEncoder()
-        const keyData = encoder.encode(secret)
-        const msgData = encoder.encode(rawBody)
-        const cryptoKey = await crypto.subtle.importKey(
-            "raw", keyData,
-            { name: "HMAC", hash: "SHA-256" },
-            false, ["sign"],
-        )
-        const sigBuffer = await crypto.subtle.sign("HMAC", cryptoKey, msgData)
-        const sigHex = Array.from(new Uint8Array(sigBuffer))
-            .map(b => b.toString(16).padStart(2, "0"))
-            .join("")
-        const sigBase64 = Buffer.from(sigBuffer).toString("base64")
-        return signature === sigHex || signature === sigBase64 || `sha256=${sigHex}` === signature
-    } catch {
-        return false
-    }
-}
+// Kapso sends the raw secret in the X-Webhook-Secret header
 
 // ─── Transcribe audio via Gemini ─────────────────────────────────────────────
 
@@ -119,14 +95,14 @@ async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promis
 
 export async function POST(req: NextRequest) {
     const rawBody = await req.text()
-    const signature = req.headers.get("x-webhook-signature") ?? ""
+
+    const incomingSecret = req.headers.get("x-webhook-secret") ?? ""
     const eventType = req.headers.get("x-webhook-event") ?? ""
 
     const secret = process.env.KAPSO_WEBHOOK_SECRET
     if (secret) {
-        const valid = await verifySignature(rawBody, signature, secret)
-        if (!valid) {
-            console.warn("[WhatsApp Webhook] Invalid signature")
+        if (incomingSecret !== secret) {
+            console.warn("[WhatsApp Webhook] Invalid secret")
             return new Response("Unauthorized", { status: 401 })
         }
     }
