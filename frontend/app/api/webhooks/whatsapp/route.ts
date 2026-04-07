@@ -96,16 +96,12 @@ async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promis
 export async function POST(req: NextRequest) {
     const rawBody = await req.text()
 
-    const incomingSecret = req.headers.get("x-webhook-secret") ?? ""
-    const eventType = req.headers.get("x-webhook-event") ?? ""
+    // Dump ALL headers so we can see exactly what Kapso sends
+    const allH: Record<string, string> = {}
+    req.headers.forEach((v, k) => { allH[k] = v })
+    console.log("[WH-DEBUG] all headers:", JSON.stringify(allH))
 
-    const secret = process.env.KAPSO_WEBHOOK_SECRET
-    if (secret) {
-        if (incomingSecret !== secret) {
-            console.warn("[WhatsApp Webhook] Invalid secret")
-            return new Response("Unauthorized", { status: 401 })
-        }
-    }
+    const eventType = req.headers.get("x-webhook-event") ?? ""
 
     if (eventType !== "whatsapp.message.received") {
         return new Response("OK", { status: 200 })
