@@ -96,7 +96,11 @@ async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promis
 export async function POST(req: NextRequest) {
     const rawBody = await req.text()
 
-    const eventType = req.headers.get("x-webhook-event") ?? ""
+    // Force header materialization (NextRequest lazy-init quirk)
+    const headerEntries: Record<string, string> = {}
+    req.headers.forEach((v, k) => { headerEntries[k] = v })
+
+    const eventType = headerEntries["x-webhook-event"] ?? ""
 
     if (eventType !== "whatsapp.message.received") {
         return new Response("OK", { status: 200 })
