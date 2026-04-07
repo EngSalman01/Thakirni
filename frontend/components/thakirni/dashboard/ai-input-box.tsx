@@ -59,7 +59,7 @@ export function AIInputBox() {
 
   const [isListening, setIsListening] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
   const recognitionRef = useRef<any>(null)
 
   const { messages, input, setInput, handleSubmit, isLoading, error } = useChat({ api: "/api/chat" })
@@ -67,7 +67,9 @@ export function AIInputBox() {
   const hasMessages = messages.length > 0
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+    if (!scrollAreaRef.current) return
+    const viewport = scrollAreaRef.current.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null
+    if (viewport) viewport.scrollTop = viewport.scrollHeight
   }, [messages, isLoading])
 
   useEffect(() => () => { recognitionRef.current?.stop() }, [])
@@ -119,7 +121,7 @@ export function AIInputBox() {
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="overflow-hidden"
             >
-              <ScrollArea className="h-[320px] px-4 pt-4">
+              <ScrollArea ref={scrollAreaRef} className="h-[320px] px-4 pt-4">
                 <div className="space-y-3 pb-3">
                   <AnimatePresence>
                     {messages.map(msg => {
@@ -170,7 +172,6 @@ export function AIInputBox() {
                     </div>
                   )}
 
-                  <div ref={bottomRef} />
                 </div>
               </ScrollArea>
               {/* divider */}
@@ -213,7 +214,6 @@ export function AIInputBox() {
                 className="flex-1 bg-transparent border-0 focus:ring-0 text-sm px-1 placeholder-muted-foreground/60"
                 disabled={isLoading}
                 autoComplete="off"
-                autoFocus
               />
               <button
                 type="button"
