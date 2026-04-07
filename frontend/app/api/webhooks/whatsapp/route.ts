@@ -94,13 +94,20 @@ async function verifySignature(
 
 // ─── Transcribe audio via Gemini ─────────────────────────────────────────────
 
-async function transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
+function normalizeAudioMime(mime: string): string {
+    // Gemini rejects "audio/ogg; codecs=opus" — strip codec suffix
+    return mime.split(";")[0].trim()
+}
+
+async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promise<string> {
+    const mimeType = normalizeAudioMime(rawMimeType)
     const { text } = await generateText({
-        model: google("gemini-2.5-flash-lite"),
+        // gemini-2.0-flash has proven audio support; lite models may not
+        model: google("gemini-2.5-flash"),
         messages: [{
             role: "user",
             content: [
-                { type: "text", text: "Transcribe this audio message. Return only the transcript text, nothing else." },
+                { type: "text", text: "Transcribe this audio message exactly as spoken. Return only the transcript, nothing else." },
                 { type: "file", data: audioBuffer, mimeType },
             ],
         }],
@@ -173,6 +180,18 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     const phone = rawPhone.replace(/^\+/, "")
     const msgType = (message.type ?? "text") as string
 
+    // Log media message structure so we can diagnose URL extraction issues
+    if (msgType === "audio" || msgType === "voice") {
+        console.log("[WhatsApp] voice payload keys:", JSON.stringify({
+            messageKeys: Object.keys(message),
+            kapsoKeys: kapso ? Object.keys(kapso) : null,
+            audioObj: message.audio,
+            kapsoMediaUrl: kapso?.mediaUrl,
+            kapsoMedia_url: (kapso as Record<string, unknown> | undefined)?.media_url,
+            topLevelMediaUrl: message.media_url,
+        }))
+    }
+
     if (!phone) {
         console.warn("[WhatsApp] No phone number in event")
         return
@@ -190,8 +209,14 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         messageText = (textObj?.body ?? message.body ?? message.text ?? "") as string
     } else if (msgType === "audio" || msgType === "voice") {
         const audioObj = message.audio as Record<string, unknown> | undefined
-        const voiceObj = message.voice as Record<string, unknown> | undefined
-        const mediaUrl = (audioObj?.url ?? voiceObj?.url ?? message.media_url) as string | undefined
+        // Kapso enriches the message with pre-resolved media URLs in the kapso extension object.
+        // WhatsApp's native audio.id is just a media ID — not a downloadable URL.
+        const mediaUrl = (
+            kapso?.mediaUrl ??                              // camelCase (SDK-parsed)
+            (kapso as Record<string, unknown> | undefined)?.media_url ?? // snake_case (raw JSON)
+            (message.media_url as string | undefined) ??    // top-level kapso field
+            audioObj?.link                                  // fallback: direct link (rarely set)
+        ) as string | undefined
         if (mediaUrl) {
             log("voice_received", phone)
             await sendWhatsAppMessage(phone, "سمعتك 👀 ثانية...")
@@ -201,14 +226,16 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
                     await sendWhatsAppMessage(phone, "الفويس طويل شوي 😅 حاول تختصره وأرسله مرة ثانية")
                     return
                 }
-                const mimeType = (audioObj?.mime_type ?? voiceObj?.mime_type ?? "audio/ogg") as string
-                messageText = await transcribeAudio(audioBuffer, mimeType)
+                const rawMimeType = (audioObj?.mime_type ?? "audio/ogg") as string
+                messageText = await transcribeAudio(audioBuffer, rawMimeType)
                 log("voice_transcribed", phone, `"${messageText.slice(0, 50)}"`)
             } catch (err: unknown) {
                 log("voice_error", phone, (err as Error)?.message)
                 await sendWhatsAppMessage(phone, "ما ضبط معي الصوت 😅 جرّب مرة ثانية أو أرسل نص")
                 return
             }
+        } else {
+            log("voice_no_url", phone, "no media URL found in payload")
         }
     } else if (msgType === "document") {
         const docObj = message.document as Record<string, unknown> | undefined
@@ -368,6 +395,9 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
 ${langInstruction}
 
 You are Thakirni (ذكرني).
+
+🚨 YOUR NAME IN ARABIC IS ALWAYS "ذكرني" — NEVER "ثاقرني" or any other spelling.
+If anyone asks your name in Arabic → say "ذكرني" exactly.
 
 You're not an assistant — you're the user's closest friend.
 You talk like someone from Khobar / Eastern Saudi Arabia.
