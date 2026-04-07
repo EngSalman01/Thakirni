@@ -1,16 +1,26 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { FileText, Mic, ImageIcon, Clock, Inbox } from "lucide-react"
+import { CalendarDays, CheckCircle2, Clock, Inbox, ShoppingCart, ListTodo } from "lucide-react"
 import Link from "next/link"
 import { useLanguage } from "@/components/language-provider"
-import { useMemories } from "@/hooks/use-memories"
-import type { Memory } from "@/lib/types"
+import { usePlans } from "@/hooks/use-plans"
+import type { PlanWithSource } from "@/hooks/use-plans"
 
-function memoryIcon(type: Memory["type"]) {
-  if (type === "voice") return Mic
-  if (type === "photo") return ImageIcon
-  return FileText
+function categoryIcon(plan: PlanWithSource) {
+  if (plan._source === "gcal") return CalendarDays
+  if (plan.category === "meeting") return CalendarDays
+  if (plan.category === "grocery") return ShoppingCart
+  if (plan.status === "done") return CheckCircle2
+  return ListTodo
+}
+
+function categoryColor(plan: PlanWithSource) {
+  if (plan._source === "gcal") return "text-blue-500"
+  if (plan.category === "meeting") return "text-violet-500"
+  if (plan.category === "grocery") return "text-emerald-500"
+  if (plan.status === "done") return "text-emerald-500"
+  return "text-slate-500 dark:text-slate-400"
 }
 
 function relativeTime(iso: string, isArabic: boolean): string {
@@ -18,33 +28,41 @@ function relativeTime(iso: string, isArabic: boolean): string {
   const mins = Math.floor(diff / 60_000)
   const hours = Math.floor(diff / 3_600_000)
   const days = Math.floor(diff / 86_400_000)
-
   if (isArabic) {
+    if (mins < 1) return "الآن"
     if (mins < 60) return `منذ ${mins} دقيقة`
     if (hours < 24) return `منذ ${hours} ساعة`
     return `منذ ${days} يوم`
   }
+  if (mins < 1) return "just now"
   if (mins < 60) return `${mins}m ago`
   if (hours < 24) return `${hours}h ago`
   return `${days}d ago`
 }
 
-function memoryLabel(type: Memory["type"], isArabic: boolean) {
-  if (type === "voice") return isArabic ? "صوتي" : "Voice"
-  if (type === "photo") return isArabic ? "صورة" : "Photo"
-  return isArabic ? "نص" : "Text"
+function categoryLabel(plan: PlanWithSource, isArabic: boolean): string {
+  if (plan._source === "gcal") return isArabic ? "جوجل كالندر" : "Google Calendar"
+  if (plan.category === "meeting") return isArabic ? "اجتماع" : "Meeting"
+  if (plan.category === "grocery") return isArabic ? "مشتريات" : "Grocery"
+  if (plan.category === "work") return isArabic ? "عمل" : "Work"
+  if (plan.category === "health") return isArabic ? "صحة" : "Health"
+  if (plan.status === "done") return isArabic ? "منجز" : "Done"
+  return isArabic ? "مهمة" : "Task"
 }
 
 export function RecentActivity() {
   const { t, isArabic } = useLanguage()
-  const { memories, isLoading } = useMemories()
+  const { plans, isLoading } = usePlans()
 
-  const recent = memories.slice(0, 3)
+  // Show the 3 most recently created Thakirni plans (not GCal — they have no real created_at)
+  const recent = plans
+    .filter(p => !p._source)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3)
 
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      // Secondary card — border only, no shadow
       className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
     >
       {/* Header */}
@@ -53,7 +71,7 @@ export function RecentActivity() {
           {t("آخر نشاط", "Recent Activity")}
         </h2>
         <Link
-          href="/vault/memories"
+          href="/vault/plans"
           className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
         >
           {t("عرض الكل", "View all")}
@@ -64,7 +82,7 @@ export function RecentActivity() {
       <div className="divide-y divide-slate-50 dark:divide-white/[0.04]">
         {isLoading ? (
           <div className="px-5 py-6 space-y-4">
-            {[1, 2, 3].map((i) => (
+            {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] animate-pulse shrink-0" />
                 <div className="flex-1 space-y-1.5">
@@ -88,26 +106,26 @@ export function RecentActivity() {
             </Link>
           </div>
         ) : (
-          recent.map((memory, i) => {
-            const Icon = memoryIcon(memory.type)
-            const label = memoryLabel(memory.type, isArabic)
-            const preview = memory.description || memory.title || ""
-            const time = relativeTime(memory.created_at, isArabic)
+          recent.map((plan, i) => {
+            const Icon = categoryIcon(plan)
+            const color = categoryColor(plan)
+            const label = categoryLabel(plan, isArabic)
+            const time = relativeTime(plan.created_at, isArabic)
 
             return (
               <motion.div
-                key={memory.id}
+                key={plan.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.18 + i * 0.05 }}
-                className="flex items-start gap-3 px-5 py-3.5 group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                transition={{ delay: 0.1 + i * 0.05 }}
+                className="flex items-start gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <Icon className={`w-4 h-4 ${color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-slate-800 dark:text-slate-200 leading-snug truncate">
-                    {preview || label}
+                  <p className={`text-sm leading-snug truncate ${plan.status === "done" ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-200"}`}>
+                    {plan.title}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <Clock className="w-3 h-3 text-muted-foreground shrink-0" />
@@ -116,6 +134,9 @@ export function RecentActivity() {
                     <span className="text-xs text-muted-foreground">{label}</span>
                   </div>
                 </div>
+                {plan.status === "done" && (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                )}
               </motion.div>
             )
           })

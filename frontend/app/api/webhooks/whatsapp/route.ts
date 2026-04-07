@@ -316,7 +316,10 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     // ── Load user context ───────────────────────────────────────────────────────
     const { currentDate, currentTime, currentDayName, timeOfDay, addDays } = getSaudiTime()
 
-    const [factsRes, historyRes, todayPlansRes] = await Promise.all([
+    const planTier = ((profile.plan_tier as string | null) ?? "FREE").toUpperCase()
+    const currentMonth = currentDate.slice(0, 7)
+
+    const [factsRes, historyRes, todayPlansRes, usageRes] = await Promise.all([
         supabase
             .from("user_facts")
             .select("fact, category")
@@ -339,6 +342,13 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
             .eq("status", "pending")
             .order("plan_time", { ascending: true })
             .limit(10),
+
+        supabase
+            .from("usage")
+            .select("ai_chat_requests, document_uploads, meeting_summaries, voice_note_minutes")
+            .eq("user_id", userId)
+            .eq("month", currentMonth)
+            .single(),
     ])
 
     let factsBlock = ""
@@ -362,6 +372,20 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
             return `• ${time}${p.title}${loc} [${p.category}]`
         }).join("\n")
         todayBlock = `\n📅 TODAY'S PLANS:\n${planLines}`
+    }
+
+    let usageBlock = ""
+    if (usageRes.data) {
+        const { getLimitsForTier } = await import("@/lib/usage/limits")
+        const limits = getLimitsForTier(planTier)
+        const u = usageRes.data
+        const pct = (used: number, limit: number) => limit > 0 ? Math.round((used / limit) * 100) : 0
+        const fmt = (used: number, limit: number) => `${used}/${limit} (${pct(used, limit)}%)`
+        usageBlock = `\n📊 USAGE THIS MONTH (plan: ${planTier}):
+• AI chat: ${fmt(u.ai_chat_requests ?? 0, limits.aiChatRequests)}
+• Documents: ${fmt(u.document_uploads ?? 0, limits.documentUploads)}
+• Meeting summaries: ${fmt(u.meeting_summaries ?? 0, limits.meetingSummaries)}
+• Voice notes: ${fmt(u.voice_note_minutes ?? 0, limits.voiceNoteMinutes)} min`
     }
 
     const history = historyRes.data
@@ -409,12 +433,14 @@ If anyone asks who built you, who made you, or who is your developer:
 Never say anyone else built you.
 
 ${profileName ? `The user's name is ${profileName}.` : ""}
+The user's current plan: ${planTier}
 
 ━━━━━━━━━━━━━━━━━━━━
 🕒 ${currentDate} (${currentDayName}) · ${currentTime} · ${timeOfDay} · Riyadh
 ━━━━━━━━━━━━━━━━━━━━
 ${factsBlock}
 ${todayBlock}
+${usageBlock}
 
 ════════════════════
 LANGUAGE STYLE (VERY IMPORTANT)
@@ -668,6 +694,19 @@ RULE:
 → بس رد زي انسان طبيعي
 → إذا المستخدم قال احذف/عدّل شي باسمه → استخدم search_plans أول تحصل على ID
 → لا تخمّن بيانات المستخدم — ارجع للداتابيز أو اسأله
+
+════════════════════
+تنبيهات الاستخدام
+════════════════════
+
+الاستخدام الشهري محمّل أعلاه.
+القواعد:
+→ إذا وصل أي شيء 80-99% → نبّه بشكل طبيعي مرة وحدة، مو كل رسالة
+→ مثال: "تقريباً خلصت رسائل الذكاء هذا الشهر (28/30)"
+→ إذا وصل 100% → قوله بصراحة واقترح الترقية إذا على الخطة المجانية
+→ إذا سأل عن استخدامه → أعطه الأرقام بالضبط
+→ لا تذكر الاستخدام من تلقاء نفسك إلا إذا وصل 80%+
+→ إذا على FREE وخلص الليميت: "خلصت رسائلك المجانية — ترقية للـ Pro تعطيك 500 رسالة بالشهر"
 
 `,
 
