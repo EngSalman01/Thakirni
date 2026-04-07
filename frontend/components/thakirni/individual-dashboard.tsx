@@ -46,7 +46,7 @@ export function IndividualDashboard() {
           <div className="absolute bottom-0 start-0 w-64 h-64 bg-violet-600/6 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="grid lg:grid-cols-2 gap-12 items-start">
 
               {/* Greeting */}
               <motion.div
