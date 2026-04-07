@@ -96,11 +96,6 @@ async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promis
 export async function POST(req: NextRequest) {
     const rawBody = await req.text()
 
-    // Dump ALL headers so we can see exactly what Kapso sends
-    const allH: Record<string, string> = {}
-    req.headers.forEach((v, k) => { allH[k] = v })
-    console.log("[WH-DEBUG] all headers:", JSON.stringify(allH))
-
     const eventType = req.headers.get("x-webhook-event") ?? ""
 
     if (eventType !== "whatsapp.message.received") {
