@@ -87,20 +87,20 @@ export default function AdminSettingsPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-headline font-bold text-slate-900">Settings</h1>
+        <h1 className="text-2xl font-headline font-bold text-white">Settings</h1>
         <p className="text-sm text-slate-500 font-label mt-1">
           App-wide configuration
         </p>
       </div>
 
       {/* Config form */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-5">
+      <div className="bg-white/[0.04] rounded-2xl p-6 space-y-5">
         <div className="space-y-1.5">
           <Label>App Name</Label>
           <Input
             value={config.app_name}
             onChange={(e) => setConfig((c) => ({ ...c, app_name: e.target.value }))}
-            className="bg-white border-0 rounded-xl"
+            className="bg-white/[0.07] border border-white/[0.10] rounded-xl text-white"
           />
         </div>
 
@@ -112,7 +112,7 @@ export default function AdminSettingsPage() {
               setConfig((c) => ({ ...c, support_whatsapp: e.target.value }))
             }
             placeholder="+966xxxxxxxxx"
-            className="bg-white border-0 rounded-xl"
+            className="bg-white/[0.07] border border-white/[0.10] rounded-xl text-white"
           />
         </div>
 
@@ -123,14 +123,14 @@ export default function AdminSettingsPage() {
             value={config.admin_email}
             onChange={(e) => setConfig((c) => ({ ...c, admin_email: e.target.value }))}
             placeholder="admin@example.com"
-            className="bg-white border-0 rounded-xl"
+            className="bg-white/[0.07] border border-white/[0.10] rounded-xl text-white"
           />
         </div>
 
         {/* Maintenance mode */}
         <div className="flex items-start justify-between gap-4 p-4 bg-white rounded-xl">
           <div>
-            <p className="font-label font-bold text-sm text-slate-800">Maintenance Mode</p>
+            <p className="font-label font-bold text-sm text-slate-200">Maintenance Mode</p>
             <p className="text-sm text-slate-500 mt-0.5">
               Show maintenance page to non-admin /vault users
             </p>
@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-label"
+          className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-label"
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
           Save All
@@ -158,8 +158,8 @@ export default function AdminSettingsPage() {
       <AdminConfirmDialog {...dialogProps} />
 
       {/* Database Setup */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-3">
-        <h2 className="text-base font-headline font-semibold text-slate-900">
+      <div className="bg-white/[0.04] rounded-2xl p-6 space-y-3">
+        <h2 className="text-base font-headline font-semibold text-white">
           Database Setup
         </h2>
         <p className="text-sm text-slate-500 font-label">

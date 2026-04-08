@@ -487,7 +487,7 @@ function AuthForm() {
                 <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input name="password" type={showSignInPw ? "text" : "password"}
                   placeholder="••••••••" className="ps-10 pe-10" dir="ltr" required />
-                <button type="button" onClick={() => setShowSignInPw(!showSignInPw)}
+                <button type="button" onClick={() => setShowSignInPw(!showSignInPw)} aria-label={showSignInPw ? "Hide password" : "Show password"}
                   className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showSignInPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -593,7 +593,7 @@ function AuthForm() {
                 <Input name="password" type={showSignUpPw ? "text" : "password"}
                   placeholder="••••••••" className="ps-10 pe-10" dir="ltr" required minLength={8}
                   onChange={(e) => setSignUpPassword(e.target.value)} />
-                <button type="button" onClick={() => setShowSignUpPw(!showSignUpPw)}
+                <button type="button" onClick={() => setShowSignUpPw(!showSignUpPw)} aria-label={showSignUpPw ? "Hide password" : "Show password"}
                   className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showSignUpPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

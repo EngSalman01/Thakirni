@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-                    <button type="button" onClick={() => setShowPw(!showPw)}
+                    <button type="button" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "Hide password" : "Show password"}
                       className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -134,7 +134,7 @@ export default function ResetPasswordPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                     />
-                    <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                       className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                       {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -145,7 +145,7 @@ export default function ResetPasswordPage() {
                   whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
                   type="submit" disabled={isLoading}
                   className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60 mt-2"
-                  style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", boxShadow: "0 4px 20px rgba(37,82,202,0.35)" }}
+                  style={{ background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)", boxShadow: "0 4px 20px rgba(217,119,6,0.35)" }}
                 >
                   {isLoading
                     ? <span className="flex items-center justify-center gap-2">

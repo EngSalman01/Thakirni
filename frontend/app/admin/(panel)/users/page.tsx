@@ -72,7 +72,7 @@ function UserInitials({ name, avatarUrl }: { name: string | null; avatarUrl: str
     .join("")
     .toUpperCase();
   return (
-    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+    <div className="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white text-xs font-bold">
       {initials}
     </div>
   );
@@ -239,14 +239,14 @@ export default function UsersPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-headline font-bold text-slate-900">Users</h1>
+        <h1 className="text-2xl font-headline font-bold text-white">Users</h1>
         <p className="text-sm text-slate-500 font-label mt-1">
           {total.toLocaleString()} total users
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-start md:items-center">
+      <div className="bg-white/[0.04] rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-start md:items-center">
         {/* Search */}
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -271,7 +271,7 @@ export default function UsersPage() {
         {/* Sort */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="bg-white border-0 rounded-xl">
+            <Button variant="outline" size="sm" className="bg-white/[0.07] border border-white/[0.10] rounded-xl text-white">
               {sortOptions.find((s) => s.value === sort)?.label ?? "Sort"}
               <ChevronDown className="w-3.5 h-3.5 ml-1" />
             </Button>
@@ -287,7 +287,7 @@ export default function UsersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+      <div className="bg-white/[0.04] rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -406,7 +406,7 @@ export default function UsersPage() {
                     <p className="text-red-500 font-semibold mb-2">Failed to load users</p>
                     <button
                       onClick={() => fetchUsers()}
-                      className="text-xs text-indigo-600 dark:text-indigo-400 underline hover:no-underline"
+                      className="text-xs text-amber-600 dark:text-amber-400 underline hover:no-underline"
                     >
                       Retry
                     </button>
@@ -467,7 +467,7 @@ export default function UsersPage() {
                   avatarUrl={selectedUser.avatar_url}
                 />
                 <div>
-                  <h2 className="text-lg font-headline font-bold text-slate-900">
+                  <h2 className="text-lg font-headline font-bold text-white">
                     {selectedUser.full_name ?? "Unknown"}
                   </h2>
                   <PlanBadge plan={selectedUser.plan_tier ?? "free"} />
@@ -475,7 +475,7 @@ export default function UsersPage() {
               </div>
 
               {/* Details */}
-              <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-4 space-y-3">
+              <div className="bg-white/[0.04] rounded-2xl p-4 space-y-3">
                 {[
                   { label: "Email", value: selectedUser.email || "—" },
                   { label: "Phone", value: selectedUser.phone_number ?? "—" },
@@ -499,8 +499,8 @@ export default function UsersPage() {
                   { label: "Memories", value: 0 },
                   { label: "Plans", value: 0 },
                 ].map((s) => (
-                  <div key={s.label} className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-3 text-center">
-                    <p className="text-xl font-bold text-slate-900">{s.value}</p>
+                  <div key={s.label} className="bg-white/[0.04] rounded-xl p-3 text-center">
+                    <p className="text-xl font-bold text-white">{s.value}</p>
                     <p className="text-xs text-slate-500 font-label">{s.label}</p>
                   </div>
                 ))}
@@ -563,7 +563,7 @@ export default function UsersPage() {
           <div className="space-y-3 py-2">
             <p className="text-sm text-slate-500 font-label">
               Sending to:{" "}
-              <strong className="text-slate-800">
+              <strong className="text-slate-200">
                 {messageUser?.full_name ?? messageUser?.phone_number}
               </strong>
             </p>
@@ -586,7 +586,7 @@ export default function UsersPage() {
             <Button
               onClick={handleSendMessage}
               disabled={sendingMessage || !messageText.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {sendingMessage ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Send

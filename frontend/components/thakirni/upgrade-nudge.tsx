@@ -67,13 +67,13 @@ export function UpgradeNudge({ featureLocked = false, variant = "banner", onDism
   }
 
   const urgencyColor: Record<string, string> = {
-    low:      "#2552ca",
+    low:      "#D97706",
     medium:   "#f59e0b",
     high:     "#ef4444",
     critical: "#dc2626",
   }
   const urgencyBg: Record<string, string> = {
-    low:      "#2552ca08",
+    low:      "#D9770608",
     medium:   "#f59e0b08",
     high:     "#ef444408",
     critical: "#dc262608",

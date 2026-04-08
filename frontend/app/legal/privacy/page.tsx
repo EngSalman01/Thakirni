@@ -21,7 +21,7 @@ export default function PrivacyPage() {
 
         <div className="bg-white rounded-2xl border border-[#e4e2e1] overflow-hidden">
           {/* Header */}
-          <div className="bg-indigo-600 px-8 py-10 text-white">
+          <div className="bg-amber-600 px-8 py-10 text-white">
             <h1 className="text-3xl font-headline font-extrabold mb-2">
               سياسة الخصوصية
             </h1>
@@ -153,7 +153,7 @@ export default function PrivacyPage() {
                   { title: "التصدير", desc: "تنزيل جميع بياناتك بصيغة JSON من صفحة الإعدادات" },
                 ].map(({ title, desc }) => (
                   <div key={title} className="flex gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl">
-                    <div className="w-2 h-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-amber-600 mt-2 flex-shrink-0" />
                     <div>
                       <span className="font-label font-bold text-slate-900">{title}: </span>
                       <span className="text-slate-600">{desc}</span>
@@ -179,7 +179,7 @@ export default function PrivacyPage() {
                   { title: "Export", desc: "Download all your data as JSON from the Settings page" },
                 ].map(({ title, desc }) => (
                   <div key={title} className="flex gap-3 p-3 bg-white rounded-xl">
-                    <div className="w-2 h-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-amber-600 mt-2 flex-shrink-0" />
                     <div>
                       <span className="font-label font-bold text-slate-900">{title}: </span>
                       <span className="text-slate-600">{desc}</span>
@@ -216,7 +216,7 @@ export default function PrivacyPage() {
             </section>
 
             {/* Contact */}
-            <section className="rounded-xl bg-indigo-600/5 border border-indigo-600/20 p-6 space-y-2">
+            <section className="rounded-xl bg-amber-600/5 border border-amber-600/20 p-6 space-y-2">
               <h3 className="font-headline font-bold text-slate-900">
                 التواصل معنا / Contact Us
               </h3>
@@ -228,7 +228,7 @@ export default function PrivacyPage() {
               </p>
               <a
                 href="mailto:support@thakirni.com"
-                className="inline-block font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="inline-block font-bold text-amber-600 dark:text-amber-400 hover:underline"
                 dir="ltr"
               >
                 support@thakirni.com

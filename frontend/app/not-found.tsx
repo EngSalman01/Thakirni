@@ -22,7 +22,7 @@ export default function NotFound() {
         <motion.div
           className="text-[8rem] font-bold leading-none select-none mb-6"
           style={{
-            background: "linear-gradient(135deg, #2552ca 0%, #ad1d7f 100%)",
+            background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
@@ -57,7 +57,7 @@ export default function NotFound() {
               href="/"
               className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{
-                background: "linear-gradient(135deg, #2552ca 0%, #ad1d7f 100%)",
+                background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)",
               }}
             >
               {t("العودة للرئيسية", "Back to Home")}
@@ -65,7 +65,7 @@ export default function NotFound() {
 
             <Link
               href="/vault"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white border border-indigo-600/30 transition-colors hover:bg-indigo-600/5"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-amber-600 dark:text-amber-400 bg-white border border-amber-600/30 transition-colors hover:bg-amber-600/5"
             >
               {t("افتح الخزينة", "Open Vault")}
             </Link>

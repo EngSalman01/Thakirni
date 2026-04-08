@@ -270,7 +270,7 @@ function ListView({
                       <>
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={task.assignee.avatar_url} />
-                          <AvatarFallback className="text-[10px] bg-indigo-100 text-indigo-700">
+                          <AvatarFallback className="text-[10px] bg-amber-100 text-amber-700">
                             {task.assignee.full_name
                               ?.substring(0, 2)
                               .toUpperCase()}

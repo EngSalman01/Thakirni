@@ -169,8 +169,8 @@ export default function FocusPage() {
 
         {/* ── HERO: Timer as centerpiece ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">
-          <div className="absolute -top-20 right-0 w-80 h-80 bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-600/6 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-amber-600/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/6 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -190,7 +190,7 @@ export default function FocusPage() {
                 <div className="flex flex-wrap gap-2">
                   {SESSION_TYPES.map(st => (
                     <button key={st.value} disabled={isRunning} onClick={() => { setSessionType(st.value); setTimeLeft(st.minutes * 60); setTotalTime(st.minutes * 60) }}
-                      className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${sessionType === st.value ? "power-gradient text-white border-transparent shadow-lg" : "bg-white border-[#e4e2e1] text-slate-600 hover:border-indigo-600/40"} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                      className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${sessionType === st.value ? "power-gradient text-white border-transparent shadow-lg" : "bg-white border-[#e4e2e1] text-slate-600 hover:border-amber-600/40"} disabled:opacity-50 disabled:cursor-not-allowed`}>
                       {isArabic ? st.label : st.labelEn}
                     </button>
                   ))}
@@ -200,8 +200,8 @@ export default function FocusPage() {
                 {stats && (
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { value: (stats as any).totalSessions ?? 0,  label: t("جلسة هذا الأسبوع", "Sessions"), color: "text-indigo-600 dark:text-indigo-400" },
-                      { value: (stats as any).totalMinutes ?? 0,    label: t("دقيقة", "Minutes"),            color: "text-violet-600 dark:text-violet-400" },
+                      { value: (stats as any).totalSessions ?? 0,  label: t("جلسة هذا الأسبوع", "Sessions"), color: "text-amber-600 dark:text-amber-400" },
+                      { value: (stats as any).totalMinutes ?? 0,    label: t("دقيقة", "Minutes"),            color: "text-amber-600 dark:text-amber-400" },
                       { value: (stats as any).avgMinutes ?? 0,      label: t("متوسط/جلسة", "Avg/session"),  color: "text-emerald-600" },
                     ].map(({ value, label, color }) => (
                       <div key={label as string} className="bg-white rounded-2xl border border-[#e4e2e1] p-4 text-center shadow-ambient hover-lift">
@@ -216,9 +216,9 @@ export default function FocusPage() {
               {/* Right: Timer */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
                 className="flex justify-center">
-                <div className="relative bg-gradient-to-br from-[#0a1628] via-[#1a2040] to-indigo-600/40 rounded-2xl p-12 shadow-card w-full max-w-sm">
-                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#fd65c2]/10 rounded-full blur-2xl pointer-events-none" />
-                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-indigo-600/20 rounded-full blur-xl pointer-events-none" />
+                <div className="relative bg-gradient-to-br from-[#0a1628] via-[#1a2040] to-amber-600/40 rounded-2xl p-12 shadow-card w-full max-w-sm">
+                  <div className="absolute -top-8 -right-8 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-amber-600/20 rounded-full blur-xl pointer-events-none" />
 
                   {/* Timer ring */}
                   <div className="relative w-56 h-56 mx-auto mb-8">
@@ -270,7 +270,7 @@ export default function FocusPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { emoji: "🍅", title: t("بومودورو", "Pomodoro"), desc: t("25 دقيقة تركيز مكثف ثم استراحة قصيرة", "25 minutes of focused work, then a short break"), color: "bg-slate-50 dark:bg-white/[0.03]", textColor: "text-slate-900" },
-                { emoji: "☕", title: t("استراحة", "Short Break"), desc: t("5 دقائق للراحة وإعادة الشحن قبل الجلسة التالية", "5 minutes to rest and recharge before the next session"), color: "bg-indigo-600", textColor: "text-white" },
+                { emoji: "☕", title: t("استراحة", "Short Break"), desc: t("5 دقائق للراحة وإعادة الشحن قبل الجلسة التالية", "5 minutes to rest and recharge before the next session"), color: "bg-amber-600", textColor: "text-white" },
                 { emoji: "🔱", title: t("عمل عميق", "Deep Work"), desc: t("50 دقيقة للمهام المعقدة التي تحتاج تركيزاً عالياً", "50 minutes for complex tasks requiring deep concentration"), color: "bg-slate-50 dark:bg-white/[0.03]", textColor: "text-slate-900" },
               ].map(({ emoji, title, desc, color, textColor }, i) => (
                 <motion.div key={title as string}
@@ -281,7 +281,7 @@ export default function FocusPage() {
                   <span className="text-4xl mb-6 block">{emoji}</span>
                   <h3 className={`text-2xl font-headline font-bold mb-3 ${textColor}`}>{title as string}</h3>
                   <p className={`${textColor === "text-white" ? "text-white/80" : "text-slate-500"} text-base`}>{desc as string}</p>
-                  {i === 1 && <div className="absolute -top-8 -right-8 w-32 h-32 bg-[#fd65c2]/20 rounded-full blur-2xl pointer-events-none" />}
+                  {i === 1 && <div className="absolute -top-8 -right-8 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />}
                 </motion.div>
               ))}
             </div>

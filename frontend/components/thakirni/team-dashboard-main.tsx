@@ -60,7 +60,7 @@ export function TeamDashboardMain() {
       value: projects.length.toString(),
       change: "Active",
       icon: FolderKanban,
-      color: "text-purple-500",
+      color: "text-orange-500",
     },
     {
       title: "Groceries",

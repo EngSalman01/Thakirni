@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
     subject: `[Thakirni] رسالة جديدة من ${name}`,
     html: `
       <div style="font-family:'Segoe UI',Arial,sans-serif;max-width:600px;margin:0 auto;background:#f6f3f2;padding:32px;border-radius:16px;">
-        <div style="background:linear-gradient(135deg,#2552ca,#ad1d7f);border-radius:12px;padding:28px 32px;margin-bottom:28px;">
+        <div style="background:linear-gradient(135deg,#D97706,#F59E0B);border-radius:12px;padding:28px 32px;margin-bottom:28px;">
           <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;">ذكّرني</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px;letter-spacing:2px;">THAKIRNI · NEW CONTACT MESSAGE</div>
         </div>
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
           </tr>
           <tr style="border-bottom:1px solid #f1f5f9;">
             <td style="padding:16px 20px;color:#64748b;font-size:13px;font-weight:600;">Email</td>
-            <td style="padding:16px 20px;"><a href="mailto:${email}" style="color:#2552ca;text-decoration:none;">${email}</a></td>
+            <td style="padding:16px 20px;"><a href="mailto:${email}" style="color:#D97706;text-decoration:none;">${email}</a></td>
           </tr>
           <tr>
             <td style="padding:16px 20px;color:#64748b;font-size:13px;font-weight:600;vertical-align:top;">Message</td>

@@ -23,7 +23,7 @@ function ParticleLayer() {
         position:absolute;width:${4+Math.random()*6}px;height:${4+Math.random()*6}px;
         border-radius:50%;opacity:${0.06+Math.random()*0.12};
         left:${Math.random()*100}%;top:${Math.random()*100}%;
-        background:${Math.random()>0.5?"#2552ca":"#ad1d7f"};
+        background:${Math.random()>0.5?"#D97706":"#F59E0B"};
         --drift-x:${(Math.random()-0.5)*120}px;--drift-y:${(Math.random()-0.5)*120}px;
         animation:particle-drift ${8+Math.random()*12}s ease-in-out infinite;
         animation-delay:${-Math.random()*15}s;pointer-events:none;
@@ -45,14 +45,14 @@ function MiniBarChart({ days }: { days?: DayData[] }) {
         <motion.div key={i} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
           transition={{ delay: 0.4 + i * 0.04, duration: 0.4, ease: [0.2, 1, 0.3, 1] }}
           className="flex-1 rounded-t-sm origin-bottom"
-          style={{ height: `${Math.max(h, 4)}%`, background: (hasData && i === bars.length - 1) ? "linear-gradient(135deg,#2552ca,#ad1d7f)" : i % 2 === 0 ? "#e4e2e1" : "#d0cece" }}
+          style={{ height: `${Math.max(h, 4)}%`, background: (hasData && i === bars.length - 1) ? "linear-gradient(135deg,#D97706,#F59E0B)" : i % 2 === 0 ? "#e4e2e1" : "#d0cece" }}
         />
       ))}
     </div>
   )
 }
 
-const BRAND_COLORS = ["#2552ca", "#ad1d7f", "#fd65c2", "#2552ca", "#ad1d7f"]
+const BRAND_COLORS = ["#D97706", "#F59E0B", "#FBBF24", "#D97706", "#F59E0B"]
 
 export default function AnalyticsPage() {
   const { t, isArabic } = useLanguage()
@@ -196,7 +196,7 @@ export default function AnalyticsPage() {
             <p className="text-2xl">⚠️</p>
             <p className="text-slate-700 font-semibold">{t("فشل تحميل التحليلات", "Failed to load analytics")}</p>
             <button onClick={() => { setFetchError(false); setRetryKey(k => k + 1); }}
-              className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors">
+              className="px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-bold hover:bg-amber-700 transition-colors">
               {t("إعادة المحاولة", "Retry")}
             </button>
           </div>
@@ -229,8 +229,8 @@ export default function AnalyticsPage() {
             {/* Left copy */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span className="text-sm font-label font-medium text-slate-700">{t(`آخر ${period} أيام`, `Last ${period} days`)}</span>
               </motion.div>
 
@@ -251,8 +251,8 @@ export default function AnalyticsPage() {
               {/* Stat pills */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: Brain, label: t("ذكريات", "Memories"), value: stats.totalMemories, color: "#2552ca" },
-                  { icon: ListTodo, label: t("خطط مكتملة", "Plans done"), value: stats.completedPlans, color: "#ad1d7f" },
+                  { icon: Brain, label: t("ذكريات", "Memories"), value: stats.totalMemories, color: "#D97706" },
+                  { icon: ListTodo, label: t("خطط مكتملة", "Plans done"), value: stats.completedPlans, color: "#F59E0B" },
                   { icon: Flame, label: t("عادات نشطة", "Active habits"), value: stats.activeHabits, color: "#f59e0b" },
                   { icon: Target, label: t("أهداف جارية", "Goals active"), value: stats.activeGoals, color: "#10b981" },
                 ].map(({ icon: Icon, label, value, color }, i) => (
@@ -274,7 +274,7 @@ export default function AnalyticsPage() {
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
               className="bg-[#e4e2e1] rounded-2xl p-8 relative overflow-hidden">
               {/* Decorative gradient */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-600/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-600/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
 
               <p className="text-sm font-label font-bold text-slate-500 mb-1">{t("إنجاز الخطط", "Plan Completion")}</p>
               <p className="text-3xl font-headline font-extrabold text-slate-900 mb-3">
@@ -304,11 +304,11 @@ export default function AnalyticsPage() {
             >
               <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                 <div className="flex items-center gap-3">
-                  <Brain className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <Brain className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   <h2 className="text-2xl font-headline font-bold text-slate-900">
                     {t("استخدام الذكاء الاصطناعي", "AI Usage")}
                   </h2>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
                     {usage.tier}
                   </span>
                 </div>
@@ -390,7 +390,7 @@ export default function AnalyticsPage() {
                                 ? "#ef4444"
                                 : pct >= 80
                                 ? "linear-gradient(90deg,#f59e0b,#ef4444)"
-                                : "linear-gradient(90deg,#2552ca,#ad1d7f)",
+                                : "linear-gradient(90deg,#D97706,#F59E0B)",
                             }}
                           />
                         </div>
@@ -433,7 +433,7 @@ export default function AnalyticsPage() {
             {/* Plans chart */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
               className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden group hover-lift">
-              <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-indigo-600/8 to-transparent rounded-tl-3xl pointer-events-none transition-transform duration-500 group-hover:translate-y-0 translate-y-4 translate-x-4" />
+              <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-amber-600/8 to-transparent rounded-tl-3xl pointer-events-none transition-transform duration-500 group-hover:translate-y-0 translate-y-4 translate-x-4" />
               <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
                 📊 {t("إنجاز الخطط اليومي", "Daily Plan Completion")}
               </h2>
@@ -444,14 +444,14 @@ export default function AnalyticsPage() {
                   <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={28} />
                   <Tooltip contentStyle={{ borderRadius: "16px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", fontSize: 12 }} />
                   <Bar dataKey="plans" name={t("إجمالي", "Total")} fill="#e4e2e1" radius={[6, 6, 0, 0]} />
-                  <Bar dataKey="completed" name={t("مكتملة", "Completed")} fill="#ad1d7f" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="completed" name={t("مكتملة", "Completed")} fill="#F59E0B" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </motion.div>
 
             {/* Memories chart */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, delay: 0.05 }}
-              className="bg-indigo-400 rounded-2xl p-10 relative overflow-hidden group hover-lift">
+              className="bg-amber-400 rounded-2xl p-10 relative overflow-hidden group hover-lift">
               <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-white/10 rounded-tl-3xl pointer-events-none" />
               <h2 className="text-2xl font-headline font-bold text-white mb-8">
                 🧠 {t("نشاط الذكريات", "Memory Activity")}
@@ -520,7 +520,7 @@ export default function AnalyticsPage() {
                             whileInView={{ width: `${g.progress}%` }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.08, duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
-                            className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-[#fd65c2]"
+                            className="h-full rounded-full bg-gradient-to-r from-amber-600 to-amber-400"
                           />
                         </div>
                       </div>

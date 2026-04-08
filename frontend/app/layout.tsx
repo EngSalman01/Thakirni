@@ -81,7 +81,7 @@ export const metadata: Metadata = {
 // ── Viewport (separate export as of Next.js 14) ───────────────────────────────
 
 export const viewport: Viewport = {
-  themeColor: "#2552ca",
+  themeColor: "#D97706",
   width: "device-width",
   initialScale: 1,
 }

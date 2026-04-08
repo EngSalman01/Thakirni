@@ -146,7 +146,7 @@ export default function GoalsPage() {
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">
           <ParticleLayer />
           <div className="absolute -top-20 right-0 w-80 h-80 bg-[#385b9b]/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/5 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -161,8 +161,8 @@ export default function GoalsPage() {
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {[
-                    { value: goals.length,                       label: t("أهداف نشطة", "Active goals"),  color: "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400" },
-                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-[#ffd8e9] text-violet-600 dark:text-violet-400" },
+                    { value: goals.length,                       label: t("أهداف نشطة", "Active goals"),  color: "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400" },
+                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-[#ffd8e9] text-amber-600 dark:text-amber-400" },
                     { value: goals.filter((g:any) => g.progress >= 100).length, label: t("مكتملة", "Completed"), color: "bg-emerald-50 text-emerald-700" },
                   ].map(({ value, label, color }) => (
                     <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
@@ -220,13 +220,13 @@ export default function GoalsPage() {
                           <p className="text-xs font-bold text-slate-600 mb-2">{t("خطوات مقترحة:", "Suggested milestones:")}</p>
                           {suggestedMilestones.map((m, i) => (
                             <div key={i} className="flex items-center gap-2 text-sm text-slate-700">
-                              <span className="w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs font-bold">{i+1}</span>
+                              <span className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold">{i+1}</span>
                               {m.title}
                             </div>
                           ))}
                         </div>
                       )}
-                      <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إنشاء الهدف", "Create Goal")}</Button>
+                      <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#D97706,#FBBF24)" }}>{t("إنشاء الهدف", "Create Goal")}</Button>
                     </form>
                   </DialogContent>
                 </Dialog>
@@ -240,7 +240,7 @@ export default function GoalsPage() {
                   {goals.length === 0
                     ? <p className="text-sm text-slate-500 text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>
                     : (goals as Array<{ id?: string; title: string; progress?: number }>).slice(0, 3).map((goal, i) => {
-                        const barColors = ["bg-indigo-600", "bg-violet-600", "bg-indigo-400"];
+                        const barColors = ["bg-amber-600", "bg-amber-600", "bg-amber-400"];
                         const pct = Math.min(100, Math.round(goal.progress ?? 0));
                         return (
                           <div key={goal.id ?? i}>
@@ -320,7 +320,7 @@ export default function GoalsPage() {
                       transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
                       className="relative bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift">
                       {/* Color stripe */}
-                      <div className="h-2 w-full bg-gradient-to-r from-indigo-600 to-[#fd65c2]" />
+                      <div className="h-2 w-full bg-gradient-to-r from-amber-600 to-amber-400" />
                       <div className="p-10">
                         <div className="flex items-start justify-between mb-4">
                           <span className="text-4xl">{cat.icon}</span>
@@ -345,13 +345,13 @@ export default function GoalsPage() {
                           <div className="h-2.5 bg-white/80 rounded-full overflow-hidden">
                             <motion.div initial={{ width: 0 }} whileInView={{ width: `${progress}%` }} viewport={{ once: true }}
                               transition={{ duration: 1, ease: "easeOut" }}
-                              className="h-full rounded-full bg-gradient-to-r from-indigo-600 to-[#fd65c2]" />
+                              className="h-full rounded-full bg-gradient-to-r from-amber-600 to-amber-400" />
                           </div>
                         </div>
 
                         {/* Progress slider */}
                         <input type="range" min={0} max={100} value={progress} onChange={e => updateProgress(goal.id, parseInt(e.target.value))}
-                          className="w-full h-1 mb-4 accent-[#2552ca]" />
+                          className="w-full h-1 mb-4 accent-amber-600" />
 
                         {/* Milestones */}
                         {milestones.length > 0 && (
@@ -377,7 +377,7 @@ export default function GoalsPage() {
                       </div>
                       {/* Decorative */}
                       <div className="absolute right-0 bottom-0 w-1/2 translate-y-6 translate-x-6 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-20 pointer-events-none">
-                        <div className="w-full h-24 bg-gradient-to-tl from-indigo-600/30 to-[#fd65c2]/20 rounded-tl-2xl" />
+                        <div className="w-full h-24 bg-gradient-to-tl from-amber-600/30 to-amber-400/20 rounded-tl-2xl" />
                       </div>
                     </motion.div>
                   )

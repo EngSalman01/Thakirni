@@ -24,7 +24,7 @@ function WorkspaceAvatar({ ws, size = "sm" }: { ws: Workspace; size?: "sm" | "md
   return (
     <div className={`${dim} rounded-full flex items-center justify-center flex-shrink-0 ${
       isPersonal
-        ? "bg-indigo-600/10 text-indigo-600 dark:text-indigo-400"
+        ? "bg-amber-600/10 text-amber-600 dark:text-amber-400"
         : "power-gradient text-white"
     }`}>
       {isPersonal
@@ -53,7 +53,7 @@ export function WorkspaceSwitcher() {
       {/* Trigger */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-indigo-600/40 hover:bg-indigo-600/5 transition-all text-start"
+        className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-slate-200 hover:border-amber-600/40 hover:bg-amber-600/5 transition-all text-start"
       >
         <WorkspaceAvatar ws={active} />
         <div className="flex-1 min-w-0">
@@ -135,7 +135,7 @@ export function WorkspaceSwitcher() {
                 <Link
                   href="/vault/settings/teams/new"
                   onClick={() => setOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-indigo-600 dark:text-indigo-400 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 text-sm text-slate-500 hover:bg-slate-50 hover:text-amber-600 dark:text-amber-400 transition-colors"
                 >
                   <div className="w-6 h-6 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center">
                     <Plus className="w-3 h-3" />
@@ -165,7 +165,7 @@ function WorkspaceOption({
     <button
       onClick={onSelect}
       className={`w-full flex items-center gap-2 px-3 py-2 text-start hover:bg-slate-50 transition-colors ${
-        isActive ? "bg-indigo-600/5" : ""
+        isActive ? "bg-amber-600/5" : ""
       }`}
     >
       <WorkspaceAvatar ws={ws} />
@@ -176,7 +176,7 @@ function WorkspaceOption({
           {ws.type === "personal" ? t("شخصي", "Personal") : t("فريق", "Team")}
         </div>
       </div>
-      {isActive && <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
+      {isActive && <Check className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />}
     </button>
   )
 }

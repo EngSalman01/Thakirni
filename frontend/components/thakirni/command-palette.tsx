@@ -47,19 +47,19 @@ export function CommandPalette() {
 
   const commands: CommandItem[] = [
     // Navigate
-    { id: "nav-dashboard", label: "Dashboard", labelAr: "لوحة التحكم", icon: LayoutDashboard, color: "#2552ca", action: () => nav("/vault"), group: "Navigate", groupAr: "تصفح", keywords: "home dashboard vault" },
-    { id: "nav-memories", label: "Memories", labelAr: "الذكريات", icon: Brain, color: "#2552ca", action: () => nav("/vault"), group: "Navigate", groupAr: "تصفح", keywords: "memories brain notes" },
-    { id: "nav-plans", label: "Plans", labelAr: "الخطط", icon: ListTodo, color: "#ad1d7f", action: () => nav("/vault/plans"), group: "Navigate", groupAr: "تصفح", keywords: "plans tasks todo" },
+    { id: "nav-dashboard", label: "Dashboard", labelAr: "لوحة التحكم", icon: LayoutDashboard, color: "#D97706", action: () => nav("/vault"), group: "Navigate", groupAr: "تصفح", keywords: "home dashboard vault" },
+    { id: "nav-memories", label: "Memories", labelAr: "الذكريات", icon: Brain, color: "#D97706", action: () => nav("/vault"), group: "Navigate", groupAr: "تصفح", keywords: "memories brain notes" },
+    { id: "nav-plans", label: "Plans", labelAr: "الخطط", icon: ListTodo, color: "#F59E0B", action: () => nav("/vault/plans"), group: "Navigate", groupAr: "تصفح", keywords: "plans tasks todo" },
     { id: "nav-habits", label: "Habits", labelAr: "العادات", icon: Flame, color: "#f59e0b", action: () => nav("/vault/habits"), group: "Navigate", groupAr: "تصفح", keywords: "habits streak daily" },
     { id: "nav-goals", label: "Goals", labelAr: "الأهداف", icon: Target, color: "#10b981", action: () => nav("/vault/goals"), group: "Navigate", groupAr: "تصفح", keywords: "goals targets milestones" },
     { id: "nav-calendar", label: "Calendar", labelAr: "التقويم", icon: Calendar, color: "#6366f1", action: () => nav("/vault/calendar"), group: "Navigate", groupAr: "تصفح", keywords: "calendar schedule events" },
     { id: "nav-focus", label: "Focus Timer", labelAr: "مؤقت التركيز", icon: Timer, color: "#ef4444", action: () => nav("/vault/focus"), group: "Navigate", groupAr: "تصفح", keywords: "focus pomodoro timer" },
     { id: "nav-meetings", label: "Meetings", labelAr: "الاجتماعات", icon: Mic, color: "#8b5cf6", action: () => nav("/vault/meetings"), group: "Navigate", groupAr: "تصفح", keywords: "meetings voice summary" },
     { id: "nav-documents", label: "Documents", labelAr: "المستندات", icon: FileText, color: "#0ea5e9", action: () => nav("/vault/documents"), group: "Navigate", groupAr: "تصفح", keywords: "documents files pdf" },
-    { id: "nav-teams", label: "Teams", labelAr: "الفرق", icon: Users, color: "#ad1d7f", action: () => nav("/vault/teams"), group: "Navigate", groupAr: "تصفح", keywords: "teams members workspace" },
+    { id: "nav-teams", label: "Teams", labelAr: "الفرق", icon: Users, color: "#F59E0B", action: () => nav("/vault/teams"), group: "Navigate", groupAr: "تصفح", keywords: "teams members workspace" },
     { id: "nav-settings", label: "Settings", labelAr: "الإعدادات", icon: Settings, color: "#64748b", action: () => nav("/vault/settings"), group: "Navigate", groupAr: "تصفح", keywords: "settings profile account" },
     // Create
-    { id: "create-memory", label: "New Memory", labelAr: "ذاكرة جديدة", icon: Plus, color: "#2552ca", action: () => nav("/vault/new-memory"), group: "Create", groupAr: "إنشاء", keywords: "new create memory add" },
+    { id: "create-memory", label: "New Memory", labelAr: "ذاكرة جديدة", icon: Plus, color: "#D97706", action: () => nav("/vault/new-memory"), group: "Create", groupAr: "إنشاء", keywords: "new create memory add" },
     { id: "create-voice", label: "Voice Note", labelAr: "ملاحظة صوتية", icon: Mic, color: "#8b5cf6", action: () => nav("/vault/voice-note"), group: "Create", groupAr: "إنشاء", keywords: "voice record note" },
     { id: "create-upload", label: "Upload Document", labelAr: "رفع مستند", icon: Upload, color: "#0ea5e9", action: () => nav("/vault/upload"), group: "Create", groupAr: "إنشاء", keywords: "upload document file" },
   ]

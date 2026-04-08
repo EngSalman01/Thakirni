@@ -21,8 +21,8 @@ export function PlanBadge({ plan, className }: PlanBadgeProps) {
 
   const styles: Record<string, string> = {
     free:  "bg-slate-800/60 text-slate-400 border border-slate-700/50",
-    pro:   "bg-indigo-500/15 text-indigo-400 border border-indigo-500/25",
-    teams: "bg-violet-500/15 text-violet-400 border border-violet-500/25",
+    pro:   "bg-amber-500/15 text-amber-400 border border-amber-500/25",
+    teams: "bg-amber-500/15 text-amber-400 border border-amber-500/25",
   };
 
   const labels: Record<string, string> = {

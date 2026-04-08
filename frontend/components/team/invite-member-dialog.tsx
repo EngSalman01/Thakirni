@@ -108,7 +108,7 @@ export function InviteMemberDialog({
       label: "Admin",
       description: "Can manage team and members",
       icon: Shield,
-      gradient: "from-indigo-500 to-purple-500",
+      gradient: "from-amber-500 to-orange-500",
     },
   ];
 
@@ -119,10 +119,10 @@ export function InviteMemberDialog({
       <DialogContent className="sm:max-w-[500px] border-border/50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
               <UserPlus className="w-6 h-6 text-white" />
             </div>
-            <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
               {inviteLink ? "Invitation Ready" : "Invite Team Member"}
             </span>
           </DialogTitle>
@@ -164,7 +164,7 @@ export function InviteMemberDialog({
                   htmlFor="email"
                   className="text-sm font-medium flex items-center gap-2"
                 >
-                  <Mail className="w-4 h-4 text-indigo-500" />
+                  <Mail className="w-4 h-4 text-amber-500" />
                   Email Address <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -175,7 +175,7 @@ export function InviteMemberDialog({
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
                   required
-                  className="h-11 border-border/50 focus:border-indigo-500"
+                  className="h-11 border-border/50 focus:border-amber-500"
                 />
               </div>
 
@@ -184,7 +184,7 @@ export function InviteMemberDialog({
                   htmlFor="role"
                   className="text-sm font-medium flex items-center gap-2"
                 >
-                  <Shield className="w-4 h-4 text-purple-500" />
+                  <Shield className="w-4 h-4 text-orange-500" />
                   Role permission
                 </Label>
                 <Select
@@ -221,7 +221,7 @@ export function InviteMemberDialog({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 shadow-lg shadow-indigo-500/20"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/20"
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Generate Invitation Link

@@ -246,7 +246,7 @@ export default function CalendarPage() {
                           ? "bg-blue-500/10 text-blue-500"
                           : plan.category === "grocery"
                             ? "bg-amber-500/10 text-amber-500"
-                            : "bg-purple-500/10 text-purple-500"
+                            : "bg-orange-500/10 text-orange-500"
                       }`}>
                         {plan.category === "meeting" ? (
                           <CalendarIcon className="w-5 h-5" />

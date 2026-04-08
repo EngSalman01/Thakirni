@@ -56,13 +56,13 @@ function PlanCard({
 
   const accentMap: Record<string, string> = {
     free: "#64748b",
-    pro: "#2552ca",
-    teams: "#ad1d7f",
+    pro: "#D97706",
+    teams: "#F59E0B",
   };
-  const accent = accentMap[plan.plan_key] ?? "#2552ca";
+  const accent = accentMap[plan.plan_key] ?? "#D97706";
 
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 flex flex-col gap-4">
+    <div className="bg-white/[0.04] rounded-2xl p-6 flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div
@@ -88,7 +88,7 @@ function PlanCard({
         <Input
           value={plan.display_name}
           onChange={(e) => setPlan((p) => ({ ...p, display_name: e.target.value }))}
-          className="bg-white border-0 rounded-xl"
+          className="bg-white/[0.07] border border-white/[0.10] rounded-xl text-white"
         />
       </div>
 
@@ -102,7 +102,7 @@ function PlanCard({
           onChange={(e) =>
             setPlan((p) => ({ ...p, price_sar: parseFloat(e.target.value) || 0 }))
           }
-          className="bg-white border-0 rounded-xl"
+          className="bg-white/[0.07] border border-white/[0.10] rounded-xl text-white"
         />
       </div>
 
@@ -112,7 +112,7 @@ function PlanCard({
         <div className="space-y-1.5">
           {plan.features.map((f, i) => (
             <div key={i} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2">
-              <span className="flex-1 text-sm font-label text-slate-700">{f}</span>
+              <span className="flex-1 text-sm font-label text-slate-300">{f}</span>
               <button
                 onClick={() => removeFeature(i)}
                 className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
@@ -242,7 +242,7 @@ export default function SubscriptionsPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-headline font-bold text-slate-900">Subscriptions</h1>
+        <h1 className="text-2xl font-headline font-bold text-white">Subscriptions</h1>
         <p className="text-sm text-slate-500 font-label mt-1">
           Manage plan configuration and features
         </p>
@@ -255,8 +255,8 @@ export default function SubscriptionsPage() {
           ))}
         </div>
       ) : plans.length === 0 ? (
-        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-12 text-center">
-          <Loader2 className="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-3" />
+        <div className="bg-white/[0.04] rounded-2xl p-12 text-center">
+          <Loader2 className="w-6 h-6 animate-spin text-amber-600 dark:text-amber-400 mx-auto mb-3" />
           <p className="text-slate-500 font-label">Initializing plans...</p>
         </div>
       ) : (
@@ -272,14 +272,14 @@ export default function SubscriptionsPage() {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               Confirm Changes
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <p className="text-sm text-slate-500 font-label">
               Enter your admin password to save changes to the{" "}
-              <strong className="text-slate-800">{pendingPlan?.display_name}</strong> plan.
+              <strong className="text-slate-200">{pendingPlan?.display_name}</strong> plan.
             </p>
             <div className="space-y-1.5">
               <Label htmlFor="admin-password">Password</Label>
@@ -306,7 +306,7 @@ export default function SubscriptionsPage() {
             <Button
               onClick={confirmSave}
               disabled={verifying || !password}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {verifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Confirm & Save

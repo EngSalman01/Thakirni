@@ -1,25 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 196 56" fill="none">
   <defs>
-    <!-- Squircle gradient -->
+    <!-- Saffron & Obsidian squircle gradient -->
     <linearGradient id="a" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4F46E5"/>
-      <stop offset=".4" stop-color="#7C3AED"/>
-      <stop offset="1" stop-color="#EC4899"/>
+      <stop stop-color="#FBBF24"/>
+      <stop offset=".45" stop-color="#D97706"/>
+      <stop offset="1" stop-color="#92400E"/>
     </linearGradient>
     <!-- Glass shine -->
     <radialGradient id="b" cx="36%" cy="26%" r="58%" gradientUnits="objectBoundingBox">
-      <stop stop-color="#fff" stop-opacity=".30"/>
+      <stop stop-color="#fff" stop-opacity=".32"/>
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </radialGradient>
     <!-- Depth shade -->
     <linearGradient id="c" x1="0" y1="0" x2="0" y2="56" gradientUnits="userSpaceOnUse">
       <stop stop-color="#000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".18"/>
     </linearGradient>
-    <!-- Soft glow for spark -->
+    <!-- Amber glow for spark -->
     <filter id="glow" x="-18%" y="-18%" width="136%" height="136%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="bl"/>
-      <feFlood flood-color="#EC4899" flood-opacity=".4" result="col"/>
+      <feFlood flood-color="#FBBF24" flood-opacity=".50" result="col"/>
       <feComposite in="col" in2="bl" operator="in" result="sh"/>
       <feMerge><feMergeNode in="sh"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
@@ -30,18 +30,13 @@
   <rect width="56" height="56" rx="14" fill="url(#b)"/>
   <rect width="56" height="56" rx="14" fill="url(#c)"/>
 
-  <!-- 4-point spark scaled to 56×56
-       Center (28,28): outer r=11.8, inner@45°=3.28
-       top(28,16.2) UR(31.28,24.72) right(39.8,28) LR(31.28,31.28)
-       bottom(28,39.8) LL(24.72,31.28) left(16.2,28) UL(24.72,24.72) -->
   <g transform="rotate(12 28 28)" filter="url(#glow)">
     <path d="M28 16.2 31.3 24.7 39.8 28 31.3 31.3 28 39.8 24.7 31.3 16.2 28 24.7 24.7z"
-          fill="#fff" fill-opacity=".94"/>
+          fill="#fff" fill-opacity=".96"/>
   </g>
-  <!-- Checkmark -->
   <path transform="rotate(12 28 28)"
         d="M24 28 26.7 30.6 32.4 24.5"
-        stroke="#fff" stroke-width="2" stroke-opacity=".60"
+        stroke="#fff" stroke-width="2" stroke-opacity=".65"
         stroke-linecap="round" stroke-linejoin="round"/>
 
   <!-- ── WORDMARK (starts x=68, 12px gap after 56px icon) ── -->
@@ -50,11 +45,11 @@
   <text x="68" y="27"
     font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
     font-size="20" font-weight="600" letter-spacing="-0.5"
-    fill="#0f172a">Thakirni</text>
+    fill="#1A1208">Thakirni</text>
 
-  <!-- Arabic: Cairo / Arabic system font, 13px, muted -->
+  <!-- Arabic: Cairo / Arabic system font, 13px, muted warm -->
   <text x="69" y="44"
     font-family="'IBM Plex Arabic', Cairo, 'Segoe UI', Tahoma, Arial, sans-serif"
     font-size="13" font-weight="500" letter-spacing="0.2"
-    fill="#64748b">ذكّرني</text>
+    fill="#92400E">ذكّرني</text>
 </svg>

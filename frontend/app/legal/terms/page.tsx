@@ -21,7 +21,7 @@ export default function TermsPage() {
 
         <div className="bg-white rounded-2xl border border-[#e4e2e1] overflow-hidden">
           {/* Header */}
-          <div className="bg-indigo-600 px-8 py-10 text-white">
+          <div className="bg-amber-600 px-8 py-10 text-white">
             <h1 className="text-3xl font-headline font-extrabold mb-2">
               شروط الخدمة
             </h1>
@@ -181,8 +181,8 @@ export default function TermsPage() {
             </section>
 
             {/* Section 6 */}
-            <section className="space-y-4 rounded-xl bg-indigo-600/5 border border-indigo-600/20 p-6">
-              <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-indigo-600/20 pb-2">
+            <section className="space-y-4 rounded-xl bg-amber-600/5 border border-amber-600/20 p-6">
+              <h3 className="text-xl font-headline font-bold text-slate-900 border-b border-amber-600/20 pb-2">
                 القانون الحاكم / Governing Law
               </h3>
               <p className="text-slate-600 leading-relaxed" dir="rtl">
@@ -203,7 +203,7 @@ export default function TermsPage() {
               </h3>
               <a
                 href="mailto:support@thakirni.com"
-                className="inline-block font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="inline-block font-bold text-amber-600 dark:text-amber-400 hover:underline"
                 dir="ltr"
               >
                 support@thakirni.com
