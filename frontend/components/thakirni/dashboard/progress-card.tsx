@@ -80,7 +80,7 @@ export function ProgressCard() {
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
                 style={{ originX: 0 }}
                 className={`absolute inset-0 rounded-full ${
-                  pct >= 80 ? "bg-emerald-500" : pct >= 40 ? "bg-indigo-500" : "bg-pink-500"
+                  pct >= 80 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-500" : "bg-orange-400"
                 }`}
               />
             </div>

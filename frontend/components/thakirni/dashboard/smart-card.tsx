@@ -23,7 +23,7 @@ export function SmartCard() {
   if (plansLoading || memoriesLoading) return null
 
   // Determine card content from real state
-  let gradient = "from-indigo-500 via-violet-500 to-pink-500"
+  let gradient = "from-amber-500 via-orange-500 to-amber-600"
   let Icon = ListTodo
   let heading = ""
   let body = ""
@@ -36,7 +36,7 @@ export function SmartCard() {
   if (!hasTasks) {
     // No tasks at all
     Icon = ListTodo
-    gradient = "from-indigo-500 via-violet-500 to-pink-500"
+    gradient = "from-amber-500 via-orange-500 to-amber-600"
     heading = t("خلنا نرتب يومك 📋", "Let's plan your day 📋")
     body = t("ما عندك مهام بعد — أضف أول مهمة وخلنا نبدأ", "No tasks yet — add your first task and let's get started")
     cta = t("أضف مهمة →", "Add a task →")
