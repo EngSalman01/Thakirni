@@ -81,22 +81,22 @@ export function TestimonialsSection() {
   const { t, isArabic } = useLanguage()
 
   return (
-    <section className="py-20 overflow-hidden bg-slate-50 dark:bg-[#0d1117]" dir={isArabic ? "rtl" : "ltr"}>
+    <section className="py-16 sm:py-28 overflow-hidden bg-background" dir={isArabic ? "rtl" : "ltr"}>
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-14"
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center mb-12 sm:mb-16"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-3">
+          <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3">
             {t("آراء المستخدمين", "User reviews")}
           </p>
-          <h2 className="text-3xl sm:text-4xl font-headline font-bold text-slate-900 dark:text-white mb-3">
+          <h2 className="text-3xl sm:text-4xl font-headline font-bold text-foreground mb-3">
             {t("ماذا يقول مستخدمونا", "What our users say")}
           </h2>
-          <p className="text-slate-500">
+          <p className="text-muted-foreground">
             {t(
               "آلاف المستخدمين في المملكة العربية السعودية يثقون بذكرني",
               "Thousands of users across Saudi Arabia trust Thakirni"
@@ -104,31 +104,30 @@ export function TestimonialsSection() {
           </p>
         </motion.div>
 
-        {/* Two-row infinite scroll effect */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {TESTIMONIALS.map((t, i) => (
+          {TESTIMONIALS.map((testimonial, i) => (
             <motion.div
-              key={t.nameEn}
+              key={testimonial.nameEn}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.06, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="glass-card rounded-2xl p-6 flex flex-col gap-4 hover:shadow-md transition-shadow"
+              transition={{ delay: i * 0.06, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.07] rounded-2xl p-6 flex flex-col gap-4 hover:shadow-sm hover:border-amber-100 dark:hover:border-amber-900/30 transition-all duration-200"
             >
-              <StarRow count={t.rating} />
-              <p className="text-slate-700 text-sm leading-relaxed flex-1">
-                "{isArabic ? t.textAr : t.textEn}"
+              <StarRow count={testimonial.rating} />
+              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed flex-1">
+                "{isArabic ? testimonial.textAr : testimonial.textEn}"
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full power-gradient flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                  {isArabic ? t.avatar : t.nameEn[0]}
+                  {isArabic ? testimonial.avatar : testimonial.nameEn[0]}
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-800 text-sm">
-                    {isArabic ? t.nameAr : t.nameEn}
+                  <div className="font-semibold text-foreground text-sm">
+                    {isArabic ? testimonial.nameAr : testimonial.nameEn}
                   </div>
-                  <div className="text-xs text-slate-500">
-                    {isArabic ? t.roleAr : t.roleEn}
+                  <div className="text-xs text-muted-foreground">
+                    {isArabic ? testimonial.roleAr : testimonial.roleEn}
                   </div>
                 </div>
               </div>
@@ -141,15 +140,15 @@ export function TestimonialsSection() {
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 text-slate-500 text-sm"
+          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 text-muted-foreground text-sm"
         >
           <div className="flex items-center gap-2">
             <StarRow count={5} />
-            <span className="font-bold text-slate-800">4.9 / 5</span>
+            <span className="font-bold text-foreground">4.9 / 5</span>
           </div>
-          <span className="hidden sm:block">·</span>
+          <span className="hidden sm:block opacity-40">·</span>
           <span>{t("بناءً على آلاف التقييمات", "Based on thousands of reviews")}</span>
-          <span className="hidden sm:block">·</span>
+          <span className="hidden sm:block opacity-40">·</span>
           <span>🇸🇦 {t("مصنوع للسوق السعودي", "Made for Saudi Arabia")}</span>
         </motion.div>
       </div>

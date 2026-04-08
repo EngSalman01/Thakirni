@@ -343,8 +343,8 @@ function AuthForm() {
         className="w-full max-w-md text-center space-y-5 flex flex-col items-center"
       >
         <div className="w-20 h-20 rounded-full flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #2552ca22 0%, #fd65c222 100%)" }}>
-          <CheckCircle2 className="w-10 h-10" style={{ color: "#2552ca" }} />
+          style={{ background: "linear-gradient(135deg, #D9770622 0%, #F59E0B22 100%)" }}>
+          <CheckCircle2 className="w-10 h-10" style={{ color: "#D97706" }} />
         </div>
         <h2 className="text-2xl font-bold text-foreground">
           {t("تحقق من إيميلك", "Check your email")}
@@ -380,7 +380,7 @@ function AuthForm() {
         whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
         type="button" onClick={handleGoogleLogin} disabled={isGoogleLoading}
         className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-semibold text-sm disabled:opacity-60 mb-5 shadow-sm hover:shadow-md transition-all"
-        style={{ background: "linear-gradient(135deg, #2552ca08 0%, #fd65c210 100%)", border: "1.5px solid rgba(37,82,202,0.2)" }}
+        style={{ background: "linear-gradient(135deg, #D9770608 0%, #F59E0B10 100%)", border: "1.5px solid rgba(217,119,6,0.3)" }}
       >
         {isGoogleLoading
           ? <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
@@ -410,13 +410,13 @@ function AuthForm() {
 
       {/* Tab switcher */}
       <div className="flex gap-1 p-1 rounded-xl mb-8"
-        style={{ background: "rgba(37, 82, 202, 0.06)" }}>
+        style={{ background: "rgba(217, 119, 6, 0.07)" }}>
         {(["signin", "signup"] as const).map((t_) => (
           <button key={t_} type="button"
             onClick={() => { setTab(t_); setErrors({}); }}
             className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
             style={tab === t_
-              ? { background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", color: "#fff", boxShadow: "0 2px 12px rgba(37,82,202,0.3)" }
+              ? { background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)", color: "#fff", boxShadow: "0 2px 12px rgba(217,119,6,0.4)" }
               : { color: "#6b7280" }
             }
           >
@@ -479,7 +479,7 @@ function AuthForm() {
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">{t("كلمة المرور", "Password")} <span className="text-red-500">*</span></Label>
                 <Link href="/auth/reset-password"
-                  className="text-xs hover:underline" style={{ color: "#2552ca" }}>
+                  className="text-xs hover:underline" style={{ color: "#D97706" }}>
                   {t("نسيت كلمة المرور؟", "Forgot password?")}
                 </Link>
               </div>
@@ -507,7 +507,7 @@ function AuthForm() {
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               type="submit" disabled={isLoading || !signInCaptchaToken}
               className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", boxShadow: "0 4px 20px rgba(37,82,202,0.35)" }}
+              style={{ background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)", boxShadow: "0 4px 20px rgba(217,119,6,0.45)" }}
             >
               {isLoading ? t("جارٍ الدخول...", "Signing in...") : t("دخول", "Sign In")}
             </motion.button>
@@ -640,7 +640,7 @@ function AuthForm() {
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               type="submit" disabled={isLoading || !captchaToken}
               className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60 mt-2"
-              style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", boxShadow: "0 4px 20px rgba(37,82,202,0.35)" }}
+              style={{ background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)", boxShadow: "0 4px 20px rgba(217,119,6,0.45)" }}
             >
               {isLoading ? t("جارٍ التسجيل...", "Creating account...") : t("إنشاء حساب", "Create Account")}
             </motion.button>
@@ -662,15 +662,15 @@ export default function AuthPage() {
 
       {/* ── Left panel: Cognitive Aura ────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1a2a6c 0%, #2552ca 40%, #ad1d7f 75%, #fd65c2 100%)" }}>
+        style={{ background: "linear-gradient(135deg, #1A1007 0%, #7C3400 40%, #B45309 75%, #D97706 100%)" }}>
 
         {/* Mesh blobs */}
         <motion.div className="absolute top-10 left-10 w-80 h-80 rounded-full blur-3xl opacity-30"
-          style={{ background: "radial-gradient(circle, #fd65c2 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #FBBF24 0%, transparent 70%)" }}
           animate={{ y: [0, -25, 0], x: [0, 15, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
         <motion.div className="absolute bottom-20 right-10 w-72 h-72 rounded-full blur-3xl opacity-20"
-          style={{ background: "radial-gradient(circle, #2552ca 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #D97706 0%, transparent 70%)" }}
           animate={{ y: [0, 30, 0] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
 
@@ -686,7 +686,7 @@ export default function AuthPage() {
                 src="/images/logo-gradient-bg.svg"
                 alt="Thakirni"
                 className="w-24 h-24 rounded-3xl"
-                style={{ boxShadow: "0 0 50px rgba(253,101,194,0.4), 0 0 100px rgba(37,82,202,0.3)" }}
+                style={{ boxShadow: "0 0 50px rgba(251,191,36,0.4), 0 0 100px rgba(217,119,6,0.4)" }}
               />
             </motion.div>
 
@@ -742,7 +742,7 @@ export default function AuthPage() {
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground pb-6">
           {t("بالتسجيل أنت توافق على", "By signing up you agree to our")}{" "}
-          <Link href="/privacy" className="hover:underline" style={{ color: "#2552ca" }}>
+          <Link href="/privacy" className="hover:underline" style={{ color: "#D97706" }}>
             {t("سياسة الخصوصية", "Privacy Policy")}
           </Link>
         </p>

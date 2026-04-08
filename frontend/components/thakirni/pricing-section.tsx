@@ -6,8 +6,6 @@ import { motion } from "framer-motion"
 import { Check, Sparkles } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
 
-// ── Plan data ───────────────────────────────────────────────────────────────
-
 const PLANS = [
   {
     id: "free",
@@ -104,8 +102,6 @@ const PLANS = [
   },
 ]
 
-// ── Toggle ──────────────────────────────────────────────────────────────────
-
 function BillingToggle({
   annual,
   onToggle,
@@ -117,7 +113,7 @@ function BillingToggle({
 }) {
   return (
     <div className="flex items-center gap-3 justify-center mb-10 sm:mb-14">
-      <span className={`text-sm font-medium ${!annual ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>
+      <span className={`text-sm font-medium transition-colors ${!annual ? "text-foreground" : "text-muted-foreground"}`}>
         {isArabic ? "شهري" : "Monthly"}
       </span>
       <button
@@ -125,14 +121,13 @@ function BillingToggle({
         className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${annual ? "power-gradient" : "bg-slate-200 dark:bg-slate-700"}`}
         aria-label="Toggle billing"
       >
-        {/* translateX is GPU-composited; animating left causes layout */}
         <motion.div
           className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow"
           animate={{ x: annual ? "calc(3rem - 1.375rem - 0.125rem)" : "0px" }}
           transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
         />
       </button>
-      <span className={`text-sm font-medium ${annual ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>
+      <span className={`text-sm font-medium transition-colors ${annual ? "text-foreground" : "text-muted-foreground"}`}>
         {isArabic ? "سنوي" : "Annual"}
         <span className="ms-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
           {isArabic ? "وفّر ٢٠٪" : "Save 20%"}
@@ -141,8 +136,6 @@ function BillingToggle({
     </div>
   )
 }
-
-// ── Plan card ───────────────────────────────────────────────────────────────
 
 function PlanCard({
   plan,
@@ -166,18 +159,20 @@ function PlanCard({
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.2, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.2, 1, 0.3, 1] }}
       whileHover={{ y: plan.featured ? -6 : -3 }}
-      className={`relative flex flex-col rounded-2xl ${
+      className={`relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 ${
         plan.featured
-          ? "bg-slate-900 dark:bg-white/[0.06] border-2 border-indigo-500 shadow-[0_0_40px_rgba(79,70,229,0.25)]"
-          : "bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/8 shadow-soft"
-      } overflow-hidden transition-shadow duration-300`}
+          ? "bg-[#1A1007] dark:bg-[#1A1007] border-2 border-amber-500/70 shadow-[0_0_48px_rgba(217,119,6,0.20)]"
+          : "bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.07] shadow-sm hover:shadow-md"
+      }`}
     >
-      {/* Popular badge */}
+      {/* Top accent line */}
       {plan.featured && (
         <div className="absolute top-0 inset-x-0 h-0.5 power-gradient" />
       )}
+
+      {/* Popular badge */}
       {plan.featured && (
         <div className="absolute top-4 end-4 flex items-center gap-1 px-2.5 py-1 rounded-full power-gradient text-white text-[10px] font-bold">
           <Sparkles className="w-3 h-3" />
@@ -188,10 +183,10 @@ function PlanCard({
       <div className="p-7 sm:p-8 flex-1 flex flex-col">
         {/* Name */}
         <div className="mb-6">
-          <h3 className={`text-lg font-headline font-bold mb-1 ${plan.featured ? "text-white" : "text-slate-900 dark:text-white"}`}>
+          <h3 className={`text-lg font-headline font-bold mb-1 ${plan.featured ? "text-white" : "text-foreground"}`}>
             {isArabic ? plan.nameAr : plan.nameEn}
           </h3>
-          <p className={`text-sm ${plan.featured ? "text-slate-400" : "text-slate-500"}`}>
+          <p className={`text-sm ${plan.featured ? "text-amber-200/60" : "text-muted-foreground"}`}>
             {isArabic ? plan.descAr : plan.descEn}
           </p>
         </div>
@@ -199,10 +194,10 @@ function PlanCard({
         {/* Price */}
         <div className="mb-8">
           <div className="flex items-end gap-1">
-            <span className={`text-4xl sm:text-5xl font-extrabold font-headline tabular ${plan.featured ? "text-white" : "text-slate-900 dark:text-white"}`}>
+            <span className={`text-4xl sm:text-5xl font-extrabold font-headline tabular ${plan.featured ? "text-white" : "text-foreground"}`}>
               {price}
             </span>
-            <span className={`text-sm mb-1.5 ${plan.featured ? "text-slate-400" : "text-slate-400"}`}>
+            <span className={`text-sm mb-1.5 ${plan.featured ? "text-amber-200/60" : "text-muted-foreground"}`}>
               {currency}
             </span>
           </div>
@@ -215,7 +210,7 @@ function PlanCard({
               <span className="mt-0.5 w-4 h-4 rounded-full power-gradient flex items-center justify-center shrink-0">
                 <Check className="w-2.5 h-2.5 text-white" />
               </span>
-              <span className={`text-sm leading-relaxed ${plan.featured ? "text-slate-300" : "text-slate-600 dark:text-slate-400"}`}>
+              <span className={`text-sm leading-relaxed ${plan.featured ? "text-amber-100/80" : "text-muted-foreground"}`}>
                 {f}
               </span>
             </li>
@@ -230,7 +225,7 @@ function PlanCard({
             className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
               plan.featured
                 ? "power-gradient text-white btn-glow"
-                : "bg-slate-100 dark:bg-white/8 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/12 border border-slate-200 dark:border-white/10"
+                : "bg-slate-100 dark:bg-white/[0.07] text-foreground hover:bg-slate-200 dark:hover:bg-white/[0.11] border border-slate-200 dark:border-white/[0.10]"
             }`}
           >
             {isArabic ? plan.cta.ar : plan.cta.en}
@@ -241,14 +236,12 @@ function PlanCard({
   )
 }
 
-// ── Pricing Section ─────────────────────────────────────────────────────────
-
 export function PricingSection() {
   const { t, isArabic } = useLanguage()
   const [annual, setAnnual] = useState(false)
 
   return (
-    <section className="py-16 sm:py-32 bg-slate-50 dark:bg-[#0d1117] overflow-hidden" id="pricing">
+    <section className="py-16 sm:py-32 bg-amber-50/40 dark:bg-[#0d0b08] overflow-hidden" id="pricing">
       <div className="max-w-6xl mx-auto px-4 sm:px-8">
 
         {/* Header */}
@@ -256,43 +249,34 @@ export function PricingSection() {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.5 }}
           className="text-center max-w-2xl mx-auto mb-4 sm:mb-8"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400 mb-3">
+          <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3">
             {t("الأسعار", "Pricing")}
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-foreground">
             {t("بدّل يومك — بدون ما تكسر جيبك", "Transform your day — without breaking the bank")}
           </h2>
-          <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400">
+          <p className="text-base sm:text-lg text-muted-foreground">
             {t("ابدأ مجاناً. رقّي متى ما تجهز.", "Start free. Upgrade when you're ready.")}
           </p>
         </motion.div>
 
-        {/* Billing toggle */}
         <BillingToggle annual={annual} onToggle={() => setAnnual(!annual)} isArabic={isArabic} />
 
-        {/* Plan cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           {PLANS.map((plan, i) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              annual={annual}
-              isArabic={isArabic}
-              index={i}
-            />
+            <PlanCard key={plan.id} plan={plan} annual={annual} isArabic={isArabic} index={i} />
           ))}
         </div>
 
-        {/* Footer note */}
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="text-center text-sm text-slate-400 dark:text-slate-500 mt-10"
+          className="text-center text-sm text-muted-foreground mt-10"
         >
           {t(
             "كل الأسعار بالريال السعودي. بدون عقد — ألغي في أي وقت.",

@@ -59,20 +59,24 @@ function FAQItem({
   return (
     <motion.div
       layout
-      className={`rounded-2xl overflow-hidden transition-all duration-300 ${
-        highlight
-          ? "bg-white/5 border border-indigo-500/40 hover:border-indigo-500/70"
-          : "bg-white/5 border border-white/8 hover:border-white/20"
+      className={`rounded-2xl overflow-hidden transition-all duration-200 ${
+        open
+          ? highlight
+            ? "bg-amber-950/30 border border-amber-500/50"
+            : "bg-white/5 border border-white/15"
+          : highlight
+            ? "bg-white/5 border border-amber-500/25 hover:border-amber-500/50"
+            : "bg-white/5 border border-white/[0.08] hover:border-white/20"
       }`}
     >
       <button
-        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-start hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between gap-4 px-6 py-5 text-start hover:bg-white/[0.03] transition-colors"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
         <span className="font-semibold text-base font-headline text-white">{t(qAr, qEn)}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="shrink-0">
-          <ChevronDown className="w-5 h-5 text-slate-400" />
+          <ChevronDown className={`w-5 h-5 ${open ? "text-amber-400" : "text-slate-400"}`} />
         </motion.div>
       </button>
       <AnimatePresence initial={false}>
@@ -84,7 +88,7 @@ function FAQItem({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25 }}
           >
-            <div className="px-6 pb-5 text-slate-400 leading-relaxed text-sm border-t border-white/8 pt-4">
+            <div className="px-6 pb-5 text-slate-400 leading-relaxed text-sm border-t border-white/[0.07] pt-4">
               {t(aAr, aEn)}
             </div>
           </motion.div>
@@ -101,11 +105,10 @@ export function CTASection() {
   return (
     <>
       {/* ── FAQ ── */}
-      <section className="py-16 sm:py-32 bg-[#0B0F1A] text-white relative overflow-hidden" id="faq">
-        {/* Background glow */}
+      <section className="py-16 sm:py-32 bg-[#0E0B07] text-white relative overflow-hidden" id="faq">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-indigo-600/8 blur-[100px]" />
-          <div className="absolute top-1/4 right-0 w-64 h-64 rounded-full bg-pink-600/6 blur-[80px]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full bg-amber-600/6 blur-[100px]" />
+          <div className="absolute top-1/4 right-0 w-64 h-64 rounded-full bg-orange-600/5 blur-[80px]" />
         </div>
 
         <div className="max-w-4xl mx-auto px-4 sm:px-8 relative z-10">
@@ -113,10 +116,10 @@ export function CTASection() {
             initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="text-center mb-10 sm:mb-16"
           >
-            <p className="text-sm font-semibold uppercase tracking-widest text-indigo-400 mb-3">
+            <p className="text-sm font-semibold uppercase tracking-widest text-amber-400 mb-3">
               {t("أسئلة شائعة", "FAQ")}
             </p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight">
@@ -134,7 +137,7 @@ export function CTASection() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.25, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.3, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
               >
                 <FAQItem {...faq} />
               </motion.div>
@@ -145,12 +148,12 @@ export function CTASection() {
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.25, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.3, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className="text-center"
           >
             <Link
               href="/help"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium underline underline-offset-4 decoration-slate-700 hover:decoration-white"
+              className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-medium underline underline-offset-4 decoration-slate-700 hover:decoration-amber-500"
             >
               {t("عرض جميع الأسئلة الشائعة", "View all FAQs")}
               <ArrowIcon className="w-3.5 h-3.5" />
@@ -160,17 +163,15 @@ export function CTASection() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-20 sm:py-36 bg-[#0B0F1A] relative overflow-hidden">
-        {/* Gradient background */}
+      <section className="py-20 sm:py-36 bg-[#0E0B07] relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div
-            className="absolute inset-0 opacity-40"
+            className="absolute inset-0 opacity-50"
             style={{
-              background:
-                "radial-gradient(ellipse 70% 60% at 50% 100%, rgba(79,70,229,0.20) 0%, transparent 70%)",
+              background: "radial-gradient(ellipse 70% 55% at 50% 100%, rgba(217,119,6,0.14) 0%, transparent 70%)",
             }}
           />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-violet-600/10 blur-[80px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[250px] rounded-full bg-amber-600/8 blur-[80px]" />
         </div>
 
         <div className="max-w-3xl mx-auto px-4 sm:px-8 text-center relative z-10">
@@ -178,9 +179,8 @@ export function CTASection() {
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Icon */}
             <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -215,7 +215,7 @@ export function CTASection() {
                 <motion.button
                   whileHover={{ scale: 1.05, y: -3 }}
                   whileTap={{ scale: 0.96 }}
-                  className="inline-flex items-center gap-2.5 px-10 py-5 rounded-full power-gradient text-white font-bold text-lg shadow-2xl btn-glow"
+                  className="inline-flex items-center gap-2.5 px-10 py-5 rounded-2xl power-gradient text-white font-bold text-lg shadow-2xl btn-glow"
                 >
                   <Sparkles className="w-5 h-5" />
                   {t("ابدأ الآن", "Start Now")}
