@@ -162,12 +162,12 @@ export function VaultSidebar() {
   return (
     <SidebarContext.Provider value={contextValue}>
       {/* ── TOP NAV BAR ── */}
-      <header className="fixed top-0 inset-x-0 z-40 h-16 bg-background/90 backdrop-blur-xl border-b border-border/60 shadow-[0_1px_0_0_rgba(0,0,0,0.04)]">
+      <header className="fixed top-0 inset-x-0 z-40 h-14 bg-background/80 backdrop-blur-2xl border-b border-border/50">
         <div className="h-full px-4 sm:px-6 flex items-center gap-3">
 
           {/* Logo */}
-          <Link href="/" className="shrink-0 me-2">
-            <BrandLogo variant="auto" className="h-8" />
+          <Link href="/" className="shrink-0 me-3">
+            <BrandLogo variant="auto" className="h-7" />
           </Link>
 
           {/* Desktop primary nav */}
@@ -180,14 +180,17 @@ export function VaultSidebar() {
               return (
                 <Link key={item.href} href={item.href}
                   className={cn(
-                    "flex items-center gap-2 px-3.5 py-2 rounded-md text-base font-semibold transition-colors duration-150 whitespace-nowrap group",
+                    "relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all duration-150 whitespace-nowrap group",
                     isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   )}
                   aria-current={isActive ? "page" : undefined}>
-                  <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "stroke-[2.5]")} />
+                  <Icon className={cn("w-3.5 h-3.5 shrink-0 transition-transform group-hover:scale-110", isActive && "stroke-[2.5]")} />
                   {isArabic ? item.labelAr : item.labelEn}
+                  {isActive && (
+                    <span className="absolute bottom-0 inset-x-2 h-[2px] rounded-full bg-amber-500/60" />
+                  )}
                 </Link>
               );
             })}
@@ -197,16 +200,16 @@ export function VaultSidebar() {
           <div className="flex-1 md:hidden" />
 
           {/* Right controls */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             <LanguageToggle />
             <ThemeToggle />
 
             {/* Profile dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-muted transition-colors ms-1">
+                <button className="hidden md:flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-muted transition-colors ms-1 group">
                   <Avatar profile={profile} />
-                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                  <ChevronDown className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">

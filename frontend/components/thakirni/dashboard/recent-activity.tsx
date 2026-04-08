@@ -17,7 +17,7 @@ function categoryIcon(plan: PlanWithSource) {
 
 function categoryColor(plan: PlanWithSource) {
   if (plan._source === "gcal") return "text-blue-500"
-  if (plan.category === "meeting") return "text-violet-500"
+  if (plan.category === "meeting") return "text-amber-500"
   if (plan.category === "grocery") return "text-emerald-500"
   if (plan.status === "done") return "text-emerald-500"
   return "text-slate-500 dark:text-slate-400"
@@ -63,7 +63,7 @@ export function RecentActivity() {
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden"
+      className="bg-white dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
@@ -72,7 +72,7 @@ export function RecentActivity() {
         </h2>
         <Link
           href="/vault/plans"
-          className="text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+          className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
         >
           {t("عرض الكل", "View all")}
         </Link>
@@ -100,7 +100,7 @@ export function RecentActivity() {
             </p>
             <Link
               href="/vault/plans"
-              className="inline-block text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              className="inline-block text-sm font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
             >
               {t("أضف أول مهمة ←", "Add your first task →")}
             </Link>

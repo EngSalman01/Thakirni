@@ -49,7 +49,7 @@ export function TodayFocus() {
     <section
       dir={isArabic ? "rtl" : "ltr"}
       // Primary card — shadow-sm for lift
-      className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-sm overflow-hidden"
+      className="bg-white dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl shadow-sm overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
@@ -58,7 +58,7 @@ export function TodayFocus() {
         </h2>
         <Link
           href="/vault/plans"
-          className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           {t("إضافة", "Add")}
@@ -81,7 +81,7 @@ export function TodayFocus() {
             </p>
             <Link
               href="/vault/assistant?prompt=%D8%B1%D8%AA%D8%A8+%D9%84%D9%8A+%D9%8A%D9%88%D9%85%D9%8A"
-              className="inline-block text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              className="inline-block text-sm font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
             >
               {t("خلني الذكاء يرتب لك ←", "Let AI plan your day →")}
             </Link>
@@ -98,7 +98,7 @@ export function TodayFocus() {
                 style={{ willChange: "transform" }}
               >
                 <button
-                  className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-purple-500 transition-colors"
+                  className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-amber-500 transition-colors"
                   aria-label="Toggle done"
                 >
                   {(plan as PlanWithSource)._source === "gcal" ? (
@@ -131,8 +131,8 @@ export function TodayFocus() {
             ))}
 
             {nextMeeting && !focusItems.some((p) => p.id === nextMeeting.id) && (
-              <div className="flex items-center gap-3 px-5 py-3.5 bg-violet-50/60 dark:bg-violet-950/20">
-                <CalendarDays className="w-4 h-4 text-violet-500 shrink-0" />
+              <div className="flex items-center gap-3 px-5 py-3.5 bg-amber-50/60 dark:bg-amber-950/20">
+                <CalendarDays className="w-4 h-4 text-amber-500 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
                     {nextMeeting.title}
@@ -141,7 +141,7 @@ export function TodayFocus() {
                     <p className="text-xs text-muted-foreground">{formatTime(nextMeeting.plan_time)}</p>
                   )}
                 </div>
-                <span className="text-xs text-violet-600 dark:text-violet-400 font-medium shrink-0">
+                <span className="text-xs text-amber-600 dark:text-amber-400 font-medium shrink-0">
                   {t("اجتماع", "Meeting")}
                 </span>
               </div>

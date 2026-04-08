@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/sonner"
 import React from "react"
 import type { Metadata, Viewport } from "next"
-import { Tajawal, Plus_Jakarta_Sans, Be_Vietnam_Pro } from "next/font/google"
+import { Tajawal, Plus_Jakarta_Sans, Be_Vietnam_Pro, Syne } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
@@ -20,6 +20,13 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-plus-jakarta-sans",
+  display: "swap",
+})
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-syne",
   display: "swap",
 })
 
@@ -93,7 +100,7 @@ export default function RootLayout({
      */
     <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth">
       <body
-        className={`${tajawal.variable} ${plusJakartaSans.variable} ${beVietnamPro.variable} font-sans antialiased`}
+        className={`${tajawal.variable} ${plusJakartaSans.variable} ${beVietnamPro.variable} ${syne.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         {/*

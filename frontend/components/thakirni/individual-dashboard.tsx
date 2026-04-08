@@ -37,38 +37,40 @@ export function IndividualDashboard() {
   const dateLine = getDateLine(isArabic)
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
-      <main className="pt-16">
+    <div className="min-h-screen bg-background overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
+      {/* Warm ambient glow */}
+      <div className="fixed top-0 end-0 w-[600px] h-[400px] pointer-events-none -z-0 opacity-40">
+        <div className="w-full h-full" style={{ background: "radial-gradient(ellipse 70% 60% at 80% 0%, rgba(217,119,6,0.08) 0%, transparent 70%)" }} />
+      </div>
 
-        {/* ── HERO ── */}
-        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
-          <div className="absolute -top-20 end-0 w-80 h-80 bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 start-0 w-64 h-64 bg-violet-600/6 rounded-full blur-[80px] pointer-events-none" />
+      <main className="pt-14 relative z-10">
 
-          <div className="max-w-7xl mx-auto relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 items-start">
+        {/* ── GREETING HERO ── */}
+        <section className="pt-10 pb-10 px-5 sm:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-[1fr_480px] gap-8 lg:gap-12 items-start">
 
               {/* Greeting */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, ease }}
-                className="space-y-6"
+                transition={{ duration: 0.4, ease }}
+                className="space-y-1 pt-2"
               >
-                <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1]">
-                    {headline}{" "}
-                    <span className="gradient-text">{accent}</span>
-                  </h1>
-                  <p className="text-xl text-slate-500 mt-4">{dateLine}</p>
-                </div>
+                <p className="text-sm font-medium text-amber-600 dark:text-amber-500 tracking-wide uppercase">
+                  {dateLine}
+                </p>
+                <h1 className={`${isArabic ? "font-arabic" : "font-headline"} text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]`}>
+                  {headline}
+                </h1>
+                <p className="text-xl text-muted-foreground font-medium">{accent}</p>
               </motion.div>
 
               {/* AI input */}
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: 0.15, ease }}
+                transition={{ duration: 0.4, delay: 0.12, ease }}
               >
                 <AIInputBox />
               </motion.div>
@@ -77,31 +79,31 @@ export function IndividualDashboard() {
         </section>
 
         {/* ── MAIN CONTENT ── */}
-        <section className="pb-24 px-8">
-          <div className="max-w-7xl mx-auto space-y-8">
+        <section className="pb-24 px-5 sm:px-8">
+          <div className="max-w-7xl mx-auto space-y-6">
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease, delay: 0.1 }}
+              transition={{ duration: 0.3, ease, delay: 0.1 }}
             >
               <WhatsAppBanner />
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease, delay: 0.18 }}
+              transition={{ duration: 0.3, ease, delay: 0.16 }}
             >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main column — 2/3 */}
-                <div className="lg:col-span-2 space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main column */}
+                <div className="lg:col-span-2 space-y-6">
                   <TodayFocus />
                   <RecentActivity />
                 </div>
 
-                {/* Side column — 1/3 */}
-                <div className="space-y-8">
+                {/* Side column */}
+                <div className="space-y-6">
                   <ProgressCard />
                   <UsageWidget />
                   <SmartCard />
@@ -110,9 +112,9 @@ export function IndividualDashboard() {
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease, delay: 0.26 }}
+              transition={{ duration: 0.3, ease, delay: 0.22 }}
             >
               <UpgradeNudge />
             </motion.div>
