@@ -186,14 +186,14 @@ export default function DiscountsPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-headline font-bold text-slate-900">Discounts</h1>
+          <h1 className="text-2xl font-headline font-bold text-white">Discounts</h1>
           <p className="text-sm text-slate-500 font-label mt-1">
             Manage discount codes for checkout
           </p>
         </div>
         <Button
           onClick={() => { resetForm(); setCreateOpen(true); }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-label"
+          className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-label"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create Code
@@ -208,7 +208,7 @@ export default function DiscountsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+      <div className="bg-white/[0.04] rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -240,11 +240,11 @@ export default function DiscountsPage() {
                         className="border-b border-[#e4e2e1]/50 last:border-0 hover:bg-white/50 transition-colors"
                       >
                         <td className="py-3 px-4">
-                          <code className="font-mono text-sm font-bold text-slate-800">
+                          <code className="font-mono text-sm font-bold text-slate-200">
                             {c.code}
                           </code>
                         </td>
-                        <td className="py-3 px-4 font-label font-semibold text-indigo-600 dark:text-indigo-400">
+                        <td className="py-3 px-4 font-label font-semibold text-amber-600 dark:text-amber-400">
                           {c.discount_percent}%
                         </td>
                         <td className="py-3 px-4 text-slate-500">
@@ -372,7 +372,7 @@ export default function DiscountsPage() {
             <Button
               onClick={handleCreate}
               disabled={submitting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Create

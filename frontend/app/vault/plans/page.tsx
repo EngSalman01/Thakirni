@@ -24,7 +24,7 @@ function ParticleLayer() {
     for (let i = 0; i < 14; i++) {
       const p = document.createElement("div");
       const s = Math.random() * 6 + 3, d = Math.random() * 20 + 10, dl = Math.random() * -20;
-      p.style.cssText = `position:absolute;width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:rgba(79,70,229,0.10);border-radius:50%;filter:blur(1px);--drift-x:${(Math.random()-0.5)*160}px;--drift-y:${(Math.random()-0.5)*160}px;animation:particle-drift ${d}s linear ${dl}s infinite;pointer-events:none;`;
+      p.style.cssText = `position:absolute;width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:rgba(217,119,6,0.10);border-radius:50%;filter:blur(1px);--drift-x:${(Math.random()-0.5)*160}px;--drift-y:${(Math.random()-0.5)*160}px;animation:particle-drift ${d}s linear ${dl}s infinite;pointer-events:none;`;
       el.appendChild(p); ps.push(p);
     }
     return () => ps.forEach(p => p.remove());
@@ -102,7 +102,7 @@ export default function PlansPage() {
 
   const getCategoryIcon = (cat: string) => {
     if (cat === "grocery") return <ShoppingBag className="w-4 h-4 text-emerald-500" />;
-    if (cat === "meeting") return <Briefcase className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />;
+    if (cat === "meeting") return <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />;
     return <ListTodo className="w-4 h-4 text-amber-500" />;
   };
 
@@ -130,8 +130,8 @@ export default function PlansPage() {
         {/* ── HERO ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">
           <ParticleLayer />
-          <div className="absolute -top-20 right-0 w-80 h-80 bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-600/6 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-amber-600/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/6 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -151,7 +151,7 @@ export default function PlansPage() {
                   {[
                     { value: pendingCount,   label: t("معلّق", "Pending"),   color: "bg-amber-50 text-amber-700" },
                     { value: completedCount, label: t("مكتمل", "Completed"), color: "bg-emerald-50 text-emerald-700" },
-                    { value: plans.length,   label: t("الكل", "Total"),      color: "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300" },
+                    { value: plans.length,   label: t("الكل", "Total"),      color: "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300" },
                   ].map(({ value, label, color }) => (
                     <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
                       <span className="text-xl font-headline font-extrabold">{value}</span>
@@ -166,7 +166,7 @@ export default function PlansPage() {
                 className="hidden lg:block relative">
                 <div className="bg-white rounded-2xl p-8 shadow-card hover-lift space-y-3">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-400 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-amber-400 flex items-center justify-center">
                       <ListTodo className="w-5 h-5 text-white" />
                     </div>
                     <span className="font-headline font-bold text-slate-900">{t("قائمة اليوم", "Today's List")}</span>
@@ -176,7 +176,7 @@ export default function PlansPage() {
                     : plans.length === 0
                     ? <p className="text-sm text-slate-400 text-center py-4">{t("لا خطط بعد — أضف مهمتك الأولى!", "No plans yet — add your first task!")}</p>
                     : plans.slice(0, 3).map((plan, i) => {
-                        const catColor = plan.category === "grocery" ? "bg-emerald-500" : plan.category === "meeting" ? "bg-violet-600" : "bg-indigo-600";
+                        const catColor = plan.category === "grocery" ? "bg-emerald-500" : plan.category === "meeting" ? "bg-amber-600" : "bg-amber-600";
                         const done = plan.status === "done";
                         return (
                           <motion.div key={plan.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
@@ -194,7 +194,7 @@ export default function PlansPage() {
                 {/* Floating badge — real completion % */}
                 {!isLoading && plans.length > 0 && (
                   <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -bottom-4 -right-4 bg-gradient-to-br from-indigo-600 to-[#fd65c2] text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold">
+                    className="absolute -bottom-4 -right-4 bg-gradient-to-br from-amber-600 to-amber-400 text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold">
                     {Math.round((completedCount / plans.length) * 100)}% {t("منجز", "done")} ✓
                   </motion.div>
                 )}
@@ -211,8 +211,8 @@ export default function PlansPage() {
               {/* Add form — feature card */}
               <motion.div custom={0} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-indigo-600 text-white rounded-2xl p-10 relative overflow-hidden hover-lift">
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#fd65c2]/20 rounded-full blur-2xl pointer-events-none" />
+                className="bg-amber-600 text-white rounded-2xl p-10 relative overflow-hidden hover-lift">
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />
                 <span className="text-4xl mb-6 block">✦</span>
                 <h2 className="text-2xl font-headline font-bold mb-2">{t("أضف مهمة جديدة", "Add New Task")}</h2>
                 <p className="text-white/70 mb-8">{t("سجّل مهمتك بسرعة", "Quickly log your next task")}</p>
@@ -242,9 +242,9 @@ export default function PlansPage() {
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 className="lg:col-span-2 bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden hover-lift group">
                 <div className="absolute right-0 bottom-0 w-1/3 translate-y-8 translate-x-8 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-30 pointer-events-none">
-                  <div className="w-full h-48 bg-gradient-to-tl from-indigo-600/20 to-[#fd65c2]/20 rounded-tl-2xl" />
+                  <div className="w-full h-48 bg-gradient-to-tl from-amber-600/20 to-amber-400/20 rounded-tl-2xl" />
                 </div>
-                <span className="text-4xl text-indigo-600 dark:text-indigo-400 mb-6 block">📋</span>
+                <span className="text-4xl text-amber-600 dark:text-amber-400 mb-6 block">📋</span>
                 <h2 className="text-2xl font-headline font-bold mb-8 text-slate-900">{t("قائمة المهام", "Task List")}</h2>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -261,7 +261,7 @@ export default function PlansPage() {
                     ) : filteredPlans.length === 0 ? (
                       <div className="text-center py-16">
                         <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] rounded-full flex items-center justify-center">
-                          <CheckCircle2 className="w-10 h-10 text-indigo-600 dark:text-indigo-400/40" />
+                          <CheckCircle2 className="w-10 h-10 text-amber-600 dark:text-amber-400/40" />
                         </div>
                         <h3 className="text-xl font-headline font-bold text-slate-700">
                           {t("ما عندك مهام للحين 👀", "No tasks yet 👀")}
@@ -275,12 +275,12 @@ export default function PlansPage() {
                         {filteredPlans.map(plan => (
                           <motion.div key={plan.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} layout
                             className={cn("group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200",
-                              selectedIds.has(plan.id) ? "bg-indigo-600/5 border-indigo-600/30 ring-1 ring-indigo-600/20"
+                              selectedIds.has(plan.id) ? "bg-amber-600/5 border-amber-600/30 ring-1 ring-amber-600/20"
                               : plan.status === "done" ? "bg-white/40 border-white/60 opacity-50"
                               : "bg-white border-[#e4e2e1] shadow-ambient hover:shadow-card hover:-translate-y-0.5")}>
                             <div className={cn("absolute top-3 right-3 transition-opacity", selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                               <input type="checkbox" checked={selectedIds.has(plan.id)} onChange={() => toggleSelect(plan.id)} onClick={e => e.stopPropagation()}
-                                className="w-4 h-4 rounded accent-[#2552ca] cursor-pointer" />
+                                className="w-4 h-4 rounded accent-amber-600 cursor-pointer" />
                             </div>
                             <Checkbox checked={plan.status === "done"} onCheckedChange={c => handleToggleStatus(plan.id, !!c)} className="mt-1" />
                             <div className="flex-1 min-w-0 space-y-1">

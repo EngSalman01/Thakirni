@@ -138,7 +138,7 @@ export default function OnboardingPage() {
         <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
           <motion.div
             className="h-full rounded-full"
-            style={{ background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)" }}
+            style={{ background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)" }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.4 }}
           />
@@ -170,7 +170,7 @@ export default function OnboardingPage() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder={t("أدخل اسمك", "Enter your name")}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-slate-800"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-slate-800"
                 />
               </div>
               <button onClick={() => setStep(2)}
@@ -201,11 +201,11 @@ export default function OnboardingPage() {
                     <button key={uc.id} onClick={() => toggleUseCase(uc.id)}
                       className={`p-4 rounded-xl border-2 text-start transition-all ${
                         selected
-                          ? "border-indigo-600 bg-indigo-600/5"
+                          ? "border-amber-600 bg-amber-600/5"
                           : "border-slate-200 bg-white hover:border-slate-300"
                       }`}>
                       <div className="text-2xl mb-1">{uc.icon}</div>
-                      <div className={`text-sm font-medium ${selected ? "text-indigo-600 dark:text-indigo-400" : "text-slate-700"}`}>
+                      <div className={`text-sm font-medium ${selected ? "text-amber-600 dark:text-amber-400" : "text-slate-700"}`}>
                         {isArabic ? uc.ar : uc.en}
                       </div>
                     </button>
@@ -255,7 +255,7 @@ export default function OnboardingPage() {
                     onChange={e => setPhone(e.target.value.replace(/\D/g, ""))}
                     placeholder="5XXXXXXXX"
                     maxLength={9}
-                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600/30 text-slate-800 font-mono"
+                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-slate-800 font-mono"
                   />
                 </div>
               </div>
@@ -308,11 +308,11 @@ export default function OnboardingPage() {
                     <h2 className="text-2xl font-bold text-slate-800">
                       {t("خلصنا أول شي لك 👍", "Done — your first item is ready 👍")}
                     </h2>
-                    <p className="text-indigo-600 dark:text-indigo-400 font-semibold mt-2">
+                    <p className="text-amber-600 dark:text-amber-400 font-semibold mt-2">
                       {isArabic ? createdItem.titleAr : createdItem.titleEn}
                     </p>
                   </div>
-                  <div className="bg-indigo-600/5 border border-indigo-600/15 rounded-2xl p-4 text-sm text-slate-600 leading-relaxed">
+                  <div className="bg-amber-600/5 border border-amber-600/15 rounded-2xl p-4 text-sm text-slate-600 leading-relaxed">
                     {t(
                       "تقدر تعدله، تكمله، أو تضيف المزيد — أنا موجود لما تحتاجني 👌",
                       "You can edit it, complete it, or add more — I'm here when you need me 👌"
@@ -370,25 +370,25 @@ export default function OnboardingPage() {
                 {isArabic ? (
                   <>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg text-xs font-mono">وش عندي اليوم؟</span>
+                      <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">وش عندي اليوم؟</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg text-xs font-mono">ذكرني بالموعد الساعة 4</span>
+                      <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">ذكرني بالموعد الساعة 4</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg text-xs font-mono">رتب لي يومي</span>
+                      <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">رتب لي يومي</span>
                     </div>
                   </>
                 ) : (
                   <>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg text-xs font-mono">What do I have today?</span>
+                      <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">What do I have today?</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg text-xs font-mono">Remind me at 4pm</span>
+                      <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">Remind me at 4pm</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                      <span className="bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-lg text-xs font-mono">Plan my day</span>
+                      <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">Plan my day</span>
                     </div>
                   </>
                 )}

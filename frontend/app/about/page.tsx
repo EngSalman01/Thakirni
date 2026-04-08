@@ -26,19 +26,19 @@ export default function AboutPage() {
         className="relative pt-36 pb-28 overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, #1a2a6c 0%, #2552ca 45%, #ad1d7f 80%, #fd65c2 100%)",
+            "linear-gradient(135deg, #92400e 0%, #D97706 45%, #F59E0B 80%, #FBBF24 100%)",
         }}
       >
         {/* Blobs */}
         <motion.div
           className="absolute top-10 left-16 w-72 h-72 rounded-full blur-3xl opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #fd65c2, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #FBBF24, transparent 70%)" }}
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-10 right-16 w-60 h-60 rounded-full blur-3xl opacity-15 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #2552ca, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #D97706, transparent 70%)" }}
           animate={{ y: [0, 20, 0] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
@@ -92,7 +92,7 @@ export default function AboutPage() {
               <div
                 className="relative w-72 h-72 rounded-3xl overflow-hidden shadow-2xl"
                 style={{
-                  background: "linear-gradient(135deg, #1a2a6c 0%, #2552ca 50%, #ad1d7f 100%)",
+                  background: "linear-gradient(135deg, #92400e 0%, #D97706 50%, #F59E0B 100%)",
                 }}
               >
                 {/* Initials */}
@@ -122,7 +122,7 @@ export default function AboutPage() {
               <div>
                 <p
                   className="text-xs font-bold uppercase tracking-widest font-label mb-3"
-                  style={{ color: "#2552ca" }}
+                  style={{ color: "#D97706" }}
                 >
                   {t("من نحن", "About")}
                 </p>
@@ -154,7 +154,7 @@ export default function AboutPage() {
                   <span
                     key={label}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-label font-semibold"
-                    style={{ background: "rgba(37,82,202,0.08)", color: "#2552ca", border: "1px solid rgba(37,82,202,0.15)" }}
+                    style={{ background: "rgba(217,119,6,0.08)", color: "#D97706", border: "1px solid rgba(217,119,6,0.15)" }}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {label}
@@ -170,7 +170,7 @@ export default function AboutPage() {
       <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
         <div className="max-w-5xl mx-auto px-8">
           <motion.div {...FADE_UP} className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-widest font-label mb-3" style={{ color: "#2552ca" }}>
+            <p className="text-xs font-bold uppercase tracking-widest font-label mb-3" style={{ color: "#D97706" }}>
               {t("رسالتنا", "Mission")}
             </p>
             <h2 className="text-4xl font-headline font-extrabold text-foreground">
@@ -186,7 +186,7 @@ export default function AboutPage() {
                 titleEn: "A Real Second Brain",
                 textAr: "مش مجرد تطبيق مهام. ذكرني يحفظ أفكارك، صوتك، صورك، وروابطك في مكان واحد.",
                 textEn: "Not just a task app. Thakirni stores your thoughts, voice notes, images and links in one place.",
-                color: "#2552ca",
+                color: "#D97706",
               },
               {
                 icon: Heart,
@@ -194,7 +194,7 @@ export default function AboutPage() {
                 titleEn: "Made for Arabic Speakers",
                 textAr: "كل كلمة في الواجهة كُتبت بلهجة سعودية واضحة. لأن التطبيقات العربية تستاهل أحسن.",
                 textEn: "Every word in the interface was written in natural Saudi Arabic. Arabic speakers deserve better.",
-                color: "#ad1d7f",
+                color: "#F59E0B",
               },
               {
                 icon: Rocket,
@@ -245,8 +245,8 @@ export default function AboutPage() {
                   whileTap={{ scale: 0.97 }}
                   className="px-8 py-3 rounded-full text-white font-bold text-sm font-label shadow-lg"
                   style={{
-                    background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)",
-                    boxShadow: "0 4px 24px rgba(37,82,202,0.35)",
+                    background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)",
+                    boxShadow: "0 4px 24px rgba(217,119,6,0.35)",
                   }}
                 >
                   {t("تواصل معي", "Contact Me")}

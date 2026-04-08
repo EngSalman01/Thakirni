@@ -24,7 +24,7 @@ export function BulkActionBar({ selectedCount, onDelete, onClear, deleting }: Bu
           exit={{ opacity: 0, y: 20 }}
           className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl"
         >
-          <CheckSquare className="w-4 h-4 text-[#fd65c2]" />
+          <CheckSquare className="w-4 h-4 text-amber-400" />
           <span className="text-sm font-label font-medium">
             {selectedCount} {t("محدد", "selected")}
           </span>

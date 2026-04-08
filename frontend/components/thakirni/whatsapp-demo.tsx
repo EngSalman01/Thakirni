@@ -89,7 +89,7 @@ export function WhatsAppDemo() {
   const { t, isArabic } = useLanguage()
 
   return (
-    <section className="py-16 sm:py-32 bg-white dark:bg-[#0B0F1A] overflow-hidden" id="demo">
+    <section className="py-16 sm:py-32 bg-white dark:bg-[#0E0B07] overflow-hidden" id="demo">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
@@ -101,7 +101,7 @@ export function WhatsAppDemo() {
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-6"
           >
-            <p className="text-sm font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-400">
+            <p className="text-sm font-semibold uppercase tracking-widest text-amber-500 dark:text-amber-400">
               {t("جرّب على واتساب", "Try on WhatsApp")}
             </p>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
@@ -138,7 +138,7 @@ export function WhatsAppDemo() {
               ].map((f) => (
                 <span
                   key={f.en}
-                  className="px-3 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800"
+                  className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800"
                 >
                   {isArabic ? f.ar : f.en}
                 </span>
@@ -156,7 +156,7 @@ export function WhatsAppDemo() {
           >
             <div className="relative w-full max-w-sm">
               {/* Glow */}
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500/20 via-violet-500/10 to-pink-500/15 blur-2xl scale-110 pointer-events-none" />
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-500/10 to-amber-500/15 blur-2xl scale-110 pointer-events-none" />
 
               {/* Phone frame */}
               <div className="relative bg-white dark:bg-[#111b21] rounded-3xl shadow-2xl border border-slate-100 dark:border-white/8 overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>

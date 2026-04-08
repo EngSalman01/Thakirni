@@ -44,7 +44,7 @@ const PLANS: PlanCard[] = [
     nameAr: "برو",
     price: "29.99 SAR/mo",
     badge: "Most Popular",
-    accent: "#2552ca",
+    accent: "#D97706",
     features: [
       { en: "100 plans per day", ar: "١٠٠ خطة يومياً" },
       { en: "1,000 memories", ar: "١٠٠٠ ذاكرة" },
@@ -60,7 +60,7 @@ const PLANS: PlanCard[] = [
     price: "59.99 SAR/mo",
     noteSuffixEn: "per user",
     noteSuffixAr: "لكل مستخدم",
-    accent: "#ad1d7f",
+    accent: "#F59E0B",
     features: [
       { en: "Everything unlimited", ar: "كل شيء غير محدود" },
       { en: "Shared memories & notes", ar: "ذكريات وملاحظات مشتركة" },
@@ -311,7 +311,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                       onClick={() => handleUpgrade(plan.id as "pro" | "teams")}
                       disabled={!!processing}
                       className="w-full rounded-xl text-white font-bold"
-                      style={{ background: `linear-gradient(135deg, #2552ca, ${plan.accent})` }}
+                      style={{ background: `linear-gradient(135deg, #D97706, ${plan.accent})` }}
                     >
                       {processing === plan.id ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
                       {t(`ترقية إلى ${t(plan.nameAr, plan.nameEn)}`, `Upgrade to ${plan.nameEn}`)}

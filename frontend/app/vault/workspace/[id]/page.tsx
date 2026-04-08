@@ -36,7 +36,7 @@ const ROLE_ICONS = {
 
 function roleColor(role: string) {
   if (role === "owner")  return "bg-amber-100 text-amber-700"
-  if (role === "admin")  return "bg-purple-100 text-purple-700"
+  if (role === "admin")  return "bg-orange-100 text-orange-700"
   return "bg-slate-100 text-slate-600"
 }
 
@@ -106,7 +106,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400" />
+              <Loader2 className="w-6 h-6 animate-spin text-amber-600 dark:text-amber-400" />
             </div>
           ) : !workspace ? (
             <div className="text-center py-20 text-slate-400">
@@ -142,7 +142,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                 className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                  <Users className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   <h2 className="font-bold text-slate-800">
                     {t("الأعضاء", "Members")}
                   </h2>
@@ -156,7 +156,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                         key={member.id}
                         className="flex items-center gap-3 bg-white rounded-xl px-4 py-3"
                       >
-                        <div className="w-9 h-9 rounded-full bg-indigo-600/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm flex-shrink-0 overflow-hidden">
+                        <div className="w-9 h-9 rounded-full bg-amber-600/10 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0 overflow-hidden">
                           {member.profile?.avatar_url
                             ? <img src={member.profile.avatar_url} className="w-full h-full object-cover" alt="" />
                             : (member.profile?.full_name?.[0] ?? "U").toUpperCase()
@@ -201,7 +201,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                   className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <UserPlus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <UserPlus className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                     <h2 className="font-bold text-slate-800">
                       {t("دعوة عضو", "Invite Member")}
                     </h2>
@@ -213,7 +213,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                       onChange={e => setInviteEmail(e.target.value)}
                       placeholder={t("البريد الإلكتروني", "Email address")}
                       required
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/30"
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/30"
                     />
                     <select
                       value={inviteRole}

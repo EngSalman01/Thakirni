@@ -81,7 +81,7 @@ export function AffiliateCard() {
   if (loading) {
     return (
       <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 flex items-center justify-center">
-        <Loader2 className="w-5 h-5 animate-spin text-indigo-600 dark:text-indigo-400" />
+        <Loader2 className="w-5 h-5 animate-spin text-amber-600 dark:text-amber-400" />
       </div>
     )
   }
@@ -94,8 +94,8 @@ export function AffiliateCard() {
         className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 space-y-5"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
             <h3 className="font-bold text-slate-800">{t("برنامج الشركاء", "Affiliate Program")}</h3>
@@ -132,7 +132,7 @@ export function AffiliateCard() {
             value={payoutEmail}
             onChange={e => setPayoutEmail(e.target.value)}
             placeholder="paypal@example.com"
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30"
           />
         </div>
 
@@ -156,8 +156,8 @@ export function AffiliateCard() {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
             <h3 className="font-bold text-slate-800">{t("برنامج الشركاء", "Affiliate Program")}</h3>
@@ -179,7 +179,7 @@ export function AffiliateCard() {
           const Icon = stat.icon
           return (
             <div key={stat.label} className="bg-white rounded-xl p-4 text-center">
-              <Icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mx-auto mb-1.5" />
+              <Icon className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1.5" />
               <div className="font-bold text-slate-800">{String(stat.val)}</div>
               <div className="text-xs text-slate-500 mt-0.5">{stat.label}</div>
             </div>
@@ -200,7 +200,7 @@ export function AffiliateCard() {
           />
           <button
             onClick={copyLink}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white hover:opacity-90 transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl bg-amber-600 text-white hover:opacity-90 transition-all flex items-center gap-1.5"
           >
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           </button>

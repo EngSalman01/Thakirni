@@ -114,7 +114,7 @@ function StatCard({
 
       {/* Decorative glow */}
       <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full blur-2xl opacity-20"
-        style={{ background: iconColor.includes("indigo") ? "#4F46E5" : iconColor.includes("violet") ? "#7C3AED" : iconColor.includes("pink") ? "#EC4899" : iconColor.includes("emerald") ? "#10b981" : "#f59e0b" }} />
+        style={{ background: iconColor.includes("amber") ? "#D97706" : iconColor.includes("orange") ? "#F59E0B" : iconColor.includes("yellow") ? "#FBBF24" : iconColor.includes("emerald") ? "#10b981" : "#f59e0b" }} />
     </motion.div>
   );
 }
@@ -132,7 +132,7 @@ function InsightCard({
 }) {
   const config = {
     warning: { icon: AlertTriangle, bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", label: "Warning" },
-    insight: { icon: TrendingUp,    bg: "bg-indigo-500/10 border-indigo-500/20", text: "text-indigo-400", label: "Insight" },
+    insight: { icon: TrendingUp,    bg: "bg-amber-500/10 border-amber-500/20", text: "text-amber-400", label: "Insight" },
     tip:     { icon: Lightbulb,     bg: "bg-emerald-500/10 border-emerald-500/20", text: "text-emerald-400", label: "Tip" },
   }[type];
 
@@ -174,7 +174,7 @@ function buildChartData(total: number) {
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1a1f2e] border border-white/10 rounded-xl px-3 py-2 shadow-xl text-xs">
+    <div className="bg-[#1A1007] border border-white/10 rounded-xl px-3 py-2 shadow-xl text-xs">
       <p className="text-slate-400 mb-1 font-medium">{label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} className="font-bold text-white">
@@ -232,9 +232,9 @@ export default function AdminDashboardPage() {
   }, [users, search]);
 
   const statCards = [
-    { icon: Users,         label: "Total Users",      value: stats?.total ?? 0,         change: 12,  iconColor: "text-indigo-400",  iconBg: "bg-indigo-500/15" },
-    { icon: UserCheck,     label: "Pro Users",         value: stats?.pro ?? 0,            change: 8,   iconColor: "text-violet-400",  iconBg: "bg-violet-500/15" },
-    { icon: Building2,     label: "Teams Users",       value: stats?.teams ?? 0,          change: 5,   iconColor: "text-pink-400",    iconBg: "bg-pink-500/15"   },
+    { icon: Users,         label: "Total Users",      value: stats?.total ?? 0,         change: 12,  iconColor: "text-amber-400",  iconBg: "bg-amber-500/15" },
+    { icon: UserCheck,     label: "Pro Users",         value: stats?.pro ?? 0,            change: 8,   iconColor: "text-amber-400",  iconBg: "bg-amber-500/15" },
+    { icon: Building2,     label: "Teams Users",       value: stats?.teams ?? 0,          change: 5,   iconColor: "text-amber-400",    iconBg: "bg-amber-500/15"   },
     { icon: UserMinus,     label: "Free Users",        value: stats?.free ?? 0,           change: -3,  iconColor: "text-slate-400",   iconBg: "bg-slate-500/15"  },
     { icon: CalendarPlus,  label: "New Today",         value: stats?.newToday ?? 0,       change: 20,  iconColor: "text-emerald-400", iconBg: "bg-emerald-500/15"},
     { icon: TrendingUp,    label: "New This Week",     value: stats?.newThisWeek ?? 0,    change: 15,  iconColor: "text-emerald-400", iconBg: "bg-emerald-500/15"},
@@ -303,28 +303,28 @@ export default function AdminDashboardPage() {
               <p className="text-xs text-slate-500 mt-0.5">Users & actions last 7 days</p>
             </div>
             <div className="flex items-center gap-4 text-[11px] text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" />Users</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-pink-500 inline-block" />Actions</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Users</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Actions</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
               <defs>
                 <linearGradient id="gUsers" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#D97706" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#D97706" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gActions" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#EC4899" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#EC4899" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#FB923C" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#FB923C" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
               <XAxis dataKey="day" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="users"   stroke="#4F46E5" strokeWidth={2} fill="url(#gUsers)"   dot={false} />
-              <Area type="monotone" dataKey="actions" stroke="#EC4899" strokeWidth={2} fill="url(#gActions)" dot={false} />
+              <Area type="monotone" dataKey="users"   stroke="#D97706" strokeWidth={2} fill="url(#gUsers)"   dot={false} />
+              <Area type="monotone" dataKey="actions" stroke="#FB923C" strokeWidth={2} fill="url(#gActions)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         </motion.div>
@@ -337,8 +337,8 @@ export default function AdminDashboardPage() {
           className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 flex flex-col gap-3"
         >
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-500/15 flex items-center justify-center">
-              <Lightbulb className="w-4 h-4 text-indigo-400" />
+            <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center">
+              <Lightbulb className="w-4 h-4 text-amber-400" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-white">AI Insights</h2>
@@ -373,7 +373,7 @@ export default function AdminDashboardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search users…"
-              className="w-full bg-white/5 border border-white/8 rounded-xl ps-9 pe-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 transition-colors"
+              className="w-full bg-white/5 border border-white/8 rounded-xl ps-9 pe-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 transition-colors"
             />
           </div>
         </div>

@@ -56,14 +56,14 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
   const groups = Array.from(new Set(NAV_ITEMS.map((i) => i.group ?? "main")));
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-[#0B0F1A] border-r border-white/8 flex flex-col z-40">
+    <aside className="fixed inset-y-0 left-0 w-64 bg-[#0E0B07] border-r border-white/8 flex flex-col z-40">
 
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/8">
         <BrandLogo variant="full" iconSize={28} />
-        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/25">
-          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Admin Panel</span>
+        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Admin Panel</span>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                         isActive
-                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                          ? "bg-amber-600 text-white shadow-lg shadow-amber-500/25"
                           : "text-slate-400 hover:bg-white/6 hover:text-white"
                       )}
                     >

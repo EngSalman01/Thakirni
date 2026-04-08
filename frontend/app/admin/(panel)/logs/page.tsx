@@ -28,14 +28,14 @@ interface Stats {
   slowestEndpoints: { endpoint: string; avgMs: number }[];
 }
 
-function StatCard({ icon: Icon, label, value, color = "#2552ca" }: {
+function StatCard({ icon: Icon, label, value, color = "#D97706" }: {
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   label: string;
   value: string | number;
   color?: string;
 }) {
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5 flex flex-col gap-2">
+    <div className="bg-white/[0.04] rounded-2xl p-5 flex flex-col gap-2">
       <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}18` }}>
         <Icon className="w-4 h-4" style={{ color }} />
       </div>
@@ -86,7 +86,7 @@ export default function AdminLogsPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-headline font-bold text-slate-900">Request Logs</h1>
+          <h1 className="text-2xl font-headline font-bold text-white">Request Logs</h1>
           <p className="text-sm text-slate-500 font-label mt-1">Last 24h analytics</p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchLogs} className="gap-2">
@@ -101,17 +101,17 @@ export default function AdminLogsPage() {
         </div>
       ) : stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={Activity} label="Requests (24h)" value={stats.total.toLocaleString()} color="#2552ca" />
+          <StatCard icon={Activity} label="Requests (24h)" value={stats.total.toLocaleString()} color="#D97706" />
           <StatCard icon={AlertTriangle} label="Error Rate" value={`${stats.errorRate}%`} color={stats.errorRate > 5 ? "#ef4444" : "#16a34a"} />
           <StatCard icon={Zap} label="Avg Duration" value={`${stats.avgDuration}ms`} color="#f59e0b" />
-          <StatCard icon={Hash} label="Total Tokens (24h)" value={stats.totalTokens.toLocaleString()} color="#ad1d7f" />
+          <StatCard icon={Hash} label="Total Tokens (24h)" value={stats.totalTokens.toLocaleString()} color="#F59E0B" />
         </div>
       )}
 
       {/* Top / Slowest endpoints */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5">
+          <div className="bg-white/[0.04] rounded-2xl p-5">
             <h3 className="text-sm font-label font-semibold text-slate-700 mb-3">Top Endpoints (24h)</h3>
             {stats.topEndpoints.map(e => (
               <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/50 last:border-0">
@@ -120,7 +120,7 @@ export default function AdminLogsPage() {
               </div>
             ))}
           </div>
-          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5">
+          <div className="bg-white/[0.04] rounded-2xl p-5">
             <h3 className="text-sm font-label font-semibold text-slate-700 mb-3">Slowest Endpoints (24h)</h3>
             {stats.slowestEndpoints.map(e => (
               <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/50 last:border-0">
@@ -152,7 +152,7 @@ export default function AdminLogsPage() {
       </div>
 
       {/* Log Table */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+      <div className="bg-white/[0.04] rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-10 rounded-xl" />)}

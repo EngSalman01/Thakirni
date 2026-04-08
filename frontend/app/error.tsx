@@ -44,7 +44,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
               onClick={reset}
               className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
               style={{
-                background: "linear-gradient(135deg, #2552ca 0%, #ad1d7f 100%)",
+                background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)",
               }}
             >
               حاول مجدداً / Try Again
@@ -52,7 +52,7 @@ export default function GlobalError({ error, reset }: ErrorProps) {
 
             <Link
               href="/"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-white border border-indigo-600/30 transition-colors hover:bg-indigo-600/5"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-amber-600 dark:text-amber-400 bg-white border border-amber-600/30 transition-colors hover:bg-amber-600/5"
             >
               العودة للرئيسية / Go Home
             </Link>

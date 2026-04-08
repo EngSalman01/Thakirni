@@ -60,7 +60,7 @@ export function DailyProgress() {
             {/* Progress row */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
-                <Target className="w-4 h-4 text-indigo-500 shrink-0" />
+                <Target className="w-4 h-4 text-amber-500 shrink-0" />
                 <p className="text-sm font-label font-semibold text-slate-700 truncate">
                   {hasPlans
                     ? isArabic
@@ -89,7 +89,7 @@ export function DailyProgress() {
                   transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
                   style={{ originX: 0 }}
                   className={`absolute inset-0 rounded-full ${
-                    pct >= 80 ? "bg-emerald-500" : pct >= 40 ? "bg-indigo-500" : "bg-pink-500"
+                    pct >= 80 ? "bg-emerald-500" : pct >= 40 ? "bg-amber-500" : "bg-amber-500"
                   }`}
                 />
               </div>
@@ -99,7 +99,7 @@ export function DailyProgress() {
             {!hasPlans && (
               <Link
                 href="/vault/plans"
-                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline"
               >
                 {isArabic ? "أضف مهامك اليوم →" : "Add today's tasks →"}
               </Link>

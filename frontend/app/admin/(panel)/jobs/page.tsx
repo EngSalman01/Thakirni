@@ -102,7 +102,7 @@ export default function AdminJobsPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-headline font-bold text-slate-900">Job Queue</h1>
+          <h1 className="text-2xl font-headline font-bold text-white">Job Queue</h1>
           <p className="text-sm text-slate-500 font-label mt-1">{total.toLocaleString()} jobs</p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchJobs} className="gap-2">
@@ -120,7 +120,7 @@ export default function AdminJobsPage() {
         </TabsList>
       </Tabs>
 
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+      <div className="bg-white/[0.04] rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
@@ -146,7 +146,7 @@ export default function AdminJobsPage() {
                         <code className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded font-mono">{job.type}</code>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-label font-semibold ${STATUS_COLORS[job.status] ?? "bg-slate-100 text-slate-700"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-label font-semibold ${STATUS_COLORS[job.status] ?? "bg-slate-100 text-slate-300"}`}>
                           <Icon className="w-3 h-3" />
                           {job.status}
                         </span>

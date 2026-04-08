@@ -10,8 +10,8 @@ const STATUSES = [
   { value: "",              label: "All",            color: "bg-slate-100 text-slate-600" },
   { value: "new",           label: "New",            color: "bg-blue-100 text-blue-700" },
   { value: "contacted",     label: "Contacted",      color: "bg-yellow-100 text-yellow-700" },
-  { value: "qualified",     label: "Qualified",      color: "bg-purple-100 text-purple-700" },
-  { value: "demo_scheduled",label: "Demo Scheduled", color: "bg-indigo-100 text-indigo-700" },
+  { value: "qualified",     label: "Qualified",      color: "bg-orange-100 text-orange-700" },
+  { value: "demo_scheduled",label: "Demo Scheduled", color: "bg-amber-100 text-amber-700" },
   { value: "closed_won",    label: "Won ✓",          color: "bg-green-100 text-green-700" },
   { value: "closed_lost",   label: "Lost",           color: "bg-red-100 text-red-700" },
 ]
@@ -97,7 +97,7 @@ export default function AdminLeadsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <Building2 className="w-6 h-6 text-amber-600 dark:text-amber-400" />
             Enterprise Leads
           </h1>
           <p className="text-slate-500 text-sm mt-1">{total} total leads in pipeline</p>
@@ -120,10 +120,10 @@ export default function AdminLeadsPage() {
               key={s.value}
               onClick={() => { setStatusFilter(statusFilter === s.value ? "" : s.value); setPage(0) }}
               className={`p-3 rounded-xl text-center transition-all border-2 ${
-                statusFilter === s.value ? "border-indigo-600 bg-indigo-600/5" : "border-transparent bg-white"
+                statusFilter === s.value ? "border-amber-600 bg-amber-600/5" : "border-transparent bg-white"
               }`}
             >
-              <div className="text-lg font-bold text-slate-800">{count}</div>
+              <div className="text-lg font-bold text-slate-200">{count}</div>
               <div className={`text-xs font-semibold px-1.5 py-0.5 rounded-full inline-block mt-1 ${s.color}`}>
                 {s.label}
               </div>
@@ -136,7 +136,7 @@ export default function AdminLeadsPage() {
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-6 h-6 animate-spin text-indigo-600 dark:text-indigo-400" />
+            <Loader2 className="w-6 h-6 animate-spin text-amber-600 dark:text-amber-400" />
           </div>
         ) : leads.length === 0 ? (
           <div className="text-center py-20 text-slate-400">
@@ -153,7 +153,7 @@ export default function AdminLeadsPage() {
                     onClick={() => setExpanded(expanded === lead.id ? null : lead.id)}
                     className="flex-1 min-w-0 flex items-center gap-4 text-start"
                   >
-                    <div className="w-9 h-9 rounded-full bg-indigo-600/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-amber-600/10 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0">
                       {lead.name[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -172,13 +172,13 @@ export default function AdminLeadsPage() {
                     <select
                       value={lead.status}
                       onChange={e => updateStatus(lead.id, e.target.value)}
-                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus:ring-2 focus:ring-indigo-600/30 cursor-pointer ${statusColor(lead.status)}`}
+                      className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border-0 focus:ring-2 focus:ring-amber-600/30 cursor-pointer ${statusColor(lead.status)}`}
                     >
                       {STATUSES.filter(s => s.value).map(s => (
                         <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
-                    {saving === lead.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600 dark:text-indigo-400" />}
+                    {saving === lead.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />}
                     <button
                       onClick={() => deleteLead(lead.id)}
                       className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
@@ -200,7 +200,7 @@ export default function AdminLeadsPage() {
                         </a>
                       )}
                       <a href={`mailto:${lead.email}`}
-                        className="flex items-center gap-2 text-sm text-slate-600 hover:text-indigo-600 dark:text-indigo-400 transition-colors">
+                        className="flex items-center gap-2 text-sm text-slate-600 hover:text-amber-600 dark:text-amber-400 transition-colors">
                         <Mail className="w-4 h-4" />
                         {lead.email}
                       </a>
@@ -218,7 +218,7 @@ export default function AdminLeadsPage() {
 
                     {lead.use_case && (
                       <div className="text-sm">
-                        <span className="font-semibold text-slate-700">Use case: </span>
+                        <span className="font-semibold text-slate-300">Use case: </span>
                         <span className="text-slate-600">{lead.use_case}</span>
                       </div>
                     )}
@@ -240,12 +240,12 @@ export default function AdminLeadsPage() {
                         defaultValue={lead.notes ?? ""}
                         onChange={e => setEditNotes(n => ({ ...n, [lead.id]: e.target.value }))}
                         placeholder="Add notes about this lead..."
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-600/30 resize-none"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 resize-none"
                       />
                       <button
                         onClick={() => saveNotes(lead.id)}
                         disabled={saving === lead.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-60"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold hover:opacity-90 transition-all disabled:opacity-60"
                       >
                         {saving === lead.id
                           ? <Loader2 className="w-3 h-3 animate-spin" />

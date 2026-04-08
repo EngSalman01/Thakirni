@@ -46,7 +46,7 @@ export default function HabitsPage() {
   const { data: habits = [], mutate, isLoading: habitsLoading, error: habitsError } = useSWR(`/api/habits`, fetchHabits, { refreshInterval: 60000 })
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" })
+  const [form, setForm] = useState({ name: "", icon: "✅", color: "#D97706", frequency: "daily", category: "general" })
 
   async function getSession() {
     const supabase = createClient()
@@ -60,7 +60,7 @@ export default function HabitsPage() {
     const res = await fetch(`/api/habits`, {
       method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(form)
     })
-    if (res.ok) { toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉")); setOpen(false); setForm({ name: "", icon: "✅", color: "#2552ca", frequency: "daily", category: "general" }); mutate() }
+    if (res.ok) { toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉")); setOpen(false); setForm({ name: "", icon: "✅", color: "#D97706", frequency: "daily", category: "general" }); mutate() }
     else toast.error(t("حدث خطأ", "An error occurred"))
   }
 
@@ -100,8 +100,8 @@ export default function HabitsPage() {
         {/* ── HERO ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">
           <ParticleLayer />
-          <div className="absolute -top-20 right-0 w-80 h-80 bg-violet-600/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-600/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-20 right-0 w-80 h-80 bg-amber-600/8 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/5 rounded-full blur-[80px] pointer-events-none" />
 
           <div className="max-w-7xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -118,7 +118,7 @@ export default function HabitsPage() {
                   {[
                     { value: completedCount, label: t("مكتملة اليوم", "Done today"),  color: "bg-emerald-50 text-emerald-700" },
                     { value: total - completedCount, label: t("متبقية", "Remaining"), color: "bg-amber-50 text-amber-700" },
-                    { value: total, label: t("مجموع العادات", "Total habits"),          color: "bg-[#ffd8e9] text-violet-600 dark:text-violet-400" },
+                    { value: total, label: t("مجموع العادات", "Total habits"),          color: "bg-[#ffd8e9] text-amber-600 dark:text-amber-400" },
                   ].map(({ value, label, color }) => (
                     <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
                       <span className="text-xl font-headline font-extrabold">{value}</span>
@@ -144,7 +144,7 @@ export default function HabitsPage() {
                         strokeDasharray={`${total > 0 ? (completedCount / total) * 502.7 : 0} 502.7`} strokeLinecap="round" />
                       <defs>
                         <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#2552ca" /><stop offset="100%" stopColor="#fd65c2" />
+                          <stop offset="0%" stopColor="#D97706" /><stop offset="100%" stopColor="#FBBF24" />
                         </linearGradient>
                       </defs>
                     </svg>
@@ -190,7 +190,7 @@ export default function HabitsPage() {
             ) : habits.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
                 className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
-                <Flame className="w-16 h-16 mx-auto mb-4 text-violet-600 dark:text-violet-400/30" />
+                <Flame className="w-16 h-16 mx-auto mb-4 text-amber-600 dark:text-amber-400/30" />
                 <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا يوجد عادات بعد", "No habits yet")}</h2>
                 <p className="text-slate-500 mb-8">{t("أضف عادتك الأولى وابدأ رحلتك!", "Add your first habit and start your journey!")}</p>
                 <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
@@ -209,7 +209,7 @@ export default function HabitsPage() {
                     className={`relative bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
                     onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}>
                     {/* Color stripe */}
-                    <div className="h-2 w-full" style={{ background: (h.color as string) || "#2552ca" }} />
+                    <div className="h-2 w-full" style={{ background: (h.color as string) || "#D97706" }} />
                     <div className="p-10">
                       <div className="flex items-start justify-between mb-4">
                         <span className="text-5xl">{h.icon as string}</span>
@@ -237,7 +237,7 @@ export default function HabitsPage() {
                     </div>
                     {/* Decorative blob */}
                     <div className="absolute right-0 bottom-0 w-1/2 translate-y-6 translate-x-6 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-20 pointer-events-none">
-                      <div className="w-full h-24 rounded-tl-2xl" style={{ background: `linear-gradient(135deg, ${(h.color as string)||"#2552ca"}40, transparent)` }} />
+                      <div className="w-full h-24 rounded-tl-2xl" style={{ background: `linear-gradient(135deg, ${(h.color as string)||"#D97706"}40, transparent)` }} />
                     </div>
                   </motion.div>
                 ))}
@@ -247,9 +247,9 @@ export default function HabitsPage() {
                   whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.7, delay: habits.length * 0.08, ease: [0.2,1,0.3,1] }}>
                   <button onClick={() => setOpen(true)}
-                    className="w-full h-full min-h-[200px] bg-white border-2 border-dashed border-[#e4e2e1] rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-indigo-600/50 hover:bg-slate-50 dark:bg-white/[0.03] transition-all group">
+                    className="w-full h-full min-h-[200px] bg-white border-2 border-dashed border-[#e4e2e1] rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-amber-600/50 hover:bg-slate-50 dark:bg-white/[0.03] transition-all group">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Plus className="w-7 h-7 text-indigo-600 dark:text-indigo-400" />
+                      <Plus className="w-7 h-7 text-amber-600 dark:text-amber-400" />
                     </div>
                     <span className="font-headline font-bold text-slate-600">{t("أضف عادة", "Add habit")}</span>
                   </button>
@@ -275,7 +275,7 @@ export default function HabitsPage() {
                 <div className="flex flex-wrap gap-2">
                   {HABIT_ICONS.map(icon => (
                     <button key={icon} type="button" onClick={() => setForm({...form, icon})}
-                      className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-indigo-600 bg-indigo-600/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
+                      className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-amber-600 bg-amber-600/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
                   ))}
                 </div>
               </div>
@@ -286,7 +286,7 @@ export default function HabitsPage() {
                   <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
                 </SelectContent>
               </Select>
-              <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#2552ca,#fd65c2)" }}>{t("إضافة العادة", "Add Habit")}</Button>
+              <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#D97706,#FBBF24)" }}>{t("إضافة العادة", "Add Habit")}</Button>
             </form>
           </DialogContent>
         </Dialog>

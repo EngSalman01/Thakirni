@@ -8,9 +8,9 @@ export default function MaintenancePage() {
         <BrandLogo />
 
         <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 space-y-4">
-          <div className="w-16 h-16 bg-indigo-600/10 rounded-2xl flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 bg-amber-600/10 rounded-2xl flex items-center justify-center mx-auto">
             <svg
-              className="w-8 h-8 text-indigo-600 dark:text-indigo-400"
+              className="w-8 h-8 text-amber-600 dark:text-amber-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -35,7 +35,7 @@ export default function MaintenancePage() {
 
         <p className="text-xs text-slate-400 font-label">
           Are you an admin?{" "}
-          <Link href="/auth" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+          <Link href="/auth" className="text-amber-600 dark:text-amber-400 hover:underline">
             Sign in here
           </Link>
         </p>

@@ -26,14 +26,14 @@ const PRESET_COLORS = [
   {
     value: "#6366f1",
     name: "Indigo",
-    gradient: "from-indigo-500 to-indigo-600",
+    gradient: "from-amber-500 to-amber-600",
   },
   {
     value: "#8b5cf6",
     name: "Purple",
-    gradient: "from-purple-500 to-purple-600",
+    gradient: "from-orange-500 to-orange-600",
   },
-  { value: "#ec4899", name: "Pink", gradient: "from-pink-500 to-pink-600" },
+  { value: "#ec4899", name: "Pink", gradient: "from-amber-500 to-amber-600" },
   { value: "#f43f5e", name: "Rose", gradient: "from-rose-500 to-rose-600" },
   { value: "#0ea5e9", name: "Sky", gradient: "from-sky-500 to-sky-600" },
   { value: "#14b8a6", name: "Teal", gradient: "from-teal-500 to-teal-600" },
@@ -93,10 +93,10 @@ export function CreateProjectDialog({
       <DialogContent className="sm:max-w-[540px] border-border/50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-xl">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
               <FolderPlus className="w-6 h-6 text-white" />
             </div>
-            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
               Create New Project
             </span>
           </DialogTitle>
@@ -113,7 +113,7 @@ export function CreateProjectDialog({
                 htmlFor="name"
                 className="text-sm font-medium flex items-center gap-2"
               >
-                <Sparkles className="w-4 h-4 text-purple-500" />
+                <Sparkles className="w-4 h-4 text-orange-500" />
                 Project Name <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -123,13 +123,13 @@ export function CreateProjectDialog({
                 onChange={(e) => setName(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-11 border-border/50 focus:border-purple-500"
+                className="h-11 border-border/50 focus:border-orange-500"
               />
             </div>
 
             <div className="grid gap-3">
               <Label className="text-sm font-medium flex items-center gap-2">
-                <Palette className="w-4 h-4 text-pink-500" />
+                <Palette className="w-4 h-4 text-amber-500" />
                 Project Color
               </Label>
               <div className="grid grid-cols-8 gap-2.5">
@@ -196,7 +196,7 @@ export function CreateProjectDialog({
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg shadow-purple-500/20"
+              className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg shadow-orange-500/20"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Project

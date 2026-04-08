@@ -39,7 +39,7 @@ function ChannelBadge({ channel }: { channel: string }) {
   const styles: Record<string, string> = {
     whatsapp: "bg-green-100 text-green-700",
     banner: "bg-blue-100 text-blue-700",
-    both: "bg-purple-100 text-purple-700",
+    both: "bg-orange-100 text-orange-700",
   };
   const labels: Record<string, string> = {
     whatsapp: "WhatsApp",
@@ -152,14 +152,14 @@ export default function AnnouncementsPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-headline font-bold text-slate-900">Announcements</h1>
+          <h1 className="text-2xl font-headline font-bold text-white">Announcements</h1>
           <p className="text-sm text-slate-500 font-label mt-1">
             Send messages and banners to users
           </p>
         </div>
         <Button
           onClick={() => { resetForm(); setCreateOpen(true); }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-label"
+          className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-label"
         >
           <Plus className="w-4 h-4 mr-2" />
           Create Announcement
@@ -167,7 +167,7 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+      <div className="bg-white/[0.04] rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -196,7 +196,7 @@ export default function AnnouncementsPage() {
                       key={a.id}
                       className="border-b border-[#e4e2e1]/50 last:border-0 hover:bg-white/50 transition-colors"
                     >
-                      <td className="py-3 px-4 font-label font-medium text-slate-800">
+                      <td className="py-3 px-4 font-label font-medium text-slate-200">
                         {a.title}
                       </td>
                       <td className="py-3 px-4 text-slate-500 text-xs capitalize">
@@ -304,7 +304,7 @@ export default function AnnouncementsPage() {
             <Button
               onClick={handleCreate}
               disabled={submitting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="bg-amber-600 hover:bg-amber-700 text-white"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Send
@@ -329,7 +329,7 @@ export default function AnnouncementsPage() {
                   → {targetLabel(viewAnnouncement.target)}
                 </span>
               </div>
-              <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 text-sm text-slate-700 font-label whitespace-pre-wrap">
+              <div className="bg-white/[0.04] rounded-xl p-4 text-sm text-slate-700 font-label whitespace-pre-wrap">
                 {viewAnnouncement.message}
               </div>
               <p className="text-xs text-slate-400">

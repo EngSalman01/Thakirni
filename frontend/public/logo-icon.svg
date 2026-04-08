@@ -1,25 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <!-- Primary brand gradient 135° -->
+    <!-- Saffron & Obsidian brand gradient 135° -->
     <linearGradient id="a" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4F46E5"/>
-      <stop offset=".4" stop-color="#7C3AED"/>
-      <stop offset="1" stop-color="#EC4899"/>
+      <stop stop-color="#FBBF24"/>
+      <stop offset=".45" stop-color="#D97706"/>
+      <stop offset="1" stop-color="#92400E"/>
     </linearGradient>
     <!-- Glass shine — top-left radial highlight -->
     <radialGradient id="b" cx="36%" cy="26%" r="58%" gradientUnits="objectBoundingBox">
-      <stop stop-color="#fff" stop-opacity=".30"/>
+      <stop stop-color="#fff" stop-opacity=".32"/>
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </radialGradient>
     <!-- Bottom depth shadow -->
     <linearGradient id="c" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
       <stop stop-color="#000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".18"/>
     </linearGradient>
-    <!-- Soft glow for spark -->
+    <!-- Amber glow for spark -->
     <filter id="glow" x="-18%" y="-18%" width="136%" height="136%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2.5" result="b"/>
-      <feFlood flood-color="#EC4899" flood-opacity=".45" result="c"/>
+      <feFlood flood-color="#FBBF24" flood-opacity=".50" result="c"/>
       <feComposite in="c" in2="b" operator="in" result="d"/>
       <feMerge><feMergeNode in="d"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
@@ -33,17 +33,14 @@
   <rect width="64" height="64" rx="16" fill="url(#c)"/>
 
   <!-- 4-point spark (outer r=13.5, inner r=5.3 @45°, rotated 12° for "alive" feel) -->
-  <!-- Inner concave: 5.3×cos45° = 3.75 -->
-  <!-- Path: top(32,18.5) → UR-inner(35.75,28.25) → right(45.5,32) → LR-inner(35.75,35.75)
-             → bottom(32,45.5) → LL-inner(28.25,35.75) → left(18.5,32) → UL-inner(28.25,28.25) -->
   <g transform="rotate(12 32 32)" filter="url(#glow)">
     <path d="M32 18.5 35.75 28.25 45.5 32 35.75 35.75 32 45.5 28.25 35.75 18.5 32 28.25 28.25z"
-          fill="#fff" fill-opacity=".94"/>
+          fill="#fff" fill-opacity=".96"/>
   </g>
 
-  <!-- Subtle embedded checkmark (rotate with spark) -->
+  <!-- Subtle embedded checkmark -->
   <path transform="rotate(12 32 32)"
         d="M27.5 32 30.5 35.5 37 28.5"
-        stroke="#fff" stroke-width="2.3" stroke-opacity=".60"
+        stroke="#fff" stroke-width="2.3" stroke-opacity=".65"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

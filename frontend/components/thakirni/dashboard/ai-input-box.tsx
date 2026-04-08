@@ -158,7 +158,7 @@ export function AIInputBox() {
                       </div>
                       <div className="bg-slate-100 dark:bg-white/[0.06] rounded-2xl px-3 py-2 flex gap-1 items-center">
                         {[0, 0.2, 0.4].map(d => (
-                          <motion.span key={d} className="w-1.5 h-1.5 rounded-full bg-violet-500"
+                          <motion.span key={d} className="w-1.5 h-1.5 rounded-full bg-amber-500"
                             animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: d }} />
                         ))}
                       </div>
@@ -197,7 +197,7 @@ export function AIInputBox() {
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="absolute bottom-3 end-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 text-white font-semibold text-sm shadow-md"
+                className="absolute bottom-3 end-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white font-semibold text-sm shadow-md"
               >
                 <Sparkles className="w-4 h-4 shrink-0" />
                 {t("ابدأ بالذكاء", "Start with AI")}
@@ -227,7 +227,7 @@ export function AIInputBox() {
                 disabled={!input.trim() || isLoading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="shrink-0 p-1.5 rounded-lg bg-gradient-to-r from-violet-500 to-purple-500 text-white disabled:opacity-40"
+                className="shrink-0 p-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white disabled:opacity-40"
               >
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </motion.button>
@@ -242,7 +242,7 @@ export function AIInputBox() {
           <button
             key={chip}
             onClick={() => handleChip(chip)}
-            className="px-3.5 py-1.5 rounded-full bg-white dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 text-sm font-medium cursor-pointer transition-colors duration-150 border border-slate-200 dark:border-white/[0.10] hover:border-purple-400 dark:hover:border-purple-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30"
+            className="px-3.5 py-1.5 rounded-full bg-white dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 text-sm font-medium cursor-pointer transition-colors duration-150 border border-slate-200 dark:border-white/[0.10] hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30"
           >
             {chip}
           </button>

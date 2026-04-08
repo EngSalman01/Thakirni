@@ -41,7 +41,7 @@ function StatCard({
   label,
   value,
   subtitle,
-  color = "#2552ca",
+  color = "#D97706",
   highlight = false,
 }: {
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>
@@ -53,7 +53,7 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-2xl p-5 flex flex-col gap-3 ${highlight ? "bg-indigo-600/5 border border-indigo-600/20" : "bg-slate-50 dark:bg-white/[0.03]"}`}
+      className={`rounded-2xl p-5 flex flex-col gap-3 ${highlight ? "bg-amber-600/5 border border-amber-600/20" : "bg-white/[0.04]"}`}
     >
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div>
-        <h1 className="text-2xl font-headline font-bold text-slate-900">Analytics</h1>
+        <h1 className="text-2xl font-headline font-bold text-white">Analytics</h1>
         <p className="text-sm text-slate-500 font-label mt-1">Last 30 days · Activation, retention, revenue</p>
       </div>
 
@@ -141,17 +141,17 @@ export default function AnalyticsPage() {
           <StatCard icon={Zap}          label="Activated Users"   value={data?.overview.activatedUsers ?? 0}
             subtitle={`${data?.overview.activationRate ?? 0}% activation rate`} color="#16a34a" highlight />
           <StatCard icon={DollarSign}   label="Upgrades (30d)"   value={data?.monetization.upgrades ?? 0} color="#f59e0b" />
-          <StatCard icon={Brain}        label="Memory Items"      value={data?.intelligence.memoryItemsStored ?? 0} color="#8b5cf6" />
-          <StatCard icon={Target}       label="Predictive Nudges" value={data?.intelligence.predictiveNudgesSent ?? 0} color="#ec4899" />
-          <StatCard icon={TrendingUp}   label="AI Chats (30d)"   value={data?.featureUsage.aiChats ?? 0} color="#2552ca" />
+          <StatCard icon={Brain}        label="Memory Items"      value={data?.intelligence.memoryItemsStored ?? 0} color="#F59E0B" />
+          <StatCard icon={Target}       label="Predictive Nudges" value={data?.intelligence.predictiveNudgesSent ?? 0} color="#FBBF24" />
+          <StatCard icon={TrendingUp}   label="AI Chats (30d)"   value={data?.featureUsage.aiChats ?? 0} color="#D97706" />
         </div>
       )}
 
       {/* Retention */}
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
+      <div className="bg-white/[0.04] rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Activity className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          <h2 className="text-base font-headline font-semibold text-slate-900">Retention</h2>
+          <Activity className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          <h2 className="text-base font-headline font-semibold text-white">Retention</h2>
         </div>
         {loading ? (
           <div className="space-y-3">
@@ -176,10 +176,10 @@ export default function AnalyticsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Feature usage */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
+        <div className="bg-white/[0.04] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-5">
-            <BarChart2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <h2 className="text-base font-headline font-semibold text-slate-900">Feature Usage (30d)</h2>
+            <BarChart2 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <h2 className="text-base font-headline font-semibold text-white">Feature Usage (30d)</h2>
           </div>
           {loading ? (
             <div className="space-y-2">
@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
               {featureRows.map(row => (
                 <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/60 last:border-0">
                   <span className="text-sm font-label text-slate-600">{row.icon} {row.label}</span>
-                  <span className="text-sm font-label font-semibold text-slate-800">{row.value.toLocaleString()}</span>
+                  <span className="text-sm font-label font-semibold text-slate-200">{row.value.toLocaleString()}</span>
                 </div>
               ))}
             </div>
@@ -198,10 +198,10 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Top events */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6">
+        <div className="bg-white/[0.04] rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-5">
-            <MessageCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <h2 className="text-base font-headline font-semibold text-slate-900">Top Events (30d)</h2>
+            <MessageCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            <h2 className="text-base font-headline font-semibold text-white">Top Events (30d)</h2>
           </div>
           {loading ? (
             <div className="space-y-2">
@@ -215,7 +215,7 @@ export default function AnalyticsPage() {
                     <span className="text-xs text-slate-400 w-4 font-label">{idx + 1}</span>
                     <span className="text-sm font-label text-slate-600 font-mono text-xs">{e.name}</span>
                   </div>
-                  <span className="text-sm font-label font-semibold text-slate-800">{e.count.toLocaleString()}</span>
+                  <span className="text-sm font-label font-semibold text-slate-200">{e.count.toLocaleString()}</span>
                 </div>
               ))}
               {(data?.topEvents ?? []).length === 0 && (

@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         className="relative pt-36 pb-24 overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, #1a2a6c 0%, #2552ca 45%, #ad1d7f 80%, #fd65c2 100%)",
+            "linear-gradient(135deg, #92400e 0%, #D97706 45%, #F59E0B 80%, #FBBF24 100%)",
         }}
       >
         <motion.div
@@ -166,7 +166,7 @@ export default function PrivacyPage() {
             "لأي استفسارات تتعلق بالخصوصية،",
             "For any privacy-related inquiries,",
           )}{" "}
-          <Link href="/contact" style={{ color: "#2552ca" }} className="underline underline-offset-4 hover:opacity-80 transition-opacity">
+          <Link href="/contact" style={{ color: "#D97706" }} className="underline underline-offset-4 hover:opacity-80 transition-opacity">
             {t("تواصل معنا من هنا", "contact us here")}
           </Link>
           .

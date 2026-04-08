@@ -94,14 +94,14 @@ export function AdminConfirmDialog({
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             Confirm Action
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2">
           <p className="text-sm text-slate-500 font-label">
             Enter your admin password to{" "}
-            <strong className="text-slate-800">{label ?? "continue"}</strong>.
+            <strong className="text-slate-200">{label ?? "continue"}</strong>.
           </p>
           <div className="space-y-1.5">
             <Label htmlFor="admin-pw">Password</Label>
@@ -124,7 +124,7 @@ export function AdminConfirmDialog({
           <Button
             onClick={handleConfirm}
             disabled={verifying || !password}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="bg-amber-600 hover:bg-amber-700 text-white"
           >
             {verifying ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
             Confirm

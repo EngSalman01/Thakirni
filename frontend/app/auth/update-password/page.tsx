@@ -72,19 +72,19 @@ export default function UpdatePasswordPage() {
         className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, #1a2a6c 0%, #2552ca 40%, #ad1d7f 75%, #fd65c2 100%)",
+            "linear-gradient(135deg, #92400e 0%, #D97706 40%, #F59E0B 75%, #FBBF24 100%)",
         }}
       >
         {/* Mesh blobs */}
         <motion.div
           className="absolute top-10 left-10 w-80 h-80 rounded-full blur-3xl opacity-30"
-          style={{ background: "radial-gradient(circle, #fd65c2 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #FBBF24 0%, transparent 70%)" }}
           animate={{ y: [0, -25, 0], x: [0, 15, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-20 right-10 w-72 h-72 rounded-full blur-3xl opacity-20"
-          style={{ background: "radial-gradient(circle, #2552ca 0%, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #D97706 0%, transparent 70%)" }}
           animate={{ y: [0, 30, 0] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
@@ -156,7 +156,7 @@ export default function UpdatePasswordPage() {
               <div
                 className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center"
                 style={{
-                  background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)",
+                  background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)",
                 }}
               >
                 <Sparkles className="w-7 h-7 text-white" />
@@ -175,10 +175,10 @@ export default function UpdatePasswordPage() {
                   className="w-20 h-20 rounded-full flex items-center justify-center"
                   style={{
                     background:
-                      "linear-gradient(135deg, #2552ca22 0%, #fd65c222 100%)",
+                      "linear-gradient(135deg, #D9770622 0%, #FBBF2422 100%)",
                   }}
                 >
-                  <CheckCircle2 className="w-10 h-10" style={{ color: "#2552ca" }} />
+                  <CheckCircle2 className="w-10 h-10" style={{ color: "#D97706" }} />
                 </div>
                 <h2 className="text-2xl font-bold text-foreground">
                   {t("تم تحديث كلمة المرور!", "Password updated!")}
@@ -243,6 +243,7 @@ export default function UpdatePasswordPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                         className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         {showPassword ? (
@@ -276,6 +277,7 @@ export default function UpdatePasswordPage() {
                       <button
                         type="button"
                         onClick={() => setShowConfirm(!showConfirm)}
+                        aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
                         className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
                         {showConfirm ? (
@@ -295,8 +297,8 @@ export default function UpdatePasswordPage() {
                     className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60"
                     style={{
                       background:
-                        "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)",
-                      boxShadow: "0 4px 20px rgba(37,82,202,0.35)",
+                        "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)",
+                      boxShadow: "0 4px 20px rgba(217,119,6,0.35)",
                     }}
                   >
                     {isLoading
@@ -312,7 +314,7 @@ export default function UpdatePasswordPage() {
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground pb-6">
           {t("بالتسجيل أنت توافق على", "By signing up you agree to our")}{" "}
-          <Link href="/privacy" className="hover:underline" style={{ color: "#2552ca" }}>
+          <Link href="/privacy" className="hover:underline" style={{ color: "#D97706" }}>
             {t("سياسة الخصوصية", "Privacy Policy")}
           </Link>
         </p>

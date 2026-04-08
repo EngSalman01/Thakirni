@@ -51,7 +51,7 @@ function ParticleLayer() {
         position:absolute;width:${4 + Math.random() * 6}px;height:${4 + Math.random() * 6}px;
         border-radius:50%;opacity:${0.06 + Math.random() * 0.12};
         left:${Math.random() * 100}%;top:${Math.random() * 100}%;
-        background:${Math.random() > 0.5 ? '#2552ca' : '#ad1d7f'};
+        background:${Math.random() > 0.5 ? '#D97706' : '#F59E0B'};
         --drift-x:${(Math.random() - 0.5) * 120}px;--drift-y:${(Math.random() - 0.5) * 120}px;
         animation:particle-drift ${8 + Math.random() * 12}s ease-in-out infinite;
         animation-delay:${-Math.random() * 15}s;pointer-events:none;
@@ -89,14 +89,14 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
     return '🧠';
   }
 
-  const cardColors = ['from-indigo-600 to-indigo-400', 'from-[#ad1d7f] to-[#fd65c2]', 'from-[#385b9b] to-indigo-600'];
+  const cardColors = ['from-amber-600 to-amber-400', 'from-amber-600 to-amber-400', 'from-amber-800 to-amber-600'];
 
   return (
     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.8 }}
       className="relative bg-[#e4e2e1] rounded-3xl p-8 overflow-hidden">
       {/* Grid bg */}
       <div className="absolute inset-0 opacity-10"
-        style={{ backgroundImage: 'linear-gradient(#2552ca 1px,transparent 1px),linear-gradient(90deg,#2552ca 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
+        style={{ backgroundImage: 'linear-gradient(#D97706 1px,transparent 1px),linear-gradient(90deg,#D97706 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
 
       {/* Recent memory cards */}
       <div className="relative space-y-3">
@@ -132,7 +132,7 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
       {/* Floating badge */}
       <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute -top-3 -right-3 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+        <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
         <span className="text-xs font-bold text-slate-900">{t('محفوظ في ذاكرتك', 'Saved to memory')}</span>
       </motion.div>
     </motion.div>
@@ -258,8 +258,8 @@ export default function UploadPage() {
             {/* Left copy */}
             <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-indigo-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <Upload className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
+                <Upload className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span className="text-sm font-label font-medium text-slate-700">{t(`حتى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`, `Up to ${MAX_FILE_SIZE_MB} MB per file`)}</span>
               </motion.div>
 
@@ -285,7 +285,7 @@ export default function UploadPage() {
                   {t('اختر ملفات', 'Choose Files')}
                 </motion.button>
                 <div className="flex items-center gap-2 text-sm text-slate-500">
-                  <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                  <span className="w-2 h-2 rounded-full bg-amber-600" />
                   {t('صور، فيديو، صوت، PDF', 'Images, video, audio, PDF')}
                 </div>
               </div>
@@ -308,10 +308,10 @@ export default function UploadPage() {
                 onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} onClick={() => inputRef.current?.click()}
                 className={cn(
                   'bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-12 text-center cursor-pointer relative overflow-hidden group hover-lift border-2 border-dashed transition-all duration-200',
-                  isDragging ? 'border-indigo-600 bg-indigo-100 dark:bg-indigo-950/60/30' : 'border-[#e4e2e1] hover:border-indigo-600/40'
+                  isDragging ? 'border-amber-600 bg-amber-100 dark:bg-amber-950/60/30' : 'border-[#e4e2e1] hover:border-amber-600/40'
                 )}>
                 {/* Decorative corner */}
-                <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-indigo-600/8 to-transparent rounded-tl-3xl pointer-events-none" />
+                <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-amber-600/8 to-transparent rounded-tl-3xl pointer-events-none" />
 
                 <motion.div animate={{ scale: isDragging ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   className="flex flex-col items-center gap-4 relative z-10">
@@ -360,7 +360,7 @@ export default function UploadPage() {
                         <Input
                           placeholder={t('أضف وصفاً لهذه الملفات...', 'Add a description...')}
                           value={description} onChange={(e) => setDescription(e.target.value)}
-                          className="rounded-xl bg-white border-[#e4e2e1] focus-visible:ring-indigo-600/40" />
+                          className="rounded-xl bg-white border-[#e4e2e1] focus-visible:ring-amber-600/40" />
                       </div>
                       <div className="flex gap-3">
                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}

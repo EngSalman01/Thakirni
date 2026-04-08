@@ -60,12 +60,12 @@ export default function ContactPage() {
         className="relative pt-36 pb-28 overflow-hidden"
         style={{
           background:
-            "linear-gradient(135deg, #1a2a6c 0%, #2552ca 45%, #ad1d7f 80%, #fd65c2 100%)",
+            "linear-gradient(135deg, #92400e 0%, #D97706 45%, #F59E0B 80%, #FBBF24 100%)",
         }}
       >
         <motion.div
           className="absolute top-12 right-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #fd65c2, transparent 70%)" }}
+          style={{ background: "radial-gradient(circle, #FBBF24, transparent 70%)" }}
           animate={{ y: [0, -18, 0] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -116,9 +116,9 @@ export default function ContactPage() {
             >
               <div
                 className="w-20 h-20 rounded-full mx-auto flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, #2552ca22, #fd65c222)" }}
+                style={{ background: "linear-gradient(135deg, #D9770622, #FBBF2422)" }}
               >
-                <CheckCircle2 className="w-10 h-10" style={{ color: "#2552ca" }} />
+                <CheckCircle2 className="w-10 h-10" style={{ color: "#D97706" }} />
               </div>
               <h2 className="text-2xl font-headline font-bold text-foreground">
                 {t("تم الإرسال!", "Message sent!")}
@@ -152,7 +152,7 @@ export default function ContactPage() {
                   {/* Name */}
                   <div className="space-y-2">
                     <Label className="font-label font-semibold flex items-center gap-2 text-foreground">
-                      <User className="w-4 h-4" style={{ color: "#2552ca" }} />
+                      <User className="w-4 h-4" style={{ color: "#D97706" }} />
                       {t("الاسم", "Name")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -168,7 +168,7 @@ export default function ContactPage() {
                   {/* Email */}
                   <div className="space-y-2">
                     <Label className="font-label font-semibold flex items-center gap-2 text-foreground">
-                      <Mail className="w-4 h-4" style={{ color: "#2552ca" }} />
+                      <Mail className="w-4 h-4" style={{ color: "#D97706" }} />
                       {t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -186,7 +186,7 @@ export default function ContactPage() {
                   {/* Message */}
                   <div className="space-y-2">
                     <Label className="font-label font-semibold flex items-center gap-2 text-foreground">
-                      <MessageSquare className="w-4 h-4" style={{ color: "#2552ca" }} />
+                      <MessageSquare className="w-4 h-4" style={{ color: "#D97706" }} />
                       {t("الرسالة", "Message")} <span className="text-red-500">*</span>
                     </Label>
                     <Textarea
@@ -225,8 +225,8 @@ export default function ContactPage() {
                     whileTap={{ scale: 0.98 }}
                     className="w-full py-3.5 rounded-xl text-white font-bold font-label disabled:opacity-60 transition-opacity"
                     style={{
-                      background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)",
-                      boxShadow: "0 4px 20px rgba(37,82,202,0.35)",
+                      background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)",
+                      boxShadow: "0 4px 20px rgba(217,119,6,0.35)",
                     }}
                   >
                     {loading

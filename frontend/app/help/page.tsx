@@ -213,8 +213,8 @@ export default function HelpPage() {
 
       {/* Hero */}
       <section className="relative pt-32 pb-20 overflow-hidden bg-slate-900 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#2552ca,transparent_65%)] opacity-30 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,#ad1d7f,transparent_50%)] opacity-15 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,#D97706,transparent_65%)] opacity-30 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,#F59E0B,transparent_50%)] opacity-15 pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 28 }}
@@ -222,7 +222,7 @@ export default function HelpPage() {
             transition={{ duration: 0.7 }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-sm font-medium mb-6">
-              <span className="w-2 h-2 rounded-full bg-[#fd65c2] animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               {t("مركز المساعدة", "Help Center")}
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-headline font-bold mb-6 leading-tight">
@@ -275,13 +275,13 @@ export default function HelpPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: i * 0.12 }}
-                  className="relative p-6 rounded-2xl border border-border/60 bg-background hover:border-indigo-600/50 hover:shadow-lg transition-all duration-300 group"
+                  className="relative p-6 rounded-2xl border border-border/60 bg-background hover:border-amber-600/50 hover:shadow-lg transition-all duration-300 group"
                 >
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-xl power-gradient flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform">
                       <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-3xl font-headline font-black text-indigo-600 dark:text-indigo-400/20 select-none">
+                    <span className="text-3xl font-headline font-black text-amber-600 dark:text-amber-400/20 select-none">
                       0{i + 1}
                     </span>
                   </div>
@@ -321,7 +321,7 @@ export default function HelpPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: si * 0.08 }}
               >
-                <h3 className="text-sm font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-4 px-1">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-4 px-1">
                   {t(section.category.ar, section.category.en)}
                 </h3>
                 <div className="space-y-3">

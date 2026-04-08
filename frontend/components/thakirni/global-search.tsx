@@ -18,8 +18,8 @@ interface SearchResult {
 }
 
 const typeConfig = {
-  memory: { icon: Brain, color: "#2552ca", label: "ذاكرة", labelEn: "Memory", href: (id: string) => `/vault?memory=${id}` },
-  plan: { icon: ListTodo, color: "#ad1d7f", label: "خطة", labelEn: "Plan", href: () => `/vault/plans` },
+  memory: { icon: Brain, color: "#D97706", label: "ذاكرة", labelEn: "Memory", href: (id: string) => `/vault?memory=${id}` },
+  plan: { icon: ListTodo, color: "#F59E0B", label: "خطة", labelEn: "Plan", href: () => `/vault/plans` },
   habit: { icon: Flame, color: "#f59e0b", label: "عادة", labelEn: "Habit", href: () => `/vault/habits` },
   goal: { icon: Target, color: "#10b981", label: "هدف", labelEn: "Goal", href: () => `/vault/goals` },
 }
@@ -94,7 +94,7 @@ export function GlobalSearch() {
         <DialogContent className="p-0 gap-0 max-w-lg overflow-hidden rounded-2xl" dir={isArabic ? "rtl" : "ltr"}>
           <Command className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100">
-              {loading ? <Loader2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin shrink-0" /> : <Search className="w-4 h-4 text-slate-400 shrink-0" />}
+              {loading ? <Loader2 className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-spin shrink-0" /> : <Search className="w-4 h-4 text-slate-400 shrink-0" />}
               <Command.Input
                 value={query}
                 onValueChange={setQuery}

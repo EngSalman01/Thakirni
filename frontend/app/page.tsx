@@ -55,7 +55,7 @@ export default function Home() {
       {/* Server-rendered policy links — required for Google OAuth verification */}
       <div
         style={{
-          background: "#060810",
+          background: "#0E0B07",
           padding: "12px",
           textAlign: "center",
           fontSize: "11px",

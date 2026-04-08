@@ -53,7 +53,7 @@ export function ReferralCard() {
 
       {/* Stats */}
       <div className="flex items-center gap-2 text-sm">
-        <span className="px-3 py-1 rounded-full bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 font-medium">
+        <span className="px-3 py-1 rounded-full bg-amber-600/10 text-amber-600 dark:text-amber-400 font-medium">
           {data.count} {t("مدعوّ", data.count === 1 ? "referral" : "referrals")}
         </span>
         <span className="text-slate-400">·</span>
@@ -72,7 +72,7 @@ export function ReferralCard() {
           className="px-4 py-2 rounded-xl text-sm font-medium transition-all"
           style={copied
             ? { background: "#22c55e", color: "#fff" }
-            : { background: "linear-gradient(135deg, #2552ca 0%, #fd65c2 100%)", color: "#fff" }
+            : { background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)", color: "#fff" }
           }
         >
           {copied ? t("تم النسخ!", "Copied!") : t("نسخ", "Copy")}
