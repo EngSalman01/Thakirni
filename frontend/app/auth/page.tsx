@@ -287,7 +287,8 @@ function AuthForm() {
         data: {
           full_name: name,
           avatar_url: "",
-          phone_number: normPhone,   // profile trigger picks this up
+          phone_number: normPhone,
+          preferred_language: isArabic ? "ar" : "en",
         },
       },
     });
@@ -685,7 +686,7 @@ export default function AuthPage() {
               <img
                 src="/logo-icon.svg"
                 alt="Thakirni"
-                className="w-24 h-24"
+                className="w-24 h-24 rounded-[25%]"
                 style={{ boxShadow: "0 0 50px rgba(251,191,36,0.4), 0 0 100px rgba(217,119,6,0.4)" }}
               />
             </motion.div>

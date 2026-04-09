@@ -96,7 +96,7 @@ export function BrandLogo({
           priority
           unoptimized
           draggable={false}
-          className="object-contain block"
+          className="object-contain block rounded-[25%]"
           style={{ width: size, height: size }}
         />
       </motion.span>
