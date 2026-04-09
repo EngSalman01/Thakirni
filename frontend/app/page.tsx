@@ -3,7 +3,7 @@ import { LandingHeader } from "@/components/thakirni/landing-header"
 import { HeroSection } from "@/components/thakirni/hero-section"
 import { TrustSignals } from "@/components/thakirni/trust-signals"
 import { FeaturesSection } from "@/components/thakirni/features-section"
-import { WhatsAppDemo } from "@/components/thakirni/whatsapp-demo"
+
 import { TestimonialsSection } from "@/components/thakirni/testimonials-section"
 import { PricingSection } from "@/components/thakirni/pricing-section"
 import { CTASection } from "@/components/thakirni/cta-section"
@@ -37,9 +37,6 @@ export default function Home() {
 
       {/* Feature bento grid */}
       <FeaturesSection />
-
-      {/* WhatsApp chat demo */}
-      <WhatsAppDemo />
 
       {/* Social proof / testimonials */}
       <TestimonialsSection />
