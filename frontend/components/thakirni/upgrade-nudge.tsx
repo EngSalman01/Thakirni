@@ -115,14 +115,14 @@ export function UpgradeNudge({ featureLocked = false, variant = "banner", onDism
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-label text-slate-700 leading-snug">
+              <p className="text-sm font-label text-muted-foreground leading-snug">
                 {isArabic ? nudge.messageAr : nudge.messageEn}
               </p>
 
               {/* Usage bar */}
               {nudge.usagePct > 0 && nudge.trigger !== "feature_locked" && (
                 <div className="mt-2 flex items-center gap-2">
-                  <div className="flex-1 bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                  <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -148,7 +148,7 @@ export function UpgradeNudge({ featureLocked = false, variant = "banner", onDism
             {!featureLocked && (
               <button
                 onClick={dismiss}
-                className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-white/60 transition-all"
+                className="shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-slate-400 hover:text-muted-foreground hover:bg-white/60 transition-all"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

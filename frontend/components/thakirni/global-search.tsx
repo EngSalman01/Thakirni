@@ -82,27 +82,27 @@ export function GlobalSearch() {
       {/* Trigger button — shown in sidebar/header */}
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-white/60 hover:bg-white text-slate-400 hover:text-slate-600 transition-all text-sm font-label border border-slate-200/50"
+        className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl bg-white/60 hover:bg-card text-slate-400 hover:text-muted-foreground transition-all text-sm font-label border border-border/50"
         dir="ltr"
       >
         <Search className="w-4 h-4 shrink-0" />
         <span className="flex-1 text-start">{t("بحث...", "Search...")}</span>
-        <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-400 font-mono">⌘K</kbd>
+        <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-muted text-slate-400 font-mono">⌘K</kbd>
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-0 gap-0 max-w-lg overflow-hidden rounded-2xl" dir={isArabic ? "rtl" : "ltr"}>
           <Command className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100">
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
               {loading ? <Loader2 className="w-4 h-4 text-amber-600 dark:text-amber-400 animate-spin shrink-0" /> : <Search className="w-4 h-4 text-slate-400 shrink-0" />}
               <Command.Input
                 value={query}
                 onValueChange={setQuery}
                 placeholder={t("ابحث في الذكريات، الخطط، العادات...", "Search memories, plans, habits...")}
-                className="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400 font-label"
+                className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-slate-400 font-label"
               />
               {query && (
-                <button onClick={() => { setQuery(""); setResults([]) }} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => { setQuery(""); setResults([]) }} className="text-slate-400 hover:text-muted-foreground">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -133,13 +133,13 @@ export function GlobalSearch() {
                         key={result.id}
                         value={`${type}-${result.id}-${result.title}`}
                         onSelect={() => handleSelect(result)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 dark:bg-white/[0.03] aria-selected:bg-slate-50 dark:bg-white/[0.03] transition-colors"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-muted dark:bg-white/[0.03] aria-selected:bg-muted dark:bg-white/[0.03] transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${config.color}18` }}>
                           <Icon className="w-4 h-4" style={{ color: config.color }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-label font-medium text-slate-800 truncate">{result.title}</p>
+                          <p className="text-sm font-label font-medium text-foreground truncate">{result.title}</p>
                           {result.content && (
                             <p className="text-xs text-slate-400 truncate mt-0.5">{result.content.slice(0, 60)}</p>
                           )}

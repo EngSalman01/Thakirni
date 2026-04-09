@@ -61,7 +61,7 @@ function SettingsCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
-      className={`bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 relative overflow-hidden ${className}`}
+      className={`bg-muted dark:bg-white/[0.03] rounded-2xl p-8 relative overflow-hidden ${className}`}
     >
       {children}
     </motion.div>
@@ -93,10 +93,10 @@ function ToggleRow({
   onChange: () => void; loading?: boolean;
 }) {
   return (
-    <div className="flex justify-between items-center p-4 bg-white rounded-xl">
+    <div className="flex justify-between items-center p-4 bg-card rounded-xl">
       <div>
-        <p className="font-label font-bold text-sm text-slate-800">{label}</p>
-        <p className="text-sm text-slate-500">{desc}</p>
+        <p className="font-label font-bold text-sm text-foreground">{label}</p>
+        <p className="text-sm text-muted-foreground">{desc}</p>
       </div>
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
@@ -614,15 +614,15 @@ export default function SettingsPage() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
                 <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-label font-medium text-slate-700" style={{ background: planBadge.bg, color: planBadge.color, padding: '2px 10px', borderRadius: '999px', fontWeight: 700 }}>{planBadge.label}</span>
+                <span className="text-sm font-label font-medium text-muted-foreground" style={{ background: planBadge.bg, color: planBadge.color, padding: '2px 10px', borderRadius: '999px', fontWeight: 700 }}>{planBadge.label}</span>
               </motion.div>
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
-                <span className="text-slate-900">{t("إعدادات", "Your")}</span>{" "}
+                <span className="text-foreground">{t("إعدادات", "Your")}</span>{" "}
                 <span className="gradient-text">{t("حسابك", "Account")}</span>
               </h1>
 
-              <p className="text-xl text-slate-600 font-body mb-10 leading-relaxed max-w-lg">
+              <p className="text-xl text-muted-foreground font-body mb-10 leading-relaxed max-w-lg">
                 {t("أدر ملفك الشخصي واشتراكك وتفضيلاتك وأمان حسابك من مكان واحد.", "Manage your profile, subscription, preferences, and account security all in one place.")}
               </p>
 
@@ -642,29 +642,29 @@ export default function SettingsPage() {
 
             {/* Right — profile preview card */}
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
-              className="bg-white rounded-3xl shadow-2xl p-8 border border-[#e4e2e1] relative">
+              className="bg-card rounded-3xl shadow-2xl p-8 border border-border relative">
               <div className="flex items-center gap-5 mb-8">
                 <div className="w-20 h-20 rounded-2xl power-gradient flex items-center justify-center text-white text-3xl font-bold font-headline overflow-hidden shrink-0">
                   {profile?.avatar_url ? <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" /> : initial}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-headline font-bold text-slate-900">{name || t('المستخدم', 'User')}</h3>
-                  <p className="text-slate-500 text-sm" dir="ltr">{email}</p>
+                  <h3 className="text-2xl font-headline font-bold text-foreground">{name || t('المستخدم', 'User')}</h3>
+                  <p className="text-muted-foreground text-sm" dir="ltr">{email}</p>
                   <span className="mt-1 inline-block px-3 py-0.5 rounded-full text-xs font-bold" style={{ background: planBadge.bg, color: planBadge.color }}>{planBadge.label}</span>
                 </div>
               </div>
               <div className="space-y-2">
                 {planFeatures.slice(0, 3).map(({ ar, en }) => (
-                  <div key={en} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl">
+                  <div key={en} className="flex items-center gap-3 p-3 bg-muted dark:bg-white/[0.03] rounded-xl">
                     <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <p className="text-sm font-label text-slate-700">{t(ar, en)}</p>
+                    <p className="text-sm font-label text-muted-foreground">{t(ar, en)}</p>
                   </div>
                 ))}
               </div>
               <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
+                className="absolute -top-4 -right-4 bg-card rounded-2xl shadow-lg border border-border px-3 py-2 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-xs font-bold text-slate-900">{t('محمي', 'Secured')}</span>
+                <span className="text-xs font-bold text-foreground">{t('محمي', 'Secured')}</span>
               </motion.div>
             </motion.div>
           </div>
@@ -674,20 +674,20 @@ export default function SettingsPage() {
         <div className="max-w-3xl mx-auto">
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="w-full mb-8 bg-slate-50 dark:bg-white/[0.03] p-1 rounded-2xl h-auto grid grid-cols-4 gap-1">
-            <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+          <TabsList className="w-full mb-8 bg-muted dark:bg-white/[0.03] p-1 rounded-2xl h-auto grid grid-cols-4 gap-1">
+            <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
               <User className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("الملف الشخصي", "Profile")}</span>
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+            <TabsTrigger value="notifications" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
               <Bell className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("الإشعارات", "Notifications")}</span>
             </TabsTrigger>
-            <TabsTrigger value="security" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+            <TabsTrigger value="security" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
               <Shield className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("الأمان", "Security")}</span>
             </TabsTrigger>
-            <TabsTrigger value="subscription" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm flex items-center gap-1.5">
+            <TabsTrigger value="subscription" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
               <Crown className="w-4 h-4 shrink-0" />
               <span className="hidden sm:inline">{t("الاشتراك", "Subscription")}</span>
             </TabsTrigger>
@@ -700,7 +700,7 @@ export default function SettingsPage() {
             <SettingsCard delay={0.05}>
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6">
-                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  <h2 className="text-2xl font-headline font-bold text-foreground">
                     {t("الملف الشخصي", "Profile")}
                   </h2>
                   <span
@@ -736,8 +736,8 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-headline font-bold text-slate-900">{name || t("المستخدم", "User")}</h3>
-                    <p className="text-slate-500" dir="ltr">{email}</p>
+                    <h3 className="text-xl font-headline font-bold text-foreground">{name || t("المستخدم", "User")}</h3>
+                    <p className="text-muted-foreground" dir="ltr">{email}</p>
                     <button
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={avatarUploading}
@@ -753,20 +753,20 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-slate-700">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
+                    <Label className="font-label font-semibold text-muted-foreground">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={t("أدخل اسمك", "Enter your name")}
                       maxLength={60}
-                      className="rounded-xl bg-white border-slate-200 focus-visible:ring-amber-600/40"
+                      className="rounded-xl bg-card border-border focus-visible:ring-amber-600/40"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-slate-700">{t("البريد الإلكتروني", "Email")}</Label>
+                    <Label className="font-label font-semibold text-muted-foreground">{t("البريد الإلكتروني", "Email")}</Label>
                     <div className="flex gap-2">
                       <Input type="email" value={email} disabled dir="ltr"
-                        className="opacity-60 rounded-xl bg-white border-slate-200 flex-1" />
+                        className="opacity-60 rounded-xl bg-card border-border flex-1" />
                       <button
                         onClick={() => { setChangeEmailOpen(true); setNewEmail(""); setChangeEmailSent(false); }}
                         className="px-3 py-2 rounded-xl border border-amber-600/30 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-100 dark:bg-amber-950/60 transition-colors shrink-0"
@@ -776,7 +776,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-slate-700">
+                    <Label className="font-label font-semibold text-muted-foreground">
                       {t("رقم الجوال", "Phone Number")}
                       <span className="text-slate-400 text-xs ms-1">{t("(للواتساب)", "(WhatsApp)")}</span>
                     </Label>
@@ -787,7 +787,7 @@ export default function SettingsPage() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         placeholder="05xxxxxxxx"
-                        className="ps-10 rounded-xl bg-white border-slate-200 focus-visible:ring-amber-600/40"
+                        className="ps-10 rounded-xl bg-card border-border focus-visible:ring-amber-600/40"
                         dir="ltr"
                       />
                     </div>
@@ -814,7 +814,7 @@ export default function SettingsPage() {
             <SettingsCard delay={0.1}>
               <div className="flex items-center gap-3 mb-8">
                 <span className="text-amber-600 dark:text-amber-400 text-xl">🎨</span>
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                <h2 className="text-2xl font-headline font-bold text-foreground">
                   {t("التخصيص", "Personalization")}
                 </h2>
               </div>
@@ -839,10 +839,10 @@ export default function SettingsPage() {
                     localStorage.setItem("thakirni_deepfocus", String(next))
                   }}
                 />
-                <div className="flex justify-between items-center p-4 bg-white rounded-xl">
+                <div className="flex justify-between items-center p-4 bg-card rounded-xl">
                   <div>
-                    <p className="font-label font-bold text-sm text-slate-800">{t("المظهر واللغة", "Theme & Language")}</p>
-                    <p className="text-sm text-slate-500">{t("الوضع الليلي أو النهاري والعربي/الإنجليزي", "Dark/light mode & Arabic/English")}</p>
+                    <p className="font-label font-bold text-sm text-foreground">{t("المظهر واللغة", "Theme & Language")}</p>
+                    <p className="text-sm text-muted-foreground">{t("الوضع الليلي أو النهاري والعربي/الإنجليزي", "Dark/light mode & Arabic/English")}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <LanguageToggle />
@@ -861,15 +861,15 @@ export default function SettingsPage() {
             <SettingsCard delay={0.08}>
               <div className="flex items-center gap-3 mb-6">
                 <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                <h2 className="text-2xl font-headline font-bold text-foreground">
                   {t("التطبيقات المرتبطة", "Connected Apps")}
                 </h2>
               </div>
               <div className="space-y-3">
                 {/* Google Calendar */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-card rounded-xl">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-slate-50 rounded-lg flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center shrink-0">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                         <rect x="3" y="4" width="18" height="17" rx="2" stroke="#4285F4" strokeWidth="1.5"/>
                         <path d="M3 9h18" stroke="#4285F4" strokeWidth="1.5"/>
@@ -879,14 +879,14 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-sm font-label text-slate-800">Google Calendar</p>
+                        <p className="font-bold text-sm font-label text-foreground">Google Calendar</p>
                         {calendarConnected && (
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                             {t("مرتبط", "Connected")}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {calendarConnected
                           ? t("أحداث Google Calendar تظهر في تقويمك", "Google Calendar events appear in your calendar")
                           : t("اربط تقويم Google لتظهر مواعيدك تلقائياً", "Connect to see your Google events automatically")}
@@ -904,7 +904,7 @@ export default function SettingsPage() {
                   ) : (
                     <a
                       href="/api/google-calendar/connect"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:shadow-md transition-shadow"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-muted-foreground text-xs font-bold hover:shadow-md transition-shadow"
                     >
                       <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -918,20 +918,20 @@ export default function SettingsPage() {
                 </div>
 
                 {calendarConnected && (
-                  <div className="bg-white rounded-xl divide-y divide-slate-100 overflow-hidden">
+                  <div className="bg-card rounded-xl divide-y divide-border overflow-hidden">
                     {([
                       { key: "gcal_auto_sync" as const, ar: "مزامنة تلقائية مع Google Calendar", en: "Auto-sync to Google Calendar", descAr: "أضف كل خطة جديدة تلقائياً إلى تقويم Google", descEn: "Automatically add every new plan to Google Calendar" },
                       { key: "gcal_whatsapp_reminders" as const, ar: "تذكيرات WhatsApp للأحداث", en: "WhatsApp reminders for events", descAr: "أرسل لي رسالة WhatsApp قبل 30 دقيقة من كل حدث", descEn: "Send me a WhatsApp message 30 min before each event" },
                     ]).map(({ key, ar, en, descAr, descEn }) => (
                       <div key={key} className="flex items-center justify-between px-4 py-3">
                         <div>
-                          <p className="text-sm font-semibold text-slate-700">{t(ar, en)}</p>
+                          <p className="text-sm font-semibold text-muted-foreground">{t(ar, en)}</p>
                           <p className="text-xs text-slate-400 mt-0.5">{t(descAr, descEn)}</p>
                         </div>
                         <button
                           onClick={() => handleToggleGcalPref(key)}
                           disabled={savingGcalPref === key}
-                          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${gcalPrefs[key] ? "bg-amber-600" : "bg-slate-200"} disabled:opacity-50`}
+                          className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${gcalPrefs[key] ? "bg-amber-600" : "bg-muted"} disabled:opacity-50`}
                         >
                           <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${gcalPrefs[key] ? "left-5" : "left-0.5"}`} />
                         </button>
@@ -941,7 +941,7 @@ export default function SettingsPage() {
                 )}
 
                 {/* WhatsApp */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-card rounded-xl">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-[#25D366]/10 rounded-lg flex items-center justify-center shrink-0">
                       <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#25D366">
@@ -950,14 +950,14 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-sm font-label text-slate-800">WhatsApp</p>
+                        <p className="font-bold text-sm font-label text-foreground">WhatsApp</p>
                         {profile?.phone_number && (
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                             {t("نشط", "Active")}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {t("تحدث مع مساعدك الذكي وتلقّى تذكيرات عبر واتساب", "Chat with your AI assistant and get reminders via WhatsApp")}
                       </p>
                     </div>
@@ -985,7 +985,7 @@ export default function SettingsPage() {
             <SettingsCard delay={0.16}>
               <div className="flex items-center gap-3 mb-6">
                 <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                <h2 className="text-2xl font-headline font-bold text-foreground">
                   {t("الإشعارات", "Notifications")}
                 </h2>
               </div>
@@ -1016,15 +1016,15 @@ export default function SettingsPage() {
             <SettingsCard delay={0.05} className="border-l-4 border-amber-500">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                <h2 className="text-2xl font-headline font-bold text-foreground">
                   {t("الخصوصية والأمان", "Privacy & Security")}
                 </h2>
               </div>
               <div className="space-y-4">
-                <div className="p-5 bg-slate-50 dark:bg-white/[0.03] rounded-xl flex items-center justify-between">
+                <div className="p-5 bg-muted dark:bg-white/[0.03] rounded-xl flex items-center justify-between">
                   <div>
-                    <p className="font-bold text-slate-900 text-sm">{t("كلمة المرور", "Password")}</p>
-                    <p className="text-slate-500 text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
+                    <p className="font-bold text-foreground text-sm">{t("كلمة المرور", "Password")}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
                   </div>
                   <Link href="/vault/settings/security/change-password"
                     className="px-4 py-2 rounded-full border border-amber-500 text-amber-600 dark:text-amber-400 font-bold text-sm hover:bg-amber-50 transition-colors font-label">
@@ -1035,7 +1035,7 @@ export default function SettingsPage() {
                   <h3 className="text-red-600 font-headline font-bold mb-2">
                     {t("منطقة الخطر", "Danger Zone")}
                   </h3>
-                  <p className="text-slate-500 text-sm mb-4">
+                  <p className="text-muted-foreground text-sm mb-4">
                     {t("هذه الإجراءات دائمة ولا يمكن التراجع عنها.", "These actions are permanent and cannot be reversed.")}
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -1063,11 +1063,11 @@ export default function SettingsPage() {
             <SettingsCard delay={0.2}>
               <div className="flex items-center gap-3 mb-6">
                 <Download className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                <h2 className="text-2xl font-headline font-bold text-foreground">
                   {t("تصدير البيانات", "Export Data")}
                 </h2>
               </div>
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm text-muted-foreground mb-5">
                 {t(
                   "حمّل بياناتك الشخصية في أي وقت بصيغة CSV أو PDF.",
                   "Download your personal data at any time in CSV or PDF format."
@@ -1075,19 +1075,19 @@ export default function SettingsPage() {
               </p>
               <div className="space-y-3">
                 {/* Plans & Tasks */}
-                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-slate-800">
+                    <p className="font-bold text-sm font-label text-foreground">
                       {t("الخطط والمهام", "Plans & Tasks")}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {t("جميع خططك ومهامك", "All your plans and tasks")}
                     </p>
                   </div>
                   <a
                     href="/api/export/plans"
                     download
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted hover:bg-muted transition-colors shrink-0"
                     title={t("تحميل CSV", "Download CSV")}
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -1109,19 +1109,19 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Memories */}
-                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-slate-800">
+                    <p className="font-bold text-sm font-label text-foreground">
                       {t("الذكريات", "Memories")}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {t("جميع ذكرياتك المحفوظة", "All your saved memories")}
                     </p>
                   </div>
                   <a
                     href="/api/export/memories"
                     download
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted hover:bg-muted transition-colors shrink-0"
                     title={t("تحميل CSV", "Download CSV")}
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -1143,12 +1143,12 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Habits */}
-                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-slate-800">
+                    <p className="font-bold text-sm font-label text-foreground">
                       {t("العادات", "Habits")}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {t("جميع عاداتك وسلاسلك", "All your habits and streaks")}
                     </p>
                   </div>
@@ -1168,12 +1168,12 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Goals */}
-                <div className="flex items-center gap-2 p-4 bg-white rounded-xl">
+                <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-slate-800">
+                    <p className="font-bold text-sm font-label text-foreground">
                       {t("الأهداف", "Goals")}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {t("جميع أهدافك وتقدمها", "All your goals and progress")}
                     </p>
                   </div>
@@ -1198,11 +1198,11 @@ export default function SettingsPage() {
             <SettingsCard delay={0.24} className="border-l-4 border-amber-600">
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-slate-900">
+                <h2 className="text-2xl font-headline font-bold text-foreground">
                   {t("البيانات والخصوصية", "Data & Privacy")}
                 </h2>
               </div>
-              <p className="text-sm text-slate-500 mb-5">
+              <p className="text-sm text-muted-foreground mb-5">
                 {t(
                   "بموجب نظام PDPL يمكنك تصدير جميع بياناتك أو حذف حسابك نهائياً.",
                   "Under PDPL you can export all your data or permanently delete your account."
@@ -1210,12 +1210,12 @@ export default function SettingsPage() {
               </p>
               <div className="space-y-3">
                 {/* Export full data */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-card rounded-xl">
                   <div>
-                    <p className="font-label font-bold text-sm text-slate-800">
+                    <p className="font-label font-bold text-sm text-foreground">
                       {t("تصدير جميع بياناتي", "Export All My Data")}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {t("ملف JSON يحتوي على كل بياناتك", "A JSON file with all your data")}
                     </p>
                   </div>
@@ -1293,7 +1293,7 @@ export default function SettingsPage() {
             <SettingsCard delay={0.08} className="relative overflow-hidden group">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  <h2 className="text-2xl font-headline font-bold text-foreground">
                     {t("الاشتراك", "Subscription")}
                   </h2>
                   <span
@@ -1303,7 +1303,7 @@ export default function SettingsPage() {
                     {planBadge.label}
                   </span>
                 </div>
-                <p className="text-slate-500 text-sm mb-6">
+                <p className="text-muted-foreground text-sm mb-6">
                   {resolvedTier === "free"
                     ? t("أنت على الخطة المجانية", "You're on the Free plan")
                     : resolvedTier === "pro"
@@ -1320,7 +1320,7 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={() => setBillingOpen(true)}
-                  className="w-full py-4 rounded-full bg-white text-slate-800 font-headline font-bold shadow-sm hover:shadow-md transition-all"
+                  className="w-full py-4 rounded-full bg-card text-foreground font-headline font-bold shadow-sm hover:shadow-md transition-all"
                 >
                   {t("إدارة الفواتير", "Manage Billing")}
                 </button>
@@ -1347,11 +1347,11 @@ export default function SettingsPage() {
               <SettingsCard delay={0.12} className="border-l-4 border-amber-600">
                 <div className="flex items-center gap-3 mb-6">
                   <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  <h2 className="text-2xl font-headline font-bold text-foreground">
                     {t("دعوة أعضاء", "Invite Members")}
                   </h2>
                 </div>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   {t("ادعُ زملاءك لينضموا إلى فريقك.", "Invite teammates to join your team.")}
                 </p>
                 <div className="flex gap-2">
@@ -1361,7 +1361,7 @@ export default function SettingsPage() {
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder={t("البريد الإلكتروني", "Email address") as string}
                     dir="ltr"
-                    className="rounded-xl bg-white border-slate-200 flex-1"
+                    className="rounded-xl bg-card border-border flex-1"
                   />
                   <button
                     onClick={handleSendInvite}
@@ -1401,7 +1401,7 @@ export default function SettingsPage() {
           </AlertDialogHeader>
           {!changeEmailSent && (
             <div className="py-2">
-              <Label className="text-sm text-slate-600">{t("البريد الجديد", "New email")}</Label>
+              <Label className="text-sm text-muted-foreground">{t("البريد الجديد", "New email")}</Label>
               <Input
                 type="email"
                 className="mt-2"
@@ -1473,7 +1473,7 @@ export default function SettingsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
-            <Label htmlFor="delete-confirm" className="text-sm text-slate-600">
+            <Label htmlFor="delete-confirm" className="text-sm text-muted-foreground">
               {t('اكتب "DELETE" للتأكيد', 'Type "DELETE" to confirm')}
             </Label>
             <Input
@@ -1552,7 +1552,7 @@ export default function SettingsPage() {
               {t("ربط واتساب", "Connect WhatsApp")}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3 text-sm text-slate-600">
+              <div className="space-y-3 text-sm text-muted-foreground">
                 <p>
                   {t(
                     "بربط واتساب ستتمكن من التحدث مع مساعدك الذكي وتلقّي التذكيرات مباشرةً عبر تطبيق واتساب.",
@@ -1597,8 +1597,8 @@ export default function SettingsPage() {
               {t("كيف تستخدم واتساب", "How to Use WhatsApp")}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-4 text-sm text-slate-600">
-                <p className="font-semibold text-slate-800">
+              <div className="space-y-4 text-sm text-muted-foreground">
+                <p className="font-semibold text-foreground">
                   {t("ابدأ محادثتك مع المساعد الذكي عبر واتساب:", "Start chatting with your AI assistant on WhatsApp:")}
                 </p>
 
@@ -1607,17 +1607,17 @@ export default function SettingsPage() {
                   <img
                     src="/whatsapp-qr.png"
                     alt="WhatsApp QR Code"
-                    className="w-44 h-44 rounded-xl border border-slate-200"
+                    className="w-44 h-44 rounded-xl border border-border"
                   />
-                  <p className="text-xs text-slate-500 text-center">
+                  <p className="text-xs text-muted-foreground text-center">
                     {t("امسح الكود بكاميرا هاتفك للانتقال مباشرة", "Scan with your phone camera to open directly")}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <div className="flex-1 h-px bg-slate-200" />
+                  <div className="flex-1 h-px bg-muted" />
                   {t("أو", "or")}
-                  <div className="flex-1 h-px bg-slate-200" />
+                  <div className="flex-1 h-px bg-muted" />
                 </div>
 
                 <ol className="space-y-3 list-none">
@@ -1629,7 +1629,7 @@ export default function SettingsPage() {
                         "Save the Thakirni number in your contacts:"
                       )}
                       {" "}
-                      <span className="font-bold text-slate-900 font-mono" dir="ltr">+966 55 475 1681</span>
+                      <span className="font-bold text-foreground font-mono" dir="ltr">+966 55 475 1681</span>
                     </span>
                   </li>
                   <li className="flex items-start gap-3">

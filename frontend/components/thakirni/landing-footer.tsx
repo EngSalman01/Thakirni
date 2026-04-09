@@ -113,10 +113,10 @@ export function LandingFooter() {
 
         {/* Bottom bar */}
         <div className="pt-8 border-t border-white/[0.06] flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-slate-600">
+          <p className="text-xs text-slate-400">
             {t("© 2026 ذكرني. جميع الحقوق محفوظة.", "© 2026 Thakirni. All rights reserved.")}
           </p>
-          <div className="flex gap-6 text-xs text-slate-600">
+          <div className="flex gap-6 text-xs text-slate-400">
             <Link href="/privacy" className="hover:text-amber-400 transition-colors underline-offset-4 hover:underline decoration-amber-500/40">
               {t("سياسة الخصوصية", "Privacy Policy")}
             </Link>

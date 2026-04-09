@@ -198,7 +198,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
         {/* Downgrade confirmation */}
         {confirming === "free" ? (
           <div className="py-4 space-y-4">
-            <p className="text-slate-600 text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               {t(
                 "هل أنت متأكد؟ ستفقد الوصول إلى الميزات المدفوعة في نهاية فترة الفوترة.",
                 "Are you sure? You'll lose access to paid features at the end of your billing period."
@@ -281,7 +281,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   )}
 
                   <div>
-                    <p className="font-headline font-bold text-base text-slate-900">{t(plan.nameAr, plan.nameEn)}</p>
+                    <p className="font-headline font-bold text-base text-foreground">{t(plan.nameAr, plan.nameEn)}</p>
                     <p className="text-xl font-bold mt-1" style={{ color: plan.accent }}>
                       {plan.id === "free" ? plan.price : `${planPrices[plan.id] ?? (plan.id === "pro" ? 29.99 : 59.99)} SAR/mo`}
                       {plan.noteSuffixEn && (
@@ -294,7 +294,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
 
                   <ul className="space-y-2 flex-1">
                     {plan.features.map((f) => (
-                      <li key={f.en} className="flex items-start gap-2 text-sm text-slate-600">
+                      <li key={f.en} className="flex items-start gap-2 text-sm text-muted-foreground">
                         <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" style={{ color: plan.accent }} />
                         {t(f.ar, f.en)}
                       </li>
@@ -302,7 +302,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   </ul>
 
                   {isCurrent && (
-                    <Button disabled variant="outline" className="w-full rounded-xl text-slate-400 border-slate-200">
+                    <Button disabled variant="outline" className="w-full rounded-xl text-slate-400 border-border">
                       {t("خطتك الحالية", "Current Plan")}
                     </Button>
                   )}

@@ -80,7 +80,7 @@ export function AffiliateCard() {
 
   if (loading) {
     return (
-      <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 flex items-center justify-center">
+      <div className="bg-muted dark:bg-white/[0.03] rounded-2xl p-8 flex items-center justify-center">
         <Loader2 className="w-5 h-5 animate-spin text-amber-600 dark:text-amber-400" />
       </div>
     )
@@ -91,15 +91,15 @@ export function AffiliateCard() {
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-        className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 space-y-5"
+        className="bg-muted dark:bg-white/[0.03] rounded-2xl p-8 space-y-5"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">{t("برنامج الشركاء", "Affiliate Program")}</h3>
-            <p className="text-sm text-slate-500">{t("اكسب ٢٠٪ من كل اشتراك", "Earn 20% on every subscription")}</p>
+            <h3 className="font-bold text-foreground">{t("برنامج الشركاء", "Affiliate Program")}</h3>
+            <p className="text-sm text-muted-foreground">{t("اكسب ٢٠٪ من كل اشتراك", "Earn 20% on every subscription")}</p>
           </div>
         </div>
 
@@ -109,14 +109,14 @@ export function AffiliateCard() {
             { num: "∞",   label: t("لا حد للأرباح", "No earning cap") },
             { num: "30d", label: t("مدة ملفات الارتباط", "Cookie duration") },
           ].map(item => (
-            <div key={item.label} className="bg-white rounded-xl p-3">
+            <div key={item.label} className="bg-card rounded-xl p-3">
               <div className="text-xl font-bold gradient-text">{item.num}</div>
-              <div className="text-xs text-slate-500 mt-0.5">{item.label}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{item.label}</div>
             </div>
           ))}
         </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           {t(
             "شارك رابطك الخاص مع أصدقائك وزملائك. ستحصل على ٢٠٪ من كل اشتراك مدفوع مدى الحياة.",
             "Share your unique link with friends and colleagues. You'll earn 20% of every paid subscription, recurring."
@@ -124,7 +124,7 @@ export function AffiliateCard() {
         </p>
 
         <div className="space-y-3">
-          <label className="text-sm font-semibold text-slate-700">
+          <label className="text-sm font-semibold text-muted-foreground">
             {t("بريد استلام المدفوعات (اختياري)", "Payout email (optional)")}
           </label>
           <input
@@ -132,7 +132,7 @@ export function AffiliateCard() {
             value={payoutEmail}
             onChange={e => setPayoutEmail(e.target.value)}
             placeholder="paypal@example.com"
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+            className="w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30"
           />
         </div>
 
@@ -152,7 +152,7 @@ export function AffiliateCard() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-      className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 space-y-6"
+      className="bg-muted dark:bg-white/[0.03] rounded-2xl p-8 space-y-6"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ export function AffiliateCard() {
             <TrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <div>
-            <h3 className="font-bold text-slate-800">{t("برنامج الشركاء", "Affiliate Program")}</h3>
+            <h3 className="font-bold text-foreground">{t("برنامج الشركاء", "Affiliate Program")}</h3>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
               {t("نشط", "Active")} · {affiliate.commission_rate}% {t("عمولة", "commission")}
             </span>
@@ -178,10 +178,10 @@ export function AffiliateCard() {
         ].map(stat => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="bg-white rounded-xl p-4 text-center">
+            <div key={stat.label} className="bg-card rounded-xl p-4 text-center">
               <Icon className="w-4 h-4 text-amber-600 dark:text-amber-400 mx-auto mb-1.5" />
-              <div className="font-bold text-slate-800">{String(stat.val)}</div>
-              <div className="text-xs text-slate-500 mt-0.5">{stat.label}</div>
+              <div className="font-bold text-foreground">{String(stat.val)}</div>
+              <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
             </div>
           )
         })}
@@ -189,14 +189,14 @@ export function AffiliateCard() {
 
       {/* Link */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold text-slate-700">
+        <label className="text-sm font-semibold text-muted-foreground">
           {t("رابط الإحالة الخاص بك", "Your affiliate link")}
         </label>
         <div className="flex gap-2">
           <input
             readOnly
             value={link}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 text-sm font-mono"
+            className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-card text-muted-foreground text-sm font-mono"
           />
           <button
             onClick={copyLink}
@@ -206,25 +206,25 @@ export function AffiliateCard() {
           </button>
           <a
             href={link} target="_blank" rel="noopener noreferrer"
-            className="px-3 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+            className="px-3 py-2.5 rounded-xl border border-border text-muted-foreground hover:bg-muted transition-all"
           >
             <ExternalLink className="w-4 h-4" />
           </a>
         </div>
         <p className="text-xs text-slate-400">
-          {t("كودك:", "Your code:")} <span className="font-mono font-semibold text-slate-600">{affiliate.code}</span>
+          {t("كودك:", "Your code:")} <span className="font-mono font-semibold text-muted-foreground">{affiliate.code}</span>
         </p>
       </div>
 
       {/* Recent conversions */}
       {conversions.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-slate-700">{t("التحويلات الأخيرة", "Recent conversions")}</h4>
+          <h4 className="text-sm font-semibold text-muted-foreground">{t("التحويلات الأخيرة", "Recent conversions")}</h4>
           <div className="space-y-1.5">
             {conversions.slice(0, 5).map(conv => (
-              <div key={conv.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5">
+              <div key={conv.id} className="flex items-center justify-between bg-card rounded-xl px-4 py-2.5">
                 <div>
-                  <span className="text-sm font-medium text-slate-700">{conv.plan_purchased ?? "Subscription"}</span>
+                  <span className="text-sm font-medium text-muted-foreground">{conv.plan_purchased ?? "Subscription"}</span>
                   <span className="text-xs text-slate-400 ms-2">{new Date(conv.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="text-end">

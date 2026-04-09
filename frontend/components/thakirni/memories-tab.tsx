@@ -107,7 +107,7 @@ export function MemoriesTab({ teamId }: MemoriesTabProps) {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg border border-slate-200 p-4 space-y-3"
+          className="bg-card rounded-lg border border-border p-4 space-y-3"
         >
           <Input
             placeholder={t("Memory title...", "عنوان الذكرى...")}
@@ -152,16 +152,16 @@ export function MemoriesTab({ teamId }: MemoriesTabProps) {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg border border-slate-200 p-4 cursor-pointer hover:shadow-md transition-all"
+                className="bg-card rounded-lg border border-border p-4 cursor-pointer hover:shadow-md transition-all"
                 onClick={() => setSelectedMemory(memory)}
               >
-                <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
+                <h3 className="font-semibold text-foreground mb-2 line-clamp-2">
                   {memory.title}
                 </h3>
-                <p className="text-sm text-slate-600 line-clamp-3">
+                <p className="text-sm text-muted-foreground line-clamp-3">
                   {memory.content}
                 </p>
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -196,14 +196,14 @@ export function MemoriesTab({ teamId }: MemoriesTabProps) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
+            className="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6"
           >
             <h2 className="text-2xl font-bold mb-4">{selectedMemory.title}</h2>
-            <p className="text-slate-700 whitespace-pre-wrap mb-6">
+            <p className="text-muted-foreground whitespace-pre-wrap mb-6">
               {selectedMemory.content}
             </p>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-muted-foreground">
                 {new Date(selectedMemory.created_at).toLocaleDateString()}
               </span>
               <Button

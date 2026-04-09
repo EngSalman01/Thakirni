@@ -194,7 +194,7 @@ export default function AnalyticsPage() {
         <main className="pt-24 px-6 lg:px-12 pb-20 flex items-center justify-center">
           <div className="text-center space-y-4">
             <p className="text-2xl">⚠️</p>
-            <p className="text-slate-700 font-semibold">{t("فشل تحميل التحليلات", "Failed to load analytics")}</p>
+            <p className="text-muted-foreground font-semibold">{t("فشل تحميل التحليلات", "Failed to load analytics")}</p>
             <button onClick={() => { setFetchError(false); setRetryKey(k => k + 1); }}
               className="px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-bold hover:bg-amber-700 transition-colors">
               {t("إعادة المحاولة", "Retry")}
@@ -231,17 +231,17 @@ export default function AnalyticsPage() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
                 <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-label font-medium text-slate-700">{t(`آخر ${period} أيام`, `Last ${period} days`)}</span>
+                <span className="text-sm font-label font-medium text-muted-foreground">{t(`آخر ${period} أيام`, `Last ${period} days`)}</span>
               </motion.div>
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
-                <span className="text-slate-900">{t("رؤية", "See Your")}</span>{" "}
+                <span className="text-foreground">{t("رؤية", "See Your")}</span>{" "}
                 <span className="gradient-text">{t("شاملة", "Progress")}</span>
                 <br />
-                <span className="text-slate-900">{t("على تقدمك", "Clearly")}</span>
+                <span className="text-foreground">{t("على تقدمك", "Clearly")}</span>
               </h1>
 
-              <p className="text-xl text-slate-600 font-body mb-10 leading-relaxed max-w-lg">
+              <p className="text-xl text-muted-foreground font-body mb-10 leading-relaxed max-w-lg">
                 {t(
                   "تابع أداءك عبر الذكريات والخطط والعادات والأهداف في لوحة تحليلية متكاملة.",
                   "Track your performance across memories, plans, habits, and goals in one comprehensive dashboard."
@@ -257,13 +257,13 @@ export default function AnalyticsPage() {
                   { icon: Target, label: t("أهداف جارية", "Goals active"), value: stats.activeGoals, color: "#10b981" },
                 ].map(({ icon: Icon, label, value, color }, i) => (
                   <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.07 }}
-                    className="bg-white rounded-2xl p-4 border border-[#e4e2e1] shadow-card flex items-center gap-3 hover-lift">
+                    className="bg-card rounded-2xl p-4 border border-border shadow-card flex items-center gap-3 hover-lift">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}18` }}>
                       <Icon className="w-5 h-5" style={{ color }} />
                     </div>
                     <div>
-                      <p className="text-2xl font-headline font-bold text-slate-900">{value}</p>
-                      <p className="text-xs text-slate-500">{label}</p>
+                      <p className="text-2xl font-headline font-bold text-foreground">{value}</p>
+                      <p className="text-xs text-muted-foreground">{label}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -276,9 +276,9 @@ export default function AnalyticsPage() {
               {/* Decorative gradient */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-600/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
 
-              <p className="text-sm font-label font-bold text-slate-500 mb-1">{t("إنجاز الخطط", "Plan Completion")}</p>
-              <p className="text-3xl font-headline font-extrabold text-slate-900 mb-3">
-                {stats.completedPlans} <span className="text-lg font-normal text-slate-500">{t("مكتملة", "completed")}</span>
+              <p className="text-sm font-label font-bold text-muted-foreground mb-1">{t("إنجاز الخطط", "Plan Completion")}</p>
+              <p className="text-3xl font-headline font-extrabold text-foreground mb-3">
+                {stats.completedPlans} <span className="text-lg font-normal text-muted-foreground">{t("مكتملة", "completed")}</span>
               </p>
               {weekOverWeek !== null && (
                 <div className={`inline-flex items-center gap-1.5 text-xs font-label font-bold px-3 py-1 rounded-full mb-4 ${
@@ -300,19 +300,19 @@ export default function AnalyticsPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8"
+              className="bg-muted dark:bg-white/[0.03] rounded-2xl p-8"
             >
               <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                   <Brain className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  <h2 className="text-2xl font-headline font-bold text-slate-900">
+                  <h2 className="text-2xl font-headline font-bold text-foreground">
                     {t("استخدام الذكاء الاصطناعي", "AI Usage")}
                   </h2>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
                     {usage.tier}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>{t("هذا الشهر", "This month")}</span>
                   {usage.credits > 0 && (
                     <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
@@ -357,11 +357,11 @@ export default function AnalyticsPage() {
                     limitZero: usage.limits.voiceNoteMinutes === 0,
                   },
                 ].map(({ label, used, limit, pct, icon, limitZero }) => (
-                  <div key={label as string} className="bg-white rounded-xl p-4 space-y-3">
+                  <div key={label as string} className="bg-card rounded-xl p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span>{icon}</span>
-                        <span className="text-sm font-label font-semibold text-slate-700">{label as string}</span>
+                        <span className="text-sm font-label font-semibold text-muted-foreground">{label as string}</span>
                       </div>
                       {pct >= 100 && !limitZero && (
                         <span className="text-[10px] font-bold uppercase bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
@@ -395,7 +395,7 @@ export default function AnalyticsPage() {
                           />
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-muted-foreground">
                             {used} / {limit}
                           </span>
                           <span className={`text-xs font-bold ${pct >= 100 ? "text-red-500" : pct >= 80 ? "text-amber-500" : "text-slate-400"}`}>
@@ -432,9 +432,9 @@ export default function AnalyticsPage() {
 
             {/* Plans chart */}
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
-              className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden group hover-lift">
+              className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden group hover-lift">
               <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-amber-600/8 to-transparent rounded-tl-3xl pointer-events-none transition-transform duration-500 group-hover:translate-y-0 translate-y-4 translate-x-4" />
-              <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
+              <h2 className="text-2xl font-headline font-bold text-foreground mb-8">
                 📊 {t("إنجاز الخطط اليومي", "Daily Plan Completion")}
               </h2>
               <ResponsiveContainer width="100%" height={220}>
@@ -477,8 +477,8 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Habits */}
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
-                <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
+                <h2 className="text-2xl font-headline font-bold text-foreground mb-8">
                   🔥 {t("أداء العادات", "Habit Performance")}
                 </h2>
                 {habits.length === 0 ? (
@@ -500,8 +500,8 @@ export default function AnalyticsPage() {
 
               {/* Goals */}
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, delay: 0.05 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
-                <h2 className="text-2xl font-headline font-bold text-slate-900 mb-8">
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
+                <h2 className="text-2xl font-headline font-bold text-foreground mb-8">
                   🎯 {t("تقدم الأهداف", "Goals Progress")}
                 </h2>
                 {goals.length === 0 ? (
@@ -511,7 +511,7 @@ export default function AnalyticsPage() {
                     {goals.map((g, i) => (
                       <div key={i}>
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-label font-medium text-slate-700 truncate flex-1 me-3">{g.title}</span>
+                          <span className="text-sm font-label font-medium text-muted-foreground truncate flex-1 me-3">{g.title}</span>
                           <span className="text-sm font-bold gradient-text shrink-0">{g.progress}%</span>
                         </div>
                         <div className="h-2.5 bg-[#e4e2e1] rounded-full overflow-hidden">

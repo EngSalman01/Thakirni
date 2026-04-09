@@ -71,11 +71,11 @@ export function CommandPalette() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="p-0 gap-0 max-w-lg overflow-hidden rounded-2xl" dir={isArabic ? "rtl" : "ltr"}>
         <Command className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-slate-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100">
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
             <span className="text-slate-400 text-xs font-mono">⌘K</span>
             <Command.Input
               placeholder={t("اكتب أمراً أو ابحث...", "Type a command or search...")}
-              className="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400 font-label"
+              className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-slate-400 font-label"
             />
           </div>
 
@@ -96,12 +96,12 @@ export function CommandPalette() {
                         key={cmd.id}
                         value={`${cmd.label} ${cmd.labelAr} ${cmd.keywords}`}
                         onSelect={cmd.action}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 dark:bg-white/[0.03] aria-selected:bg-slate-50 dark:bg-white/[0.03] transition-colors group"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-muted dark:bg-white/[0.03] aria-selected:bg-muted dark:bg-white/[0.03] transition-colors group"
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${cmd.color}18` }}>
                           <Icon className="w-4 h-4" style={{ color: cmd.color }} />
                         </div>
-                        <span className="flex-1 text-sm font-label font-medium text-slate-800">
+                        <span className="flex-1 text-sm font-label font-medium text-foreground">
                           {isArabic ? cmd.labelAr : cmd.label}
                         </span>
                         <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-aria-selected:text-slate-500 transition-colors" />
@@ -113,7 +113,7 @@ export function CommandPalette() {
             })}
           </Command.List>
 
-          <div className="px-4 py-2.5 border-t border-slate-100 flex items-center gap-4 text-[11px] text-slate-400 font-mono">
+          <div className="px-4 py-2.5 border-t border-border flex items-center gap-4 text-[11px] text-slate-400 font-mono">
             <span>↑↓ {t("للتنقل", "navigate")}</span>
             <span>↵ {t("للتحديد", "select")}</span>
             <span>esc {t("للإغلاق", "close")}</span>

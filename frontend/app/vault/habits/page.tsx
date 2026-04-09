@@ -107,10 +107,10 @@ export default function HabitsPage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
                 <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-foreground leading-[1.1]">
                     {t("عاداتي ", "My ")}<span className="gradient-text">{t("اليومية", "Habits")}</span>
                   </h1>
-                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                  <p className="text-xl text-muted-foreground mt-4 max-w-lg">
                     {t("الاتساق هو سر النجاح. تتبع عاداتك اليومية وابنِ حياتك.", "Consistency is the secret to success. Track your habits and build your life.")}
                   </p>
                 </div>
@@ -136,7 +136,7 @@ export default function HabitsPage() {
               {/* Right: progress ring */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
                 className="hidden lg:flex justify-center">
-                <div className="relative bg-white rounded-2xl p-12 shadow-card hover-lift flex flex-col items-center">
+                <div className="relative bg-card rounded-2xl p-12 shadow-card hover-lift flex flex-col items-center">
                   <div className="relative w-48 h-48 mb-6">
                     <svg className="w-48 h-48 -rotate-90" viewBox="0 0 192 192">
                       <circle cx="96" cy="96" r="80" fill="none" stroke="#f0eded" strokeWidth="12" />
@@ -150,10 +150,10 @@ export default function HabitsPage() {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="text-4xl font-headline font-extrabold gradient-text">{total > 0 ? Math.round((completedCount/total)*100) : 0}%</span>
-                      <span className="text-sm text-slate-500">{t("مكتمل", "complete")}</span>
+                      <span className="text-sm text-muted-foreground">{t("مكتمل", "complete")}</span>
                     </div>
                   </div>
-                  <p className="font-headline font-bold text-slate-900 text-center">
+                  <p className="font-headline font-bold text-foreground text-center">
                     {completedCount === total && total > 0 ? t("أنجزت كل عاداتك! 🔥", "All habits done! 🔥") : t(`${completedCount} من ${total}`, `${completedCount} of ${total}`)}
                   </p>
                 </div>
@@ -176,7 +176,7 @@ export default function HabitsPage() {
             ) : habitsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+                  <div key={i} className="bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden">
                     <Skeleton className="h-2 w-full rounded-none" />
                     <div className="p-10 space-y-4">
                       <Skeleton className="h-12 w-12 rounded-xl" />
@@ -189,10 +189,10 @@ export default function HabitsPage() {
               </div>
             ) : habits.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
                 <Flame className="w-16 h-16 mx-auto mb-4 text-amber-600 dark:text-amber-400/30" />
-                <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا يوجد عادات بعد", "No habits yet")}</h2>
-                <p className="text-slate-500 mb-8">{t("أضف عادتك الأولى وابدأ رحلتك!", "Add your first habit and start your journey!")}</p>
+                <h2 className="text-2xl font-headline font-bold text-muted-foreground mb-2">{t("لا يوجد عادات بعد", "No habits yet")}</h2>
+                <p className="text-muted-foreground mb-8">{t("أضف عادتك الأولى وابدأ رحلتك!", "Add your first habit and start your journey!")}</p>
                 <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
                   onClick={() => setOpen(true)}
                   className="inline-flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold btn-glow">
@@ -206,7 +206,7 @@ export default function HabitsPage() {
                     custom={i} initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-32px" }}
                     transition={{ duration: 0.28, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                    className={`relative bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
+                    className={`relative bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
                     onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}>
                     {/* Color stripe */}
                     <div className="h-2 w-full" style={{ background: (h.color as string) || "#D97706" }} />
@@ -225,7 +225,7 @@ export default function HabitsPage() {
                           </Button>
                         </div>
                       </div>
-                      <h3 className={`text-xl font-headline font-bold mb-3 ${h.completed_today ? "line-through text-slate-400" : "text-slate-900"}`}>
+                      <h3 className={`text-xl font-headline font-bold mb-3 ${h.completed_today ? "line-through text-slate-400" : "text-foreground"}`}>
                         {h.name as string}
                       </h3>
                       {(h.current_streak as number) > 0 && (
@@ -247,11 +247,11 @@ export default function HabitsPage() {
                   whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.7, delay: habits.length * 0.08, ease: [0.2,1,0.3,1] }}>
                   <button onClick={() => setOpen(true)}
-                    className="w-full h-full min-h-[200px] bg-white border-2 border-dashed border-[#e4e2e1] rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-amber-600/50 hover:bg-slate-50 dark:bg-white/[0.03] transition-all group">
+                    className="w-full h-full min-h-[200px] bg-card border-2 border-dashed border-border rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-amber-600/50 hover:bg-muted dark:bg-white/[0.03] transition-all group">
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Plus className="w-7 h-7 text-amber-600 dark:text-amber-400" />
                     </div>
-                    <span className="font-headline font-bold text-slate-600">{t("أضف عادة", "Add habit")}</span>
+                    <span className="font-headline font-bold text-muted-foreground">{t("أضف عادة", "Add habit")}</span>
                   </button>
                 </motion.div>
               </div>
@@ -265,7 +265,7 @@ export default function HabitsPage() {
             <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
             <form onSubmit={createHabit} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-muted-foreground">
                   {t("اسم العادة", "Habit name")} <span className="text-red-500">*</span>
                 </label>
                 <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />

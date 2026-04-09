@@ -109,7 +109,7 @@ export function AIInputBox() {
       {/* ── The box ─────────────────────────────────────────────────────────── */}
       <motion.div
         layout
-        className="rounded-2xl bg-white dark:bg-white/[0.04] border border-slate-300 dark:border-white/[0.12] overflow-hidden shadow-sm transition-shadow duration-200 focus-within:shadow-[0_0_0_3px_rgba(127,119,221,0.18),0_2px_12px_rgba(127,119,221,0.10)]"
+        className="rounded-2xl bg-card dark:bg-white/[0.04] border border-slate-300 dark:border-white/[0.12] overflow-hidden shadow-sm transition-shadow duration-200 focus-within:shadow-[0_0_0_3px_rgba(127,119,221,0.18),0_2px_12px_rgba(127,119,221,0.10)]"
       >
         {/* Messages area — only when chat started */}
         <AnimatePresence>
@@ -133,12 +133,12 @@ export function AIInputBox() {
                           animate={{ opacity: 1, y: 0 }}
                           className={`flex gap-2.5 ${isUser ? "flex-row-reverse" : ""}`}
                         >
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[11px] ${isUser ? "bg-primary text-primary-foreground" : "bg-slate-100 dark:bg-white/[0.08] text-muted-foreground"}`}>
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[11px] ${isUser ? "bg-primary text-primary-foreground" : "bg-muted dark:bg-white/[0.08] text-muted-foreground"}`}>
                             {isUser ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
                           </div>
                           <div className="flex-1 max-w-[80%] space-y-1.5">
                             {msg.content && (
-                              <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${isUser ? "bg-primary text-primary-foreground" : "bg-slate-100 dark:bg-white/[0.06] text-foreground"}`}>
+                              <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${isUser ? "bg-primary text-primary-foreground" : "bg-muted dark:bg-white/[0.06] text-foreground"}`}>
                                 {msg.content}
                               </div>
                             )}
@@ -153,10 +153,10 @@ export function AIInputBox() {
 
                   {isLoading && messages[messages.length - 1]?.role === "user" && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/[0.08] flex items-center justify-center shrink-0">
+                      <div className="w-6 h-6 rounded-full bg-muted dark:bg-white/[0.08] flex items-center justify-center shrink-0">
                         <Bot className="w-3 h-3 text-muted-foreground" />
                       </div>
-                      <div className="bg-slate-100 dark:bg-white/[0.06] rounded-2xl px-3 py-2 flex gap-1 items-center">
+                      <div className="bg-muted dark:bg-white/[0.06] rounded-2xl px-3 py-2 flex gap-1 items-center">
                         {[0, 0.2, 0.4].map(d => (
                           <motion.span key={d} className="w-1.5 h-1.5 rounded-full bg-amber-500"
                             animate={{ y: [0, -5, 0] }} transition={{ duration: 0.6, repeat: Infinity, delay: d }} />
@@ -175,7 +175,7 @@ export function AIInputBox() {
                 </div>
               </ScrollArea>
               {/* divider */}
-              <div className="h-px bg-slate-100 dark:bg-white/[0.06]" />
+              <div className="h-px bg-muted dark:bg-white/[0.06]" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -191,7 +191,7 @@ export function AIInputBox() {
                 onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit() } }}
                 placeholder={t("وش تبغى أرتب لك اليوم؟ 👀", "What can I organise for you today? 👀")}
                 rows={3}
-                className="w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none px-5 py-4 pb-14 text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400/70 dark:placeholder:text-slate-500/70 leading-relaxed"
+                className="w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none px-5 py-4 pb-14 text-base text-foreground dark:text-slate-100 placeholder:text-slate-400/70 dark:placeholder:text-slate-500/70 leading-relaxed"
               />
               <motion.button
                 type="submit"
@@ -218,7 +218,7 @@ export function AIInputBox() {
               <button
                 type="button"
                 onClick={isListening ? stopListening : startListening}
-                className={`shrink-0 p-1.5 rounded-lg transition-colors ${isListening ? "bg-red-500/15 text-red-500" : "text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/[0.06]"}`}
+                className={`shrink-0 p-1.5 rounded-lg transition-colors ${isListening ? "bg-red-500/15 text-red-500" : "text-muted-foreground hover:text-foreground hover:bg-muted dark:hover:bg-white/[0.06]"}`}
               >
                 {isListening ? <Square className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
               </button>
@@ -242,7 +242,7 @@ export function AIInputBox() {
           <button
             key={chip}
             onClick={() => handleChip(chip)}
-            className="px-3.5 py-1.5 rounded-full bg-white dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 text-sm font-medium cursor-pointer transition-colors duration-150 border border-slate-200 dark:border-white/[0.10] hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30"
+            className="px-3.5 py-1.5 rounded-full bg-card dark:bg-white/[0.06] text-muted-foreground dark:text-slate-300 text-sm font-medium cursor-pointer transition-colors duration-150 border border-border dark:border-white/[0.10] hover:border-orange-400 dark:hover:border-orange-500 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30"
           >
             {chip}
           </button>

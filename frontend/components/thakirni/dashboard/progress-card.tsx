@@ -31,16 +31,16 @@ export function ProgressCard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-white dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 space-y-4"
+      className="bg-card dark:bg-white/[0.04] border border-border dark:border-white/[0.08] rounded-2xl p-5 space-y-4"
     >
-      <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+      <h2 className="text-base font-semibold text-foreground dark:text-slate-100">
         {t("إنجازك اليوم", "Today's Progress")}
       </h2>
 
       {!data ? (
         <div className="space-y-2">
-          <div className="h-4 bg-slate-100 dark:bg-white/[0.06] rounded-full animate-pulse w-3/4" />
-          <div className="h-2 bg-slate-100 dark:bg-white/[0.06] rounded-full animate-pulse" />
+          <div className="h-4 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse w-3/4" />
+          <div className="h-2 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse" />
         </div>
       ) : data.allDone ? (
         <motion.div
@@ -56,7 +56,7 @@ export function ProgressCard() {
         <div className="space-y-3">
           {/* Label + streak */}
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <p className="text-sm font-medium text-muted-foreground dark:text-slate-300">
               {data.total > 0
                 ? t(`أنجزت ${data.done} / ${data.total} اليوم 👌`, `${data.done} / ${data.total} done today 👌`)
                 : t("ما عندك مهام اليوم 👀", "No tasks for today 👀")}
@@ -73,7 +73,7 @@ export function ProgressCard() {
 
           {/* Progress bar — scaleX is GPU-composited */}
           {data.total > 0 && (
-            <div className="relative h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="relative h-2 bg-muted dark:bg-slate-800 rounded-full overflow-hidden">
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: pct / 100 }}
