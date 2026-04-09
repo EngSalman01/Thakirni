@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     supabase.from("analytics_events").insert({
       user_id: user.id,
       event_name: "whatsapp_welcome_sent",
-      properties: { phone: normalized, use_cases: cases },
+      properties: { phone: normalized, use_cases: useCases ?? [] },
     }).then(undefined, () => {})
 
     return NextResponse.json({ ok: true })
