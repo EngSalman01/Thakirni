@@ -683,9 +683,9 @@ export default function AuthPage() {
               animate={{ scale: [1, 1.04, 1] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
               <img
-                src="/images/logo-gradient-bg.svg"
+                src="/logo-icon.svg"
                 alt="Thakirni"
-                className="w-24 h-24 rounded-3xl"
+                className="w-24 h-24"
                 style={{ boxShadow: "0 0 50px rgba(251,191,36,0.4), 0 0 100px rgba(217,119,6,0.4)" }}
               />
             </motion.div>
