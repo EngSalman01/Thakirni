@@ -82,19 +82,23 @@ export async function middleware(request: NextRequest) {
 
   // Redirect new (non-onboarded) users to /onboarding before they can access /vault
   if (pathname.startsWith("/vault") && user) {
-    try {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("onboarded_at")
-        .eq("id", user.id)
-        .single()
-      if (!profile?.onboarded_at) {
-        const url = request.nextUrl.clone()
-        url.pathname = "/onboarding"
-        return NextResponse.redirect(url)
+    // Fast path: cookie set immediately after markOnboarded() to avoid read-after-write race
+    const onboardedCookie = request.cookies.get("onboarded")
+    if (!onboardedCookie?.value) {
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarded_at")
+          .eq("id", user.id)
+          .single()
+        if (!profile?.onboarded_at) {
+          const url = request.nextUrl.clone()
+          url.pathname = "/onboarding"
+          return NextResponse.redirect(url)
+        }
+      } catch {
+        // If column doesn't exist yet (migration not run), skip
       }
-    } catch {
-      // If column doesn't exist yet (migration not run), skip
     }
   }
 

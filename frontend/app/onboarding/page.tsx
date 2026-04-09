@@ -8,6 +8,53 @@ import { useLanguage } from "@/components/language-provider"
 
 const STEPS = 5
 
+const COUNTRY_CODES = [
+  // Gulf & Arab countries first (primary market)
+  { code: "+966", flag: "🇸🇦", name: "السعودية / Saudi Arabia" },
+  { code: "+971", flag: "🇦🇪", name: "الإمارات / UAE" },
+  { code: "+965", flag: "🇰🇼", name: "الكويت / Kuwait" },
+  { code: "+974", flag: "🇶🇦", name: "قطر / Qatar" },
+  { code: "+973", flag: "🇧🇭", name: "البحرين / Bahrain" },
+  { code: "+968", flag: "🇴🇲", name: "عمان / Oman" },
+  { code: "+962", flag: "🇯🇴", name: "الأردن / Jordan" },
+  { code: "+961", flag: "🇱🇧", name: "لبنان / Lebanon" },
+  { code: "+20",  flag: "🇪🇬", name: "مصر / Egypt" },
+  { code: "+964", flag: "🇮🇶", name: "العراق / Iraq" },
+  { code: "+967", flag: "🇾🇪", name: "اليمن / Yemen" },
+  { code: "+970", flag: "🇵🇸", name: "فلسطين / Palestine" },
+  { code: "+963", flag: "🇸🇾", name: "سوريا / Syria" },
+  { code: "+212", flag: "🇲🇦", name: "المغرب / Morocco" },
+  { code: "+213", flag: "🇩🇿", name: "الجزائر / Algeria" },
+  { code: "+216", flag: "🇹🇳", name: "تونس / Tunisia" },
+  { code: "+218", flag: "🇱🇾", name: "ليبيا / Libya" },
+  { code: "+249", flag: "🇸🇩", name: "السودان / Sudan" },
+  // International
+  { code: "+1",   flag: "🇺🇸", name: "USA / Canada" },
+  { code: "+44",  flag: "🇬🇧", name: "United Kingdom" },
+  { code: "+33",  flag: "🇫🇷", name: "France" },
+  { code: "+49",  flag: "🇩🇪", name: "Germany" },
+  { code: "+34",  flag: "🇪🇸", name: "Spain" },
+  { code: "+39",  flag: "🇮🇹", name: "Italy" },
+  { code: "+31",  flag: "🇳🇱", name: "Netherlands" },
+  { code: "+90",  flag: "🇹🇷", name: "Turkey / Türkiye" },
+  { code: "+91",  flag: "🇮🇳", name: "India" },
+  { code: "+92",  flag: "🇵🇰", name: "Pakistan" },
+  { code: "+880", flag: "🇧🇩", name: "Bangladesh" },
+  { code: "+60",  flag: "🇲🇾", name: "Malaysia" },
+  { code: "+62",  flag: "🇮🇩", name: "Indonesia" },
+  { code: "+63",  flag: "🇵🇭", name: "Philippines" },
+  { code: "+7",   flag: "🇷🇺", name: "Russia" },
+  { code: "+86",  flag: "🇨🇳", name: "China" },
+  { code: "+81",  flag: "🇯🇵", name: "Japan" },
+  { code: "+82",  flag: "🇰🇷", name: "South Korea" },
+  { code: "+234", flag: "🇳🇬", name: "Nigeria" },
+  { code: "+254", flag: "🇰🇪", name: "Kenya" },
+  { code: "+27",  flag: "🇿🇦", name: "South Africa" },
+  { code: "+55",  flag: "🇧🇷", name: "Brazil" },
+  { code: "+61",  flag: "🇦🇺", name: "Australia" },
+  { code: "+64",  flag: "🇳🇿", name: "New Zealand" },
+]
+
 const USE_CASES = [
   { id: "goals",     ar: "تحقيق الأهداف",         en: "Achieve goals",      icon: "🎯" },
   { id: "habits",    ar: "بناء عادات يومية",       en: "Build daily habits", icon: "🔄" },
@@ -30,6 +77,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [selectedUseCases, setSelectedUseCases] = useState<string[]>([])
   const [phone, setPhone] = useState("")
+  const [countryCode, setCountryCode] = useState("+966")
   const [name, setName] = useState("")
   const [loading, setLoading] = useState(false)
   const [createdItem, setCreatedItem] = useState<QuickCreateResult | null>(null)
@@ -76,7 +124,21 @@ export default function OnboardingPage() {
     await supabase.from("profiles")
       .update({ onboarded_at: new Date().toISOString() })
       .eq("id", user.id)
+    // Cookie lets middleware pass /vault immediately — avoids redirect race condition
+    document.cookie = "onboarded=1; path=/; max-age=300; SameSite=Lax"
     return user
+  }
+
+  function handlePhoneNext() {
+    const fullPhone = phone.trim() ? countryCode + phone.trim() : ""
+    setStep(4)
+    if (fullPhone) {
+      fetch("/api/whatsapp/send-welcome", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone, name, useCases: selectedUseCases }),
+      }).catch(() => {})
+    }
   }
 
   async function finish() {
@@ -103,14 +165,6 @@ export default function OnboardingPage() {
         event_name: "onboarding_completed",
         properties: { use_cases: selectedUseCases, has_phone: !!phone },
       }).then(() => {})
-
-      if (phone.trim()) {
-        fetch("/api/whatsapp/send-welcome", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: phone.trim(), name, useCases: selectedUseCases }),
-        }).catch(() => {})
-      }
 
       router.push("/vault")
     } catch {
@@ -248,13 +302,22 @@ export default function OnboardingPage() {
                   {t("رقم الواتساب (اختياري)", "WhatsApp number (optional)")}
                 </label>
                 <div className="flex gap-2">
-                  <div className="px-3 py-3 bg-muted rounded-xl text-muted-foreground text-sm font-mono">+966</div>
+                  <select
+                    value={countryCode}
+                    onChange={e => setCountryCode(e.target.value)}
+                    className="px-3 py-3 bg-muted rounded-xl text-muted-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-amber-600/30 shrink-0"
+                  >
+                    {COUNTRY_CODES.map(c => (
+                      <option key={c.code} value={c.code}>
+                        {c.flag} {c.code} — {c.name}
+                      </option>
+                    ))}
+                  </select>
                   <input
                     type="tel"
                     value={phone}
                     onChange={e => setPhone(e.target.value.replace(/\D/g, ""))}
-                    placeholder="5XXXXXXXX"
-                    maxLength={9}
+                    placeholder={t("رقم الهاتف", "Phone number")}
                     className="flex-1 px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-foreground font-mono"
                   />
                 </div>
@@ -264,7 +327,7 @@ export default function OnboardingPage() {
                   className="flex-1 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-muted transition-colors">
                   {t("رجوع", "Back")}
                 </button>
-                <button onClick={() => setStep(4)}
+                <button onClick={handlePhoneNext}
                   className="flex-1 py-3 rounded-xl text-white font-semibold power-gradient btn-glow hover:opacity-90 transition-all">
                   {phone.trim() ? t("التالي", "Next") : t("تخطي", "Skip")}
                 </button>
