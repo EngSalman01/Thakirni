@@ -17,12 +17,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Phone required" }, { status: 400 })
     }
 
-    // Normalize phone
-    const normalized = phone.startsWith("0")
-      ? "966" + phone.slice(1)
-      : phone.startsWith("+")
-      ? phone.slice(1)
-      : phone
+    // Normalize to E.164 digits only (strip +, handle legacy 0-prefix Saudi numbers)
+    const normalized = phone.startsWith("+")
+      ? phone.slice(1).replace(/\s/g, "")
+      : phone.startsWith("0")
+      ? "966" + phone.slice(1).replace(/\s/g, "")
+      : phone.replace(/\s/g, "")
 
     // Save phone number to profile
     await supabase
@@ -31,51 +31,24 @@ export async function POST(req: NextRequest) {
       .eq("id", user.id)
 
     const firstName = (name ?? "").split(" ")[0] || "صديقي"
-    const cases = useCases ?? []
-    const isArabicUser = true // Saudi-first product
 
-    // Build a personalized welcome based on use cases
-    let useCaseHint = ""
-    if (isArabicUser) {
-      if (cases.includes("reminders"))
-        useCaseHint = "\n• قول لي \"ذكرني بشي\" وأحطه لك فوراً ⏰"
-      else if (cases.includes("tasks") || cases.includes("goals"))
-        useCaseHint = "\n• قول لي \"عندي مهمة\" وأضيفها لك ✅"
-      else if (cases.includes("meetings"))
-        useCaseHint = "\n• رسّل لي تسجيل الاجتماع وألخصه لك 🎙️"
-      else
-        useCaseHint = "\n• قول لي \"رتب لي يومي\" وأبدأ معك 📅"
-    }
-
-    const message = isArabicUser
-      ? [
-          `هلا ${firstName}! 👋`,
-          "",
-          "أنا مساعدك في *ذكرني* — موجود ٢٤/٧ على واتساب.",
-          "",
-          "جرب الحين:",
-          "• \"وش عندي اليوم؟\" 📋",
-          "• \"رتب لي يومي\" 🗓️",
-          `• \"ذكرني الساعة ٦ بـ...\" ⏰${useCaseHint}`,
-          "",
-          "كل صباح تصلك رسالة بملخص يومك. 🌅",
-          "",
-          "ابدأ بأي رسالة تبغاها 👌",
-        ].join("\n")
-      : [
-          `Hey ${firstName}! 👋`,
-          "",
-          "I'm your *Thakirni* assistant — available 24/7 on WhatsApp.",
-          "",
-          "Try now:",
-          "• \"What do I have today?\" 📋",
-          "• \"Plan my day\" 🗓️",
-          "• \"Remind me at 6pm to...\" ⏰",
-          "",
-          "Every morning you'll get a personalized day briefing. 🌅",
-          "",
-          "Just send me anything to get started 👌",
-        ].join("\n")
+    // Bilingual welcome — Arabic + English for all users worldwide
+    const message = [
+      `هلا ${firstName}! / Hey ${firstName}! 👋`,
+      "",
+      "أنا مساعدك الذكي في *ذكرني* — موجود ٢٤/٧ على واتساب.",
+      "I'm your *Thakirni* AI assistant — here 24/7 on WhatsApp.",
+      "",
+      "جرب الحين | Try now:",
+      "• وش عندي اليوم؟ / What do I have today? 📋",
+      "• رتب لي يومي / Plan my day 🗓️",
+      "• ذكرني الساعة ٦ بـ... / Remind me at 6pm to... ⏰",
+      "",
+      "كل صباح تصلك رسالة بملخص يومك ☀️",
+      "You'll get a daily morning briefing every day ☀️",
+      "",
+      "ابدأ بأي رسالة تبغاها 👌 | Just send anything to get started 👌",
+    ].join("\n")
 
     await sendWhatsAppMessage(normalized, message)
 
