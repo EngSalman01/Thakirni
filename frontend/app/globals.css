@@ -103,6 +103,18 @@
   --chart-4: #0891B2;
   --chart-5: #92400E;
 
+  /* WhatsApp mock theme — light */
+  --wa-chat-bg: #eae6df;
+  --wa-wallpaper: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c8b9a3' fill-opacity='0.25'%3E%3Cpath d='M20 20.5V18h-1v2.5L17.5 22H16v1h1.5l1.5-1.5V24h1v-2.5l1.5-1.5H23v-1h-1.5z'/%3E%3C/g%3E%3C/svg%3E");
+  --wa-out-bubble: #d9fdd3;
+  --wa-in-bubble: #ffffff;
+  --wa-msg-text: #111b21;
+  --wa-timestamp: #667781;
+  --wa-input-bar: #f0f2f5;
+  --wa-input-field: #ffffff;
+  --wa-chip-bg: rgba(11,20,26,0.6);
+  --wa-chip-text: #ffffff;
+
   /* Brand gradients */
   --gradient-primary: linear-gradient(135deg, #FBBF24 0%, #D97706 45%, #92400E 100%);
   --power-gradient: linear-gradient(135deg, #FBBF24 0%, #D97706 45%, #92400E 100%);
@@ -197,6 +209,18 @@
 
   --gradient-primary: linear-gradient(135deg, #FBBF24 0%, #D97706 45%, #92400E 100%);
   --power-gradient: linear-gradient(135deg, #FBBF24 0%, #D97706 45%, #92400E 100%);
+
+  /* WhatsApp mock theme — dark */
+  --wa-chat-bg: #0d1417;
+  --wa-wallpaper: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23182229' fill-opacity='0.8'%3E%3Cpath d='M20 20.5V18h-1v2.5L17.5 22H16v1h1.5l1.5-1.5V24h1v-2.5l1.5-1.5H23v-1h-1.5z'/%3E%3C/g%3E%3C/svg%3E");
+  --wa-out-bubble: #005c4b;
+  --wa-in-bubble: #202c33;
+  --wa-msg-text: #e9edef;
+  --wa-timestamp: #8696a0;
+  --wa-input-bar: #1f2c33;
+  --wa-input-field: #2a3942;
+  --wa-chip-bg: rgba(17,27,33,0.9);
+  --wa-chip-text: #e9edef;
 
   --shadow-ambient: 0px 4px 20px rgba(0, 0, 0, 0.5);
   --shadow-card: 0px 8px 30px rgba(0, 0, 0, 0.6);

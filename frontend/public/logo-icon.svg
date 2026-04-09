@@ -38,9 +38,4 @@
           fill="#fff" fill-opacity=".96"/>
   </g>
 
-  <!-- Subtle embedded checkmark -->
-  <path transform="rotate(12 32 32)"
-        d="M27.5 32 30.5 35.5 37 28.5"
-        stroke="#fff" stroke-width="2.3" stroke-opacity=".65"
-        stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
