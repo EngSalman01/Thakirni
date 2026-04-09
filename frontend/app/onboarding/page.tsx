@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { createClient } from "@/lib/supabase/client"
 import { useLanguage } from "@/components/language-provider"
@@ -72,7 +71,6 @@ interface QuickCreateResult {
 }
 
 export default function OnboardingPage() {
-  const router = useRouter()
   const { t, isArabic } = useLanguage()
   const [step, setStep] = useState(1)
   const [selectedUseCases, setSelectedUseCases] = useState<string[]>([])
@@ -120,7 +118,7 @@ export default function OnboardingPage() {
 
   async function markOnboarded() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push("/auth"); return null }
+    if (!user) { window.location.href = "/auth"; return null }
     await supabase.from("profiles")
       .update({ onboarded_at: new Date().toISOString() })
       .eq("id", user.id)
@@ -166,9 +164,9 @@ export default function OnboardingPage() {
         properties: { use_cases: selectedUseCases, has_phone: !!phone },
       }).then(() => {})
 
-      router.push("/vault")
+      window.location.href = "/vault"
     } catch {
-      router.push("/vault")
+      window.location.href = "/vault"
     } finally {
       setLoading(false)
     }
@@ -176,7 +174,7 @@ export default function OnboardingPage() {
 
   async function skip() {
     try { await markOnboarded() } catch {}
-    router.push("/vault")
+    window.location.href = "/vault"
   }
 
   return (
@@ -305,11 +303,11 @@ export default function OnboardingPage() {
                   <select
                     value={countryCode}
                     onChange={e => setCountryCode(e.target.value)}
-                    className="px-3 py-3 bg-muted rounded-xl text-muted-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-amber-600/30 shrink-0"
+                    className="px-3 py-3 bg-muted rounded-xl text-muted-foreground text-sm border border-border focus:outline-none focus:ring-2 focus:ring-amber-600/30 shrink-0 w-28"
                   >
                     {COUNTRY_CODES.map(c => (
                       <option key={c.code} value={c.code}>
-                        {c.flag} {c.code} — {c.name}
+                        {c.flag} {c.code}
                       </option>
                     ))}
                   </select>
@@ -321,6 +319,9 @@ export default function OnboardingPage() {
                     className="flex-1 px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-foreground font-mono"
                   />
                 </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {COUNTRY_CODES.find(c => c.code === countryCode)?.name}
+                </p>
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setStep(2)}
