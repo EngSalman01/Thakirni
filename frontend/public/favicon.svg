@@ -1,23 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="a" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#4F46E5"/>
-      <stop offset=".4" stop-color="#7C3AED"/>
-      <stop offset="1" stop-color="#EC4899"/>
+    <linearGradient id="a" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBBF24"/>
+      <stop offset=".45" stop-color="#D97706"/>
+      <stop offset="1" stop-color="#92400E"/>
     </linearGradient>
     <radialGradient id="b" cx="36%" cy="26%" r="58%" gradientUnits="objectBoundingBox">
-      <stop stop-color="#fff" stop-opacity=".28"/>
+      <stop stop-color="#fff" stop-opacity=".32"/>
       <stop offset="1" stop-color="#fff" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="c" x1="0" y1="0" x2="0" y2="32" gradientUnits="userSpaceOnUse">
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse">
       <stop stop-color="#000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#000" stop-opacity=".13"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".18"/>
     </linearGradient>
   </defs>
-  <rect width="32" height="32" rx="8" fill="url(#a)"/>
-  <rect width="32" height="32" rx="8" fill="url(#b)"/>
-  <rect width="32" height="32" rx="8" fill="url(#c)"/>
-  <path transform="rotate(12 16 16)"
-        d="M16 9.25 17.88 14.12 22.75 16 17.88 17.88 16 22.75 14.12 17.88 9.25 16 14.12 14.12z"
-        fill="#fff" fill-opacity=".94"/>
+  <rect width="64" height="64" rx="16" fill="url(#a)"/>
+  <rect width="64" height="64" rx="16" fill="url(#b)"/>
+  <rect width="64" height="64" rx="16" fill="url(#c)"/>
+  <g transform="rotate(12 32 32)">
+    <path d="M32 18.5 35.75 28.25 45.5 32 35.75 35.75 32 45.5 28.25 35.75 18.5 32 28.25 28.25z"
+          fill="#fff" fill-opacity=".96"/>
+  </g>
 </svg>

@@ -270,7 +270,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="space-y-7 max-w-2xl"
+              className="space-y-7 max-w-2xl w-full min-w-0"
             >
               {/* Badge */}
               <motion.div
@@ -286,7 +286,7 @@ export function HeroSection() {
               {/* Headline */}
               <div className="space-y-1">
                 {isArabic ? (
-                  <h1 className="font-arabic text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-[#F0E8D8]">
+                  <h1 className="font-arabic text-[2.4rem] sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-[#F0E8D8]">
                     خلّي{" "}
                     <span className="relative inline-block">
                       <span className="gradient-text">ذكرني</span>
@@ -296,7 +296,7 @@ export function HeroSection() {
                     يرتّب يومك
                   </h1>
                 ) : (
-                  <h1 className="font-headline text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-[#F0E8D8]">
+                  <h1 className="font-headline text-[2.4rem] sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-[#F0E8D8]">
                     Let{" "}
                     <span className="relative inline-block">
                       <span className="gradient-text">Thakirni</span>
@@ -347,8 +347,6 @@ export function HeroSection() {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="flex flex-wrap gap-2 pt-1"
               >
-                <StatPill value="+1,000" label={t("تذكير تم إنشاؤه", "reminders created")} />
-                <StatPill value="+300" label={t("مستخدم نشط", "active users")} />
                 <StatPill value="🇸🇦" label={t("مصنوع للسوق السعودي", "Made for KSA")} />
               </motion.div>
             </motion.div>
