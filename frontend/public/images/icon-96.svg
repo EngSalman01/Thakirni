@@ -1,20 +1,24 @@
-<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" fill="none">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e47b8"/>
-      <stop offset="55%" stop-color="#5b35d5"/>
-      <stop offset="100%" stop-color="#b8185d"/>
+    <linearGradient id="a" x1="0" y1="0" x2="96" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBBF24"/>
+      <stop offset=".45" stop-color="#D97706"/>
+      <stop offset="1" stop-color="#92400E"/>
     </linearGradient>
-    <clipPath id="c">
-      <rect x="0" y="0" width="120" height="120" rx="28"/>
-    </clipPath>
+    <radialGradient id="b" cx="36%" cy="26%" r="58%" gradientUnits="objectBoundingBox">
+      <stop stop-color="#fff" stop-opacity=".32"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="96" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".18"/>
+    </linearGradient>
   </defs>
-
-  <rect x="0" y="0" width="120" height="120" rx="28" fill="url(#g)"/>
-  <!-- Corner arc highlight (top-right) -->
-  <circle cx="120" cy="0" r="58" fill="white" fill-opacity="0.15" clip-path="url(#c)"/>
-
-  <!-- 4-pointed star — center (60,60), outer r=28, inner r=11 -->
-  <path d="M60,32 L67.8,52.2 L88,60 L67.8,67.8 L60,88 L52.2,67.8 L32,60 L52.2,52.2 Z"
-        fill="white" fill-opacity="0.96"/>
+  <rect width="96" height="96" rx="22" fill="url(#a)"/>
+  <rect width="96" height="96" rx="22" fill="url(#b)"/>
+  <rect width="96" height="96" rx="22" fill="url(#c)"/>
+  <g transform="rotate(12 48 48)">
+    <path d="M48 27.75 53.625 42.375 68.25 48 53.625 53.625 48 68.25 42.375 53.625 27.75 48 42.375 42.375z"
+          fill="#fff" fill-opacity=".96"/>
+  </g>
 </svg>

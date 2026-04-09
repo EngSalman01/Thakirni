@@ -4,7 +4,6 @@ import { HeroSection } from "@/components/thakirni/hero-section"
 import { TrustSignals } from "@/components/thakirni/trust-signals"
 import { FeaturesSection } from "@/components/thakirni/features-section"
 
-import { TestimonialsSection } from "@/components/thakirni/testimonials-section"
 import { PricingSection } from "@/components/thakirni/pricing-section"
 import { CTASection } from "@/components/thakirni/cta-section"
 import { LandingFooter } from "@/components/thakirni/landing-footer"
@@ -37,9 +36,6 @@ export default function Home() {
 
       {/* Feature bento grid */}
       <FeaturesSection />
-
-      {/* Social proof / testimonials */}
-      <TestimonialsSection />
 
       {/* Pricing */}
       <PricingSection />

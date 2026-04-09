@@ -8,34 +8,29 @@ const STEPS = [
   {
     icon: MessageSquare,
     num: "01",
-    titleAr: "قل له",
-    titleEn: "Tell it",
-    bodyAr: "قل لـ ذكّرني بالكلام العادي — واتساب أو التطبيق أو فويس — وهو يفهمك بدون ما تكتب بالضبط.",
-    bodyEn: "Tell Thakirni in plain language — WhatsApp, the app, or voice — and it understands without you needing to be precise.",
+    titleAr: "قول",
+    titleEn: "Say it",
+    bodyAr: "تكلم ذكرني على واتساب أو التطبيق — بالكلام العادي أو صوتية — وهو يفهمك.",
+    bodyEn: "Talk to Thakirni on WhatsApp or the app — in everyday language or a voice note — and it gets you.",
   },
   {
     icon: Brain,
     num: "02",
-    titleAr: "يفهمك",
+    titleAr: "يفهم",
     titleEn: "It understands",
-    bodyAr: "الذكاء الاصطناعي يحلل اللي قلته ويحدد النية — تذكير، مهمة، تلخيص، أو خطة — ويرتبها تلقائيًا.",
-    bodyEn: "AI analyses what you said and identifies the intent — reminder, task, summary, or plan — and organises it automatically.",
+    bodyAr: "يعرف وش تبي بالضبط — تذكير، موعد، مهمة، أو ملاحظة — ويحفظها لك على طول.",
+    bodyEn: "Knows exactly what you need — reminder, appointment, task, or note — and saves it instantly.",
   },
   {
     icon: CalendarCheck,
     num: "03",
-    titleAr: "ينفذ ويرتب يومك",
-    titleEn: "Executes & organises your day",
-    bodyAr: "يحط التذكير، يرتب جدولك، ويرسلك ملخص صباحي — كل شي بدون ما ترفع إصبعك.",
-    bodyEn: "Sets the reminder, organises your schedule, and sends you a morning briefing — all without you lifting a finger.",
+    titleAr: "يرتب",
+    titleEn: "It organises",
+    bodyAr: "يضبط جدولك، يرسلك ملخص الصبح، ويذكرك بكل شي — عشانك تركز على اللي يهم.",
+    bodyEn: "Sorts your schedule, sends you a morning briefing, and reminds you of everything — so you focus on what matters.",
   },
 ]
 
-const STATS = [
-  { valueAr: "+١,٠٠٠", valueEn: "+1,000", labelAr: "تذكير تم إنشاؤه", labelEn: "reminders created" },
-  { valueAr: "+٣٠٠",   valueEn: "+300",   labelAr: "مستخدم نشط",       labelEn: "active users" },
-  { valueAr: "٩٨٪",    valueEn: "98%",    labelAr: "رضا المستخدمين",   labelEn: "satisfaction rate" },
-]
 
 export function TrustSignals() {
   const { t, isArabic } = useLanguage()
@@ -69,30 +64,10 @@ export function TrustSignals() {
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground">
             {t(
-              "يستخدمه طلاب وموظفين في السعودية يومياً.",
-              "Used daily by students and professionals across Saudi Arabia."
+              "٣ خطوات وكل شي يتنظم.",
+              "3 steps — and everything falls into place."
             )}
           </p>
-        </motion.div>
-
-        {/* Stats bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="grid grid-cols-3 gap-4 mb-16 sm:mb-24 max-w-2xl mx-auto"
-        >
-          {STATS.map((s) => (
-            <div key={s.valueEn} className="text-center">
-              <div className="text-2xl sm:text-3xl font-headline font-extrabold gradient-text tabular">
-                {isArabic ? s.valueAr : s.valueEn}
-              </div>
-              <div className="text-xs sm:text-sm text-muted-foreground mt-1">
-                {isArabic ? s.labelAr : s.labelEn}
-              </div>
-            </div>
-          ))}
         </motion.div>
 
         {/* Steps */}
