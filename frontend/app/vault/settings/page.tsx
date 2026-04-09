@@ -234,12 +234,15 @@ export default function SettingsPage() {
     if (!name.trim()) { toast.error(t("الاسم مطلوب", "Name is required")); return; }
 
     // Validate phone BEFORE setting saving state so button doesn't get stuck
-    const rawPhone = phone.trim().replace(/\s+/g, "");
+    const rawPhone = phone.trim().replace(/[\s\-()]/g, "");
     const normPhone = rawPhone
-      ? rawPhone.replace(/^\+/, "").replace(/^00/, "").replace(/^0/, "966")
+      ? rawPhone
+          .replace(/^\+/, "")   // strip leading +
+          .replace(/^00/, "")   // strip leading 00
+          .replace(/^0(\d{9})$/, "966$1")  // Saudi local 05xxxxxxxx → 9665xxxxxxxx
       : "";
-    if (normPhone && !/^966\d{9}$/.test(normPhone)) {
-      toast.error(t("رقم الهاتف غير صحيح — أدخل رقم سعودي مثل 05xxxxxxxx", "Invalid phone — enter a Saudi number like 05xxxxxxxx"));
+    if (normPhone && !/^\d{7,15}$/.test(normPhone)) {
+      toast.error(t("رقم الهاتف غير صحيح — أدخل الرقم مع رمز الدولة مثل 05xxxxxxxx أو +1xxxxxxxxxx", "Invalid phone — enter with country code e.g. 05xxxxxxxx or +1xxxxxxxxxx"));
       return;
     }
 
@@ -786,7 +789,7 @@ export default function SettingsPage() {
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="05xxxxxxxx"
+                        placeholder={t("05xxxxxxxx أو +966xxxxxxxxx", "05xxxxxxxx or +1xxxxxxxxxx")}
                         className="ps-10 rounded-xl bg-card border-border focus-visible:ring-amber-600/40"
                         dir="ltr"
                       />
