@@ -54,7 +54,7 @@ export function DashboardRouter() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-background hero-mesh p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <Skeleton className="h-16 w-full" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

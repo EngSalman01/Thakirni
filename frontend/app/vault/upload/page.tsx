@@ -248,11 +248,11 @@ export default function UploadPage() {
   const pendingCount = items.filter((i) => i.status === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
-        <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">
+        <section className="relative pt-32 pb-24 px-8 overflow-hidden">
           <ParticleLayer />
           <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             {/* Left copy */}

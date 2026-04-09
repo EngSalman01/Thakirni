@@ -123,7 +123,7 @@ export default function OnboardingPage() {
       .update({ onboarded_at: new Date().toISOString() })
       .eq("id", user.id)
     // Cookie lets middleware pass /vault immediately — avoids redirect race condition
-    document.cookie = "onboarded=1; path=/; max-age=300; SameSite=Lax"
+    document.cookie = "onboarded=1; path=/; max-age=2592000; SameSite=Lax"
     return user
   }
 

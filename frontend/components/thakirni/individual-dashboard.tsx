@@ -37,7 +37,7 @@ export function IndividualDashboard() {
   const dateLine = getDateLine(isArabic)
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
       {/* Warm ambient glow */}
       <div className="fixed top-0 end-0 w-[600px] h-[400px] pointer-events-none -z-0 opacity-40">
         <div className="w-full h-full" style={{ background: "radial-gradient(ellipse 70% 60% at 80% 0%, rgba(217,119,6,0.08) 0%, transparent 70%)" }} />
