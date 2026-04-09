@@ -32,22 +32,33 @@ export async function POST(req: NextRequest) {
 
     const firstName = (name ?? "").split(" ")[0] || "صديقي"
 
-    // Bilingual welcome — Arabic + English for all users worldwide
+    // Bilingual welcome — Arabic block first, then English block
     const message = [
-      `هلا ${firstName}! / Hey ${firstName}! 👋`,
+      `هلا ${firstName}! 👋`,
       "",
-      "أنا مساعدك الذكي في *ذكرني* — موجود ٢٤/٧ على واتساب.",
-      "I'm your *Thakirni* AI assistant — here 24/7 on WhatsApp.",
+      `أنا مساعدك الذكي في *ذكرني* — موجود ٢٤/٧ على واتساب.`,
       "",
-      "جرب الحين | Try now:",
-      "• وش عندي اليوم؟ / What do I have today? 📋",
-      "• رتب لي يومي / Plan my day 🗓️",
-      "• ذكرني الساعة ٦ بـ... / Remind me at 6pm to... ⏰",
+      "جرب الحين:",
+      "• وش عندي اليوم؟ 📋",
+      "• رتب لي يومي 🗓️",
+      "• ذكرني الساعة ٦ بـ... ⏰",
       "",
       "كل صباح تصلك رسالة بملخص يومك ☀️",
-      "You'll get a daily morning briefing every day ☀️",
+      "ابدأ بأي رسالة تبغاها 👌",
       "",
-      "ابدأ بأي رسالة تبغاها 👌 | Just send anything to get started 👌",
+      "─────────────────",
+      "",
+      `Hey ${firstName}! 👋`,
+      "",
+      "I'm your *Thakirni* AI assistant — here 24/7 on WhatsApp.",
+      "",
+      "Try now:",
+      "• What do I have today? 📋",
+      "• Plan my day 🗓️",
+      "• Remind me at 6pm to... ⏰",
+      "",
+      "You'll get a daily morning briefing every day ☀️",
+      "Just send anything to get started 👌",
     ].join("\n")
 
     await sendWhatsAppMessage(normalized, message)
