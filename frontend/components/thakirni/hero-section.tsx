@@ -85,89 +85,102 @@ function PhoneMockup({ isArabic }: { isArabic: boolean }) {
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.7, delay: 0.3, ease: [0.2, 1, 0.3, 1] }}
-        className="relative w-[220px] sm:w-[260px] rounded-[2.5rem] border-[7px] border-slate-800 dark:border-[#2D2620] bg-[#ece5dd] dark:bg-[#1a1310] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.35),0_0_0_1px_rgba(0,0,0,0.08)] overflow-hidden"
+        className="relative w-[220px] sm:w-[260px] rounded-[2.5rem] border-[7px] border-[#1c1c1e] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5),0_0_0_1px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col"
         style={{ aspectRatio: "9/19.5" }}
       >
         {/* Notch */}
         <div className="absolute top-0 inset-x-0 flex justify-center z-10 pt-2">
-          <div className="w-24 h-5 bg-slate-800 dark:bg-[#2D2620] rounded-full" />
+          <div className="w-24 h-5 bg-[#1c1c1e] rounded-full" />
         </div>
 
-        {/* WhatsApp header */}
-        <div className="bg-[#075e54] px-4 pt-8 pb-3 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full power-gradient flex items-center justify-center shrink-0">
+        {/* WhatsApp header — green in light, dark blue-gray in dark */}
+        <div className="bg-[#075e54] dark:bg-[#202c33] px-3 pt-8 pb-2.5 flex items-center gap-2 shrink-0">
+          <div className="w-7 h-7 rounded-full power-gradient flex items-center justify-center shrink-0 shadow-sm">
             <BrandLogo variant="icon" iconSize={14} animate={false} />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <div className="text-white text-[11px] font-bold leading-tight">ذكرني</div>
-            <div className="text-[#b2dfdb] text-[9px]">{isArabic ? "متصل الآن" : "Online"}</div>
+            <div className="text-[#b2dfdb] dark:text-[#8696a0] text-[9px]">
+              {isArabic ? "متصل الآن" : "Online"}
+            </div>
+          </div>
+          {/* header icons */}
+          <div className="flex items-center gap-2.5 text-white/80">
+            <div className="w-3 h-3 rounded-full border border-current opacity-70" />
+            <div className="flex flex-col gap-[2px] opacity-70">
+              <div className="w-3 h-[1.5px] bg-current rounded" />
+              <div className="w-3 h-[1.5px] bg-current rounded" />
+              <div className="w-3 h-[1.5px] bg-current rounded" />
+            </div>
           </div>
         </div>
 
-        {/* Chat messages */}
-        <div className="px-2.5 py-3 space-y-2 overflow-hidden" dir="rtl">
-          <motion.div
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9, duration: 0.4 }}
-            className="flex justify-end"
-          >
-            <div className="bg-[#dcf8c6] rounded-2xl rounded-ee-sm px-2.5 py-1.5 max-w-[85%] shadow-sm">
-              <p className="text-[10px] text-slate-800 leading-relaxed">
-                ذكّرني بكرة الدوام الساعة 9
-              </p>
-              <p className="text-[8px] text-slate-400 mt-0.5 text-end">9:41 ✓✓</p>
-            </div>
-          </motion.div>
+        {/* Chat area — WhatsApp wallpaper */}
+        <div
+          className="flex-1 px-2.5 pt-2 pb-14 space-y-2 overflow-hidden"
+          dir="rtl"
+          style={{
+            backgroundColor: "var(--wa-chat-bg)",
+            backgroundImage: "var(--wa-wallpaper)",
+          }}
+        >
+          {/* Date chip */}
+          <div className="flex justify-center mb-1">
+            <span
+              className="px-2.5 py-0.5 rounded-full text-[8px] font-medium"
+              style={{ background: "var(--wa-chip-bg)", color: "var(--wa-chip-text)" }}
+            >
+              {isArabic ? "اليوم" : "Today"}
+            </span>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.3, duration: 0.4 }}
-            className="flex justify-start"
-          >
-            <div className="bg-white rounded-2xl rounded-ss-sm px-2.5 py-1.5 max-w-[85%] shadow-sm">
-              <p className="text-[10px] text-slate-800 leading-relaxed">
-                تمام 👌 حطيت لك تذكير الساعة 9 بكرة
-              </p>
-              <p className="text-[8px] text-slate-400 mt-0.5 text-end">9:41</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.7, duration: 0.4 }}
-            className="flex justify-end"
-          >
-            <div className="bg-[#dcf8c6] rounded-2xl rounded-ee-sm px-2.5 py-1.5 max-w-[85%] shadow-sm">
-              <p className="text-[10px] text-slate-800 leading-relaxed">
-                وضيف لي اجتماع الخميس الساعة 3 عصر
-              </p>
-              <p className="text-[8px] text-slate-400 mt-0.5 text-end">9:43 ✓✓</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 2.0, duration: 0.4 }}
-            className="flex justify-start"
-          >
-            <div className="bg-white rounded-2xl rounded-ss-sm px-2.5 py-1.5 max-w-[85%] shadow-sm">
-              <p className="text-[10px] text-slate-800 leading-relaxed">
-                ✅ أُضيف الاجتماع — الخميس 3:00 مساءً
-              </p>
-              <p className="text-[8px] text-slate-400 mt-0.5 text-end">9:43</p>
-            </div>
-          </motion.div>
+          {[
+            { from: "user",  text: "ذكّرني بكرة الدوام الساعة 9", time: "9:41", ticks: true,  delay: 0.9  },
+            { from: "bot",   text: "تمام 👌 حطيت لك تذكير الساعة 9 بكرة", time: "9:41", ticks: false, delay: 1.3  },
+            { from: "user",  text: "وضيف لي اجتماع الخميس الساعة 3 عصر", time: "9:43", ticks: true,  delay: 1.7  },
+            { from: "bot",   text: "✅ أُضيف الاجتماع — الخميس 3:00 مساءً", time: "9:43", ticks: false, delay: 2.0  },
+          ].map((msg, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: msg.from === "user" ? 12 : -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: msg.delay, duration: 0.35 }}
+              className={`flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className="rounded-xl px-2.5 py-1.5 max-w-[80%] shadow-sm"
+                style={{
+                  background: msg.from === "user" ? "var(--wa-out-bubble)" : "var(--wa-in-bubble)",
+                  borderRadius: msg.from === "user"
+                    ? "12px 12px 2px 12px"
+                    : "12px 12px 12px 2px",
+                }}
+              >
+                <p className="text-[10px] leading-relaxed" style={{ color: "var(--wa-msg-text)" }}>
+                  {msg.text}
+                </p>
+                <p className="text-[8px] mt-0.5 text-end" style={{ color: "var(--wa-timestamp)" }}>
+                  {msg.time}{msg.ticks ? " ✓✓" : ""}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Chat input bar */}
-        <div className="absolute bottom-0 inset-x-0 px-2 py-2 bg-[#f0f0f0] dark:bg-[#1a1310] flex items-center gap-1.5">
-          <div className="flex-1 h-6 rounded-full bg-white dark:bg-[#2a2010] border border-stone-200 dark:border-amber-900/30" />
-          <div className="w-6 h-6 rounded-full bg-[#075e54] flex items-center justify-center shrink-0">
-            <div className="w-2.5 h-2.5 rounded-sm bg-white" />
+        {/* Input bar */}
+        <div
+          className="absolute bottom-0 inset-x-0 px-2 py-2 flex items-center gap-1.5"
+          style={{ background: "var(--wa-input-bar)" }}
+        >
+          <div
+            className="flex-1 h-6 rounded-full"
+            style={{ background: "var(--wa-input-field)" }}
+          />
+          <div className="w-6 h-6 rounded-full bg-[#00a884] flex items-center justify-center shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
           </div>
         </div>
       </motion.div>

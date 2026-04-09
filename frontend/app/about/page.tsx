@@ -87,33 +87,35 @@ export default function AboutPage() {
         <div className="max-w-5xl mx-auto px-8">
           <div className="grid md:grid-cols-2 gap-16 items-center">
 
-            {/* Avatar card */}
+            {/* Founder photo */}
             <motion.div {...FADE_UP} className="flex justify-center">
-              <div
-                className="relative w-72 h-72 rounded-3xl overflow-hidden shadow-2xl"
-                style={{
-                  background: "linear-gradient(135deg, #92400e 0%, #D97706 50%, #F59E0B 100%)",
-                }}
-              >
-                {/* Initials */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div
-                    className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-headline font-extrabold text-white shadow-lg mb-4"
-                    style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", border: "2px solid rgba(255,255,255,0.3)" }}
-                  >
-                    سلـ
-                  </div>
-                  <p className="text-white font-headline font-bold text-xl">Salman Almnaseer</p>
-                  <p className="text-white/70 text-sm font-label mt-1">
-                    {t("مطوّر ومؤسس ذكرني", "Developer & Founder of Thakirni")}
-                  </p>
-                </div>
-                {/* Decorative ring */}
-                <motion.div
-                  className="absolute inset-[-8px] rounded-3xl border border-white/10"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              <div className="relative">
+                {/* Glow ring */}
+                <div
+                  className="absolute -inset-3 rounded-3xl blur-xl opacity-40 pointer-events-none"
+                  style={{ background: "linear-gradient(135deg, #92400e, #F59E0B)" }}
                 />
+                {/* Photo frame */}
+                <div
+                  className="relative w-72 h-80 rounded-3xl overflow-hidden shadow-2xl"
+                  style={{ border: "3px solid rgba(217,119,6,0.35)" }}
+                >
+                  <img
+                    src="/founder.jpg"
+                    alt="Salman Almnaseer"
+                    className="w-full h-full object-cover object-top"
+                  />
+                  {/* Name overlay at bottom */}
+                  <div
+                    className="absolute bottom-0 inset-x-0 px-4 py-3"
+                    style={{ background: "linear-gradient(to top, rgba(14,11,7,0.85) 0%, transparent 100%)" }}
+                  >
+                    <p className="text-white font-headline font-bold text-sm leading-tight">Salman Almnaseer</p>
+                    <p className="text-amber-300 text-xs font-label mt-0.5">
+                      {t("مطوّر ومؤسس ذكرني", "Developer & Founder of Thakirni")}
+                    </p>
+                  </div>
+                </div>
               </div>
             </motion.div>
 
@@ -167,7 +169,7 @@ export default function AboutPage() {
       </section>
 
       {/* ── Mission ──────────────────────────────────────────────── */}
-      <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
+      <section className="py-24 bg-muted/40 dark:bg-white/[0.02]">
         <div className="max-w-5xl mx-auto px-8">
           <motion.div {...FADE_UP} className="text-center mb-16">
             <p className="text-xs font-bold uppercase tracking-widest font-label mb-3" style={{ color: "#D97706" }}>

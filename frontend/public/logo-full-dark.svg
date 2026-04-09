@@ -30,10 +30,6 @@
     <path d="M28 16.2 31.3 24.7 39.8 28 31.3 31.3 28 39.8 24.7 31.3 16.2 28 24.7 24.7z"
           fill="#fff" fill-opacity=".96"/>
   </g>
-  <path transform="rotate(12 28 28)"
-        d="M24 28 26.7 30.6 32.4 24.5"
-        stroke="#fff" stroke-width="2" stroke-opacity=".65"
-        stroke-linecap="round" stroke-linejoin="round"/>
 
   <!-- ── WORDMARK — dark theme ── -->
   <text x="68" y="27"
