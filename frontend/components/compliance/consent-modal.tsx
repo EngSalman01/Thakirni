@@ -60,7 +60,7 @@ export function ConsentModal() {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-lg rounded-2xl border border-[#e4e2e1] [&>button]:hidden"
+        className="max-w-lg rounded-2xl border border-border [&>button]:hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
@@ -69,7 +69,7 @@ export function ConsentModal() {
             <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center flex-shrink-0">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <DialogTitle className="text-right leading-snug font-headline text-slate-900 text-base">
+            <DialogTitle className="text-right leading-snug font-headline text-foreground text-base">
               موافقة على معالجة البيانات / Data Processing Consent
             </DialogTitle>
           </div>
@@ -77,22 +77,22 @@ export function ConsentModal() {
 
         <div className="space-y-4 text-sm">
           {/* Arabic */}
-          <div dir="rtl" className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
-            <p className="font-label font-semibold text-slate-800">عزيزي المستخدم،</p>
-            <p className="text-slate-600 leading-relaxed">
+          <div dir="rtl" className="bg-muted dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
+            <p className="font-label font-semibold text-foreground">عزيزي المستخدم،</p>
+            <p className="text-muted-foreground leading-relaxed">
               تستخدم منصة <strong>ذاكرني</strong> تقنيات الذكاء الاصطناعي لمعالجة
               مدخلاتك وتحليلها بهدف تقديم خدمات التخطيط والتذكير والتحليل الشخصي.
               يتم تخزين بياناتك بأمان على خوادمنا لتمكينك من استخدام الخدمة.
             </p>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               بموجب نظام حماية البيانات الشخصية (نظام PDPL)، يحق لك في أي وقت:
             </p>
-            <ul className="list-disc list-inside text-slate-600 space-y-1 ms-2">
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ms-2">
               <li>تصدير جميع بياناتك من صفحة الإعدادات</li>
               <li>حذف حسابك ومعه جميع بياناتك نهائياً</li>
               <li>التواصل معنا عبر support@thakirni.com</li>
             </ul>
-            <p className="text-slate-500 text-xs">
+            <p className="text-muted-foreground text-xs">
               للاطلاع على سياسة الخصوصية كاملةً،{" "}
               <a href="/legal/privacy" target="_blank" rel="noopener noreferrer"
                 className="text-amber-600 dark:text-amber-400 underline inline-flex items-center gap-1">
@@ -102,22 +102,22 @@ export function ConsentModal() {
           </div>
 
           {/* English */}
-          <div dir="ltr" className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
-            <p className="font-label font-semibold text-slate-800">Dear User,</p>
-            <p className="text-slate-600 leading-relaxed">
+          <div dir="ltr" className="bg-muted dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
+            <p className="font-label font-semibold text-foreground">Dear User,</p>
+            <p className="text-muted-foreground leading-relaxed">
               <strong>Thakirni</strong> uses AI to process your inputs and deliver
               planning, reminders, and personal analytics. Your data is securely
               stored to provide you with the service.
             </p>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-muted-foreground leading-relaxed">
               Under Saudi Arabia&apos;s PDPL, you can at any time:
             </p>
-            <ul className="list-disc list-inside text-slate-600 space-y-1 ml-2">
+            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
               <li>Export all your data from the Settings page</li>
               <li>Delete your account and all associated data permanently</li>
               <li>Contact us at support@thakirni.com</li>
             </ul>
-            <p className="text-slate-500 text-xs">
+            <p className="text-muted-foreground text-xs">
               Read the full Privacy Policy{" "}
               <a href="/legal/privacy" target="_blank" rel="noopener noreferrer"
                 className="text-amber-600 dark:text-amber-400 underline inline-flex items-center gap-1">

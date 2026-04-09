@@ -122,7 +122,7 @@ export function RemindersTab({ teamId }: RemindersTabProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-slate-600" />
+          <Bell className="w-5 h-5 text-muted-foreground" />
           <h3 className="text-lg font-semibold">
             {t("Reminders", "التذكيرات")}
           </h3>
@@ -142,7 +142,7 @@ export function RemindersTab({ teamId }: RemindersTabProps) {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg border border-slate-200 p-4 space-y-3"
+          className="bg-card rounded-lg border border-border p-4 space-y-3"
         >
           <Input
             placeholder={t("Reminder title...", "عنوان التذكير...")}
@@ -213,7 +213,7 @@ export function RemindersTab({ teamId }: RemindersTabProps) {
         <div className="space-y-4">
           {activeReminders.length > 0 && (
             <div>
-              <h4 className="font-semibold text-slate-900 mb-3">
+              <h4 className="font-semibold text-foreground mb-3">
                 {t("Active Reminders", "التذكيرات النشطة")} ({activeReminders.length})
               </h4>
               <div className="space-y-2">
@@ -225,18 +225,18 @@ export function RemindersTab({ teamId }: RemindersTabProps) {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -20 }}
-                      className="bg-white rounded-lg border border-slate-200 p-4 flex items-start justify-between"
+                      className="bg-card rounded-lg border border-border p-4 flex items-start justify-between"
                     >
                       <div className="flex-1">
-                        <h4 className="font-medium text-slate-900">
+                        <h4 className="font-medium text-foreground">
                           {reminder.title}
                         </h4>
                         {reminder.description && (
-                          <p className="text-sm text-slate-600 mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             {reminder.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             {new Date(reminder.plan_date).toLocaleDateString()}
@@ -275,14 +275,14 @@ export function RemindersTab({ teamId }: RemindersTabProps) {
           {/* Completed Reminders */}
           {completedReminders.length > 0 && (
             <div>
-              <h4 className="font-semibold text-slate-900 mb-3 text-opacity-50">
+              <h4 className="font-semibold text-foreground mb-3 text-opacity-50">
                 {t("Completed", "مكتملة")} ({completedReminders.length})
               </h4>
               <div className="space-y-2 opacity-60">
                 {completedReminders.map((reminder) => (
                   <div
                     key={reminder.id}
-                    className="bg-slate-50 rounded-lg border border-slate-200 p-4 line-through text-slate-600"
+                    className="bg-muted rounded-lg border border-border p-4 line-through text-muted-foreground"
                   >
                     <h4 className="font-medium">{reminder.title}</h4>
                     <span className="text-xs">

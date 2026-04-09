@@ -113,16 +113,16 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
         ) : uploads.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <span className="text-4xl mb-3">📁</span>
-            <p className="text-sm font-bold text-slate-600">{t('لا توجد ذكريات بعد', 'No uploads yet')}</p>
-            <p className="text-xs text-slate-500 mt-1">{t('ارفع أول ذاكرة لك', 'Upload your first memory')}</p>
+            <p className="text-sm font-bold text-muted-foreground">{t('لا توجد ذكريات بعد', 'No uploads yet')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('ارفع أول ذاكرة لك', 'Upload your first memory')}</p>
           </div>
         ) : uploads.map((item, i) => (
           <motion.div key={item.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.15 }}
-            className="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-card">
+            className="bg-card rounded-2xl p-4 flex items-center gap-3 shadow-card">
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cardColors[i % cardColors.length]} flex items-center justify-center text-lg`}>{memIcon(item.title)}</div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-800 truncate">{item.title}</p>
-              <p className="text-xs text-slate-500">{new Date(item.created_at).toLocaleDateString()}</p>
+              <p className="text-sm font-bold text-foreground truncate">{item.title}</p>
+              <p className="text-xs text-muted-foreground">{new Date(item.created_at).toLocaleDateString()}</p>
             </div>
             <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
           </motion.div>
@@ -131,9 +131,9 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
 
       {/* Floating badge */}
       <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute -top-3 -right-3 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-3 py-2 flex items-center gap-2">
+        className="absolute -top-3 -right-3 bg-card rounded-2xl shadow-lg border border-border px-3 py-2 flex items-center gap-2">
         <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-        <span className="text-xs font-bold text-slate-900">{t('محفوظ في ذاكرتك', 'Saved to memory')}</span>
+        <span className="text-xs font-bold text-foreground">{t('محفوظ في ذاكرتك', 'Saved to memory')}</span>
       </motion.div>
     </motion.div>
   );
@@ -143,16 +143,16 @@ function FileRow({ item, onRemove }: { item: FileItem; onRemove: (id: string) =>
   const Icon = fileIcon(item.file);
   return (
     <motion.div layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: -8 }}
-      className="flex items-center gap-3 p-4 rounded-2xl border border-[#e4e2e1] bg-white shadow-card hover-lift">
+      className="flex items-center gap-3 p-4 rounded-2xl border border-border bg-card shadow-card hover-lift">
       <div className="w-11 h-11 rounded-xl power-gradient flex items-center justify-center shrink-0 overflow-hidden">
         {item.preview
           ? <img src={item.preview} alt={item.file.name} className="w-full h-full object-cover" />
           : <Icon className="w-5 h-5 text-white" />}
       </div>
       <div className="flex-1 min-w-0 space-y-1">
-        <p className="text-sm font-bold text-slate-800 truncate">{item.file.name}</p>
+        <p className="text-sm font-bold text-foreground truncate">{item.file.name}</p>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500">{formatSize(item.file.size)}</span>
+          <span className="text-xs text-muted-foreground">{formatSize(item.file.size)}</span>
           {item.status === 'uploading' && <Progress value={item.progress} className="h-1.5 flex-1" />}
           {item.status === 'done' && (
             <span className="text-xs text-green-600 font-bold flex items-center gap-1">
@@ -260,17 +260,17 @@ export default function UploadPage() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
                 <Upload className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-label font-medium text-slate-700">{t(`حتى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`, `Up to ${MAX_FILE_SIZE_MB} MB per file`)}</span>
+                <span className="text-sm font-label font-medium text-muted-foreground">{t(`حتى ${MAX_FILE_SIZE_MB} ميغابايت لكل ملف`, `Up to ${MAX_FILE_SIZE_MB} MB per file`)}</span>
               </motion.div>
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
-                <span className="text-slate-900">{t('أضف', 'Capture')}</span>{' '}
+                <span className="text-foreground">{t('أضف', 'Capture')}</span>{' '}
                 <span className="gradient-text">{t('ذكرياتك', 'Memories')}</span>
                 <br />
-                <span className="text-slate-900">{t('هنا', 'Here')}</span>
+                <span className="text-foreground">{t('هنا', 'Here')}</span>
               </h1>
 
-              <p className="text-xl text-slate-600 font-body mb-10 leading-relaxed max-w-lg">
+              <p className="text-xl text-muted-foreground font-body mb-10 leading-relaxed max-w-lg">
                 {t(
                   'ارفع صوراً وملفات وصوتيات وPDF لتُضاف إلى خريطة ذاكرتك وتصبح قابلة للبحث.',
                   'Upload photos, files, audio clips, and PDFs to your memory map — fully searchable and always accessible.'
@@ -284,7 +284,7 @@ export default function UploadPage() {
                   <Upload className="w-5 h-5" />
                   {t('اختر ملفات', 'Choose Files')}
                 </motion.button>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="w-2 h-2 rounded-full bg-amber-600" />
                   {t('صور، فيديو، صوت، PDF', 'Images, video, audio, PDF')}
                 </div>
@@ -307,8 +307,8 @@ export default function UploadPage() {
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.6 }}
                 onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop} onClick={() => inputRef.current?.click()}
                 className={cn(
-                  'bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-12 text-center cursor-pointer relative overflow-hidden group hover-lift border-2 border-dashed transition-all duration-200',
-                  isDragging ? 'border-amber-600 bg-amber-100 dark:bg-amber-950/60/30' : 'border-[#e4e2e1] hover:border-amber-600/40'
+                  'bg-muted dark:bg-white/[0.03] rounded-2xl p-12 text-center cursor-pointer relative overflow-hidden group hover-lift border-2 border-dashed transition-all duration-200',
+                  isDragging ? 'border-amber-600 bg-amber-100 dark:bg-amber-950/60/30' : 'border-border hover:border-amber-600/40'
                 )}>
                 {/* Decorative corner */}
                 <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-amber-600/8 to-transparent rounded-tl-3xl pointer-events-none" />
@@ -319,10 +319,10 @@ export default function UploadPage() {
                     <Upload className={cn('w-8 h-8 transition-colors', isDragging ? 'text-white' : 'text-slate-400')} />
                   </div>
                   <div>
-                    <p className="text-2xl font-headline font-bold text-slate-900 mb-2">
+                    <p className="text-2xl font-headline font-bold text-foreground mb-2">
                       {isDragging ? t('أفلت الملفات هنا', 'Drop files here') : t('اسحب الملفات هنا', 'Drag files here')}
                     </p>
-                    <p className="text-slate-500">{t('أو انقر للاختيار', 'or click to select')}</p>
+                    <p className="text-muted-foreground">{t('أو انقر للاختيار', 'or click to select')}</p>
                   </div>
                 </motion.div>
                 <input ref={inputRef} type="file" multiple accept={ACCEPT_STRING} className="hidden"
@@ -331,10 +331,10 @@ export default function UploadPage() {
 
               {/* File list + actions */}
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-50px' }} transition={{ duration: 0.6, delay: 0.05 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 flex flex-col">
-                <h2 className="text-2xl font-headline font-bold text-slate-900 mb-6">
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 flex flex-col">
+                <h2 className="text-2xl font-headline font-bold text-foreground mb-6">
                   {t('الملفات المحددة', 'Selected Files')}
-                  {items.length > 0 && <span className="ms-2 text-base font-normal text-slate-500">({items.length})</span>}
+                  {items.length > 0 && <span className="ms-2 text-base font-normal text-muted-foreground">({items.length})</span>}
                 </h2>
 
                 {items.length === 0 ? (
@@ -342,7 +342,7 @@ export default function UploadPage() {
                     <div className="w-16 h-16 rounded-2xl bg-[#e4e2e1] flex items-center justify-center mb-4">
                       <File className="w-8 h-8 text-slate-400" />
                     </div>
-                    <p className="text-slate-500">{t('لا توجد ملفات محددة بعد', 'No files selected yet')}</p>
+                    <p className="text-muted-foreground">{t('لا توجد ملفات محددة بعد', 'No files selected yet')}</p>
                   </div>
                 ) : (
                   <div className="flex-1 space-y-3 mb-6">
@@ -356,11 +356,11 @@ export default function UploadPage() {
                   {items.length > 0 && (
                     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4 mt-auto">
                       <div className="space-y-1.5">
-                        <label className="text-sm font-bold text-slate-700 font-label">{t('وصف (اختياري)', 'Description (optional)')}</label>
+                        <label className="text-sm font-bold text-muted-foreground font-label">{t('وصف (اختياري)', 'Description (optional)')}</label>
                         <Input
                           placeholder={t('أضف وصفاً لهذه الملفات...', 'Add a description...')}
                           value={description} onChange={(e) => setDescription(e.target.value)}
-                          className="rounded-xl bg-white border-[#e4e2e1] focus-visible:ring-amber-600/40" />
+                          className="rounded-xl bg-card border-border focus-visible:ring-amber-600/40" />
                       </div>
                       <div className="flex gap-3">
                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -372,7 +372,7 @@ export default function UploadPage() {
                           }
                         </motion.button>
                         <Button variant="outline" onClick={() => router.back()} disabled={isUploading}
-                          className="rounded-2xl border-[#e4e2e1] hover:bg-white px-6">
+                          className="rounded-2xl border-border hover:bg-card px-6">
                           {t('إلغاء', 'Cancel')}
                         </Button>
                       </div>

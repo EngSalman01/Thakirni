@@ -63,11 +63,11 @@ export function RecentActivity() {
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-white dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl overflow-hidden"
+      className="bg-card dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-base font-semibold text-foreground dark:text-slate-100">
           {t("آخر نشاط", "Recent Activity")}
         </h2>
         <Link
@@ -84,17 +84,17 @@ export function RecentActivity() {
           <div className="px-5 py-6 space-y-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] animate-pulse shrink-0" />
+                <div className="w-8 h-8 rounded-full bg-muted dark:bg-white/[0.06] animate-pulse shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3 bg-slate-100 dark:bg-white/[0.06] rounded-full animate-pulse w-4/5" />
-                  <div className="h-2.5 bg-slate-100 dark:bg-white/[0.06] rounded-full animate-pulse w-1/3" />
+                  <div className="h-3 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse w-4/5" />
+                  <div className="h-2.5 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse w-1/3" />
                 </div>
               </div>
             ))}
           </div>
         ) : recent.length === 0 ? (
           <div className="px-5 py-10 text-center space-y-3">
-            <Inbox className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+            <Inbox className="w-8 h-8 text-slate-300 dark:text-muted-foreground mx-auto" />
             <p className="text-sm text-muted-foreground">
               {t("ما في نشاط بعد", "No activity yet")}
             </p>
@@ -118,13 +118,13 @@ export function RecentActivity() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.1 + i * 0.05 }}
-                className="flex items-start gap-3 px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                className="flex items-start gap-3 px-5 py-3.5 hover:bg-muted dark:hover:bg-white/[0.02] transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-muted dark:bg-white/[0.06] flex items-center justify-center shrink-0">
                   <Icon className={`w-4 h-4 ${color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm leading-snug truncate ${plan.status === "done" ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-800 dark:text-slate-200"}`}>
+                  <p className={`text-sm leading-snug truncate ${plan.status === "done" ? "line-through text-slate-400 dark:text-slate-500" : "text-foreground dark:text-slate-200"}`}>
                     {plan.title}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">

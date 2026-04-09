@@ -139,10 +139,10 @@ export default function PlansPage() {
               {/* Copy */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} className="space-y-6">
                 <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-foreground leading-[1.1]">
                     {t("خططي ", "My ")}<span className="gradient-text">{t("ومهامي", "Plans")}</span>
                   </h1>
-                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                  <p className="text-xl text-muted-foreground mt-4 max-w-lg">
                     {t("نظّم يومك، تابع مهامك، ولا تنسى مقاضيك.", "Organise your day, track your tasks, and never forget your groceries.")}
                   </p>
                 </div>
@@ -164,12 +164,12 @@ export default function PlansPage() {
               {/* Right: real plans preview */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                 className="hidden lg:block relative">
-                <div className="bg-white rounded-2xl p-8 shadow-card hover-lift space-y-3">
+                <div className="bg-card rounded-2xl p-8 shadow-card hover-lift space-y-3">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-amber-400 flex items-center justify-center">
                       <ListTodo className="w-5 h-5 text-white" />
                     </div>
-                    <span className="font-headline font-bold text-slate-900">{t("قائمة اليوم", "Today's List")}</span>
+                    <span className="font-headline font-bold text-foreground">{t("قائمة اليوم", "Today's List")}</span>
                   </div>
                   {isLoading
                     ? [1, 2, 3].map(i => <Skeleton key={i} className="h-12 rounded-xl" />)
@@ -180,11 +180,11 @@ export default function PlansPage() {
                         const done = plan.status === "done";
                         return (
                           <motion.div key={plan.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
-                            className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-slate-50 dark:bg-white/[0.03]"}`}>
+                            className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-muted dark:bg-white/[0.03]"}`}>
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${done ? "bg-emerald-500 border-emerald-500" : "border-slate-300"}`}>
                               {done && <CheckCircle2 className="w-3 h-3 text-white" />}
                             </div>
-                            <span className={`text-sm font-medium flex-1 truncate ${done ? "line-through text-slate-400" : "text-slate-700"}`}>{plan.title}</span>
+                            <span className={`text-sm font-medium flex-1 truncate ${done ? "line-through text-slate-400" : "text-muted-foreground"}`}>{plan.title}</span>
                             <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${catColor}`} />
                           </motion.div>
                         );
@@ -240,12 +240,12 @@ export default function PlansPage() {
               {/* Plans list — wide feature card */}
               <motion.div custom={1} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="lg:col-span-2 bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden hover-lift group">
+                className="lg:col-span-2 bg-muted dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden hover-lift group">
                 <div className="absolute right-0 bottom-0 w-1/3 translate-y-8 translate-x-8 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-30 pointer-events-none">
                   <div className="w-full h-48 bg-gradient-to-tl from-amber-600/20 to-amber-400/20 rounded-tl-2xl" />
                 </div>
                 <span className="text-4xl text-amber-600 dark:text-amber-400 mb-6 block">📋</span>
-                <h2 className="text-2xl font-headline font-bold mb-8 text-slate-900">{t("قائمة المهام", "Task List")}</h2>
+                <h2 className="text-2xl font-headline font-bold mb-8 text-foreground">{t("قائمة المهام", "Task List")}</h2>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/70 backdrop-blur-sm">
@@ -263,10 +263,10 @@ export default function PlansPage() {
                         <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] rounded-full flex items-center justify-center">
                           <CheckCircle2 className="w-10 h-10 text-amber-600 dark:text-amber-400/40" />
                         </div>
-                        <h3 className="text-xl font-headline font-bold text-slate-700">
+                        <h3 className="text-xl font-headline font-bold text-muted-foreground">
                           {t("ما عندك مهام للحين 👀", "No tasks yet 👀")}
                         </h3>
-                        <p className="text-slate-500 mt-2">
+                        <p className="text-muted-foreground mt-2">
                           {t("خلني أرتب لك أول وحدة 👌", "Let me help you add your first one 👌")}
                         </p>
                       </div>
@@ -277,7 +277,7 @@ export default function PlansPage() {
                             className={cn("group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200",
                               selectedIds.has(plan.id) ? "bg-amber-600/5 border-amber-600/30 ring-1 ring-amber-600/20"
                               : plan.status === "done" ? "bg-white/40 border-white/60 opacity-50"
-                              : "bg-white border-[#e4e2e1] shadow-ambient hover:shadow-card hover:-translate-y-0.5")}>
+                              : "bg-card border-border shadow-ambient hover:shadow-card hover:-translate-y-0.5")}>
                             <div className={cn("absolute top-3 right-3 transition-opacity", selectedIds.size > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
                               <input type="checkbox" checked={selectedIds.has(plan.id)} onChange={() => toggleSelect(plan.id)} onClick={e => e.stopPropagation()}
                                 className="w-4 h-4 rounded accent-amber-600 cursor-pointer" />
@@ -285,10 +285,10 @@ export default function PlansPage() {
                             <Checkbox checked={plan.status === "done"} onCheckedChange={c => handleToggleStatus(plan.id, !!c)} className="mt-1" />
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center gap-2">
-                                <span className={cn("font-semibold truncate", plan.status === "done" ? "line-through text-slate-400" : "text-slate-800")}>
+                                <span className={cn("font-semibold truncate", plan.status === "done" ? "line-through text-slate-400" : "text-foreground")}>
                                   {plan.title}
                                 </span>
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#f0eded] text-[10px] font-bold text-slate-600">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#f0eded] text-[10px] font-bold text-muted-foreground">
                                   {getCategoryIcon(plan.category || "task")}
                                   {t(plan.category || "task", (plan.category || "task").toUpperCase())}
                                 </span>

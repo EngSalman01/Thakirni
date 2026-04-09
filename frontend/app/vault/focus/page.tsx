@@ -178,10 +178,10 @@ export default function FocusPage() {
               {/* Copy */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
                 <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-foreground leading-[1.1]">
                     {t("وضع ", "Focus")}{" "}<span className="gradient-text">{t("التركيز", "Mode")}</span>
                   </h1>
-                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                  <p className="text-xl text-muted-foreground mt-4 max-w-lg">
                     {t("استخدم تقنية بومودورو لتحقيق إنتاجية أعمق وتركيز أكبر.", "Use the Pomodoro technique for deeper productivity and greater focus.")}
                   </p>
                 </div>
@@ -190,7 +190,7 @@ export default function FocusPage() {
                 <div className="flex flex-wrap gap-2">
                   {SESSION_TYPES.map(st => (
                     <button key={st.value} disabled={isRunning} onClick={() => { setSessionType(st.value); setTimeLeft(st.minutes * 60); setTotalTime(st.minutes * 60) }}
-                      className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${sessionType === st.value ? "power-gradient text-white border-transparent shadow-lg" : "bg-white border-[#e4e2e1] text-slate-600 hover:border-amber-600/40"} disabled:opacity-50 disabled:cursor-not-allowed`}>
+                      className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${sessionType === st.value ? "power-gradient text-white border-transparent shadow-lg" : "bg-card border-border text-muted-foreground hover:border-amber-600/40"} disabled:opacity-50 disabled:cursor-not-allowed`}>
                       {isArabic ? st.label : st.labelEn}
                     </button>
                   ))}
@@ -204,9 +204,9 @@ export default function FocusPage() {
                       { value: (stats as any).totalMinutes ?? 0,    label: t("دقيقة", "Minutes"),            color: "text-amber-600 dark:text-amber-400" },
                       { value: (stats as any).avgMinutes ?? 0,      label: t("متوسط/جلسة", "Avg/session"),  color: "text-emerald-600" },
                     ].map(({ value, label, color }) => (
-                      <div key={label as string} className="bg-white rounded-2xl border border-[#e4e2e1] p-4 text-center shadow-ambient hover-lift">
+                      <div key={label as string} className="bg-card rounded-2xl border border-border p-4 text-center shadow-ambient hover-lift">
                         <p className={`text-2xl font-headline font-extrabold ${color}`}>{value}</p>
-                        <p className="text-xs text-slate-500 mt-1">{label as string}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{label as string}</p>
                       </div>
                     ))}
                   </div>
@@ -269,9 +269,9 @@ export default function FocusPage() {
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { emoji: "🍅", title: t("بومودورو", "Pomodoro"), desc: t("25 دقيقة تركيز مكثف ثم استراحة قصيرة", "25 minutes of focused work, then a short break"), color: "bg-slate-50 dark:bg-white/[0.03]", textColor: "text-slate-900" },
+                { emoji: "🍅", title: t("بومودورو", "Pomodoro"), desc: t("25 دقيقة تركيز مكثف ثم استراحة قصيرة", "25 minutes of focused work, then a short break"), color: "bg-muted dark:bg-white/[0.03]", textColor: "text-foreground" },
                 { emoji: "☕", title: t("استراحة", "Short Break"), desc: t("5 دقائق للراحة وإعادة الشحن قبل الجلسة التالية", "5 minutes to rest and recharge before the next session"), color: "bg-amber-600", textColor: "text-white" },
-                { emoji: "🔱", title: t("عمل عميق", "Deep Work"), desc: t("50 دقيقة للمهام المعقدة التي تحتاج تركيزاً عالياً", "50 minutes for complex tasks requiring deep concentration"), color: "bg-slate-50 dark:bg-white/[0.03]", textColor: "text-slate-900" },
+                { emoji: "🔱", title: t("عمل عميق", "Deep Work"), desc: t("50 دقيقة للمهام المعقدة التي تحتاج تركيزاً عالياً", "50 minutes for complex tasks requiring deep concentration"), color: "bg-muted dark:bg-white/[0.03]", textColor: "text-foreground" },
               ].map(({ emoji, title, desc, color, textColor }, i) => (
                 <motion.div key={title as string}
                   custom={i} initial={{ opacity: 0, y: 28 }}
@@ -280,7 +280,7 @@ export default function FocusPage() {
                   className={`${color} rounded-2xl p-12 relative overflow-hidden hover-lift cursor-default`}>
                   <span className="text-4xl mb-6 block">{emoji}</span>
                   <h3 className={`text-2xl font-headline font-bold mb-3 ${textColor}`}>{title as string}</h3>
-                  <p className={`${textColor === "text-white" ? "text-white/80" : "text-slate-500"} text-base`}>{desc as string}</p>
+                  <p className={`${textColor === "text-white" ? "text-white/80" : "text-muted-foreground"} text-base`}>{desc as string}</p>
                   {i === 1 && <div className="absolute -top-8 -right-8 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl pointer-events-none" />}
                 </motion.div>
               ))}

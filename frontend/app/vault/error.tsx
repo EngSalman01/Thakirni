@@ -25,15 +25,15 @@ export default function VaultError({ error, reset }: ErrorProps) {
         </div>
 
         {/* Card */}
-        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-8 shadow-sm border border-stone-200">
-          <h1 className="text-2xl font-bold text-slate-800 mb-1">
+        <div className="bg-muted dark:bg-white/[0.03] rounded-2xl p-8 shadow-sm border border-border">
+          <h1 className="text-2xl font-bold text-foreground mb-1">
             خطأ في الخزينة
           </h1>
-          <p className="text-sm text-slate-400 mb-1">Vault Error</p>
-          <p className="text-slate-500 text-sm mt-3 mb-8">
+          <p className="text-sm text-muted-foreground mb-1">Vault Error</p>
+          <p className="text-muted-foreground text-sm mt-3 mb-8">
             نعتذر، حدث خطأ غير متوقع في الخزينة
             <br />
-            <span className="text-slate-400">
+            <span className="text-muted-foreground">
               An unexpected error occurred in the vault
             </span>
           </p>
@@ -52,7 +52,7 @@ export default function VaultError({ error, reset }: ErrorProps) {
 
             <Link
               href="/vault"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-amber-600 dark:text-amber-400 bg-white border border-amber-600/30 transition-colors hover:bg-amber-600/5"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-amber-600 dark:text-amber-400 bg-card border border-amber-600/30 transition-colors hover:bg-amber-600/5"
             >
               العودة للخزينة / Back to Vault
             </Link>

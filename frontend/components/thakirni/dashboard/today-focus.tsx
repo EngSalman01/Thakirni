@@ -49,11 +49,11 @@ export function TodayFocus() {
     <section
       dir={isArabic ? "rtl" : "ltr"}
       // Primary card — shadow-sm for lift
-      className="bg-white dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl shadow-sm overflow-hidden"
+      className="bg-card dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl shadow-sm overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+        <h2 className="text-base font-semibold text-foreground dark:text-slate-100">
           {t("وش أسوي الحين؟", "What to do now")}
         </h2>
         <Link
@@ -70,12 +70,12 @@ export function TodayFocus() {
         {isLoading ? (
           <div className="px-5 py-8 space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-4 bg-slate-100 dark:bg-white/[0.06] rounded-full animate-pulse" style={{ width: `${75 - i * 10}%` }} />
+              <div key={i} className="h-4 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse" style={{ width: `${75 - i * 10}%` }} />
             ))}
           </div>
         ) : isEmpty ? (
           <div className="px-5 py-10 text-center space-y-3">
-            <CalendarX className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
+            <CalendarX className="w-8 h-8 text-slate-300 dark:text-muted-foreground mx-auto" />
             <p className="text-sm text-muted-foreground">
               {t("ما عندك شي مجدول اليوم", "You have nothing scheduled")}
             </p>
@@ -93,12 +93,12 @@ export function TodayFocus() {
                 key={plan.id}
                 whileHover={{ scale: 1.005 }}
                 whileTap={{ scale: 0.995 }}
-                className="flex items-center gap-3 px-5 py-3.5 cursor-pointer group hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
+                className="flex items-center gap-3 px-5 py-3.5 cursor-pointer group hover:bg-muted dark:hover:bg-white/[0.02] transition-colors"
                 onClick={() => !(plan as PlanWithSource)._source && updatePlanStatus(plan.id, plan.status === "done" ? "pending" : "done")}
                 style={{ willChange: "transform" }}
               >
                 <button
-                  className="shrink-0 text-slate-300 dark:text-slate-600 group-hover:text-amber-500 transition-colors"
+                  className="shrink-0 text-slate-300 dark:text-muted-foreground group-hover:text-amber-500 transition-colors"
                   aria-label="Toggle done"
                 >
                   {(plan as PlanWithSource)._source === "gcal" ? (
@@ -114,7 +114,7 @@ export function TodayFocus() {
                     "flex-1 text-sm leading-snug",
                     plan.status === "done"
                       ? "line-through text-slate-400 dark:text-slate-500"
-                      : "text-slate-800 dark:text-slate-200",
+                      : "text-foreground dark:text-slate-200",
                   ].join(" ")}
                 >
                   {plan.title}
@@ -134,7 +134,7 @@ export function TodayFocus() {
               <div className="flex items-center gap-3 px-5 py-3.5 bg-amber-50/60 dark:bg-amber-950/20">
                 <CalendarDays className="w-4 h-4 text-amber-500 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                  <p className="text-sm font-medium text-foreground dark:text-slate-200 truncate">
                     {nextMeeting.title}
                   </p>
                   {nextMeeting.plan_time && (
@@ -154,7 +154,7 @@ export function TodayFocus() {
         <div className="px-5 py-3 border-t border-slate-50 dark:border-white/[0.04]">
           <Link
             href="/vault/plans"
-            className="text-xs text-muted-foreground hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
+            className="text-xs text-muted-foreground hover:text-muted-foreground dark:hover:text-slate-300 transition-colors"
           >
             {t("عرض كل المهام →", "View all tasks →")}
           </Link>

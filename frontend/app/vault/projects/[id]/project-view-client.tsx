@@ -443,7 +443,7 @@ function PriorityBadge({
       high: "bg-red-100 text-red-700 border-red-200",
       medium: "bg-orange-100 text-orange-700 border-orange-200",
       low: "bg-blue-100 text-blue-700 border-blue-200",
-    }[priority] || "bg-slate-100 text-slate-700 border-slate-200";
+    }[priority] || "bg-muted text-muted-foreground border-border";
 
   return (
     <span
@@ -467,10 +467,10 @@ function StatusSelect({
 }) {
   const styles =
     {
-      pending: "bg-slate-100 text-slate-600 hover:bg-slate-200",
+      pending: "bg-muted text-muted-foreground hover:bg-muted",
       in_progress: "bg-blue-100 text-blue-600 hover:bg-blue-200",
       completed: "bg-green-100 text-green-600 hover:bg-green-200",
-    }[task.status as string] || "bg-slate-100";
+    }[task.status as string] || "bg-muted";
 
   return (
     <select

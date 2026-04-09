@@ -66,7 +66,7 @@ function MeetingVisual({ t, latestMeeting }: {
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.8, ease: [0.2, 1, 0.3, 1] }}
-        className="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm border border-[#e4e2e1]"
+        className="relative bg-card rounded-3xl shadow-2xl p-8 w-full max-w-sm border border-border"
       >
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -74,10 +74,10 @@ function MeetingVisual({ t, latestMeeting }: {
             <Mic className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-headline font-bold text-slate-900 text-sm truncate">
+            <p className="font-headline font-bold text-foreground text-sm truncate">
               {meeting ? String(meeting.title ?? t("اجتماع", "Meeting")) : t("لا اجتماعات بعد", "No meetings yet")}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               {meeting
                 ? `${meeting.duration_seconds ? fmtDuration(Number(meeting.duration_seconds)) : "--"} • ${meeting.speaker_count ?? 1} ${t("متحدث", "speakers")}`
                 : t("ارفع تسجيلاً للبدء", "Upload a recording to start")}
@@ -89,7 +89,7 @@ function MeetingVisual({ t, latestMeeting }: {
         {/* Summary lines or empty state */}
         {meeting ? (
           <div className="space-y-2 mb-5">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("الملخص", "Summary")}</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("الملخص", "Summary")}</p>
             {[100, 85, 65].map((w, i) => (
               <motion.div key={i} initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.6 + i * 0.1, duration: 0.5 }}
                 className="h-2 bg-[#e4e2e1] rounded-full origin-left" style={{ width: `${w}%` }} />
@@ -105,10 +105,10 @@ function MeetingVisual({ t, latestMeeting }: {
         {/* Action items (only when meeting exists and has items) */}
         {meeting && Array.isArray(meeting.action_items) && meeting.action_items.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">{t("مهام للمتابعة", "Action Items")}</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("مهام للمتابعة", "Action Items")}</p>
             {meeting.action_items.slice(0, 3).map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
-                <div className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] border-2 border-[#e4e2e1]" />
+              <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] border-2 border-border" />
                 {item}
               </div>
             ))}
@@ -120,10 +120,10 @@ function MeetingVisual({ t, latestMeeting }: {
       <motion.div
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-4 -right-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-4 py-2 flex items-center gap-2"
+        className="absolute -top-4 -right-4 bg-card rounded-2xl shadow-lg border border-border px-4 py-2 flex items-center gap-2"
       >
         <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-        <span className="text-xs font-bold text-slate-900">{t("تحليل ذكي", "AI Analysis")}</span>
+        <span className="text-xs font-bold text-foreground">{t("تحليل ذكي", "AI Analysis")}</span>
       </motion.div>
 
       {/* Floating speaker badge (only when meeting exists) */}
@@ -131,10 +131,10 @@ function MeetingVisual({ t, latestMeeting }: {
         <motion.div
           animate={{ y: [0, 6, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute -bottom-4 -left-4 bg-white rounded-2xl shadow-lg border border-[#e4e2e1] px-4 py-2 flex items-center gap-2"
+          className="absolute -bottom-4 -left-4 bg-card rounded-2xl shadow-lg border border-border px-4 py-2 flex items-center gap-2"
         >
           <Users className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-          <span className="text-xs font-bold text-slate-900">{meeting.speaker_count ?? 1} {t("متحدث", "speakers")}</span>
+          <span className="text-xs font-bold text-foreground">{meeting.speaker_count ?? 1} {t("متحدث", "speakers")}</span>
         </motion.div>
       )}
     </div>
@@ -232,17 +232,17 @@ export default function MeetingsPage() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
                 <Mic className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-label font-medium text-slate-700">{t("تحليل بالذكاء الاصطناعي", "AI-Powered Analysis")}</span>
+                <span className="text-sm font-label font-medium text-muted-foreground">{t("تحليل بالذكاء الاصطناعي", "AI-Powered Analysis")}</span>
               </motion.div>
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
-                <span className="text-slate-900">{t("حوّل", "Turn")}</span>{" "}
+                <span className="text-foreground">{t("حوّل", "Turn")}</span>{" "}
                 <span className="gradient-text">{t("اجتماعاتك", "Meetings")}</span>
                 <br />
-                <span className="text-slate-900">{t("إلى رؤى", "Into Insights")}</span>
+                <span className="text-foreground">{t("إلى رؤى", "Into Insights")}</span>
               </h1>
 
-              <p className="text-xl text-slate-600 font-body mb-10 leading-relaxed max-w-lg">
+              <p className="text-xl text-muted-foreground font-body mb-10 leading-relaxed max-w-lg">
                 {t(
                   "ارفع أي تسجيل صوتي أو مرئي واحصل على ملخص فوري، نقاط رئيسية، مهام للمتابعة وتحليل المتحدثين.",
                   "Upload any audio or video recording and instantly get a summary, key points, action items, and speaker analysis."
@@ -260,16 +260,16 @@ export default function MeetingsPage() {
                   {isUploading ? t("جاري التحليل...", "Analysing...") : t("ارفع تسجيلاً", "Upload Recording")}
                 </motion.button>
 
-                <div className="flex items-center gap-2 text-sm text-slate-500">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="w-2 h-2 rounded-full bg-amber-600" />
                   MP3, WAV, M4A, MP4, WebM
                 </div>
               </div>
 
               {isUploading && (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 bg-white rounded-2xl p-5 border border-[#e4e2e1] shadow-card">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 bg-card rounded-2xl p-5 border border-border shadow-card">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-label font-medium text-slate-700">
+                    <span className="text-sm font-label font-medium text-muted-foreground">
                       {uploadProgress < 30 ? t("جاري الرفع...", "Uploading...") : uploadProgress < 90 ? t("جاري التحليل...", "Analysing...") : t("اكتمل!", "Complete!")}
                     </span>
                     <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{uploadProgress}%</span>
@@ -296,10 +296,10 @@ export default function MeetingsPage() {
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
               className="flex items-center justify-between mb-10">
               <div>
-                <h2 className="text-4xl font-headline font-extrabold text-slate-900">
+                <h2 className="text-4xl font-headline font-extrabold text-foreground">
                   {t("اجتماعاتك", "Your Meetings")}
                 </h2>
-                <p className="text-slate-500 mt-1">{t(`${meetings.length} تسجيل محفوظ`, `${meetings.length} saved recording${meetings.length !== 1 ? "s" : ""}`)}</p>
+                <p className="text-muted-foreground mt-1">{t(`${meetings.length} تسجيل محفوظ`, `${meetings.length} saved recording${meetings.length !== 1 ? "s" : ""}`)}</p>
               </div>
             </motion.div>
 
@@ -313,16 +313,16 @@ export default function MeetingsPage() {
               </motion.div>
             ) : meetingsLoading ? (
               <div className="space-y-4">
-                {[1,2,3].map(i => <div key={i} className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl h-28 animate-pulse" />)}
+                {[1,2,3].map(i => <div key={i} className="bg-muted dark:bg-white/[0.03] rounded-2xl h-28 animate-pulse" />)}
               </div>
             ) : meetings.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-16 text-center">
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-16 text-center">
                 <div className="w-20 h-20 rounded-3xl power-gradient flex items-center justify-center mx-auto mb-6 opacity-30">
                   <Mic className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("ما عندك اجتماعات للحين 🎙️", "No meetings yet")}</h3>
-                <p className="text-slate-500">{t("ارفع تسجيل ونرتب لك كل شي بالذكاء الاصطناعي", "Upload a recording and we'll organize everything with AI")}</p>
+                <h3 className="text-2xl font-headline font-bold text-muted-foreground mb-2">{t("ما عندك اجتماعات للحين 🎙️", "No meetings yet")}</h3>
+                <p className="text-muted-foreground">{t("ارفع تسجيل ونرتب لك كل شي بالذكاء الاصطناعي", "Upload a recording and we'll organize everything with AI")}</p>
               </motion.div>
             ) : (
               <div className="space-y-6">
@@ -333,7 +333,7 @@ export default function MeetingsPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-50px" }}
                     transition={{ delay: i * 0.06, duration: 0.5 }}
-                    className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden hover-lift"
+                    className="bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden hover-lift"
                   >
                     {/* Colored top stripe */}
                     <div className="h-1.5 w-full power-gradient" />
@@ -345,8 +345,8 @@ export default function MeetingsPage() {
                             <Mic className="w-6 h-6 text-white" />
                           </div>
                           <div className="min-w-0">
-                            <h3 className="text-xl font-headline font-bold text-slate-900 truncate">{m.title}</h3>
-                            <div className="flex items-center gap-4 mt-1.5 text-sm text-slate-500 flex-wrap">
+                            <h3 className="text-xl font-headline font-bold text-foreground truncate">{m.title}</h3>
+                            <div className="flex items-center gap-4 mt-1.5 text-sm text-muted-foreground flex-wrap">
                               {m.duration_seconds && (
                                 <span className="flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5" />
@@ -365,7 +365,7 @@ export default function MeetingsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === "completed" ? "bg-green-100 text-green-700" : "bg-[#e4e2e1] text-slate-500"}`}>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === "completed" ? "bg-green-100 text-green-700" : "bg-[#e4e2e1] text-muted-foreground"}`}>
                             {m.status === "completed" ? t("مكتمل", "Completed") : t("جاري...", "Processing...")}
                           </span>
                           <Button variant="ghost" size="icon" aria-label="Delete meeting" className="h-9 w-9 text-slate-400 hover:text-red-500" onClick={() => handleDelete(m.id)}>
@@ -378,23 +378,23 @@ export default function MeetingsPage() {
                       </div>
 
                       {m.summary && (
-                        <p className="text-slate-500 text-sm mt-4 line-clamp-2 leading-relaxed">{m.summary}</p>
+                        <p className="text-muted-foreground text-sm mt-4 line-clamp-2 leading-relaxed">{m.summary}</p>
                       )}
                     </div>
 
                     {/* Expanded detail */}
                     {expandedId === m.id && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-                        className="border-t border-[#e4e2e1] bg-white p-8 space-y-6">
+                        className="border-t border-border bg-card p-8 space-y-6">
                         {/* Speakers */}
                         {m.speakers && Object.keys(m.speakers as Record<string, string>).length > 0 && (
                           <div>
-                            <h4 className="font-headline font-bold text-slate-900 mb-3 flex items-center gap-2">
+                            <h4 className="font-headline font-bold text-foreground mb-3 flex items-center gap-2">
                               <Users className="w-4 h-4 text-amber-600 dark:text-amber-400" /> {t("المتحدثون", "Speakers")}
                             </h4>
                             <div className="flex flex-wrap gap-2">
                               {Object.entries(m.speakers as Record<string, string>).map(([key, name]) => (
-                                <Badge key={key} variant="outline" className="bg-slate-50 dark:bg-white/[0.03] border-[#e4e2e1] text-slate-700">{name !== key ? `${name} (${key})` : key}</Badge>
+                                <Badge key={key} variant="outline" className="bg-muted dark:bg-white/[0.03] border-border text-muted-foreground">{name !== key ? `${name} (${key})` : key}</Badge>
                               ))}
                             </div>
                           </div>
@@ -403,10 +403,10 @@ export default function MeetingsPage() {
                         {/* Key points */}
                         {Array.isArray(m.key_points) && (m.key_points as string[]).length > 0 && (
                           <div>
-                            <h4 className="font-headline font-bold text-slate-900 mb-3">📌 {t("النقاط الرئيسية", "Key Points")}</h4>
+                            <h4 className="font-headline font-bold text-foreground mb-3">📌 {t("النقاط الرئيسية", "Key Points")}</h4>
                             <ul className="space-y-2">
                               {(m.key_points as string[]).map((pt, i) => (
-                                <li key={i} className="text-slate-600 flex items-start gap-2 text-sm">
+                                <li key={i} className="text-muted-foreground flex items-start gap-2 text-sm">
                                   <span className="text-amber-600 dark:text-amber-400 font-bold mt-0.5">•</span> {pt}
                                 </li>
                               ))}
@@ -417,10 +417,10 @@ export default function MeetingsPage() {
                         {/* Action items */}
                         {Array.isArray(m.action_items) && (m.action_items as string[]).length > 0 && (
                           <div>
-                            <h4 className="font-headline font-bold text-slate-900 mb-3">✅ {t("مهام للمتابعة", "Action Items")}</h4>
+                            <h4 className="font-headline font-bold text-foreground mb-3">✅ {t("مهام للمتابعة", "Action Items")}</h4>
                             <ul className="space-y-2">
                               {(m.action_items as string[]).map((item, i) => (
-                                <li key={i} className="text-slate-600 flex items-start gap-2 text-sm">
+                                <li key={i} className="text-muted-foreground flex items-start gap-2 text-sm">
                                   <span className="text-green-600 font-bold mt-0.5">→</span> {item}
                                 </li>
                               ))}
@@ -430,25 +430,25 @@ export default function MeetingsPage() {
 
                         {/* Full summary */}
                         {m.summary && (
-                          <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 border-s-4 border-amber-600">
-                            <h4 className="font-headline font-bold text-slate-900 mb-3 flex items-center gap-2">
+                          <div className="bg-muted dark:bg-white/[0.03] rounded-2xl p-6 border-s-4 border-amber-600">
+                            <h4 className="font-headline font-bold text-foreground mb-3 flex items-center gap-2">
                               <FileText className="w-4 h-4 text-amber-600 dark:text-amber-400" /> {t("الملخص الكامل", "Full Summary")}
                             </h4>
-                            <p className="text-slate-600 text-sm whitespace-pre-wrap leading-relaxed">{m.summary}</p>
+                            <p className="text-muted-foreground text-sm whitespace-pre-wrap leading-relaxed">{m.summary}</p>
                           </div>
                         )}
 
                         {/* Transcript */}
                         {Array.isArray(m.transcript) && ((m.transcript ?? []) as NonNullable<Meeting["transcript"]>).length > 0 && (
                           <div>
-                            <h4 className="font-headline font-bold text-slate-900 mb-3">📝 {t("النص الكامل (أول ١٠ قطع)", "Full Transcript (first 10 segments)")}</h4>
-                            <div className="space-y-2 max-h-64 overflow-y-auto bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-5 border border-[#e4e2e1]">
+                            <h4 className="font-headline font-bold text-foreground mb-3">📝 {t("النص الكامل (أول ١٠ قطع)", "Full Transcript (first 10 segments)")}</h4>
+                            <div className="space-y-2 max-h-64 overflow-y-auto bg-muted dark:bg-white/[0.03] rounded-2xl p-5 border border-border">
                               {((m.transcript ?? []) as NonNullable<Meeting["transcript"]>).slice(0, 10).map((seg, i) => (
                                 <div key={i} className="text-sm flex gap-3">
                                   <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0 w-24">
                                     {seg.speaker as string ?? (isArabic ? `قطعة ${i + 1}` : `Segment ${i + 1}`)}:
                                   </span>
-                                  <span className="text-slate-600">{seg.text as string}</span>
+                                  <span className="text-muted-foreground">{seg.text as string}</span>
                                 </div>
                               ))}
                               {(m.transcript as unknown[]).length > 10 && (

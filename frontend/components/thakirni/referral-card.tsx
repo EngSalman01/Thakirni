@@ -40,10 +40,10 @@ export function ReferralCard() {
   return (
     <div className="glass-card rounded-2xl p-6 space-y-4">
       <div>
-        <h3 className="font-semibold text-slate-800 text-lg">
+        <h3 className="font-semibold text-foreground text-lg">
           {t("ادعُ أصدقاءك واربح", "Invite friends & earn")}
         </h3>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           {t(
             "شارك رابطك وستحصل أنت وصديقك على 20 رصيداً مجانياً عند التسجيل.",
             "Share your link and you both get 20 free AI credits when they sign up."
@@ -57,7 +57,7 @@ export function ReferralCard() {
           {data.count} {t("مدعوّ", data.count === 1 ? "referral" : "referrals")}
         </span>
         <span className="text-slate-400">·</span>
-        <span className="text-slate-500 font-mono text-xs">{data.code}</span>
+        <span className="text-muted-foreground font-mono text-xs">{data.code}</span>
       </div>
 
       {/* Link */}
@@ -65,7 +65,7 @@ export function ReferralCard() {
         <input
           readOnly
           value={data.link}
-          className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-sm font-mono truncate focus:outline-none"
+          className="flex-1 px-3 py-2 rounded-xl border border-border bg-muted text-muted-foreground text-sm font-mono truncate focus:outline-none"
         />
         <button
           onClick={copyLink}

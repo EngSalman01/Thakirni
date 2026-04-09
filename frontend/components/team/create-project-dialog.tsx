@@ -151,7 +151,7 @@ export function CreateProjectDialog({
                     />
                     {color === presetColor.value && (
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-2.5 h-2.5 rounded-full bg-white shadow-lg" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-card shadow-lg" />
                       </div>
                     )}
                   </button>

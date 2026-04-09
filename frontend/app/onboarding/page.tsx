@@ -130,12 +130,12 @@ export default function OnboardingPage() {
       {/* Progress bar */}
       <div className="w-full max-w-lg mb-8">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-slate-500">{t("الإعداد", "Setup")} {step}/{STEPS}</span>
-          <button onClick={skip} className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+          <span className="text-sm text-muted-foreground">{t("الإعداد", "Setup")} {step}/{STEPS}</span>
+          <button onClick={skip} className="text-sm text-slate-400 hover:text-muted-foreground transition-colors">
             {t("تخطي", "Skip")}
           </button>
         </div>
-        <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <motion.div
             className="h-full rounded-full"
             style={{ background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)" }}
@@ -158,11 +158,11 @@ export default function OnboardingPage() {
               <h1 className="text-3xl font-bold gradient-text">
                 {t("أهلاً بك في ذكرني!", "Welcome to Thakirni!")}
               </h1>
-              <p className="text-slate-600 text-lg leading-relaxed">
+              <p className="text-muted-foreground text-lg leading-relaxed">
                 {t("سنرتب لك أول شي خلال دقيقتين.", "We'll set up your first item in under 2 minutes.")}
               </p>
               <div className="space-y-3">
-                <label className="block text-sm font-medium text-slate-700 text-start">
+                <label className="block text-sm font-medium text-muted-foreground text-start">
                   {t("اسمك (اختياري)", "Your name (optional)")}
                 </label>
                 <input
@@ -170,7 +170,7 @@ export default function OnboardingPage() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder={t("أدخل اسمك", "Enter your name")}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-slate-800"
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-foreground"
                 />
               </div>
               <button onClick={() => setStep(2)}
@@ -187,10 +187,10 @@ export default function OnboardingPage() {
               className="glass-card rounded-3xl p-8 space-y-6"
             >
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-2xl font-bold text-foreground">
                   {t("وش تبغاني أساعدك فيه؟ 👀", "What do you need help with? 👀")}
                 </h2>
-                <p className="text-slate-500 mt-1 text-sm">
+                <p className="text-muted-foreground mt-1 text-sm">
                   {t("اختر كل ما ينطبق عليك", "Select all that apply")}
                 </p>
               </div>
@@ -202,10 +202,10 @@ export default function OnboardingPage() {
                       className={`p-4 rounded-xl border-2 text-start transition-all ${
                         selected
                           ? "border-amber-600 bg-amber-600/5"
-                          : "border-slate-200 bg-white hover:border-slate-300"
+                          : "border-border bg-card hover:border-slate-300"
                       }`}>
                       <div className="text-2xl mb-1">{uc.icon}</div>
-                      <div className={`text-sm font-medium ${selected ? "text-amber-600 dark:text-amber-400" : "text-slate-700"}`}>
+                      <div className={`text-sm font-medium ${selected ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
                         {isArabic ? uc.ar : uc.en}
                       </div>
                     </button>
@@ -214,7 +214,7 @@ export default function OnboardingPage() {
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setStep(1)}
-                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">
+                  className="flex-1 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-muted transition-colors">
                   {t("رجوع", "Back")}
                 </button>
                 <button onClick={() => setStep(3)}
@@ -233,10 +233,10 @@ export default function OnboardingPage() {
             >
               <div className="text-4xl text-center">📱</div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-2xl font-bold text-foreground">
                   {t("تذكيرات واتساب", "WhatsApp Reminders")}
                 </h2>
-                <p className="text-slate-500 mt-2 text-sm leading-relaxed">
+                <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                   {t(
                     "أضف رقمك وأرسل لك ملخص يومك كل صباح مباشرة على واتساب. (اختياري)",
                     "Add your number and I'll send your daily briefing straight to WhatsApp. (optional)"
@@ -244,24 +244,24 @@ export default function OnboardingPage() {
                 </p>
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">
+                <label className="block text-sm font-medium text-muted-foreground">
                   {t("رقم الواتساب (اختياري)", "WhatsApp number (optional)")}
                 </label>
                 <div className="flex gap-2">
-                  <div className="px-3 py-3 bg-slate-100 rounded-xl text-slate-600 text-sm font-mono">+966</div>
+                  <div className="px-3 py-3 bg-muted rounded-xl text-muted-foreground text-sm font-mono">+966</div>
                   <input
                     type="tel"
                     value={phone}
                     onChange={e => setPhone(e.target.value.replace(/\D/g, ""))}
                     placeholder="5XXXXXXXX"
                     maxLength={9}
-                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-slate-800 font-mono"
+                    className="flex-1 px-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-amber-600/30 text-foreground font-mono"
                   />
                 </div>
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setStep(2)}
-                  className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors">
+                  className="flex-1 py-3 rounded-xl border border-border text-muted-foreground font-medium hover:bg-muted transition-colors">
                   {t("رجوع", "Back")}
                 </button>
                 <button onClick={() => setStep(4)}
@@ -287,10 +287,10 @@ export default function OnboardingPage() {
                   >
                     ⚙️
                   </motion.div>
-                  <h2 className="text-xl font-bold text-slate-800">
+                  <h2 className="text-xl font-bold text-foreground">
                     {t("جاري أرتب لك أول شي...", "Setting up your first item...")}
                   </h2>
-                  <p className="text-slate-500 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {t("ثانية واحدة 👌", "One moment 👌")}
                   </p>
                 </>
@@ -305,14 +305,14 @@ export default function OnboardingPage() {
                     {createdItem.emoji}
                   </motion.div>
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-800">
+                    <h2 className="text-2xl font-bold text-foreground">
                       {t("خلصنا أول شي لك 👍", "Done — your first item is ready 👍")}
                     </h2>
                     <p className="text-amber-600 dark:text-amber-400 font-semibold mt-2">
                       {isArabic ? createdItem.titleAr : createdItem.titleEn}
                     </p>
                   </div>
-                  <div className="bg-amber-600/5 border border-amber-600/15 rounded-2xl p-4 text-sm text-slate-600 leading-relaxed">
+                  <div className="bg-amber-600/5 border border-amber-600/15 rounded-2xl p-4 text-sm text-muted-foreground leading-relaxed">
                     {t(
                       "تقدر تعدله، تكمله، أو تضيف المزيد — أنا موجود لما تحتاجني 👌",
                       "You can edit it, complete it, or add more — I'm here when you need me 👌"
@@ -327,7 +327,7 @@ export default function OnboardingPage() {
                 // Fallback if quick-create failed
                 <>
                   <div className="text-5xl">✅</div>
-                  <h2 className="text-xl font-bold text-slate-800">
+                  <h2 className="text-xl font-bold text-foreground">
                     {t("حسابك جاهز!", "Your account is ready!")}
                   </h2>
                   <button onClick={() => setStep(5)}
@@ -352,10 +352,10 @@ export default function OnboardingPage() {
               >
                 🎉
               </motion.div>
-              <h2 className="text-2xl font-bold text-slate-800">
+              <h2 className="text-2xl font-bold text-foreground">
                 {t("كل شيء جاهز!", "You're all set!")}
               </h2>
-              <p className="text-slate-500 leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed">
                 {t(
                   "مساعدك الذكي جاهز. راسله متى ما احتجت وأعطيه أوامرك.",
                   "Your AI assistant is ready. Text it whenever you need and give it instructions."
@@ -363,31 +363,31 @@ export default function OnboardingPage() {
               </p>
 
               {/* Quick-action hints */}
-              <div className="bg-slate-50 rounded-2xl p-4 space-y-2 text-start">
+              <div className="bg-muted rounded-2xl p-4 space-y-2 text-start">
                 <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
                   {t("جرب قول:", "Try saying:")}
                 </p>
                 {isArabic ? (
                   <>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">وش عندي اليوم؟</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">ذكرني بالموعد الساعة 4</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">رتب لي يومي</span>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">What do I have today?</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">Remind me at 4pm</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <span className="bg-amber-600/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-lg text-xs font-mono">Plan my day</span>
                     </div>
                   </>

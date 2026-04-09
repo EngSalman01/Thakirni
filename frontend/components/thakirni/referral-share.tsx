@@ -52,7 +52,7 @@ export function ReferralShare() {
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>
+    <div className="bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden" dir={isArabic ? "rtl" : "ltr"}>
       {/* Header — always visible */}
       <button
         onClick={() => setExpanded(v => !v)}
@@ -62,10 +62,10 @@ export function ReferralShare() {
           <Gift className="w-4 h-4 text-amber-600 dark:text-amber-400" />
         </div>
         <div className="flex-1 text-start">
-          <p className="text-sm font-label font-semibold text-slate-800">
+          <p className="text-sm font-label font-semibold text-foreground">
             {isArabic ? "شارك ذكرني — وكسب ٥٠ رصيد" : "Share Thakirni — earn 50 credits"}
           </p>
-          <p className="text-xs text-slate-500 font-label mt-0.5">
+          <p className="text-xs text-muted-foreground font-label mt-0.5">
             {isArabic
               ? `دعيت ${data.referralCount} ${data.referralCount === 1 ? "شخص" : "أشخاص"} حتى الآن`
               : `${data.referralCount} ${data.referralCount === 1 ? "person" : "people"} referred so far`
@@ -93,18 +93,18 @@ export function ReferralShare() {
           >
             <div className="px-4 pb-4 space-y-3">
               {/* Reward callout */}
-              <div className="bg-amber-600/5 border border-amber-600/15 rounded-xl px-3 py-2.5 text-sm font-label text-slate-700">
+              <div className="bg-amber-600/5 border border-amber-600/15 rounded-xl px-3 py-2.5 text-sm font-label text-muted-foreground">
                 {data.reward.description}
               </div>
 
               {/* Link row */}
               <div className="flex items-center gap-2">
-                <div className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-600 truncate">
+                <div className="flex-1 bg-card border border-border rounded-xl px-3 py-2.5 text-xs font-mono text-muted-foreground truncate">
                   {data.link}
                 </div>
                 <button
                   onClick={copyLink}
-                  className="shrink-0 w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all"
+                  className="shrink-0 w-9 h-9 rounded-xl bg-card border border-border flex items-center justify-center text-muted-foreground hover:bg-amber-600 hover:text-white hover:border-amber-600 transition-all"
                 >
                   <AnimatePresence mode="wait">
                     {copied

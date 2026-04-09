@@ -152,10 +152,10 @@ export default function GoalsPage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
                 <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-slate-900 leading-[1.1]">
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-foreground leading-[1.1]">
                     {t("أهدافي ", "My ")}<span className="gradient-text">{t("الكبيرة", "Goals")}</span>
                   </h1>
-                  <p className="text-xl text-slate-500 mt-4 max-w-lg">
+                  <p className="text-xl text-muted-foreground mt-4 max-w-lg">
                     {t("حوّل أحلامك إلى خطط قابلة للتنفيذ خطوة بخطوة.", "Turn your dreams into actionable plans, step by step.")}
                   </p>
                 </div>
@@ -182,20 +182,20 @@ export default function GoalsPage() {
                     <DialogHeader><DialogTitle>{t("إضافة هدف جديد", "Add New Goal")}</DialogTitle></DialogHeader>
                     <form onSubmit={createGoal} className="space-y-4">
                       <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">
+                        <label className="text-sm font-medium text-muted-foreground">
                           {t("عنوان الهدف", "Goal title")} <span className="text-red-500">*</span>
                         </label>
                         <Input placeholder={t("عنوان الهدف", "Goal title")} value={form.title} onChange={e => setForm({...form, title: e.target.value})} required />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-slate-700">
+                        <label className="text-sm font-medium text-muted-foreground">
                           {t("وصف الهدف", "Description")} <span className="text-slate-400 text-xs font-normal">{t("(اختياري)", "(optional)")}</span>
                         </label>
                         <Textarea placeholder={t("وصف الهدف (اختياري)", "Goal description (optional)")} value={form.description} onChange={e => setForm({...form, description: e.target.value})} rows={2} />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className="text-sm font-medium text-slate-700">
+                          <label className="text-sm font-medium text-muted-foreground">
                             {t("الفئة", "Category")} <span className="text-red-500">*</span>
                           </label>
                           <Select value={form.category} onValueChange={v => setForm({...form, category: v})}>
@@ -206,7 +206,7 @@ export default function GoalsPage() {
                           </Select>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-sm font-medium text-slate-700">
+                          <label className="text-sm font-medium text-muted-foreground">
                             {t("تاريخ الهدف", "Target date")} <span className="text-slate-400 text-xs font-normal">{t("(اختياري)", "(optional)")}</span>
                           </label>
                           <Input type="date" value={form.target_date} onChange={e => setForm({...form, target_date: e.target.value})} />
@@ -216,10 +216,10 @@ export default function GoalsPage() {
                         <Wand2 className="w-4 h-4" />{aiLoading ? t("جاري الاقتراح...", "Suggesting...") : t("اقترح خطوات بالذكاء الاصطناعي", "AI Suggest Milestones")}
                       </Button>
                       {suggestedMilestones.length > 0 && (
-                        <div className="bg-slate-50 dark:bg-white/[0.03] rounded-xl p-3 space-y-1.5">
-                          <p className="text-xs font-bold text-slate-600 mb-2">{t("خطوات مقترحة:", "Suggested milestones:")}</p>
+                        <div className="bg-muted dark:bg-white/[0.03] rounded-xl p-3 space-y-1.5">
+                          <p className="text-xs font-bold text-muted-foreground mb-2">{t("خطوات مقترحة:", "Suggested milestones:")}</p>
                           {suggestedMilestones.map((m, i) => (
-                            <div key={i} className="flex items-center gap-2 text-sm text-slate-700">
+                            <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
                               <span className="w-5 h-5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs font-bold">{i+1}</span>
                               {m.title}
                             </div>
@@ -236,17 +236,17 @@ export default function GoalsPage() {
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
                 className="hidden lg:block">
                 <div className="bg-[#e4e2e1] rounded-2xl p-10 shadow-card hover-lift space-y-5">
-                  <h3 className="text-xl font-headline font-bold text-slate-900 mb-6">{t("تقدم الأهداف", "Goal Progress")}</h3>
+                  <h3 className="text-xl font-headline font-bold text-foreground mb-6">{t("تقدم الأهداف", "Goal Progress")}</h3>
                   {goals.length === 0
-                    ? <p className="text-sm text-slate-500 text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>
+                    ? <p className="text-sm text-muted-foreground text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>
                     : (goals as Array<{ id?: string; title: string; progress?: number }>).slice(0, 3).map((goal, i) => {
                         const barColors = ["bg-amber-600", "bg-amber-600", "bg-amber-400"];
                         const pct = Math.min(100, Math.round(goal.progress ?? 0));
                         return (
                           <div key={goal.id ?? i}>
                             <div className="flex justify-between mb-2">
-                              <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{goal.title}</span>
-                              <span className="text-sm text-slate-500 shrink-0 ms-2">{pct}%</span>
+                              <span className="text-sm font-bold text-muted-foreground truncate max-w-[200px]">{goal.title}</span>
+                              <span className="text-sm text-muted-foreground shrink-0 ms-2">{pct}%</span>
                             </div>
                             <div className="h-3 w-full bg-white/60 rounded-full overflow-hidden">
                               <motion.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }}
@@ -277,7 +277,7 @@ export default function GoalsPage() {
             ) : goalsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden">
+                  <div key={i} className="bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden">
                     <Skeleton className="h-2 w-full rounded-none" />
                     <div className="p-10 space-y-4">
                       <div className="flex items-start justify-between">
@@ -293,10 +293,10 @@ export default function GoalsPage() {
               </div>
             ) : goals.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
                 <Target className="w-16 h-16 mx-auto mb-4 text-[#385b9b]/30" />
-                <h2 className="text-2xl font-headline font-bold text-slate-700 mb-2">{t("لا توجد أهداف بعد", "No goals yet")}</h2>
-                <p className="text-slate-500 mb-8">{t("أنشئ هدفك الأول وابدأ رحلتك نحو النجاح!", "Create your first goal and start your journey to success!")}</p>
+                <h2 className="text-2xl font-headline font-bold text-muted-foreground mb-2">{t("لا توجد أهداف بعد", "No goals yet")}</h2>
+                <p className="text-muted-foreground mb-8">{t("أنشئ هدفك الأول وابدأ رحلتك نحو النجاح!", "Create your first goal and start your journey to success!")}</p>
                 <Dialog open={open} onOpenChange={setOpen}>
                   <DialogTrigger asChild>
                     <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
@@ -318,14 +318,14 @@ export default function GoalsPage() {
                       custom={i} initial={{ opacity: 0, y: 28 }}
                       whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
                       transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
-                      className="relative bg-slate-50 dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift">
+                      className="relative bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift">
                       {/* Color stripe */}
                       <div className="h-2 w-full bg-gradient-to-r from-amber-600 to-amber-400" />
                       <div className="p-10">
                         <div className="flex items-start justify-between mb-4">
                           <span className="text-4xl">{cat.icon}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-white text-slate-600">
+                            <span className="text-xs font-bold px-3 py-1 rounded-full bg-card text-muted-foreground">
                               {isArabic ? cat.labelAr : cat.labelEn}
                             </span>
                             <Button variant="ghost" size="icon" aria-label="Delete goal" className="h-7 w-7 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
@@ -334,12 +334,12 @@ export default function GoalsPage() {
                             </Button>
                           </div>
                         </div>
-                        <h3 className="text-xl font-headline font-bold text-slate-900 mb-2">{goal.title}</h3>
-                        {goal.description && <p className="text-sm text-slate-500 mb-4 line-clamp-2">{goal.description}</p>}
+                        <h3 className="text-xl font-headline font-bold text-foreground mb-2">{goal.title}</h3>
+                        {goal.description && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{goal.description}</p>}
 
                         {/* Progress */}
                         <div className="mb-4">
-                          <div className="flex justify-between text-xs font-bold text-slate-600 mb-2">
+                          <div className="flex justify-between text-xs font-bold text-muted-foreground mb-2">
                             <span>{t("التقدم", "Progress")}</span><span>{progress}%</span>
                           </div>
                           <div className="h-2.5 bg-white/80 rounded-full overflow-hidden">
@@ -356,9 +356,9 @@ export default function GoalsPage() {
                         {/* Milestones */}
                         {milestones.length > 0 && (
                           <div className="space-y-1.5 mt-4 border-t border-white/60 pt-4">
-                            <p className="text-xs font-bold text-slate-500 mb-2">{t(`${completedMilestones}/${milestones.length} خطوة`, `${completedMilestones}/${milestones.length} steps`)}</p>
+                            <p className="text-xs font-bold text-muted-foreground mb-2">{t(`${completedMilestones}/${milestones.length} خطوة`, `${completedMilestones}/${milestones.length} steps`)}</p>
                             {milestones.slice(0,3).map((m: any) => (
-                              <div key={m.id} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer hover:text-slate-800"
+                              <div key={m.id} className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-foreground"
                                 onClick={() => !m.is_completed && completeMilestone(goal.id, m.id)}>
                                 {m.is_completed ? <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" /> : <div className="w-4 h-4 rounded-full border-2 border-slate-300 shrink-0" />}
                                 <span className={m.is_completed ? "line-through opacity-50" : ""}>{m.title}</span>

@@ -37,7 +37,7 @@ const ROLE_ICONS = {
 function roleColor(role: string) {
   if (role === "owner")  return "bg-amber-100 text-amber-700"
   if (role === "admin")  return "bg-orange-100 text-orange-700"
-  return "bg-slate-100 text-slate-600"
+  return "bg-muted text-muted-foreground"
 }
 
 export default function WorkspacePage({ params }: { params: Promise<{ id: string }> }) {
@@ -123,8 +123,8 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                   {workspace.name[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-900">{workspace.name}</h1>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 mt-0.5">
+                  <h1 className="text-2xl font-bold text-foreground">{workspace.name}</h1>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
                     {workspace.type === "team"
                       ? <><Building2 className="w-3.5 h-3.5" /> {t("مساحة فريق", "Team Workspace")}</>
                       : <><User className="w-3.5 h-3.5" /> {t("مساحة شخصية", "Personal Workspace")}</>
@@ -139,11 +139,11 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
               <motion.div
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
+                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Users className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  <h2 className="font-bold text-slate-800">
+                  <h2 className="font-bold text-foreground">
                     {t("الأعضاء", "Members")}
                   </h2>
                 </div>
@@ -154,7 +154,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                     return (
                       <div
                         key={member.id}
-                        className="flex items-center gap-3 bg-white rounded-xl px-4 py-3"
+                        className="flex items-center gap-3 bg-card rounded-xl px-4 py-3"
                       >
                         <div className="w-9 h-9 rounded-full bg-amber-600/10 flex items-center justify-center text-amber-600 dark:text-amber-400 font-bold text-sm flex-shrink-0 overflow-hidden">
                           {member.profile?.avatar_url
@@ -163,7 +163,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                           }
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-slate-800 text-sm truncate">
+                          <div className="font-medium text-foreground text-sm truncate">
                             {member.profile?.full_name ?? t("مستخدم", "User")}
                           </div>
                           <div className="text-xs text-slate-400">
@@ -182,7 +182,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                         {canManage && member.role !== "owner" && (
                           <button
                             onClick={() => handleRemove(member.profile.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -198,11 +198,11 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                 <motion.div
                   initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 }}
-                  className="bg-slate-50 dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
+                  className="bg-muted dark:bg-white/[0.03] rounded-2xl p-6 space-y-4"
                 >
                   <div className="flex items-center gap-2 mb-2">
                     <UserPlus className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                    <h2 className="font-bold text-slate-800">
+                    <h2 className="font-bold text-foreground">
                       {t("دعوة عضو", "Invite Member")}
                     </h2>
                   </div>
@@ -213,12 +213,12 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
                       onChange={e => setInviteEmail(e.target.value)}
                       placeholder={t("البريد الإلكتروني", "Email address")}
                       required
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/30"
+                      className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/30"
                     />
                     <select
                       value={inviteRole}
                       onChange={e => setInviteRole(e.target.value)}
-                      className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 text-sm focus:outline-none"
+                      className="px-3 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm focus:outline-none"
                     >
                       <option value="member">{t("عضو", "Member")}</option>
                       <option value="admin">{t("مشرف", "Admin")}</option>

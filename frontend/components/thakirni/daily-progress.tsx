@@ -56,12 +56,12 @@ export function DailyProgress() {
             </p>
           </motion.div>
         ) : (
-          <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-100 dark:border-white/8 rounded-2xl px-4 py-3 space-y-2.5">
+          <div className="bg-muted dark:bg-white/[0.04] border border-slate-100 dark:border-white/8 rounded-2xl px-4 py-3 space-y-2.5">
             {/* Progress row */}
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
                 <Target className="w-4 h-4 text-amber-500 shrink-0" />
-                <p className="text-sm font-label font-semibold text-slate-700 truncate">
+                <p className="text-sm font-label font-semibold text-muted-foreground truncate">
                   {hasPlans
                     ? isArabic
                       ? `أنجزت ${done} / ${total} اليوم 👌`
@@ -82,7 +82,7 @@ export function DailyProgress() {
 
             {/* Progress bar — scaleX is GPU-composited unlike width */}
             {hasPlans && (
-              <div className="relative h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div className="relative h-1.5 bg-muted dark:bg-slate-700 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: pct / 100 }}
