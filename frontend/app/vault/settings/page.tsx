@@ -592,11 +592,11 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
-        <section className="relative pt-32 pb-16 px-8 hero-mesh overflow-hidden">
+        <section className="relative pt-32 pb-16 px-8 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {Array.from({ length: 12 }).map((_, i) => (
               <div key={i} style={{

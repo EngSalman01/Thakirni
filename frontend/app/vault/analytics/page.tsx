@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
 
       {/* Period picker */}
       <div className="fixed top-14 inset-x-0 z-30 bg-background/90 backdrop-blur-sm border-b border-border/60 px-6 py-2 hidden lg:flex items-center justify-end gap-2">
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
-        <section className="relative pt-32 pb-24 px-8 hero-mesh overflow-hidden">
+        <section className="relative pt-32 pb-24 px-8 overflow-hidden">
           <ParticleLayer />
           <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             {/* Left copy */}

@@ -82,7 +82,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect new (non-onboarded) users to /onboarding before they can access /vault
   if (pathname.startsWith("/vault") && user) {
-    // Fast path: cookie set immediately after markOnboarded() to avoid read-after-write race
+    // Fast path: 30-day cookie set after markOnboarded() or after DB confirmation
     const onboardedCookie = request.cookies.get("onboarded")
     if (!onboardedCookie?.value) {
       try {
@@ -96,6 +96,13 @@ export async function middleware(request: NextRequest) {
           url.pathname = "/onboarding"
           return NextResponse.redirect(url)
         }
+        // DB confirms onboarded — cache in a 30-day cookie to skip DB on future requests
+        supabaseResponse.cookies.set("onboarded", "1", {
+          path: "/",
+          maxAge: 30 * 24 * 60 * 60,
+          sameSite: "lax",
+          httpOnly: false,
+        })
       } catch {
         // If column doesn't exist yet (migration not run), skip
       }
