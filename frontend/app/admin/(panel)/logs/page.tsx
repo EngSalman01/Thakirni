@@ -39,7 +39,7 @@ function StatCard({ icon: Icon, label, value, color = "#D97706" }: {
       <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${color}18` }}>
         <Icon className="w-4 h-4" style={{ color }} />
       </div>
-      <p className="text-2xl font-bold text-slate-900 font-headline">{value}</p>
+      <p className="text-2xl font-bold text-slate-100 font-headline">{value}</p>
       <p className="text-xs text-slate-500 font-label">{label}</p>
     </div>
   );
@@ -112,20 +112,20 @@ export default function AdminLogsPage() {
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white/[0.04] rounded-2xl p-5">
-            <h3 className="text-sm font-label font-semibold text-slate-700 mb-3">Top Endpoints (24h)</h3>
+            <h3 className="text-sm font-label font-semibold text-slate-300 mb-3">Top Endpoints (24h)</h3>
             {stats.topEndpoints.map(e => (
-              <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/50 last:border-0">
-                <code className="text-xs text-slate-600 truncate max-w-[220px]">{e.endpoint}</code>
-                <span className="text-xs font-semibold text-slate-700 ml-2 shrink-0">{e.count.toLocaleString()}</span>
+              <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-white/[0.08] last:border-0">
+                <code className="text-xs text-slate-400 truncate max-w-[220px]">{e.endpoint}</code>
+                <span className="text-xs font-semibold text-slate-300 ml-2 shrink-0">{e.count.toLocaleString()}</span>
               </div>
             ))}
           </div>
           <div className="bg-white/[0.04] rounded-2xl p-5">
-            <h3 className="text-sm font-label font-semibold text-slate-700 mb-3">Slowest Endpoints (24h)</h3>
+            <h3 className="text-sm font-label font-semibold text-slate-300 mb-3">Slowest Endpoints (24h)</h3>
             {stats.slowestEndpoints.map(e => (
-              <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/50 last:border-0">
-                <code className="text-xs text-slate-600 truncate max-w-[220px]">{e.endpoint}</code>
-                <span className={`text-xs font-semibold ml-2 shrink-0 ${e.avgMs > 5000 ? "text-red-600" : e.avgMs > 2000 ? "text-yellow-600" : "text-green-600"}`}>{e.avgMs}ms</span>
+              <div key={e.endpoint} className="flex items-center justify-between py-1.5 border-b border-white/[0.08] last:border-0">
+                <code className="text-xs text-slate-400 truncate max-w-[220px]">{e.endpoint}</code>
+                <span className={`text-xs font-semibold ml-2 shrink-0 ${e.avgMs > 5000 ? "text-red-400" : e.avgMs > 2000 ? "text-yellow-400" : "text-green-400"}`}>{e.avgMs}ms</span>
               </div>
             ))}
           </div>
@@ -163,7 +163,7 @@ export default function AdminLogsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e4e2e1]">
+                <tr className="border-b border-white/[0.08]">
                   {["Time", "Method", "Endpoint", "Status", "Duration", "Tokens", "Model", "Error"].map(h => (
                     <th key={h} className="text-left py-3 px-3 text-xs font-label font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
@@ -171,20 +171,20 @@ export default function AdminLogsPage() {
               </thead>
               <tbody>
                 {logs.map(log => (
-                  <tr key={log.id} className={`border-b border-[#e4e2e1]/50 last:border-0 transition-colors ${log.error ? "bg-red-50/40 hover:bg-red-50/60" : "hover:bg-white/50"}`}>
+                  <tr key={log.id} className={`border-b border-white/[0.08] last:border-0 transition-colors ${log.error ? "bg-red-950/40 hover:bg-red-950/60" : "hover:bg-white/[0.06]"}`}>
                     <td className="py-2.5 px-3 text-slate-400 text-xs whitespace-nowrap">{formatDate(log.created_at)}</td>
                     <td className="py-2.5 px-3">
-                      <span className="text-xs font-mono font-semibold text-slate-600">{log.method}</span>
+                      <span className="text-xs font-mono font-semibold text-slate-400">{log.method}</span>
                     </td>
                     <td className="py-2.5 px-3 max-w-[200px]">
-                      <code className="text-xs text-slate-700 truncate block">{log.endpoint}</code>
+                      <code className="text-xs text-slate-300 truncate block">{log.endpoint}</code>
                     </td>
                     <td className="py-2.5 px-3">
                       <span className={`text-xs font-semibold ${
                         !log.status_code ? "text-slate-400"
-                        : log.status_code < 300 ? "text-green-600"
-                        : log.status_code < 500 ? "text-yellow-600"
-                        : "text-red-600"
+                        : log.status_code < 300 ? "text-green-400"
+                        : log.status_code < 500 ? "text-yellow-400"
+                        : "text-red-400"
                       }`}>{log.status_code ?? "—"}</span>
                     </td>
                     <td className="py-2.5 px-3 text-slate-500 text-xs whitespace-nowrap">
@@ -198,7 +198,7 @@ export default function AdminLogsPage() {
                     </td>
                     <td className="py-2.5 px-3 max-w-[180px]">
                       {log.error
-                        ? <span className="text-red-600 text-xs truncate block" title={log.error}>{log.error.slice(0, 60)}{log.error.length > 60 ? "…" : ""}</span>
+                        ? <span className="text-red-400 text-xs truncate block" title={log.error}>{log.error.slice(0, 60)}{log.error.length > 60 ? "…" : ""}</span>
                         : <span className="text-slate-300">—</span>}
                     </td>
                   </tr>

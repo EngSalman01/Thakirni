@@ -254,13 +254,13 @@ export default function UsersPage() {
             placeholder="Search by name or phone..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 bg-white border-0 rounded-xl"
+            className="pl-9 bg-white/[0.08] border-0 rounded-xl"
           />
         </div>
 
         {/* Plan tabs */}
         <Tabs value={plan} onValueChange={(v) => { setPlan(v); setPage(1); }}>
-          <TabsList className="bg-white">
+          <TabsList className="bg-white/[0.08]">
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="free">Free</TabsTrigger>
             <TabsTrigger value="pro">Pro</TabsTrigger>
@@ -291,7 +291,7 @@ export default function UsersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e4e2e1]">
+              <tr className="border-b border-white/[0.08]">
                 {["User", "Email", "Phone", "Plan", "Joined", "Actions"].map((h) => (
                   <th
                     key={h}
@@ -314,12 +314,12 @@ export default function UsersPage() {
                 : users.map((u) => (
                     <tr
                       key={u.id}
-                      className="border-b border-[#e4e2e1]/50 last:border-0 hover:bg-white/50 transition-colors"
+                      className="border-b border-white/[0.08] last:border-0 hover:bg-white/[0.06] transition-colors"
                     >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <UserInitials name={u.full_name} avatarUrl={u.avatar_url} />
-                          <span className="font-label font-medium text-slate-800 truncate max-w-[120px]">
+                          <span className="font-label font-medium text-slate-200 truncate max-w-[120px]">
                             {u.full_name ?? "—"}
                           </span>
                         </div>
@@ -344,7 +344,7 @@ export default function UsersPage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-7 text-xs rounded-lg border-slate-200"
+                                className="h-7 text-xs rounded-lg border-white/[0.10]"
                                 disabled={updatingPlan === u.id}
                               >
                                 {updatingPlan === u.id ? (
@@ -387,7 +387,7 @@ export default function UsersPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-7 w-7 p-0 rounded-lg text-green-600"
+                              className="h-7 w-7 p-0 rounded-lg text-green-400"
                               onClick={() => {
                                 setMessageUser(u);
                                 setMessageDialogOpen(true);
@@ -426,7 +426,7 @@ export default function UsersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[#e4e2e1]">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.08]">
             <p className="text-xs text-slate-500 font-label">
               Page {page} of {totalPages} · {total} users
             </p>
@@ -486,7 +486,7 @@ export default function UsersPage() {
                     <span className="text-xs font-label font-semibold text-slate-500 uppercase tracking-wide">
                       {item.label}
                     </span>
-                    <span className="text-sm text-slate-800 font-label text-right break-all max-w-[200px]">
+                    <span className="text-sm text-slate-200 font-label text-right break-all max-w-[200px]">
                       {item.value}
                     </span>
                   </div>
@@ -507,8 +507,8 @@ export default function UsersPage() {
               </div>
 
               {/* Danger zone */}
-              <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
-                <h3 className="text-sm font-label font-bold text-red-700 mb-1">Danger Zone</h3>
+              <div className="bg-red-950/40 border border-red-900/50 rounded-2xl p-4">
+                <h3 className="text-sm font-label font-bold text-red-400 mb-1">Danger Zone</h3>
                 <p className="text-xs text-red-500 mb-3">
                   Permanently delete this account and all associated data.
                 </p>

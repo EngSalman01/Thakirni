@@ -7,17 +7,17 @@ import {
 } from "lucide-react"
 
 const STATUSES = [
-  { value: "",              label: "All",            color: "bg-slate-100 text-slate-600" },
-  { value: "new",           label: "New",            color: "bg-blue-100 text-blue-700" },
-  { value: "contacted",     label: "Contacted",      color: "bg-yellow-100 text-yellow-700" },
-  { value: "qualified",     label: "Qualified",      color: "bg-orange-100 text-orange-700" },
-  { value: "demo_scheduled",label: "Demo Scheduled", color: "bg-amber-100 text-amber-700" },
-  { value: "closed_won",    label: "Won ✓",          color: "bg-green-100 text-green-700" },
-  { value: "closed_lost",   label: "Lost",           color: "bg-red-100 text-red-700" },
+  { value: "",              label: "All",            color: "bg-white/[0.08] text-slate-400" },
+  { value: "new",           label: "New",            color: "bg-blue-950/40 text-blue-400" },
+  { value: "contacted",     label: "Contacted",      color: "bg-yellow-950/40 text-yellow-400" },
+  { value: "qualified",     label: "Qualified",      color: "bg-orange-950/40 text-orange-400" },
+  { value: "demo_scheduled",label: "Demo Scheduled", color: "bg-amber-950/40 text-amber-400" },
+  { value: "closed_won",    label: "Won ✓",          color: "bg-green-950/40 text-green-400" },
+  { value: "closed_lost",   label: "Lost",           color: "bg-red-950/40 text-red-400" },
 ]
 
 function statusColor(status: string) {
-  return STATUSES.find(s => s.value === status)?.color ?? "bg-slate-100 text-slate-600"
+  return STATUSES.find(s => s.value === status)?.color ?? "bg-white/[0.08] text-slate-400"
 }
 
 interface Lead {
@@ -96,7 +96,7 @@ export default function AdminLeadsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-2">
             <Building2 className="w-6 h-6 text-amber-600 dark:text-amber-400" />
             Enterprise Leads
           </h1>
@@ -104,7 +104,7 @@ export default function AdminLeadsPage() {
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-all"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.08] border border-white/[0.10] text-sm text-slate-400 hover:bg-white/[0.06] transition-all"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           Refresh
@@ -120,7 +120,7 @@ export default function AdminLeadsPage() {
               key={s.value}
               onClick={() => { setStatusFilter(statusFilter === s.value ? "" : s.value); setPage(0) }}
               className={`p-3 rounded-xl text-center transition-all border-2 ${
-                statusFilter === s.value ? "border-amber-600 bg-amber-600/5" : "border-transparent bg-white"
+                statusFilter === s.value ? "border-amber-600 bg-amber-600/5" : "border-transparent bg-white/[0.08]"
               }`}
             >
               <div className="text-lg font-bold text-slate-200">{count}</div>
@@ -133,7 +133,7 @@ export default function AdminLeadsPage() {
       </div>
 
       {/* Leads table */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+      <div className="bg-white/[0.08] rounded-2xl border border-white/[0.08] overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-amber-600 dark:text-amber-400" />
@@ -148,7 +148,7 @@ export default function AdminLeadsPage() {
             {leads.map(lead => (
               <div key={lead.id}>
                 {/* Lead row */}
-                <div className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-4 px-6 py-4 hover:bg-white/[0.06] transition-colors">
                   <button
                     onClick={() => setExpanded(expanded === lead.id ? null : lead.id)}
                     className="flex-1 min-w-0 flex items-center gap-4 text-start"
@@ -157,10 +157,10 @@ export default function AdminLeadsPage() {
                       {lead.name[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-semibold text-slate-800 text-sm truncate">{lead.name}</div>
+                      <div className="font-semibold text-slate-200 text-sm truncate">{lead.name}</div>
                       <div className="text-xs text-slate-500 truncate">{lead.email}</div>
                     </div>
-                    <div className="hidden sm:block text-sm text-slate-600 min-w-0 flex-1">
+                    <div className="hidden sm:block text-sm text-slate-400 min-w-0 flex-1">
                       <span className="font-medium">{lead.company || "—"}</span>
                       {lead.team_size && <span className="text-slate-400 ml-2">· {lead.team_size}</span>}
                     </div>
@@ -181,7 +181,7 @@ export default function AdminLeadsPage() {
                     {saving === lead.id && <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />}
                     <button
                       onClick={() => deleteLead(lead.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-950/40 transition-all"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -190,22 +190,22 @@ export default function AdminLeadsPage() {
 
                 {/* Expanded details */}
                 {expanded === lead.id && (
-                  <div className="px-6 pb-5 bg-slate-50 border-t border-slate-100 space-y-4">
+                  <div className="px-6 pb-5 bg-white/[0.06] border-t border-white/[0.08] space-y-4">
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
                       {lead.phone && (
                         <a href={`https://wa.me/966${lead.phone}`} target="_blank" rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#25d366] transition-colors">
+                          className="flex items-center gap-2 text-sm text-slate-400 hover:text-[#25d366] transition-colors">
                           <Phone className="w-4 h-4" />
                           +966{lead.phone}
                         </a>
                       )}
                       <a href={`mailto:${lead.email}`}
-                        className="flex items-center gap-2 text-sm text-slate-600 hover:text-amber-600 dark:text-amber-400 transition-colors">
+                        className="flex items-center gap-2 text-sm text-slate-400 hover:text-amber-600 dark:text-amber-400 transition-colors">
                         <Mail className="w-4 h-4" />
                         {lead.email}
                       </a>
                       {lead.team_size && (
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
                           <Users className="w-4 h-4" />
                           {lead.team_size}
                         </div>
@@ -219,19 +219,19 @@ export default function AdminLeadsPage() {
                     {lead.use_case && (
                       <div className="text-sm">
                         <span className="font-semibold text-slate-300">Use case: </span>
-                        <span className="text-slate-600">{lead.use_case}</span>
+                        <span className="text-slate-400">{lead.use_case}</span>
                       </div>
                     )}
 
                     {lead.message && (
-                      <div className="text-sm bg-white rounded-xl p-3 text-slate-600 border border-slate-100">
+                      <div className="text-sm bg-white/[0.08] rounded-xl p-3 text-slate-400 border border-white/[0.08]">
                         {lead.message}
                       </div>
                     )}
 
                     {/* Notes */}
                     <div className="space-y-2">
-                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
+                      <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
                         <StickyNote className="w-3.5 h-3.5" />
                         Internal Notes
                       </label>
@@ -240,7 +240,7 @@ export default function AdminLeadsPage() {
                         defaultValue={lead.notes ?? ""}
                         onChange={e => setEditNotes(n => ({ ...n, [lead.id]: e.target.value }))}
                         placeholder="Add notes about this lead..."
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-amber-600/30 resize-none"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-white/[0.10] bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-amber-600/30 resize-none"
                       />
                       <button
                         onClick={() => saveNotes(lead.id)}
@@ -272,14 +272,14 @@ export default function AdminLeadsPage() {
             <button
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-all"
+              className="px-3 py-1.5 text-sm rounded-lg border border-white/[0.10] hover:bg-white/[0.06] disabled:opacity-40 transition-all"
             >
               Previous
             </button>
             <button
               disabled={(page + 1) * PAGE_SIZE >= total}
               onClick={() => setPage(p => p + 1)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 transition-all"
+              className="px-3 py-1.5 text-sm rounded-lg border border-white/[0.10] hover:bg-white/[0.06] disabled:opacity-40 transition-all"
             >
               Next
             </button>

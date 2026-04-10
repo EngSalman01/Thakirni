@@ -37,9 +37,9 @@ interface Announcement {
 
 function ChannelBadge({ channel }: { channel: string }) {
   const styles: Record<string, string> = {
-    whatsapp: "bg-green-100 text-green-700",
-    banner: "bg-blue-100 text-blue-700",
-    both: "bg-orange-100 text-orange-700",
+    whatsapp: "bg-green-950/40 text-green-400",
+    banner: "bg-blue-950/40 text-blue-400",
+    both: "bg-orange-950/40 text-orange-400",
   };
   const labels: Record<string, string> = {
     whatsapp: "WhatsApp",
@@ -49,7 +49,7 @@ function ChannelBadge({ channel }: { channel: string }) {
   const key = channel.toLowerCase();
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-label font-bold ${styles[key] ?? "bg-slate-100 text-slate-600"}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-label font-bold ${styles[key] ?? "bg-white/[0.08] text-slate-400"}`}
     >
       {labels[key] ?? channel}
     </span>
@@ -171,7 +171,7 @@ export default function AnnouncementsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e4e2e1]">
+              <tr className="border-b border-white/[0.08]">
                 {["Title", "Target", "Channel", "Sent At", "Reach", "Actions"].map((h) => (
                   <th
                     key={h}
@@ -194,7 +194,7 @@ export default function AnnouncementsPage() {
                 : announcements.map((a) => (
                     <tr
                       key={a.id}
-                      className="border-b border-[#e4e2e1]/50 last:border-0 hover:bg-white/50 transition-colors"
+                      className="border-b border-white/[0.08] last:border-0 hover:bg-white/[0.06] transition-colors"
                     >
                       <td className="py-3 px-4 font-label font-medium text-slate-200">
                         {a.title}
@@ -329,7 +329,7 @@ export default function AnnouncementsPage() {
                   → {targetLabel(viewAnnouncement.target)}
                 </span>
               </div>
-              <div className="bg-white/[0.04] rounded-xl p-4 text-sm text-slate-700 font-label whitespace-pre-wrap">
+              <div className="bg-white/[0.04] rounded-xl p-4 text-sm text-slate-300 font-label whitespace-pre-wrap">
                 {viewAnnouncement.message}
               </div>
               <p className="text-xs text-slate-400">

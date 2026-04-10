@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
     { icon: Users,         label: "Total Users",      value: stats?.total ?? 0,         iconColor: "text-amber-400",  iconBg: "bg-amber-500/15" },
     { icon: UserCheck,     label: "Pro Users",         value: stats?.pro ?? 0,            iconColor: "text-amber-400",  iconBg: "bg-amber-500/15" },
     { icon: Building2,     label: "Teams Users",       value: stats?.teams ?? 0,          iconColor: "text-amber-400",  iconBg: "bg-amber-500/15" },
-    { icon: UserMinus,     label: "Free Users",        value: stats?.free ?? 0,           iconColor: "text-slate-400",  iconBg: "bg-slate-500/15"  },
+    { icon: UserMinus,     label: "Free Users",        value: stats?.free ?? 0,           iconColor: "text-slate-400",  iconBg: "bg-white/[0.06]0/15"  },
     { icon: CalendarPlus,  label: "New Today",         value: stats?.newToday ?? 0,       iconColor: "text-emerald-400",iconBg: "bg-emerald-500/15"},
     { icon: TrendingUp,    label: "New This Week",     value: stats?.newThisWeek ?? 0,    iconColor: "text-emerald-400",iconBg: "bg-emerald-500/15"},
     { icon: MessageCircle, label: "WhatsApp Active",   value: stats?.whatsappActive ?? 0, iconColor: "text-green-400",  iconBg: "bg-green-500/15"  },
@@ -430,7 +430,7 @@ export default function AdminDashboardPage() {
                     <td className="py-3.5 px-5">
                       <div className="text-slate-400 text-xs truncate max-w-[180px]">{u.email || "—"}</div>
                       {u.phone_number && (
-                        <div className="text-slate-600 text-[10px] mt-0.5">{u.phone_number}</div>
+                        <div className="text-slate-400 text-[10px] mt-0.5">{u.phone_number}</div>
                       )}
                     </td>
                     <td className="py-3.5 px-5">

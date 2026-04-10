@@ -128,7 +128,7 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Maintenance mode */}
-        <div className="flex items-start justify-between gap-4 p-4 bg-white rounded-xl">
+        <div className="flex items-start justify-between gap-4 p-4 bg-white/[0.08] rounded-xl">
           <div>
             <p className="font-label font-bold text-sm text-slate-200">Maintenance Mode</p>
             <p className="text-sm text-slate-500 mt-0.5">
