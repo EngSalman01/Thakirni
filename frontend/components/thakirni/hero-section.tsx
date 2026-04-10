@@ -33,6 +33,7 @@ function StickyCTA({ isArabic }: { isArabic: boolean }) {
               whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.96 }}
               className="flex items-center gap-3 px-6 py-3.5 rounded-full power-gradient text-white font-bold text-sm shadow-2xl btn-glow"
+              style={{ willChange: "transform", transform: "translateZ(0)" }}
             >
               <Sparkles className="w-4 h-4 shrink-0" />
               {isArabic ? "ابدأ الحين — مجاناً 👀" : "Start Free Now 👀"}
@@ -323,6 +324,7 @@ export function HeroSection() {
                     whileHover={{ scale: 1.04, y: -2 }}
                     whileTap={{ scale: 0.96 }}
                     className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl power-gradient text-white font-bold text-base shadow-lg btn-glow"
+                    style={{ willChange: "transform", transform: "translateZ(0)" }}
                   >
                     {t("ابدأ الحين", "Start Now")}
                     <ArrowIcon className="w-4 h-4" />
@@ -333,6 +335,7 @@ export function HeroSection() {
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.96 }}
                     className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-white dark:bg-white/[0.06] border border-amber-200 dark:border-amber-900/40 text-slate-700 dark:text-[#F0E8D8] font-bold text-base hover:border-amber-400 dark:hover:border-amber-700 transition-all backdrop-blur-sm"
+                    style={{ willChange: "transform", transform: "translateZ(0)" }}
                   >
                     <span className="text-base">🎤</span>
                     {t("جرّب واتساب", "Try WhatsApp")}

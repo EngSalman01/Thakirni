@@ -546,13 +546,16 @@
     backface-visibility: hidden;
   }
 
-  /* Sub-pixel rendering for Framer Motion animated elements.
-     Framer Motion v12 sets inline transform/opacity styles when animating.
-     Applying will-change + backface-visibility promotes elements to GPU
-     compositing layers, enabling sub-pixel precision and eliminating
-     the "pixel-by-pixel stepping" effect on looping animations. */
-  [style*="transform:"],
-  [style*="transform :"] {
+  /* GPU compositing for Framer Motion v12 WAAPI animated elements.
+     FM v12 uses WAAPI which does NOT update inline style.transform during
+     animation — so [style*="transform:"] never fires for WAAPI animations.
+     Correct approach: set style={{ transform: "translateZ(0)" }} directly
+     on each motion element. FM reads that initial transform and includes
+     translateZ(0) in EVERY WAAPI keyframe it generates, keeping the element
+     on the GPU compositing layer throughout the animation.
+     The rule below covers any remaining JS-driven (non-WAAPI) FM animations
+     where FM does write inline transforms. */
+  [style*="translateZ"] {
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;

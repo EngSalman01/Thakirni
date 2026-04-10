@@ -11,7 +11,7 @@ import { useCallback, useRef, useState, type ReactNode } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   sparkAnimate, sparkTransition,
-  breathingAnimate, breathingTransition,
+  breathingInitial, breathingAnimate, breathingTransition,
   intelligentSlideVariants,
   confirmPopVariants,
   voicePulseAnimate, voicePulseTransition,
@@ -43,7 +43,7 @@ export function SparkWrapper({ children, className, active = false }: SparkWrapp
       className={cn("relative inline-flex", className)}
       animate={active ? sparkAnimate : { scale: 1 }}
       transition={sparkTransition}
-      style={{ willChange: "transform" }}
+      style={{ willChange: "transform", transform: "translateZ(0)" }}
     >
       {children}
       {/* Radial glow burst — only visible during spark */}
@@ -102,9 +102,10 @@ export function BreathingPresence({ children, className, active = true }: Breath
   return (
     <motion.div
       className={cn("inline-flex", className)}
+      initial={breathingInitial}
       animate={active ? breathingAnimate : { scale: 1, opacity: 1 }}
       transition={active ? breathingTransition : { duration: tt.normal.duration }}
-      style={{ willChange: "transform, opacity" }}
+      style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
     >
       {children}
     </motion.div>
@@ -212,9 +213,10 @@ export function VoicePulse({ children, className, recording = false }: VoicePuls
   return (
     <motion.div
       className={cn("relative inline-flex items-center justify-center", className)}
+      initial={{ scale: 1, rotate: 0 }}
       animate={recording ? voicePulseAnimate : { scale: 1, rotate: 0 }}
       transition={recording ? voicePulseTransition : { duration: tt.fast.duration }}
-      style={{ willChange: "transform" }}
+      style={{ willChange: "transform", transform: "translateZ(0)" }}
     >
       {/* Ripple ring visible during recording */}
       <AnimatePresence>
@@ -311,7 +313,7 @@ export function MotionCard({ children, className, onClick, disabled }: MotionCar
       whileHover={!disabled ? hover.lift : undefined}
       whileTap={!disabled ? tap.press : undefined}
       onClick={onClick}
-      style={{ willChange: "transform" }}
+      style={{ willChange: "transform", transform: "translateZ(0)" }}
     >
       {children}
     </motion.div>
@@ -349,7 +351,7 @@ export function ThakirniButton({ children, className, withSpark = true, onClick,
         whileHover={hover.button}
         whileTap={tap.press}
         onClick={handleClick}
-        style={{ willChange: "transform" }}
+        style={{ willChange: "transform", transform: "translateZ(0)" }}
         {...props}
       >
         {children}
