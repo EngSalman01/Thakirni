@@ -363,6 +363,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Base font-size drives all rem values (text, spacing, radius…).
+       18 px ≈ 112 % of browser default — scales the full UI to match
+       the "120 % browser zoom" look without requiring the user to zoom. */
+    font-size: 18px;
   }
 
   body {
