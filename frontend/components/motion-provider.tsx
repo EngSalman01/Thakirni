@@ -9,7 +9,7 @@ import { MotionConfig } from "framer-motion"
  */
 export function MotionProvider({ children }: { children: React.ReactNode }) {
   return (
-    <MotionConfig reducedMotion="never">
+    <MotionConfig reducedMotion="never" transition={{ ease: [0.22, 1, 0.36, 1] as const }}>
       {children}
     </MotionConfig>
   )
