@@ -546,6 +546,18 @@
     backface-visibility: hidden;
   }
 
+  /* Sub-pixel rendering for all Framer Motion animated elements.
+     Framer Motion v12 uses WAAPI which snaps to integer pixels unless
+     the element is on a GPU compositing layer. The MotionProvider
+     adds translateZ(0) via transformTemplate, but this ensures
+     opacity animations also get GPU treatment. */
+  [style*="transform:"],
+  [style*="transform :"],
+  [style*="opacity:"] {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
   /* Input glow focus */
   .input-glow-active {
     filter: drop-shadow(0 0 16px rgba(217, 119, 6, 0.22));
