@@ -23,7 +23,7 @@ function Waveform() {
           <motion.div
             key={i}
             className="w-1.5 bg-white/80 rounded-full"
-            style={{ height: maxH, originY: 1 }}
+            style={{ height: maxH, originY: 1, willChange: "transform", transform: "translateZ(0)" }}
             animate={{ scaleY: [4 / maxH, 1, 4 / maxH] }}
             transition={{
               duration: 0.8 + i * 0.07,

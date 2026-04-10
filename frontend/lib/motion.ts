@@ -64,20 +64,20 @@ export const sparkAnimate: TargetAndTransition = {
 
 /**
  * B. BREATHING IDLE — Living presence for logo and empty states.
- * Uses 2-keyframe scalar format (more WAAPI-native than 3-value arrays).
- * Set `initial={breathingInitial}` on the motion element so FM includes
- * translateZ(0) in the WAAPI keyframes → continuous GPU compositing.
+ * Uses opacity-only pulse — opacity is sub-pixel (floating-point multiplier,
+ * no pixel grid), so it is guaranteed smooth at any screen DPI without
+ * needing GPU compositing tricks. Scale-based breathing (≤5% change) has
+ * only 0–2 visible integer-pixel positions on small elements, producing the
+ * "pixel-by-pixel stepping" effect regardless of compositor layer status.
  */
 export const breathingInitial: TargetAndTransition = {
-  scale:   1,
-  opacity: 0.92,
+  opacity: 0.68,
 }
 export const breathingAnimate: TargetAndTransition = {
-  scale:   1.022,
   opacity: 1,
 }
 export const breathingTransition: Transition = {
-  duration: duration.breath,
+  duration: duration.breath,   // 2.6 s
   repeat: Infinity,
   repeatType: "mirror",
   ease: "easeInOut",

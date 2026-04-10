@@ -87,7 +87,7 @@ export function BrandLogo({
         initial={animate ? breathingInitial : undefined}
         animate={animate ? animValues : undefined}
         transition={animate ? transition : undefined}
-        style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
+        style={{ willChange: "opacity" }}
       >
         <Image
           src={iconSrc}
@@ -154,7 +154,7 @@ export function BrandLogo({
         initial={animate ? breathingInitial : undefined}
         animate={animate ? animValues : undefined}
         transition={animate ? transition : undefined}
-        style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
+        style={{ willChange: "opacity" }}
       >
         <FullLogo h={iconSize ?? 36} />
       </motion.span>
