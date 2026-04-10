@@ -3,9 +3,11 @@
 import { motion, HTMLMotionProps } from "framer-motion"
 import type { ReactNode } from "react"
 
-interface AnimatedSectionProps extends HTMLMotionProps<"div"> {
+interface AnimatedSectionProps extends Omit<HTMLMotionProps<"div">, "transition"> {
   children: ReactNode
   delay?: number
+  // Accept any transition shape — framer-motion v12 tuple types don't match inferred number[]
+  transition?: Record<string, unknown>
 }
 
 export function AnimatedSection({ children, className, delay = 0, ...props }: AnimatedSectionProps) {

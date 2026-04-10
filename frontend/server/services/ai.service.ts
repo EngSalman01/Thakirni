@@ -146,7 +146,7 @@ export async function summarizeText(
   const { text: summary } = await generateText({
     model:     getFastModel(),
     prompt,
-    maxTokens: 400,
+    maxOutputTokens: 400,
   });
 
   return summary;
@@ -189,7 +189,7 @@ export async function generateDailyBriefing(input: DailyBriefingInput): Promise<
   const { text } = await generateText({
     model:       getFastModel(),
     prompt,
-    maxTokens:   250,
+    maxOutputTokens:   250,
     temperature: 0.7,
   });
 
@@ -214,7 +214,7 @@ export async function extractFacts(userMessage: string): Promise<ExtractedFact[]
 Each fact: { "fact": "...", "category": "work|family|health|finance|preference|location|education|contact|general" }
 Return [] if no personal facts. Only return the JSON array, nothing else.`,
     prompt:     userMessage,
-    maxTokens:  300,
+    maxOutputTokens:  300,
     temperature: 0,
   });
 
@@ -249,7 +249,7 @@ export async function classifyIntent(message: string): Promise<MessageIntent> {
     system: `Classify the user message into one of these intents. Return only the intent string.
 Intents: create_plan, list_plans, save_memory, search, daily_briefing, question, chitchat, other`,
     prompt:     message,
-    maxTokens:  10,
+    maxOutputTokens:  10,
     temperature: 0,
   });
 

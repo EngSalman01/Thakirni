@@ -9,13 +9,13 @@ import { useLanguage } from "@/components/language-provider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MessageSquare, User, CheckCircle2, Twitter, Github, Clock } from "lucide-react";
+import { Mail, MessageSquare, User, CheckCircle2, X as XIcon, Clock } from "lucide-react";
 
 const FADE_UP = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true },
-  transition: { duration: 0.6, ease: [0.2, 1, 0.3, 1] },
+  transition: { duration: 0.6, ease: [0.2, 1, 0.3, 1] as const },
 };
 
 export default function ContactPage() {
@@ -143,7 +143,7 @@ export default function ContactPage() {
                     href: "mailto:salman@thakirni.com",
                   },
                   {
-                    icon: Twitter,
+                    icon: XIcon,
                     labelAr: "تويتر",
                     labelEn: "Twitter / X",
                     valueAr: "@Salman_Mn",

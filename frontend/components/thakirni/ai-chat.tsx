@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
-import { useChat } from "ai/react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -12,40 +13,18 @@ import {
   User,
   Loader2,
   Calendar,
-  CheckCircle2,
   AlertCircle,
   Mic,
   Square,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/components/language-provider";
-
-// Types
-interface ToolInvocation {
-  state: "call" | "partial-call" | "result";
-  toolName: string;
-  result?: {
-    success?: boolean;
-    message?: string;
-    plans?: Array<{
-      id: string;
-      title: string;
-      plan_date: string;
-    }>;
-  };
-}
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  toolInvocations?: ToolInvocation[];
-}
+import type { UIMessage } from "ai";
 
 // Extracted Components
 const ChatHeader = ({ t }: { t: (ar: string, en: string) => string }) => (
   <div className="flex items-center gap-3 p-3 md:p-4 border-b border-border bg-muted/30 shrink-0">
-    <motion.div 
+    <motion.div
       className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 border border-emerald-500/30"
       animate={{ scale: [1, 1.08, 1] }}
       transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
@@ -81,7 +60,7 @@ const EmptyState = ({
     animate={{ opacity: 1, y: 0 }}
     className="text-center py-6 md:py-8"
   >
-    <motion.div 
+    <motion.div
       className="w-14 h-14 md:w-16 md:h-16 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
       animate={{ y: [0, -8, 0] }}
       transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -119,94 +98,33 @@ const EmptyState = ({
   </motion.div>
 );
 
-const ToolInvocationDisplay = ({
-  invocation,
-  t,
-}: {
-  invocation: ToolInvocation;
-  t: (ar: string, en: string) => string;
-}) => {
-  if (invocation.state === "call" || invocation.state === "partial-call") {
-    return (
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        <span className="text-xs">
-          {t("جاري المعالجة...", "Processing...")}
-        </span>
-      </div>
-    );
-  }
+// Extract text content from UIMessage parts
+function getMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((p) => p.type === "text")
+    .map((p) => (p as { type: "text"; text: string }).text)
+    .join("");
+}
 
-  if (invocation.state === "result") {
-    const result = invocation.result;
-    if (!result) return null;
-
-    // Silent tools — never show UI
-    const silentTools = ["store_fact", "preview_plan", "get_timeline", "set_reminder"]
-    if (silentTools.includes(invocation.toolName)) return null;
-
-    // Deduplicate plans
-    const uniquePlans = result.plans
-      ? Array.from(new Map(result.plans.map((p: { id: string }) => [p.id, p])).values())
-      : [];
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="p-3 rounded-xl bg-muted/50 border border-border"
-      >
-        <div className="flex items-center gap-2 mb-2">
-          {result.success ? (
-            <CheckCircle2 className="w-4 h-4 text-green-500" />
-          ) : (
-            <AlertCircle className="w-4 h-4 text-red-500" />
-          )}
-          <span className="text-xs font-medium">
-            {invocation.toolName === "create_plan"
-              ? t("تمت الإضافة", "Plan Added")
-              : invocation.toolName === "delete_plan"
-              ? t("تم الحذف", "Deleted")
-              : invocation.toolName === "mark_done"
-              ? t("تم الإنجاز", "Marked Done")
-              : t("الخطط", "Plans")}
-          </span>
-        </div>
-
-        {result.message && (
-          <p className="text-sm text-muted-foreground">{result.message}</p>
-        )}
-
-        {uniquePlans.length > 0 && (
-          <div className="space-y-2 mt-2">
-            {(uniquePlans as Array<{ id: string; title: string; plan_date: string; plan_time?: string }>).slice(0, 5).map((plan) => (
-              <div
-                key={plan.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-background hover:bg-muted/50 transition-colors"
-              >
-                <span className="text-sm font-medium">{plan.title}</span>
-                <span className="text-xs text-muted-foreground">
-                  {plan.plan_date}{plan.plan_time ? ` ${plan.plan_time.slice(0, 5)}` : ""}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </motion.div>
-    );
-  }
-
-  return null;
-};
+// Check if message has any in-progress tool calls (v6: tool parts are typed as `tool-${toolName}`)
+function hasActiveToolCall(message: UIMessage): boolean {
+  return message.parts.some(
+    (p) => p.type.startsWith("tool-") &&
+      (p as { state?: string }).state !== "output-available" &&
+      (p as { state?: string }).state !== "output-error"
+  );
+}
 
 const MessageBubble = ({
   message,
   t,
 }: {
-  message: Message;
+  message: UIMessage;
   t: (ar: string, en: string) => string;
 }) => {
   const isUser = message.role === "user";
+  const text = getMessageText(message);
+  const activeCall = hasActiveToolCall(message);
 
   return (
     <motion.div
@@ -234,7 +152,7 @@ const MessageBubble = ({
           isUser ? "text-left" : ""
         }`}
       >
-        {message.content && (
+        {text && (
           <div
             className={`rounded-2xl px-3 py-2 md:px-4 md:py-2 ${
               isUser
@@ -242,15 +160,17 @@ const MessageBubble = ({
                 : "bg-muted text-foreground"
             }`}
           >
-            <p className="text-sm whitespace-pre-wrap break-words">
-              {message.content}
-            </p>
+            <p className="text-sm whitespace-pre-wrap break-words">{text}</p>
           </div>
         )}
 
-        {message.toolInvocations?.map((invocation, idx) => (
-          <ToolInvocationDisplay key={idx} invocation={invocation} t={t} />
-        ))}
+        {/* Show spinner while tool is executing */}
+        {activeCall && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-xs">{t("جاري المعالجة...", "Processing...")}</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -266,17 +186,17 @@ const LoadingIndicator = () => (
       <Bot className="w-3.5 h-3.5 md:w-4 md:h-4 text-emerald-500" />
     </div>
     <div className="bg-muted rounded-2xl px-4 py-2 flex gap-1">
-      <motion.span 
+      <motion.span
         className="w-2 h-2 rounded-full bg-emerald-500"
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 0.6, repeat: Infinity }}
       />
-      <motion.span 
+      <motion.span
         className="w-2 h-2 rounded-full bg-emerald-500"
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
       />
-      <motion.span 
+      <motion.span
         className="w-2 h-2 rounded-full bg-emerald-500"
         animate={{ y: [0, -8, 0] }}
         transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
@@ -287,21 +207,20 @@ const LoadingIndicator = () => (
 
 // Main Component
 export function AIChat() {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const bottomRef = React.useRef<HTMLDivElement>(null);
+  const recognitionRef = React.useRef<unknown>(null);
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const [input, setInput] = useState("");
   const { t } = useLanguage();
 
-  const { messages, input, setInput, handleSubmit, isLoading, error } = useChat(
-    {
-      api: "/api/chat",
-      onError: (err) => {
-        console.error("[AIChat] Error:", err.message);
-      },
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
+    onError: (err) => {
+      console.error("[AIChat] Error:", err.message);
     },
-  );
+  });
+
+  const isLoading = status === "submitted" || status === "streaming";
 
   // Auto-scroll to bottom on every new message or while streaming
   useEffect(() => {
@@ -312,28 +231,32 @@ export function AIChat() {
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.stop();
+        (recognitionRef.current as { stop: () => void }).stop();
       }
     };
   }, []);
 
+  const handleSend = useCallback(() => {
+    const text = input.trim();
+    if (!text) return;
+    sendMessage({ text });
+    setInput("");
+  }, [input, sendMessage]);
+
   const handleSuggestionClick = useCallback(
     (suggestion: string) => {
-      setInput(suggestion);
-      // Submit form after state update
-      setTimeout(() => {
-        formRef.current?.requestSubmit();
-      }, 50);
+      sendMessage({ text: suggestion });
     },
-    [setInput],
+    [sendMessage],
   );
 
   const startListening = useCallback(() => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR: (new () => any) | undefined = w.SpeechRecognition ?? w.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
+    if (!SR) {
       alert(
         t(
           "متصفحك لا يدعم الإملاء الصوتي. جرّب Chrome أو Edge.",
@@ -345,22 +268,22 @@ export function AIChat() {
 
     // Stop existing recognition if any
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      (recognitionRef.current as { stop: () => void }).stop();
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition: any = new SR();
     recognitionRef.current = recognition;
 
-    // Configure recognition
-    recognition.lang = "ar-SA"; // Primary language - handles English words reasonably well
+    recognition.lang = "ar-SA";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognition.continuous = false;
 
     recognition.onstart = () => setIsListening(true);
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: { results: [{ 0: { transcript: string } }] }) => {
       const transcript = event.results[0][0].transcript;
       setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
     };
@@ -370,7 +293,7 @@ export function AIChat() {
       recognitionRef.current = null;
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: { error: string }) => {
       console.error("[AIChat] Speech recognition error:", event.error);
       setIsListening(false);
       recognitionRef.current = null;
@@ -390,7 +313,7 @@ export function AIChat() {
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      (recognitionRef.current as { stop: () => void }).stop();
     }
   }, []);
 
@@ -410,7 +333,7 @@ export function AIChat() {
 
       {/* Messages Area */}
       <div className="flex-1 min-h-0 overflow-hidden relative">
-        <ScrollArea ref={scrollRef} className="h-full w-full p-3 md:p-4">
+        <ScrollArea className="h-full w-full p-3 md:p-4">
           <div className="space-y-4 pb-4">
             {messages.length === 0 && !isLoading && (
               <EmptyState
@@ -424,7 +347,7 @@ export function AIChat() {
               {messages.map((message) => (
                 <MessageBubble
                   key={message.id}
-                  message={message as Message}
+                  message={message}
                   t={t}
                 />
               ))}
@@ -457,12 +380,14 @@ export function AIChat() {
 
       {/* Input Area - Floating glass style */}
       <form
-        ref={formRef}
         data-chat-form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSend();
+        }}
         className="p-3 md:p-4 shrink-0 bg-gradient-to-t from-background via-background/80 to-transparent"
       >
-        <motion.div 
+        <motion.div
           className="flex gap-2 glass-dark rounded-2xl p-2 md:p-3"
           whileHover={{ boxShadow: "0 0 30px rgba(16, 185, 129, 0.15)" }}
           transition={{ duration: 0.3 }}
