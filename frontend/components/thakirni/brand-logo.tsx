@@ -5,7 +5,7 @@ import { useTheme } from "next-themes"
 import { motion, type Transition, type TargetAndTransition } from "framer-motion"
 import { cn } from "@/lib/utils"
 import {
-  breathingAnimate, breathingTransition,
+  breathingInitial, breathingAnimate, breathingTransition,
   sparkAnimate, sparkTransition,
   voicePulseAnimate, voicePulseTransition,
   ease, duration,
@@ -84,9 +84,10 @@ export function BrandLogo({
     return (
       <motion.span
         className="inline-flex shrink-0 select-none"
+        initial={animate ? breathingInitial : undefined}
         animate={animate ? animValues : undefined}
         transition={animate ? transition : undefined}
-        style={{ willChange: "transform", backfaceVisibility: "hidden" }}
+        style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
       >
         <Image
           src={iconSrc}
@@ -150,9 +151,10 @@ export function BrandLogo({
       {/* Tablet/Desktop: full horizontal logo (no per-icon animation — whole logo subtly breathes) */}
       <motion.span
         className="hidden md:inline-flex"
+        initial={animate ? breathingInitial : undefined}
         animate={animate ? animValues : undefined}
         transition={animate ? transition : undefined}
-        style={{ willChange: "transform", backfaceVisibility: "hidden" }}
+        style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
       >
         <FullLogo h={iconSize ?? 36} />
       </motion.span>

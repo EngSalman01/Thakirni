@@ -64,17 +64,23 @@ export const sparkAnimate: TargetAndTransition = {
 
 /**
  * B. BREATHING IDLE — Living presence for logo and empty states.
- * Very subtle — barely noticeable, just enough to feel "alive".
+ * Uses 2-keyframe scalar format (more WAAPI-native than 3-value arrays).
+ * Set `initial={breathingInitial}` on the motion element so FM includes
+ * translateZ(0) in the WAAPI keyframes → continuous GPU compositing.
  */
+export const breathingInitial: TargetAndTransition = {
+  scale:   1,
+  opacity: 0.92,
+}
 export const breathingAnimate: TargetAndTransition = {
-  scale:   [1, 1.015, 1],
-  opacity: [0.92, 1, 0.92],
+  scale:   1.022,
+  opacity: 1,
 }
 export const breathingTransition: Transition = {
   duration: duration.breath,
   repeat: Infinity,
-  ease: "easeInOut",
   repeatType: "mirror",
+  ease: "easeInOut",
 }
 
 /**
