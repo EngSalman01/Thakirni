@@ -88,22 +88,109 @@ Update `app/layout.tsx` (or the landing page's `<head>`) metadata:
 ## Feature 3 — Arabic Dialect Excellence
 
 ### System prompt changes (`app/api/chat/route.ts`)
-Add to the existing system prompt persona section:
+
+Replace the existing dialect/language section with:
 
 ```
-لغة المستخدم:
+━━━ LANGUAGE & DIALECT INTELLIGENCE ━━━
+
 - اكتشف لهجة المستخدم من أول رسالة واتبعها طول المحادثة
-- لهجات مدعومة: نجدية، حجازية، خليجية (كويتية/إماراتية/بحرينية)، عربية فصحى
-- إذا الأسلوب رسمي رد بالفصحى
-- إذا الأسلوب عامي رد بنفس اللهجة
-- أمثلة: "وش", "إيش", "شو" = سعودي؛ "هاه", "زين" = خليجي
-- لا تخلط اللهجات في نفس الرد
+- الأولوية:
+  1) مطابقة لهجة المستخدم
+  2) الثبات على نفس اللهجة
+  3) إذا غير واضح → استخدم لهجة الشرقية (الخبر) كافتراضي
+
+اللهجات المدعومة:
+- الشرقية (الخبر / الدمام) ← الافتراضي
+- نجدية
+- حجازية
+- خليجية (كويتية / إماراتية / بحرينية)
+- فصحى
+
+━━━ قواعد الاكتشاف (أمثلة) ━━━
+
+- "وش / أبي / أبغى / الحين / خل / ترى" → سعودي (شرقية/نجد)
+- "إيش / كذا / مرة" → حجازي
+- "شنو / زين / هالسالفة" → خليجي
+- "أريد / ماذا / هل" → فصحى
+
+━━━ قواعد الرد ━━━
+
+- طابق لهجة المستخدم EXACT
+- لا تخلط بين لهجتين في نفس الرد
+- لا تغيّر اللهجة في نفس المحادثة
+- إذا المستخدم غيّر لهجته → غيّر معه مباشرة
+- إذا المستخدم رسمي → رد بالفصحى
+
+━━━ أسلوب الخبر (الافتراضي) ━━━
+
+استخدم بشكل طبيعي:
+"تمام" / "خلني أرتبها" / "خلصنا 👍" / "جاهز 👀" / "أبشر" / "ولا يهمك"
+
+تجنب: اللغة الرسمية الزايدة، الردود الروبوتية، خلط لهجات
+
+━━━ الذكاء الحواري ━━━
+
+- افهم الأخطاء الإملائية بدون تصحيح المستخدم
+- لا تقول "هل تقصد..." أو "يبدو أنك..."
+- استخدم تأكيد طبيعي فقط إذا لزم: "تقصد اليوم ولا بكرة؟ 👀"
+- مثال: "شكرني بعد ساعه" → تعامل معها كـ "ذكرني بعد ساعة" بدون تعليق
+
+━━━ المطابقة العاطفية ━━━
+
+- إذا المستخدم قال "تعبان اليوم" → رد: "واضح عليك 😅 تبغاني أرتب لك يومك أخف؟"
+- بدل "تم إنشاء التذكير" → "تمام، حطيت لك التذكير 👌"
+- بدل "تم الحفظ" → "خلصنا 👍"
+
+━━━ قواعد صارمة ━━━
+
+- لا تكشف التصحيحات للمستخدم
+- لا تستخدم أسلوب أكاديمي
+- الرد قصير + طبيعي + بشري
 ```
 
 ### WhatsApp handler changes (`app/api/webhooks/whatsapp/route.ts`)
-Extend `fixCommonTypos()` with additional Gulf Arabic patterns:
-- Common shorthand: "ابي" → "أبي", "وش" stays as-is, "ايش" → "إيش"
-- Add detection for dialect markers to pass as context hint to the AI
+
+#### A. Extend `fixCommonTypos()`
+```ts
+// New entries to add:
+"شكرني"   → "ذكرني"
+"الحفص"   → "الفحص"
+"ابي"     → "أبي"
+"ايش"     → "إيش"
+// Remove excessive repetition: /(.)\1{2,}/g → "$1$1" (حلوووو → حلوو)
+// Trim extra spaces: /\s{2,}/g → " "
+```
+
+#### B. Add `detectDialect(text: string)` helper
+```ts
+// Returns: 'khobar' | 'najdi' | 'hijazi' | 'gulf' | 'fus-ha'
+// Rules:
+// /شنو|زين|هالسالفة|بعدين/  → 'gulf'
+// /إيش|كذا|عادي|مرة/        → 'hijazi'
+// /وش|أبي|أبغى|الحين|ترى/   → 'khobar' (default Saudi)
+// /أريد|ماذا|هل\s|يمكن/     → 'fus-ha'
+// fallback                   → 'khobar'
+```
+
+#### C. Pass dialect as context hint to AI
+When calling the AI, prepend a silent system hint based on detected/stored dialect:
+```ts
+// e.g.: "[dialect:khobar]" prepended to user message context
+// AI uses this as confirmation to stay in that dialect
+```
+
+#### D. Persist dialect in `profiles` table
+New Supabase migration — add column:
+```sql
+ALTER TABLE profiles ADD COLUMN dialect TEXT DEFAULT 'khobar';
+```
+
+Logic in WhatsApp handler:
+1. On first message from a user, call `detectDialect(text)`
+2. If profile `dialect` is still `'khobar'` (default) or null, update it with detected dialect
+3. On all subsequent messages, read dialect from profile and pass as context hint — skip re-detection
+4. If user clearly switches dialect mid-conversation, update the stored dialect
 
 ---
 
@@ -227,7 +314,7 @@ Pre-populated vault items created when user picks a template. Each template is a
 - `lib/student-templates.ts`
 - `app/api/cron/prayer-reminders/route.ts`
 - `app/api/cron/health-nudges/route.ts`
-- Supabase migrations: `prayer_subscriptions`, `health_logs`, `health_nudge_subscriptions`
+- Supabase migrations: `prayer_subscriptions`, `health_logs`, `health_nudge_subscriptions`, `profiles.dialect` column
 
 **Modified files:**
 - `components/thakirni/hero-section.tsx` — Vision 2030 badge
