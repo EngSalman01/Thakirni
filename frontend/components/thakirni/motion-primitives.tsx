@@ -103,9 +103,9 @@ export function BreathingPresence({ children, className, active = true }: Breath
     <motion.div
       className={cn("inline-flex", className)}
       initial={breathingInitial}
-      animate={active ? breathingAnimate : { scale: 1, opacity: 1 }}
+      animate={active ? breathingAnimate : { opacity: 1 }}
       transition={active ? breathingTransition : { duration: tt.normal.duration }}
-      style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
+      style={{ willChange: "opacity" }}
     >
       {children}
     </motion.div>

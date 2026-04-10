@@ -261,7 +261,7 @@ export function HeroSection() {
         />
 
         <motion.div
-          style={{ y }}
+          style={{ y, translateZ: 0 }}
           className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 w-full"
         >
           <div className="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-20 items-center">
