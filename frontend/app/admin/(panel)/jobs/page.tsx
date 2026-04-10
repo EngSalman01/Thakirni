@@ -22,10 +22,10 @@ interface Job {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-700",
-  running: "bg-blue-100 text-blue-700",
-  done:    "bg-green-100 text-green-700",
-  failed:  "bg-red-100 text-red-700",
+  pending: "bg-yellow-950/40 text-yellow-400",
+  running: "bg-blue-950/40 text-blue-400",
+  done:    "bg-green-950/40 text-green-400",
+  failed:  "bg-red-950/40 text-red-400",
 };
 
 const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -131,7 +131,7 @@ export default function AdminJobsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#e4e2e1]">
+                <tr className="border-b border-white/[0.08]">
                   {["Type", "Status", "Attempts", "Error", "Run At", "Created", "Actions"].map(h => (
                     <th key={h} className="text-left py-3 px-4 text-xs font-label font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">{h}</th>
                   ))}
@@ -141,22 +141,22 @@ export default function AdminJobsPage() {
                 {jobs.map((job) => {
                   const Icon = STATUS_ICONS[job.status] ?? Clock;
                   return (
-                    <tr key={job.id} className="border-b border-[#e4e2e1]/50 last:border-0 hover:bg-white/50 transition-colors">
+                    <tr key={job.id} className="border-b border-white/[0.08] last:border-0 hover:bg-white/[0.06] transition-colors">
                       <td className="py-3 px-4">
-                        <code className="text-xs bg-slate-100 text-slate-700 px-2 py-1 rounded font-mono">{job.type}</code>
+                        <code className="text-xs bg-white/[0.08] text-slate-300 px-2 py-1 rounded font-mono">{job.type}</code>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-label font-semibold ${STATUS_COLORS[job.status] ?? "bg-slate-100 text-slate-300"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-label font-semibold ${STATUS_COLORS[job.status] ?? "bg-white/[0.08] text-slate-300"}`}>
                           <Icon className="w-3 h-3" />
                           {job.status}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-slate-600 font-label">
+                      <td className="py-3 px-4 text-slate-400 font-label">
                         {job.attempts}/{job.max_retries}
                       </td>
                       <td className="py-3 px-4 max-w-xs">
                         {job.error ? (
-                          <span className="text-red-600 text-xs truncate block" title={job.error}>
+                          <span className="text-red-400 text-xs truncate block" title={job.error}>
                             {job.error.slice(0, 80)}{job.error.length > 80 ? "…" : ""}
                           </span>
                         ) : <span className="text-slate-300">—</span>}
@@ -182,7 +182,7 @@ export default function AdminJobsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 px-2 text-xs gap-1 text-red-600 hover:text-red-700"
+                            className="h-7 px-2 text-xs gap-1 text-red-400 hover:text-red-400"
                             onClick={() => deleteJob(job.id)}
                             disabled={actionId === job.id}
                           >

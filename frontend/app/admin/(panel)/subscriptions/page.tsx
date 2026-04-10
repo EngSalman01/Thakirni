@@ -111,7 +111,7 @@ function PlanCard({
         <Label className="text-xs text-slate-500">Features</Label>
         <div className="space-y-1.5">
           {plan.features.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 bg-white rounded-xl px-3 py-2">
+            <div key={i} className="flex items-center gap-2 bg-white/[0.08] rounded-xl px-3 py-2">
               <span className="flex-1 text-sm font-label text-slate-300">{f}</span>
               <button
                 onClick={() => removeFeature(i)}
@@ -128,13 +128,13 @@ function PlanCard({
             onChange={(e) => setNewFeature(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addFeature()}
             placeholder="Add feature..."
-            className="bg-white border-0 rounded-xl text-sm"
+            className="bg-white/[0.08] border-0 rounded-xl text-sm"
           />
           <Button
             variant="outline"
             size="sm"
             onClick={addFeature}
-            className="rounded-xl border-0 bg-white"
+            className="rounded-xl border-0 bg-white/[0.08]"
           >
             <Plus className="w-4 h-4" />
           </Button>

@@ -54,9 +54,9 @@ function getStatus(d: DiscountCode): "active" | "expired" | "used_up" {
 
 function StatusBadge({ status }: { status: "active" | "expired" | "used_up" }) {
   const styles = {
-    active: "bg-green-100 text-green-700",
-    expired: "bg-orange-100 text-orange-700",
-    used_up: "bg-slate-100 text-slate-500",
+    active: "bg-green-950/40 text-green-400",
+    expired: "bg-orange-950/40 text-orange-400",
+    used_up: "bg-white/[0.08] text-slate-500",
   };
   const labels = { active: "Active", expired: "Expired", used_up: "Used Up" };
   return (
@@ -212,7 +212,7 @@ export default function DiscountsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#e4e2e1]">
+              <tr className="border-b border-white/[0.08]">
                 {["Code", "Discount", "Uses", "Expires", "Plan", "Status", "Actions"].map((h) => (
                   <th
                     key={h}
@@ -237,7 +237,7 @@ export default function DiscountsPage() {
                     return (
                       <tr
                         key={c.id}
-                        className="border-b border-[#e4e2e1]/50 last:border-0 hover:bg-white/50 transition-colors"
+                        className="border-b border-white/[0.08] last:border-0 hover:bg-white/[0.06] transition-colors"
                       >
                         <td className="py-3 px-4">
                           <code className="font-mono text-sm font-bold text-slate-200">
@@ -264,7 +264,7 @@ export default function DiscountsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-7 text-xs rounded-lg border-slate-200"
+                              className="h-7 text-xs rounded-lg border-white/[0.10]"
                               onClick={() => setDeactivateId(c.id)}
                             >
                               Deactivate

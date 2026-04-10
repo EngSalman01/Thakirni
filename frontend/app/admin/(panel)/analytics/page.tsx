@@ -62,10 +62,10 @@ function StatCard({
         <Icon className="w-4 h-4" style={{ color }} />
       </div>
       <div>
-        <p className="text-2xl font-bold text-slate-900 font-headline">
+        <p className="text-2xl font-bold text-slate-100 font-headline">
           {typeof value === "number" ? value.toLocaleString() : value}
         </p>
-        <p className="text-sm text-slate-600 font-label mt-0.5">{label}</p>
+        <p className="text-sm text-slate-400 font-label mt-0.5">{label}</p>
         {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -86,13 +86,13 @@ function RetentionBar({
   return (
     <div className="flex items-center gap-3">
       <span className="text-sm font-label text-slate-500 w-16 shrink-0">{label}</span>
-      <div className="flex-1 bg-[#e4e2e1] rounded-full h-2.5 overflow-hidden">
+      <div className="flex-1 bg-white/[0.12] rounded-full h-2.5 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
-      <span className="text-sm font-label font-semibold text-slate-700 w-12 text-right">
+      <span className="text-sm font-label font-semibold text-slate-300 w-12 text-right">
         {rate !== null ? `${rate}%` : "—"}
       </span>
       <span className="text-xs text-slate-400 w-20 text-right">({cohortSize} users)</span>
@@ -188,8 +188,8 @@ export default function AnalyticsPage() {
           ) : (
             <div className="space-y-2">
               {featureRows.map(row => (
-                <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-[#e4e2e1]/60 last:border-0">
-                  <span className="text-sm font-label text-slate-600">{row.icon} {row.label}</span>
+                <div key={row.label} className="flex items-center justify-between py-1.5 border-b border-white/[0.08] last:border-0">
+                  <span className="text-sm font-label text-slate-400">{row.icon} {row.label}</span>
                   <span className="text-sm font-label font-semibold text-slate-200">{row.value.toLocaleString()}</span>
                 </div>
               ))}
@@ -210,10 +210,10 @@ export default function AnalyticsPage() {
           ) : (
             <div className="space-y-1.5">
               {(data?.topEvents ?? []).map((e, idx) => (
-                <div key={e.name} className="flex items-center justify-between py-1 border-b border-[#e4e2e1]/60 last:border-0">
+                <div key={e.name} className="flex items-center justify-between py-1 border-b border-white/[0.08] last:border-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-400 w-4 font-label">{idx + 1}</span>
-                    <span className="text-sm font-label text-slate-600 font-mono text-xs">{e.name}</span>
+                    <span className="text-sm font-label text-slate-400 font-mono text-xs">{e.name}</span>
                   </div>
                   <span className="text-sm font-label font-semibold text-slate-200">{e.count.toLocaleString()}</span>
                 </div>

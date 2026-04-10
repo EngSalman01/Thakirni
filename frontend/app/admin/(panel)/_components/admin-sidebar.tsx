@@ -73,7 +73,7 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
           const items = NAV_ITEMS.filter((i) => (i.group ?? "main") === group);
           return (
             <div key={group}>
-              <p className="px-3 mb-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+              <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 {GROUP_LABELS[group] ?? group}
               </p>
               <div className="space-y-0.5">
