@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
-import { useChat } from "ai/react"
+import { useChat } from "@ai-sdk/react"
+import { DefaultChatTransport } from "ai"
+import type { UIMessage } from "ai"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  Sparkles, Send, Loader2, Bot, User, Mic, Square, AlertCircle, CheckCircle2,
+  Sparkles, Send, Loader2, Bot, User, Mic, Square, AlertCircle,
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -13,44 +15,11 @@ import { useLanguage } from "@/components/language-provider"
 const CHIPS_AR = ["وش عندي اليوم؟", "رتب لي يومي", "ذكرني أشتري أغراض"]
 const CHIPS_EN = ["What do I have today?", "Organise my day", "Remind me to buy groceries"]
 
-type ToolInvocation = {
-  state: "call" | "partial-call" | "result"
-  toolName: string
-  result?: {
-    success?: boolean
-    message?: string
-    plans?: Array<{ id: string; title: string; plan_date: string; plan_time?: string }>
-  }
-}
-
-function ToolDisplay({ inv, t }: { inv: ToolInvocation; t: (ar: string, en: string) => string }) {
-  if (inv.state !== "result" || !inv.result) return null
-  const silent = ["store_fact", "preview_plan", "get_timeline", "set_reminder"]
-  if (silent.includes(inv.toolName)) return null
-  const { success, message, plans } = inv.result
-  const unique = plans ? Array.from(new Map(plans.map(p => [p.id, p])).values()) : []
-  return (
-    <div className="p-2.5 rounded-xl bg-muted/50 border border-border text-xs">
-      <div className="flex items-center gap-1.5 mb-1">
-        {success
-          ? <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-          : <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
-        <span className="font-medium">
-          {inv.toolName === "create_plan" ? t("تمت الإضافة", "Plan Added")
-            : inv.toolName === "delete_plan" ? t("تم الحذف", "Deleted")
-            : inv.toolName === "mark_done" ? t("تم الإنجاز", "Marked Done")
-            : t("الخطط", "Plans")}
-        </span>
-      </div>
-      {message && <p className="text-muted-foreground">{message}</p>}
-      {(unique as Array<{ id: string; title: string; plan_date: string; plan_time?: string }>).slice(0, 5).map(p => (
-        <div key={p.id} className="flex justify-between p-1.5 rounded-lg bg-background mt-1">
-          <span className="font-medium">{p.title}</span>
-          <span className="text-muted-foreground">{p.plan_date}{p.plan_time ? ` ${p.plan_time.slice(0, 5)}` : ""}</span>
-        </div>
-      ))}
-    </div>
-  )
+function getMessageText(msg: UIMessage): string {
+  return msg.parts
+    .filter((p) => p.type === "text")
+    .map((p) => (p as { type: "text"; text: string }).text)
+    .join("")
 }
 
 export function AIInputBox() {
@@ -58,12 +27,15 @@ export function AIInputBox() {
   const chips = isArabic ? CHIPS_AR : CHIPS_EN
 
   const [isListening, setIsListening] = useState(false)
-  const formRef = useRef<HTMLFormElement>(null)
+  const [input, setInput] = useState("")
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const recognitionRef = useRef<any>(null)
+  const recognitionRef = useRef<unknown>(null)
 
-  const { messages, input, setInput, handleSubmit, isLoading, error } = useChat({ api: "/api/chat" })
+  const { messages, sendMessage, status, error } = useChat({
+    transport: new DefaultChatTransport({ api: "/api/chat" }),
+  })
 
+  const isLoading = status === "submitted" || status === "streaming"
   const hasMessages = messages.length > 0
 
   useEffect(() => {
@@ -72,37 +44,43 @@ export function AIInputBox() {
     if (viewport) viewport.scrollTop = viewport.scrollHeight
   }, [messages, isLoading])
 
-  useEffect(() => () => { recognitionRef.current?.stop() }, [])
+  useEffect(() => () => {
+    if (recognitionRef.current) (recognitionRef.current as { stop: () => void }).stop()
+  }, [])
 
-  const submit = useCallback((e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-    if (!input.trim()) return
-    handleSubmit(e as React.FormEvent<HTMLFormElement>)
-  }, [input, handleSubmit])
+  const handleSend = useCallback((text?: string) => {
+    const msg = (text ?? input).trim()
+    if (!msg) return
+    sendMessage({ text: msg })
+    setInput("")
+  }, [input, sendMessage])
 
-  const handleChip = (chip: string) => {
-    setInput(chip)
-    setTimeout(() => formRef.current?.requestSubmit(), 50)
-  }
+  const handleChip = (chip: string) => handleSend(chip)
 
   const startListening = useCallback(() => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition
     if (!SR) { alert(t("متصفحك لا يدعم الإملاء الصوتي.", "Your browser doesn't support voice input.")); return }
-    if (recognitionRef.current) { recognitionRef.current.stop(); return }
-    const r = new SR()
+    if (recognitionRef.current) { (recognitionRef.current as { stop: () => void }).stop(); return }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const r: any = new SR()
     recognitionRef.current = r
     r.lang = "ar-SA"; r.interimResults = false; r.maxAlternatives = 1; r.continuous = false
     r.onstart = () => setIsListening(true)
-    r.onresult = (ev: any) => setInput(prev => prev ? `${prev} ${ev.results[0][0].transcript}` : ev.results[0][0].transcript)
+    r.onresult = (ev: { results: [{ 0: { transcript: string } }] }) =>
+      setInput(prev => prev ? `${prev} ${ev.results[0][0].transcript}` : ev.results[0][0].transcript)
     r.onend = () => { setIsListening(false); recognitionRef.current = null }
-    r.onerror = (ev: any) => {
+    r.onerror = (ev: { error: string }) => {
       setIsListening(false); recognitionRef.current = null
       if (ev.error !== "aborted" && ev.error !== "no-speech") alert(t("خطأ في التعرف الصوتي.", "Voice recognition error."))
     }
     r.start()
-  }, [t, setInput])
+  }, [t])
 
-  const stopListening = useCallback(() => recognitionRef.current?.stop(), [])
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) (recognitionRef.current as { stop: () => void }).stop()
+  }, [])
 
   return (
     <div className="space-y-3" dir={isArabic ? "rtl" : "ltr"}>
@@ -118,7 +96,7 @@ export function AIInputBox() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 320, opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
               className="overflow-hidden"
             >
               <ScrollArea ref={scrollAreaRef} className="h-[320px] px-4 pt-4">
@@ -126,6 +104,7 @@ export function AIInputBox() {
                   <AnimatePresence>
                     {messages.map(msg => {
                       const isUser = msg.role === "user"
+                      const text = getMessageText(msg)
                       return (
                         <motion.div
                           key={msg.id}
@@ -137,14 +116,11 @@ export function AIInputBox() {
                             {isUser ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
                           </div>
                           <div className="flex-1 max-w-[80%] space-y-1.5">
-                            {msg.content && (
+                            {text && (
                               <div className={`rounded-2xl px-3 py-2 text-sm leading-relaxed ${isUser ? "bg-primary text-primary-foreground" : "bg-muted dark:bg-white/[0.06] text-foreground"}`}>
-                                {msg.content}
+                                {text}
                               </div>
                             )}
-                            {(msg as any).toolInvocations?.map((inv: ToolInvocation, i: number) => (
-                              <ToolDisplay key={i} inv={inv} t={t} />
-                            ))}
                           </div>
                         </motion.div>
                       )
@@ -171,7 +147,6 @@ export function AIInputBox() {
                       {t("حدث خطأ. حاول مرة أخرى.", "An error occurred. Please try again.")}
                     </div>
                   )}
-
                 </div>
               </ScrollArea>
               {/* divider */}
@@ -181,14 +156,14 @@ export function AIInputBox() {
         </AnimatePresence>
 
         {/* Input area */}
-        <form ref={formRef} onSubmit={submit} className="relative">
+        <form onSubmit={(e) => { e.preventDefault(); handleSend() }} className="relative">
           {!hasMessages ? (
             /* Textarea style when no messages */
             <>
               <textarea
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit() } }}
+                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                 placeholder={t("وش تبغى أرتب لك اليوم؟ 👀", "What can I organise for you today? 👀")}
                 rows={3}
                 className="w-full resize-none bg-transparent border-0 focus:ring-0 focus:outline-none px-5 py-4 pb-14 text-base text-foreground dark:text-slate-100 placeholder:text-slate-400/70 dark:placeholder:text-slate-500/70 leading-relaxed"
@@ -209,7 +184,7 @@ export function AIInputBox() {
               <Input
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); submit() } }}
+                onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); handleSend() } }}
                 placeholder={t("اكتب رسالتك...", "Type your message...")}
                 className="flex-1 bg-transparent border-0 focus:ring-0 text-sm px-1 placeholder-muted-foreground/60"
                 disabled={isLoading}

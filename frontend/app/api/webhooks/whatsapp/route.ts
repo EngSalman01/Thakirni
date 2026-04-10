@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { generateText, tool } from "ai"
+import { generateText, tool, stepCountIs } from "ai"
 import { z } from "zod"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/whatsapp/kapso"
@@ -84,7 +84,7 @@ async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promis
             role: "user",
             content: [
                 { type: "text", text: "Transcribe this audio message exactly as spoken. Return only the transcript, nothing else." },
-                { type: "file", data: audioBuffer, mimeType },
+                { type: "file", data: audioBuffer, mediaType: mimeType },
             ],
         }],
     })
@@ -238,7 +238,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
                     role: "user",
                     content: [
                         { type: "text", text: "Extract and summarize the key points from this PDF document in the same language as the document. Be concise but comprehensive. Format with bullet points. If the PDF is unreadable or empty, respond only with: UNREADABLE" },
-                        { type: "file", data: fileBuffer, mimeType: "application/pdf" },
+                        { type: "file", data: fileBuffer, mediaType: "application/pdf" },
                     ],
                 }],
             })
@@ -380,7 +380,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     try {
     const { text } = await generateText({
         model: google("gemini-2.5-flash-lite"),
-        maxSteps: 10,
+        stopWhen: stepCountIs(10),
         messages: [
             ...history,
             { role: "user", content: messageText },
@@ -685,7 +685,7 @@ RULE:
 
             create_plan: tool({
                 description: "Create a calendar event, task, or shopping list. ONLY call this when the user has EXPLICITLY asked to add/schedule/remind something using words like ضيف/سجّل/ذكّرني/schedule/add/remind. NEVER call this for greetings, casual chat, or questions.",
-                parameters: z.object({
+                inputSchema: z.object({
                     title: z.string(),
                     description: z.string().optional(),
                     plan_date: z.string().describe(`YYYY-MM-DD. Today = ${currentDate}`),
@@ -782,7 +782,7 @@ RULE:
 
             update_plan: tool({
                 description: "Update an existing plan. Use list_plans first to get the plan_id.",
-                parameters: z.object({
+                inputSchema: z.object({
                     plan_id: z.string(),
                     title: z.string().optional(),
                     description: z.string().optional(),
@@ -806,7 +806,7 @@ RULE:
 
             delete_plan: tool({
                 description: "Delete a plan by its UUID. ALWAYS call search_plans or list_plans first to get the real plan_id — never pass a title or name as the plan_id.",
-                parameters: z.object({ plan_id: z.string().describe("UUID from list_plans or search_plans — never a title") }),
+                inputSchema: z.object({ plan_id: z.string().describe("UUID from list_plans or search_plans — never a title") }),
                 execute: async ({ plan_id }) => {
                     const { data: existing } = await supabase.from("plans").select("gcal_event_id").eq("id", plan_id).eq("user_id", userId).single()
                     const { error } = await supabase.from("plans").delete().eq("id", plan_id).eq("user_id", userId)
@@ -823,7 +823,7 @@ RULE:
 
             mark_done: tool({
                 description: "Mark a plan as done.",
-                parameters: z.object({ plan_id: z.string() }),
+                inputSchema: z.object({ plan_id: z.string() }),
                 execute: async ({ plan_id }) => {
                     const { error } = await supabase.from("plans").update({ status: "done" }).eq("id", plan_id).eq("user_id", userId)
                     if (error) return { success: false, message: error.message }
@@ -833,7 +833,7 @@ RULE:
 
             list_plans: tool({
                 description: "List the user's plans.",
-                parameters: z.object({
+                inputSchema: z.object({
                     date_filter: z.enum(["today", "tomorrow", "this_week", "upcoming", "all"]),
                     category: z.enum(["task", "meeting", "grocery", "work", "personal", "health", "finance", "other", "all"]).optional().default("all"),
                     status: z.enum(["pending", "done", "cancelled", "all"]).optional().default("pending"),
@@ -855,7 +855,7 @@ RULE:
 
             search_plans: tool({
                 description: "Search plans by keyword/title. Use this when the user refers to a plan by name (e.g. 'delete testing', 'update my meeting with Ahmed') to find its UUID before calling delete_plan or update_plan.",
-                parameters: z.object({
+                inputSchema: z.object({
                     query: z.string().describe("Keyword or title to search for"),
                     status: z.enum(["pending", "done", "cancelled", "all"]).optional().default("all"),
                 }),
@@ -872,7 +872,7 @@ RULE:
 
             save_memory: tool({
                 description: "Save a note or fact to the user's Second Brain.",
-                parameters: z.object({
+                inputSchema: z.object({
                     content: z.string(),
                     tags: z.array(z.string()),
                 }),
@@ -885,7 +885,7 @@ RULE:
 
             search_memories: tool({
                 description: "Search the user's Second Brain.",
-                parameters: z.object({
+                inputSchema: z.object({
                     query: z.string(),
                     tag: z.string().optional(),
                 }),
@@ -901,7 +901,7 @@ RULE:
 
             store_fact: tool({
                 description: "Silently store a personal fact. Do NOT announce this to the user.",
-                parameters: z.object({
+                inputSchema: z.object({
                     fact: z.string(),
                     category: z.enum(["work", "family", "health", "finance", "preference", "location", "education", "contact", "general"]),
                 }),
@@ -920,7 +920,7 @@ RULE:
 
             get_my_facts: tool({
                 description: "Show the user what Thakirni knows about them.",
-                parameters: z.object({
+                inputSchema: z.object({
                     category: z.enum(["work", "family", "health", "finance", "preference", "location", "education", "contact", "general", "all"]).optional().default("all"),
                 }),
                 execute: async ({ category }) => {
@@ -934,7 +934,7 @@ RULE:
 
             get_timeline: tool({
                 description: "Get the user's life timeline events.",
-                parameters: z.object({
+                inputSchema: z.object({
                     days_back: z.number().min(1).max(365).default(7),
                     source_type: z.enum(["plan_created", "plan_completed", "memory_saved", "file_uploaded", "voice_recorded", "fact_learned", "all"]).optional().default("all"),
                 }),
@@ -951,7 +951,7 @@ RULE:
 
             set_reminder: tool({
                 description: "Schedule a reminder to be sent via WhatsApp at a specific time. CRITICAL: Call this tool ONLY ONCE per reminder request. Never call it again even if the user confirms or repeats — one call is enough. Optionally add a pre-reminder N minutes before the main reminder.",
-                parameters: z.object({
+                inputSchema: z.object({
                     title: z.string().describe("Short, clean reminder title. No filler words."),
                     remind_at: z.string().describe("ISO datetime in Riyadh time e.g. 2026-03-25T15:00:00"),
                     plan_id: z.string().optional(),

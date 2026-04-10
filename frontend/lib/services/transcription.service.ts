@@ -45,7 +45,7 @@ Return ONLY a JSON array of transcript segments:
 [{"id": 0, "start": 0.0, "end": 5.0, "text": "..."}, ...]
 Estimate timestamps based on audio duration. JSON only, no explanation.`,
         },
-        { type: "file", data: audioBuffer, mimeType },
+        { type: "file", data: audioBuffer, mediaType: mimeType },
       ],
     }],
   })

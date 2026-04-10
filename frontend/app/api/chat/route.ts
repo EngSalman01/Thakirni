@@ -1,4 +1,4 @@
-import { streamText, tool, convertToCoreMessages } from "ai"
+import { streamText, tool, convertToModelMessages, stepCountIs } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { z } from "zod"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
@@ -358,8 +358,8 @@ export async function POST(req: Request) {
     // ── Stream ────────────────────────────────────────────────────────────────
     const result = streamText({
       model: google("gemini-2.5-flash-lite"),
-      maxSteps: 15,
-      messages: convertToCoreMessages(messages),
+      stopWhen: stepCountIs(15),
+      messages: await convertToModelMessages(messages),
 
       onFinish: async ({ text }) => {
         if (!user || !text) return
@@ -786,7 +786,7 @@ rewrite it before sending.
             "MEETINGS: only call after collecting title + date + time + location AND user confirmed. " +
             "TASKS: title is enough, date defaults to today. " +
             "GROCERY: just need the items list.",
-          parameters: z.object({
+          inputSchema: z.object({
             title: z.string().describe("Short, clear title"),
             description: z.string().optional().describe("Details, agenda, or notes"),
             plan_date: z.string().describe(`Date YYYY-MM-DD. Today = ${currentDate}. Always resolve day names using the DAY → DATE LOOKUP first.`),
@@ -888,7 +888,7 @@ rewrite it before sending.
         // ── UPDATE PLAN ────────────────────────────────────────────────────────
         update_plan: tool({
           description: "Update fields on an existing plan. Use list_plans first to get the plan_id.",
-          parameters: z.object({
+          inputSchema: z.object({
             plan_id: z.string().describe("UUID of the plan"),
             title: z.string().optional(),
             description: z.string().optional(),
@@ -932,7 +932,7 @@ rewrite it before sending.
         // ── DELETE PLAN ────────────────────────────────────────────────────────
         delete_plan: tool({
           description: "Delete a plan permanently. Use list_plans first to get the plan_id.",
-          parameters: z.object({
+          inputSchema: z.object({
             plan_id: z.string().describe("UUID of the plan to delete"),
           }),
           execute: async ({ plan_id }) => {
@@ -970,7 +970,7 @@ rewrite it before sending.
             "use date_filter='specific' and pass the resolved YYYY-MM-DD date in specific_date. " +
             "Always resolve day names using the DAY → DATE LOOKUP in the system prompt first. " +
             "Today's plans are already loaded — only call this for non-today queries or to find a plan_id.",
-          parameters: z.object({
+          inputSchema: z.object({
             date_filter: z.enum(["today", "tomorrow", "this_week", "upcoming", "all", "specific"])
               .describe("Use 'specific' when the user names a day like Sunday or gives a date"),
             specific_date: z.string().optional()
@@ -1022,7 +1022,7 @@ rewrite it before sending.
           description:
             "Search plans by keyword, title, location, or description. " +
             "Use when user asks 'find my meeting with Ahmed', 'do I have anything about X'.",
-          parameters: z.object({
+          inputSchema: z.object({
             query: z.string().describe("Search keyword or phrase"),
             category: z.enum(["task", "meeting", "grocery", "work", "personal", "health", "finance", "other", "all"])
               .optional().default("all"),
@@ -1051,7 +1051,7 @@ rewrite it before sending.
         // ── MARK DONE ──────────────────────────────────────────────────────────
         mark_done: tool({
           description: "Mark a task or plan as completed. Use list_plans first if you don't have the plan_id.",
-          parameters: z.object({
+          inputSchema: z.object({
             plan_id: z.string().describe("UUID of the plan to mark as done"),
           }),
           execute: async ({ plan_id }) => {
@@ -1087,7 +1087,7 @@ rewrite it before sending.
         // ── SET REMINDER ───────────────────────────────────────────────────────
         set_reminder: tool({
           description: "Schedule a reminder. Use when user says 'remind me', 'notify me', 'alert me at'.",
-          parameters: z.object({
+          inputSchema: z.object({
             title: z.string().describe("Reminder title or message"),
             remind_at: z.string().describe("ISO datetime in Riyadh time, e.g. 2026-03-23T15:00:00"),
             plan_id: z.string().optional().describe("UUID of the related plan (optional)"),
@@ -1130,7 +1130,7 @@ rewrite it before sending.
           description:
             "Save a note, fact, idea, or piece of info to the user's Second Brain. " +
             "Use when the user shares something worth keeping: passwords, IDs, important numbers, quotes, ideas.",
-          parameters: z.object({
+          inputSchema: z.object({
             content: z.string().describe("The information to remember"),
             title: z.string().optional().describe("Short title (optional)"),
             tags: z.array(z.string()).describe("2-5 descriptive tags"),
@@ -1163,7 +1163,7 @@ rewrite it before sending.
           description:
             "Search the user's Second Brain. " +
             "Use when asked 'do you remember', 'what did I say about', 'find my note on'.",
-          parameters: z.object({
+          inputSchema: z.object({
             query: z.string().describe("Keywords or topic to search for"),
             tag: z.string().optional().describe("Filter by a specific tag"),
           }),
@@ -1192,7 +1192,7 @@ rewrite it before sending.
             "Silently store or update a personal fact about the user extracted from conversation. " +
             "Call whenever the user reveals something personal — including corrections to previous facts. " +
             "NEVER announce this call, never mention it, never say 'I've noted that'.",
-          parameters: z.object({
+          inputSchema: z.object({
             fact: z.string().describe("Plain language fact, e.g. 'Works at Saudi Aramco as a software engineer'"),
             category: z.enum(["work", "family", "health", "finance", "preference", "location", "education", "contact", "general"]),
           }),
@@ -1230,7 +1230,7 @@ rewrite it before sending.
           description:
             "Retrieve all stored facts about the user. " +
             "Use when asked 'what do you know about me', 'tell me about myself'.",
-          parameters: z.object({
+          inputSchema: z.object({
             category: z.enum(["work", "family", "health", "finance", "preference", "location", "education", "contact", "general", "all"])
               .optional().default("all"),
           }),
@@ -1257,7 +1257,7 @@ rewrite it before sending.
           description:
             "Retrieve the user's life timeline. " +
             "Use when asked 'what happened last week', 'summarize my month', 'what did I do recently'.",
-          parameters: z.object({
+          inputSchema: z.object({
             days_back: z.number().min(1).max(365).default(7)
               .describe("How many days back. 7=week, 30=month."),
             source_type: z.enum(["plan_created", "plan_completed", "memory_saved", "file_uploaded", "voice_recorded", "fact_learned", "all"])
@@ -1287,7 +1287,7 @@ rewrite it before sending.
     })
 
     trackEvent("search_performed", { type: "chat" })
-    return result.toDataStreamResponse()
+    return result.toUIMessageStreamResponse()
 
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Internal server error"
