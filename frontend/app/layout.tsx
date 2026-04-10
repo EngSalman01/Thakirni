@@ -5,6 +5,7 @@ import { Tajawal, Plus_Jakarta_Sans, Be_Vietnam_Pro, Syne } from "next/font/goog
 import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
+import { MotionProvider } from "@/components/motion-provider"
 import "./globals.css"
 
 // ── Fonts ─────────────────────────────────────────────────────────────────────
@@ -116,7 +117,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            {children}
+            <MotionProvider>
+              {children}
+            </MotionProvider>
             <Toaster richColors position="top-center" />
           </LanguageProvider>
         </ThemeProvider>
