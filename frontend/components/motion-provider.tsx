@@ -3,16 +3,13 @@
 import { MotionConfig } from "framer-motion"
 
 /**
- * Forces GPU compositing on all Framer Motion elements by appending
- * translateZ(0) to every generated transform string. This promotes
- * animated elements to their own compositing layer, enabling sub-pixel
- * rendering and eliminating the "pixel-by-pixel" stepping effect.
+ * Sets global Framer Motion defaults. In v12, MotionConfig supports
+ * `transition` but not `transformTemplate`, so GPU compositing is
+ * handled via the `will-change` CSS rules in globals.css instead.
  */
 export function MotionProvider({ children }: { children: React.ReactNode }) {
   return (
-    <MotionConfig
-      transformTemplate={(_, generated) => `${generated} translateZ(0px)`}
-    >
+    <MotionConfig reducedMotion="never">
       {children}
     </MotionConfig>
   )
