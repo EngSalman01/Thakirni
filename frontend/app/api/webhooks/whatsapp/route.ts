@@ -328,6 +328,47 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         }
     }
 
+    // ── Prayer opt-in keyword ───────────────────────────────────────────────────
+    if (/^(صلاة|صلاه|prayer)$/i.test(messageText.trim())) {
+        const { data: existing } = await supabase
+            .from("prayer_subscriptions")
+            .select("prayers, enabled")
+            .eq("user_id", userId)
+            .single()
+
+        if (existing) {
+            const prayerNames: Record<string, string> = {
+                fajr: "الفجر", dhuhr: "الظهر", asr: "العصر", maghrib: "المغرب", isha: "العشاء",
+            }
+            const active = (existing.prayers as string[]).map(p => prayerNames[p] ?? p).join("، ")
+            await sendWhatsAppMessage(phone,
+                `تذكيرات الصلاة مفعّلة ✅\nالصلوات: ${active}\n\nأرسل "إيقاف الصلاة" لإلغاء التفعيل.`
+            )
+        } else {
+            await supabase.from("prayer_subscriptions").insert({
+                user_id: userId,
+                phone,
+                prayers: ["fajr", "dhuhr", "asr", "maghrib", "isha"],
+                city: "Riyadh",
+                enabled: true,
+            })
+            await sendWhatsAppMessage(phone,
+                `تم تفعيل تذكيرات الصلاة 🕌✅\n\nراح تجيك رسالة قبل كل صلاة بـ 5 دقائق.\n\nأرسل "إيقاف الصلاة" لإلغاء التفعيل في أي وقت.`
+            )
+        }
+        return
+    }
+
+    // ── Prayer opt-out keyword ──────────────────────────────────────────────────
+    if (/^(إيقاف الصلاة|ايقاف الصلاة|stop prayer)$/i.test(messageText.trim())) {
+        await supabase
+            .from("prayer_subscriptions")
+            .update({ enabled: false })
+            .eq("user_id", userId)
+        await sendWhatsAppMessage(phone, "تم إيقاف تذكيرات الصلاة ⏸️\nأرسل \"صلاة\" لإعادة التفعيل.")
+        return
+    }
+
     // ── Load user context ───────────────────────────────────────────────────────
     const { currentDate, currentTime, currentDayName, timeOfDay, addDays } = getSaudiTime()
 
