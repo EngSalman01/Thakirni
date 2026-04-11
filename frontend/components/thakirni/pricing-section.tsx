@@ -35,6 +35,35 @@ const PLANS = [
     ],
   },
   {
+    id: "student",
+    nameAr: "طالب 🎓",
+    nameEn: "Student 🎓",
+    priceAr: "١٩",
+    priceEn: "19",
+    priceAnnualAr: "١٥",
+    priceAnnualEn: "15",
+    currencyAr: "ريال / شهر",
+    currencyEn: "SAR / mo",
+    descAr: "مخصص للطلاب — تجربة مجانية ٣٠ يوم",
+    descEn: "Built for students — 30-day free trial",
+    cta: { ar: "ابدأ مجاناً 🎓", en: "Start Free 🎓" },
+    featured: false,
+    featuresAr: [
+      "١٠ تذكيرات يومية",
+      "٢٥ ذاكرة في الفولت",
+      "قوالب الدراسة (١٠ قوالب) 📚",
+      "تتبع الواجبات والاختبارات",
+      "جدول المذاكرة الذكي",
+    ],
+    featuresEn: [
+      "10 daily reminders",
+      "25 vault memories",
+      "Study templates (10 templates) 📚",
+      "Assignment & exam tracking",
+      "Smart study schedule",
+    ],
+  },
+  {
     id: "pro",
     nameAr: "برو",
     nameEn: "Pro",
@@ -218,7 +247,7 @@ function PlanCard({
         </ul>
 
         {/* CTA */}
-        <Link href="/auth">
+        <Link href={plan.id === "student" ? "/auth?plan=student" : "/auth"}>
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
@@ -265,7 +294,7 @@ export function PricingSection() {
 
         <BillingToggle annual={annual} onToggle={() => setAnnual(!annual)} isArabic={isArabic} />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {PLANS.map((plan, i) => (
             <PlanCard key={plan.id} plan={plan} annual={annual} isArabic={isArabic} index={i} />
           ))}
