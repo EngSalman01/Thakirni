@@ -431,7 +431,7 @@ export default function AnalyticsPage() {
           <div className="max-w-7xl mx-auto space-y-8">
 
             {/* Plans chart */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }} transition={{ duration: 0.6 }}
               className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 relative overflow-hidden group hover-lift">
               <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-gradient-to-tl from-amber-600/8 to-transparent rounded-tl-3xl pointer-events-none transition-transform duration-500 group-hover:translate-y-0 translate-y-4 translate-x-4" />
               <h2 className="text-2xl font-headline font-bold text-foreground mb-8">
@@ -450,7 +450,7 @@ export default function AnalyticsPage() {
             </motion.div>
 
             {/* Memories chart */}
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, delay: 0.05 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }} transition={{ duration: 0.6, delay: 0.05 }}
               className="bg-amber-400 rounded-2xl p-10 relative overflow-hidden group hover-lift">
               <div className="absolute right-0 bottom-0 w-1/3 h-1/3 bg-white/10 rounded-tl-3xl pointer-events-none" />
               <h2 className="text-2xl font-headline font-bold text-white mb-8">
@@ -476,7 +476,7 @@ export default function AnalyticsPage() {
             {/* Habits + Goals side by side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Habits */}
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }} transition={{ duration: 0.6 }}
                 className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
                 <h2 className="text-2xl font-headline font-bold text-foreground mb-8">
                   🔥 {t("أداء العادات", "Habit Performance")}
@@ -499,7 +499,7 @@ export default function AnalyticsPage() {
               </motion.div>
 
               {/* Goals */}
-              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6, delay: 0.05 }}
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }} transition={{ duration: 0.6, delay: 0.05 }}
                 className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 hover-lift">
                 <h2 className="text-2xl font-headline font-bold text-foreground mb-8">
                   🎯 {t("تقدم الأهداف", "Goals Progress")}

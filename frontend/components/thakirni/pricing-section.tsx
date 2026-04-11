@@ -187,7 +187,7 @@ function PlanCard({
     <motion.div
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
+      viewport={{ once: true, amount: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.2, 1, 0.3, 1] }}
       whileHover={{ y: plan.featured ? -6 : -3 }}
       className={`relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 ${

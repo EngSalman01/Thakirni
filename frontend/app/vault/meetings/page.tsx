@@ -293,7 +293,7 @@ export default function MeetingsPage() {
         <section className="px-8 pb-24">
           <div className="max-w-7xl mx-auto">
 
-            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.6 }}
+            <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }} transition={{ duration: 0.6 }}
               className="flex items-center justify-between mb-10">
               <div>
                 <h2 className="text-4xl font-headline font-extrabold text-foreground">
@@ -331,7 +331,7 @@ export default function MeetingsPage() {
                     key={m.id}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
+                    viewport={{ once: true, amount: 0 }}
                     transition={{ delay: i * 0.06, duration: 0.5 }}
                     className="bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden hover-lift"
                   >

@@ -316,7 +316,7 @@ export default function GoalsPage() {
                   return (
                     <motion.div key={goal.id}
                       custom={i} initial={{ opacity: 0, y: 28 }}
-                      whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                      whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }}
                       transition={{ duration: 0.7, delay: i * 0.08, ease: [0.2,1,0.3,1] }}
                       className="relative bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift">
                       {/* Color stripe */}

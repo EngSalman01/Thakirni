@@ -97,7 +97,7 @@ export function WhatsAppDemo() {
           <motion.div
             initial={{ opacity: 0, x: isArabic ? 32 : -32 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="space-y-6"
           >
@@ -150,7 +150,7 @@ export function WhatsAppDemo() {
           <motion.div
             initial={{ opacity: 0, x: isArabic ? -32 : 32 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, amount: 0 }}
             transition={{ duration: 0.25, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
             className="flex justify-center"
           >

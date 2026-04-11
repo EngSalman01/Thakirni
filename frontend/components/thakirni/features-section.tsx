@@ -45,7 +45,7 @@ function WhatsAppCard({ t, isArabic }: { t: ReturnType<typeof useLanguage>["t"];
       custom={4}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, amount: 0 }}
       variants={cardVariants}
       whileHover={{ y: -4 }}
       className="md:col-span-2 bg-[#075e54] text-white rounded-2xl p-7 sm:p-10 grid md:grid-cols-2 gap-6 items-center border border-[#128c7e]/30 transition-all duration-300"
@@ -91,7 +91,7 @@ export function FeaturesSection() {
         <motion.div
           initial={{ opacity: 0, y: 28 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-3xl mx-auto mb-12 sm:mb-20"
         >
@@ -117,7 +117,7 @@ export function FeaturesSection() {
             custom={0}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true, amount: 0 }}
             variants={cardVariants}
             whileHover={{ y: -4 }}
             className="md:col-span-2 bg-amber-50 dark:bg-amber-950/20 rounded-2xl p-7 sm:p-10 relative overflow-hidden border border-amber-100 dark:border-amber-900/40 transition-all duration-300 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800/50"
@@ -144,7 +144,7 @@ export function FeaturesSection() {
             custom={1}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true, amount: 0 }}
             variants={cardVariants}
             whileHover={{ y: -4 }}
             className="bg-gradient-to-br from-amber-600 to-orange-700 text-white rounded-2xl p-7 sm:p-10 flex flex-col justify-between transition-all duration-300 hover:shadow-lg hover:shadow-amber-900/20"
@@ -201,7 +201,7 @@ export function FeaturesSection() {
               custom={i + 2}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
+              viewport={{ once: true, amount: 0 }}
               variants={cardVariants}
               whileHover={{ y: -4 }}
               className="bg-white dark:bg-white/[0.03] rounded-2xl p-7 sm:p-9 border border-slate-100 dark:border-white/[0.07] transition-all duration-300 hover:shadow-sm hover:border-amber-100 dark:hover:border-amber-900/30"
@@ -227,7 +227,7 @@ export function FeaturesSection() {
             custom={5}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true, amount: 0 }}
             variants={cardVariants}
             whileHover={{ y: -4 }}
             className="bg-white dark:bg-white/[0.03] rounded-2xl p-7 sm:p-9 flex flex-col items-center text-center border border-slate-100 dark:border-white/[0.07] transition-all duration-300 hover:shadow-sm"

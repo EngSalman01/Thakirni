@@ -139,10 +139,14 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
           // CRITICAL: reset processing + kill any ghost overlay on close/error
           if (event.name === "checkout.closed" || event.name === "checkout.error") {
             setProcessing(null);
-            // Remove any lingering Paddle iframes that block pointer events
+            // Nuke any lingering Paddle overlays/iframes that block pointer events
             document.querySelectorAll('iframe[src*="paddle"]').forEach((el) => {
               (el as HTMLElement).style.pointerEvents = "none";
               (el as HTMLElement).style.display = "none";
+            });
+            // Also kill Paddle's wrapper divs
+            document.querySelectorAll('[id*="paddle"], [class*="paddle-frame"]').forEach((el) => {
+              (el as HTMLElement).style.pointerEvents = "none";
             });
           }
         },
@@ -215,6 +219,13 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
       toast.error(t("تعذّر فتح نافذة الدفع", "Could not open checkout"));
     } finally {
       setProcessing(null);
+      // Always clean up any lingering Paddle overlay elements
+      document.querySelectorAll('iframe[src*="paddle"]').forEach((el) => {
+        (el as HTMLElement).style.pointerEvents = "none";
+      });
+      document.querySelectorAll('[id*="paddle"], [class*="paddle-frame"]').forEach((el) => {
+        (el as HTMLElement).style.pointerEvents = "none";
+      });
     }
   }
 
