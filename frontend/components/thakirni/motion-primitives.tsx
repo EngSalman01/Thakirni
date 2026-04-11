@@ -131,7 +131,7 @@ export function IntelligentSlide({ children, className, delay = 0, inView = fals
         className={className}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-32px" }}
+        viewport={{ once: true, amount: 0 }}
         variants={{
           hidden: intelligentSlideVariants.hidden,
           visible: {

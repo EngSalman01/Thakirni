@@ -614,3 +614,20 @@ input:-webkit-autofill:active {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─── Paddle ghost iframe fix ────────────────────────────────────────────────── */
+/* Prevent lingering Paddle iframes from blocking pointer events after checkout close */
+iframe[src*="paddle.com"][style*="display: none"],
+iframe[src*="paddle.com"][style*="pointer-events: none"] {
+  display: none !important;
+  pointer-events: none !important;
+}
+/* Nuclear option: any Paddle iframe that is hidden/zero-opacity blocks nothing */
+iframe[name*="paddle"],
+div[id*="paddle-frame"] {
+  pointer-events: none;
+}
+div[id*="paddle-frame"][style*="opacity: 1"],
+iframe[name*="paddle"][style*="opacity: 1"] {
+  pointer-events: auto;
+}

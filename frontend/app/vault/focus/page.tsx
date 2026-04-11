@@ -275,7 +275,7 @@ export default function FocusPage() {
               ].map(({ emoji, title, desc, color, textColor }, i) => (
                 <motion.div key={title as string}
                   custom={i} initial={{ opacity: 0, y: 28 }}
-                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }}
                   transition={{ duration: 0.7, delay: i * 0.1, ease: [0.2,1,0.3,1] }}
                   className={`${color} rounded-2xl p-12 relative overflow-hidden hover-lift cursor-default`}>
                   <span className="text-4xl mb-6 block">{emoji}</span>

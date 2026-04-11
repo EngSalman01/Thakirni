@@ -204,7 +204,7 @@ export default function HabitsPage() {
                 {habits.map((h: Record<string, unknown>, i) => (
                   <motion.div key={h.id as string}
                     custom={i} initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-32px" }}
+                    whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }}
                     transition={{ duration: 0.28, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
                     className={`relative bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
                     onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}>
@@ -244,7 +244,7 @@ export default function HabitsPage() {
 
                 {/* Add new habit card */}
                 <motion.div custom={habits.length} initial={{ opacity: 0, y: 28 }}
-                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }}
+                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }}
                   transition={{ duration: 0.7, delay: habits.length * 0.08, ease: [0.2,1,0.3,1] }}>
                   <button onClick={() => setOpen(true)}
                     className="w-full h-full min-h-[200px] bg-card border-2 border-dashed border-border rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-amber-600/50 hover:bg-muted dark:bg-white/[0.03] transition-all group">

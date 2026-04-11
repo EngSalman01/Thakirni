@@ -68,7 +68,7 @@ export function SlideUp({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-32px" }}
+      viewport={{ once: true, amount: 0 }}
       transition={{ duration: duration.page, ease: ease.primary, delay }}
       className={className}
     >

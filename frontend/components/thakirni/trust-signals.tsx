@@ -52,7 +52,7 @@ export function TrustSignals() {
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
+          viewport={{ once: true, amount: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-2xl mx-auto mb-12 sm:mb-16"
         >
@@ -81,7 +81,7 @@ export function TrustSignals() {
                 key={num}
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
+                viewport={{ once: true, amount: 0 }}
                 transition={{ duration: 0.4, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
                 whileHover={{ y: -4 }}
                 className="relative bg-white dark:bg-white/[0.04] rounded-2xl p-7 sm:p-9 border border-amber-100/60 dark:border-white/[0.07] shadow-sm hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800/40 transition-all duration-300"
