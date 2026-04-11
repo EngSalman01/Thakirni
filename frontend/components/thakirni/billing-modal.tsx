@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { Paddle } from "@paddle/paddle-js";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,32 @@ const PRO_MONTHLY_PRICE_ID     = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHL
                                 || process.env.NEXT_PUBLIC_PADDLE_PRICE_INDIVIDUAL_MONTHLY!;
 const STUDENT_MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_STUDENT_MONTHLY!;
 const TEAMS_MONTHLY_PRICE_ID   = process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY!;
+
+// ── Module-level Paddle singleton ──────────────────────────────────────────────
+// initializePaddle must only be called ONCE per page load.
+// If BillingModal mounts multiple times (open/close), re-calling it fails silently.
+let _paddleInstance: Paddle | null = null;
+let _paddleInitPromise: Promise<Paddle | null> | null = null;
+
+function getPaddle(onEvent: (event: any) => void): Promise<Paddle | null> {
+  if (_paddleInstance) return Promise.resolve(_paddleInstance);
+  if (_paddleInitPromise) return _paddleInitPromise;
+  _paddleInitPromise = import("@paddle/paddle-js").then(({ initializePaddle }) =>
+    initializePaddle({
+      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+      environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
+      eventCallback: onEvent,
+    }).then((p) => {
+      _paddleInstance = p ?? null;
+      return _paddleInstance;
+    }).catch((err) => {
+      console.error("[Paddle] initializePaddle failed:", err);
+      _paddleInitPromise = null; // allow retry
+      return null;
+    })
+  );
+  return _paddleInitPromise;
+}
 
 interface PlanCard {
   id: PlanTier;
@@ -103,56 +129,64 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   const { t } = useLanguage();
   const [confirming, setConfirming] = useState<PlanTier | null>(null);
   const [processing, setProcessing] = useState<PlanTier | null>(null);
+  const [paddleReady, setPaddleReady] = useState(!!_paddleInstance);
   const [planPrices, setPlanPrices] = useState<Record<string, number>>({ student: 19, pro: 29.99, teams: 59.99 });
-  const paddleRef = useRef<Paddle | null>(null);
+  const paddleRef = useRef<Paddle | null>(_paddleInstance);
   // Stable refs so eventCallback never captures stale props
   const onUpgradeCompleteRef = useRef(onUpgradeComplete);
   const onCloseRef = useRef(onClose);
   const tRef = useRef(t);
+  const setProcessingRef = useRef(setProcessing);
   useEffect(() => { onUpgradeCompleteRef.current = onUpgradeComplete; }, [onUpgradeComplete]);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => { tRef.current = t; }, [t]);
+  useEffect(() => { setProcessingRef.current = setProcessing; }, []);
 
-  useEffect(() => {
-    import("@paddle/paddle-js").then(({ initializePaddle }) => {
-      initializePaddle({
-        token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
-        environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
-        eventCallback(event) {
-          if (event.name === "checkout.completed") {
-            const planId = (paddleRef.current as any)?._pendingPlanId as "student" | "pro" | "teams" | undefined;
-            if (!planId) return;
-            const appliedCode = (paddleRef.current as any)?._pendingPromoCode as string | undefined;
-            if (appliedCode) {
-              fetch("/api/discount-codes/use", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: appliedCode }),
-              }).catch((e) => console.error("[billing-modal] promo tracking error:", e));
-            }
-            onUpgradeCompleteRef.current(planId);
-            onCloseRef.current();
-            const planNameAr = planId === "pro" ? "برو" : planId === "student" ? "طالب" : "فرق";
-            const planNameEn = planId === "pro" ? "Pro" : planId === "student" ? "Student" : "Teams";
-            toast.success(tRef.current(`أنت الآن على خطة ${planNameAr}! 🎉`, `You're now on the ${planNameEn} plan! 🎉`));
-          }
-          // CRITICAL: reset processing + kill any ghost overlay on close/error
-          if (event.name === "checkout.closed" || event.name === "checkout.error") {
-            setProcessing(null);
-            // Nuke any lingering Paddle overlays/iframes that block pointer events
-            document.querySelectorAll('iframe[src*="paddle"]').forEach((el) => {
-              (el as HTMLElement).style.pointerEvents = "none";
-              (el as HTMLElement).style.display = "none";
-            });
-            // Also kill Paddle's wrapper divs
-            document.querySelectorAll('[id*="paddle"], [class*="paddle-frame"]').forEach((el) => {
-              (el as HTMLElement).style.pointerEvents = "none";
-            });
-          }
-        },
-      }).then((p) => { paddleRef.current = p ?? null; });
-    });
+  // Stable event handler that doesn't change between renders
+  const handlePaddleEvent = useCallback((event: { name: string }) => {
+    if (event.name === "checkout.completed") {
+      const planId = (_paddleInstance as any)?._pendingPlanId as "student" | "pro" | "teams" | undefined;
+      if (!planId) return;
+      const appliedCode = (_paddleInstance as any)?._pendingPromoCode as string | undefined;
+      if (appliedCode) {
+        fetch("/api/discount-codes/use", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: appliedCode }),
+        }).catch((e) => console.error("[billing-modal] promo tracking error:", e));
+      }
+      onUpgradeCompleteRef.current(planId);
+      onCloseRef.current();
+      const planNameAr = planId === "pro" ? "برو" : planId === "student" ? "طالب" : "فرق";
+      const planNameEn = planId === "pro" ? "Pro" : planId === "student" ? "Student" : "Teams";
+      toast.success(tRef.current(`أنت الآن على خطة ${planNameAr}! 🎉`, `You're now on the ${planNameEn} plan! 🎉`));
+    }
+    // CRITICAL: reset processing + kill any ghost overlay on close/error
+    if (event.name === "checkout.closed" || event.name === "checkout.error") {
+      setProcessingRef.current(null);
+      document.querySelectorAll('iframe[src*="paddle"]').forEach((el) => {
+        (el as HTMLElement).style.pointerEvents = "none";
+        (el as HTMLElement).style.display = "none";
+      });
+      document.querySelectorAll('[id*="paddle"], [class*="paddle-frame"]').forEach((el) => {
+        (el as HTMLElement).style.pointerEvents = "none";
+      });
+    }
   }, []);
+
+  // Initialize Paddle once (module singleton — safe to call multiple times)
+  useEffect(() => {
+    if (_paddleInstance) {
+      paddleRef.current = _paddleInstance;
+      setPaddleReady(true);
+      return;
+    }
+    getPaddle(handlePaddleEvent).then((p) => {
+      paddleRef.current = p;
+      setPaddleReady(!!p);
+      if (!p) console.error("[BillingModal] Paddle failed to initialize. Token:", process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN?.slice(0, 12));
+    });
+  }, [handlePaddleEvent]);
 
   useEffect(() => {
     fetch("/api/plans")
@@ -199,8 +233,20 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
       planId === "pro" ? PRO_MONTHLY_PRICE_ID :
       planId === "student" ? STUDENT_MONTHLY_PRICE_ID :
       TEAMS_MONTHLY_PRICE_ID;
-    if (!priceId) { toast.error("Price ID not configured"); return; }
-    if (!paddleRef.current) { toast.error(t("جارٍ التحميل، حاول مرة أخرى", "Still loading, try again")); return; }
+    if (!priceId) {
+      console.error(`[BillingModal] Missing price ID for plan=${planId}. Check NEXT_PUBLIC_PADDLE_PRICE_${planId.toUpperCase()}_MONTHLY env var.`);
+      toast.error(`Price ID not configured for ${planId}`);
+      return;
+    }
+    if (!paddleRef.current) {
+      // Try one more time to get the singleton
+      const p = await getPaddle(handlePaddleEvent);
+      if (!p) {
+        toast.error(t("تعذّر تحميل نظام الدفع، حاول تحديث الصفحة", "Payment system failed to load — try refreshing"));
+        return;
+      }
+      paddleRef.current = p;
+    }
 
     const appliedCode = promoApplied?.code;
     (paddleRef.current as any)._pendingPlanId = planId;
@@ -370,12 +416,16 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   {isUpgrade && plan.id !== "free" && (
                     <Button
                       onClick={() => handleUpgrade(plan.id as "student" | "pro" | "teams")}
-                      disabled={!!processing}
+                      disabled={!!processing || !paddleReady}
                       className="w-full rounded-xl text-white font-bold"
                       style={{ background: `linear-gradient(135deg, #D97706, ${plan.accent})` }}
                     >
-                      {processing === plan.id ? <Loader2 className="w-4 h-4 animate-spin me-2" /> : null}
-                      {t(`ترقية إلى ${t(plan.nameAr, plan.nameEn)}`, `Upgrade to ${plan.nameEn}`)}
+                      {processing === plan.id || (!paddleReady && !processing) ? (
+                        <Loader2 className="w-4 h-4 animate-spin me-2" />
+                      ) : null}
+                      {!paddleReady && !processing
+                        ? t("جارٍ التحميل…", "Loading…")
+                        : t(`ترقية إلى ${t(plan.nameAr, plan.nameEn)}`, `Upgrade to ${plan.nameEn}`)}
                     </Button>
                   )}
                   {isDowngrade && (
