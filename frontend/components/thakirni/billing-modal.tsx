@@ -10,7 +10,9 @@ import { toast } from "sonner";
 import { useLanguage } from "@/components/language-provider";
 import type { PlanTier } from "@/hooks/use-subscription";
 
-const PRO_MONTHLY_PRICE_ID     = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY!;
+// NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY preferred; fallback to INDIVIDUAL_MONTHLY (same price, older var name)
+const PRO_MONTHLY_PRICE_ID     = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY
+                                || process.env.NEXT_PUBLIC_PADDLE_PRICE_INDIVIDUAL_MONTHLY!;
 const STUDENT_MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_STUDENT_MONTHLY!;
 const TEAMS_MONTHLY_PRICE_ID   = process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY!;
 
