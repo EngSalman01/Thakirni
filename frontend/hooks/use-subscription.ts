@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type PlanTier = "free" | "pro" | "teams";
+export type PlanTier = "free" | "student" | "pro" | "teams";
 
 interface ActiveSubscription {
   paddle_subscription_id: string | null;
@@ -73,5 +73,6 @@ export function normalizeTier(raw: string): PlanTier {
   const v = (raw ?? "").toUpperCase();
   if (v === "TEAMS" || v === "COMPANY" || v === "TEAM") return "teams";
   if (v === "PRO" || v === "INDIVIDUAL") return "pro";
+  if (v === "STUDENT") return "student";
   return "free";
 }
