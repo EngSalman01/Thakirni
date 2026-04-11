@@ -45,3 +45,7 @@ Thumbs.db
 
 # Git worktrees
 .worktrees/
+
+# Superpowers plugin artifacts
+**/.superpowers/
+**/docs/superpowers/
