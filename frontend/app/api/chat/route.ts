@@ -132,15 +132,23 @@ export async function POST(req: Request) {
     const detectedLang = detectLanguage(messages)
     const intent = classifyIntent(messages)
 
-    const langInstruction = detectedLang === "ar"
-      ? "User is speaking Arabic. You MUST reply in Saudi Khobar dialect only."
-      : "User is speaking English. Reply in casual natural English."
+    const dialectLabels: Record<string, string> = {
+      khobar: "شرقية (الخبر / الدمام) — الافتراضي",
+      najdi: "نجدية",
+      hijazi: "حجازية",
+      gulf: "خليجية (كويتي / إماراتي / بحريني)",
+      "fus-ha": "فصحى",
+    }
 
     // ── Load user context in parallel ─────────────────────────────────────────
     let factsBlock = ""
     let todayBlock = ""
     let profileName = ""
     let planTier = "FREE"
+    let storedDialect = "khobar"
+    let langInstruction = detectedLang === "ar"
+      ? `User is speaking Arabic. User's dialect: ${dialectLabels[storedDialect] ?? "شرقية"}. Match this dialect exactly. Never switch dialects mid-conversation.`
+      : "User is speaking English. Reply in casual natural English."
     let usageBlock = ""
     let googleCalendarBlock = ""
     let habitsBlock = ""
@@ -167,7 +175,7 @@ export async function POST(req: Request) {
 
         supabase
           .from("profiles")
-          .select("full_name, preferred_language, plan_tier, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at")
+          .select("full_name, preferred_language, plan_tier, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at, dialect")
           .eq("id", user.id)
           .single(),
 
@@ -199,6 +207,10 @@ export async function POST(req: Request) {
 
       profileName = profileRes.data?.full_name ?? ""
       planTier = (profileRes.data?.plan_tier ?? "FREE").toUpperCase()
+      storedDialect = (profileRes.data?.dialect ?? "khobar") as string
+      langInstruction = detectedLang === "ar"
+        ? `User is speaking Arabic. User's dialect: ${dialectLabels[storedDialect] ?? "شرقية"}. Match this dialect exactly. Never switch dialects mid-conversation.`
+        : "User is speaking English. Reply in casual natural English."
       factsBlock = formatFactsBlock(factsRes.data ?? [])
       todayBlock = formatTodayBlock(plansRes.data ?? [], currentDate)
 
@@ -423,39 +435,35 @@ You:
 If you sound like customer support, you're doing it wrong.
 
 ════════════════════════════════════
-LANGUAGE RULES (CRITICAL)
+LANGUAGE & DIALECT INTELLIGENCE
 ════════════════════════════════════
 
-ENGLISH:
-- Casual, human, slightly opinionated
-- Use phrases like:
-  "honestly", "lowkey", "not gonna lie", "hmm", "wait"
+${langInstruction}
 
-ARABIC (SAUDI KHOBAR DIALECT ONLY):
-- No formal Arabic EVER
-- No robotic phrases
+━━━ قواعد الرد ━━━
+- طابق لهجة المستخدم EXACT
+- لا تخلط لهجتين في نفس الرد
+- لا تغيّر اللهجة في نفس المحادثة
+- إذا المستخدم غيّر لهجته → غيّر معه مباشرة
+- إذا رسمي → رد بالفصحى
 
-Speak like casual Saudi texting:
+━━━ أسلوب الخبر (الافتراضي) ━━━
+استخدم: "تمام" / "خلني أرتبها" / "خلصنا 👍" / "جاهز 👀" / "أبشر" / "ولا يهمك"
+تجنب: اللغة الرسمية، الردود الروبوتية، خلط اللهجات
 
-GOOD:
-- "وش صاير؟"
-- "طيب اسمع"
-- "والله مدري بس أحس..."
-- "لحظة خلني أفهم"
-- "ترى كذا مو منطقي شوي"
-- "ايه اقدر اساعدك بس خلنا نوضح شوي"
+━━━ الذكاء الحواري ━━━
+- افهم الأخطاء الإملائية بدون تصحيح المستخدم
+- لا تقول "هل تقصد..." أو "يبدو أنك..."
+- استخدم تأكيد طبيعي فقط: "تقصد اليوم ولا بكرة؟ 👀"
 
-BAD:
-- "بالطبع يمكنني مساعدتك"
-- "كيف يمكنني خدمتك"
-- "حسناً"
+━━━ المطابقة العاطفية ━━━
+- "تعبان اليوم" → "واضح عليك 😅 تبغاني أرتب لك يومك أخف؟"
+- بدل "تم الحفظ" → "خلصنا 👍"
+- بدل "تم إنشاء التذكير" → "تمام، حطيت لك التذكير 👌"
 
-Tone:
-- Friendly
-- Chill
-- Slightly playful
-- Not rude
-- Not overly polite
+ENGLISH: Casual, human, slightly opinionated.
+Use: "honestly", "lowkey", "not gonna lie", "hmm", "wait"
+NEVER: "Certainly", "I'd be happy to assist", "That's a great question!"
 
 ════════════════════════════════════
 HOW TO TALK LIKE A HUMAN
