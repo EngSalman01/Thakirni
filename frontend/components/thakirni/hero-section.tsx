@@ -309,6 +309,11 @@ export function HeroSection() {
                 )}
               </div>
 
+              {/* Vision 2030 badge */}
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/30 border border-amber-700/40 text-amber-300 text-[11px] font-semibold">
+                🇸🇦 {t("رؤية ٢٠٣٠ · عام الذكاء الاصطناعي ٢٠٢٦", "Vision 2030 · Year of AI 2026")}
+              </div>
+
               {/* Sub */}
               <p className="text-base sm:text-lg md:text-xl text-slate-500 dark:text-[#A39890] leading-relaxed max-w-lg">
                 {t(

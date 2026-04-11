@@ -42,8 +42,8 @@ const beVietnamPro = Be_Vietnam_Pro({
 
 export const metadata: Metadata = {
   title: { default: "Thakirni — ذكرني | Your AI Second Brain", template: "%s | Thakirni" },
-  description: "Thakirni is your AI-powered second brain. Remember everything, plan smarter, and stay on top of your life — in Arabic and English.",
-  keywords: ["second brain", "productivity", "AI assistant", "Arabic", "ذكرني", "تطبيق ذكاء اصطناعي", "تنظيم"],
+  description: "Thakirni is your AI-powered second brain — built for Saudi Arabia's Vision 2030 and Year of AI 2026. Remember everything, plan smarter, and stay on top of your life in Arabic and English.",
+  keywords: ["second brain", "productivity", "AI assistant", "Arabic", "ذكرني", "تطبيق ذكاء اصطناعي", "تنظيم", "Vision 2030", "رؤية 2030", "ذكاء اصطناعي", "SDAIA", "Year of AI 2026", "عام الذكاء الاصطناعي", "Saudi AI", "مساعد ذكي"],
   authors: [{ name: "Salman Almnaseer" }],
   creator: "Thakirni",
   metadataBase: new URL("https://thakirni.com"),
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     url: "https://thakirni.com",
     siteName: "Thakirni",
     title: "Thakirni — ذكرني | Your AI Second Brain",
-    description: "Your AI-powered second brain. Remember everything, plan smarter.",
+    description: "Your AI-powered second brain — built for Saudi Arabia's Vision 2030. Remember everything, plan smarter.",
     images: [{ url: "/og-image.png", width: 1200, height: 630 }],
   },
   twitter: {
