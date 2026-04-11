@@ -51,11 +51,28 @@ function fixCommonTypos(text: string): string {
         .replace(/\bشكرني\b/g, "ذكرني")
         .replace(/\bشكّرني\b/g, "ذكّرني")
         .replace(/\bالحفص\b/g, "الفحص")
-        .replace(/\bوقتي\b/g, "وقتي")       // already correct, no-op example
+        .replace(/\bابي\b/g, "أبي")
+        .replace(/\bايش\b/g, "إيش")
+        .replace(/\bوقتي\b/g, "وقتي")
         .replace(/\bابدأ\b/g, "ابدأ")
-        .replace(/ذكرن([يى])\b/g, "ذكرني") // normalize ذكرنى → ذكرني
+        .replace(/ذكرن([يى])\b/g, "ذكرني")
         .replace(/\bضيقني\b/g, "ذكرني")
         .replace(/\bذكران\b/g, "ذكرني")
+        // Remove excessive character repetition (حلوووو → حلوو)
+        .replace(/(.)\1{2,}/g, "$1$1")
+        // Normalise multiple spaces
+        .replace(/\s{2,}/g, " ")
+        .trim()
+}
+
+type Dialect = "khobar" | "najdi" | "hijazi" | "gulf" | "fus-ha"
+
+function detectDialect(text: string): Dialect {
+    if (/شنو|زين|هالسالفة|بعدين\b|چ/.test(text)) return "gulf"
+    if (/إيش|ايش|كذا|عادي\b|مرة\b/.test(text)) return "hijazi"
+    if (/أريد\b|اريد\b|ماذا\b|هل\s|يمكن\b/.test(text)) return "fus-ha"
+    if (/وش\b|أبي\b|ابي\b|أبغى\b|الحين\b|ترى\b|خل\b/.test(text)) return "khobar"
+    return "khobar"
 }
 
 // ─── Structured Logging ───────────────────────────────────────────────────────
