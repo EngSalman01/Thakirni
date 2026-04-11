@@ -283,7 +283,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     // ── Look up user by phone number ────────────────────────────────────────────
     const { data: profile } = await supabase
         .from("profiles")
-        .select("id, full_name, plan_tier, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at, preferred_language")
+        .select("id, full_name, plan_tier, google_calendar_token, google_calendar_refresh_token, google_calendar_expires_at, preferred_language, dialect")
         .eq("phone_number", phone)
         .single()
 
@@ -300,6 +300,33 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
     const userId = profile.id as string
     const profileName = (profile.full_name ?? "") as string
     const lang = detectLanguage(messageText)
+
+    // ── Dialect detection + persistence ─────────────────────────────────────────
+    let storedDialect = (profile.dialect ?? "khobar") as Dialect
+    // On first Arabic message (still at default), detect and persist
+    if (storedDialect === "khobar" && lang === "ar") {
+        const detected = detectDialect(messageText)
+        if (detected !== "khobar") {
+            storedDialect = detected
+            supabase
+                .from("profiles")
+                .update({ dialect: detected })
+                .eq("id", userId)
+                .then(undefined, (err: unknown) => console.error("[WA] dialect save error:", err))
+        }
+    }
+    // If user clearly switches dialect mid-conversation, update
+    if (lang === "ar") {
+        const freshDetect = detectDialect(messageText)
+        if (freshDetect !== "khobar" && freshDetect !== storedDialect) {
+            storedDialect = freshDetect
+            supabase
+                .from("profiles")
+                .update({ dialect: freshDetect })
+                .eq("id", userId)
+                .then(undefined, (err: unknown) => console.error("[WA] dialect update error:", err))
+        }
+    }
 
     // ── Load user context ───────────────────────────────────────────────────────
     const { currentDate, currentTime, currentDayName, timeOfDay, addDays } = getSaudiTime()
