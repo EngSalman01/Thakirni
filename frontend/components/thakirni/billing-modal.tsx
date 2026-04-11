@@ -105,6 +105,13 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   const [processing, setProcessing] = useState<PlanTier | null>(null);
   const [planPrices, setPlanPrices] = useState<Record<string, number>>({ student: 19, pro: 29.99, teams: 59.99 });
   const paddleRef = useRef<Paddle | null>(null);
+  // Stable refs so eventCallback never captures stale props
+  const onUpgradeCompleteRef = useRef(onUpgradeComplete);
+  const onCloseRef = useRef(onClose);
+  const tRef = useRef(t);
+  useEffect(() => { onUpgradeCompleteRef.current = onUpgradeComplete; }, [onUpgradeComplete]);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   useEffect(() => {
     import("@paddle/paddle-js").then(({ initializePaddle }) => {
@@ -123,11 +130,20 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                 body: JSON.stringify({ code: appliedCode }),
               }).catch((e) => console.error("[billing-modal] promo tracking error:", e));
             }
-            onUpgradeComplete(planId);
-            onClose();
+            onUpgradeCompleteRef.current(planId);
+            onCloseRef.current();
             const planNameAr = planId === "pro" ? "برو" : planId === "student" ? "طالب" : "فرق";
             const planNameEn = planId === "pro" ? "Pro" : planId === "student" ? "Student" : "Teams";
-            toast.success(t(`أنت الآن على خطة ${planNameAr}! 🎉`, `You're now on the ${planNameEn} plan! 🎉`));
+            toast.success(tRef.current(`أنت الآن على خطة ${planNameAr}! 🎉`, `You're now on the ${planNameEn} plan! 🎉`));
+          }
+          // CRITICAL: reset processing + kill any ghost overlay on close/error
+          if (event.name === "checkout.closed" || event.name === "checkout.error") {
+            setProcessing(null);
+            // Remove any lingering Paddle iframes that block pointer events
+            document.querySelectorAll('iframe[src*="paddle"]').forEach((el) => {
+              (el as HTMLElement).style.pointerEvents = "none";
+              (el as HTMLElement).style.display = "none";
+            });
           }
         },
       }).then((p) => { paddleRef.current = p ?? null; });

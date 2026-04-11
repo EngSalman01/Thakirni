@@ -413,3 +413,10 @@
 .animate-fade-in {
   animation: fade-in 0.5s ease both;
 }
+
+/* Prevent ghost Paddle checkout iframes from blocking clicks after close */
+iframe[src*="paddle.com"][style*="display: none"],
+iframe[src*="paddle.com"][style*="pointer-events: none"] {
+  display: none !important;
+  pointer-events: none !important;
+}
