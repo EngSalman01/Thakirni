@@ -74,13 +74,26 @@ function addMinutes(hhmm: string, mins: number): string {
   return `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`
 }
 
-function firingPrayersForTimings(timings: IslamicApiTiming, nowHhmm: string): string[] {
-  const firing: string[] = []
+type ReminderType = "before" | "now"
+
+interface FiringPrayer {
+  key: string
+  type: ReminderType
+}
+
+function firingPrayersForTimings(timings: IslamicApiTiming, nowHhmm: string): FiringPrayer[] {
+  const firing: FiringPrayer[] = []
   for (const key of ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const) {
     const prayerHhmm = timings[PRAYER_KEY[key]].slice(0, 5)
-    const start = addMinutes(prayerHhmm, -5)
-    if (nowHhmm >= start && nowHhmm < prayerHhmm) {
-      firing.push(key)
+    // "5 min before" window: [prayerTime - 5min, prayerTime)
+    const beforeStart = addMinutes(prayerHhmm, -5)
+    if (nowHhmm >= beforeStart && nowHhmm < prayerHhmm) {
+      firing.push({ key, type: "before" })
+    }
+    // "at prayer time" window: [prayerTime, prayerTime + 5min)
+    const atEnd = addMinutes(prayerHhmm, 5)
+    if (nowHhmm >= prayerHhmm && nowHhmm < atEnd) {
+      firing.push({ key, type: "now" })
     }
   }
   return firing
@@ -145,11 +158,13 @@ export async function GET(req: NextRequest) {
 
     for (const sub of citySubs) {
       const subPrayers = sub.prayers as string[]
-      for (const prayer of firing) {
+      for (const { key: prayer, type } of firing) {
         if (!subPrayers.includes(prayer)) continue
         const arName = PRAYER_AR[prayer]
         const enName = PRAYER_EN[prayer]
-        const msg = `🕌 حان وقت صلاة ${arName}\nتقبل الله صلاتك 🤲\n\nPrayer time: ${enName}\nMay Allah accept your prayer.`
+        const msg = type === "before"
+          ? `⏰ تنبيه: صلاة ${arName} بعد 5 دقائق\nاستعد للصلاة 🤲\n\n${enName} prayer in 5 minutes`
+          : `🕌 حان موعد صلاة ${arName}\nتقبل الله صلاتك 🤲\n\n${enName} prayer time\nMay Allah accept your prayer.`
         try {
           await sendWhatsAppMessage(sub.phone as string, msg)
           totalSent++
