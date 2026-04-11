@@ -201,6 +201,14 @@ function AuthForm() {
   const supabase = createClient();
   const strength = getPasswordStrength(signUpPassword);
 
+  // Store pending student plan if user arrived via /auth?plan=student
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("plan") === "student") {
+      localStorage.setItem("pendingStudentPlan", "1")
+    }
+  }, [])
+
   // Show messages from URL params
   React.useEffect(() => {
     if (urlError === "callback_failed") {
