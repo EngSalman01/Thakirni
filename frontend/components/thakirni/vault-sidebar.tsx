@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   Menu, LogOut, Settings, ChevronDown,
   LayoutDashboard, CheckSquare, Mic, BarChart2,
-  Target, Flame, Brain, Calendar,
+  Target, Flame, Brain, Calendar, Heart,
 } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { BrandLogo } from "@/components/thakirni/brand-logo";
@@ -47,6 +47,7 @@ const PRIMARY_NAV = [
 const ALL_NAV = [
   ...PRIMARY_NAV,
   { href: "/vault/goals",    icon: Target,    labelAr: "أهدافي",    labelEn: "Goals"     },
+  { href: "/vault/health",   icon: Heart,     labelAr: "الصحة 💚",  labelEn: "Health 💚" },
   { href: "/vault/habits",   icon: Flame,     labelAr: "عاداتي",    labelEn: "Habits"    },
   { href: "/vault/focus",    icon: Brain,     labelAr: "التركيز",   labelEn: "Focus"     },
   { href: "/vault/upload",   icon: Brain,     labelAr: "الذكريات",  labelEn: "Memories"  },
