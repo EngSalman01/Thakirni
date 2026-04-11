@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import type { Paddle } from "@paddle/paddle-js";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +102,35 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   const [confirming, setConfirming] = useState<PlanTier | null>(null);
   const [processing, setProcessing] = useState<PlanTier | null>(null);
   const [planPrices, setPlanPrices] = useState<Record<string, number>>({ student: 19, pro: 29.99, teams: 59.99 });
+  const paddleRef = useRef<Paddle | null>(null);
+
+  useEffect(() => {
+    import("@paddle/paddle-js").then(({ initializePaddle }) => {
+      initializePaddle({
+        token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+        environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
+        eventCallback(event) {
+          if (event.name === "checkout.completed") {
+            const planId = (paddleRef.current as any)?._pendingPlanId as "student" | "pro" | "teams" | undefined;
+            if (!planId) return;
+            const appliedCode = (paddleRef.current as any)?._pendingPromoCode as string | undefined;
+            if (appliedCode) {
+              fetch("/api/discount-codes/use", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: appliedCode }),
+              }).catch((e) => console.error("[billing-modal] promo tracking error:", e));
+            }
+            onUpgradeComplete(planId);
+            onClose();
+            const planNameAr = planId === "pro" ? "برو" : planId === "student" ? "طالب" : "فرق";
+            const planNameEn = planId === "pro" ? "Pro" : planId === "student" ? "Student" : "Teams";
+            toast.success(t(`أنت الآن على خطة ${planNameAr}! 🎉`, `You're now on the ${planNameEn} plan! 🎉`));
+          }
+        },
+      }).then((p) => { paddleRef.current = p ?? null; });
+    });
+  }, []);
 
   useEffect(() => {
     fetch("/api/plans")
@@ -148,36 +178,15 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
       planId === "student" ? STUDENT_MONTHLY_PRICE_ID :
       TEAMS_MONTHLY_PRICE_ID;
     if (!priceId) { toast.error("Price ID not configured"); return; }
+    if (!paddleRef.current) { toast.error(t("جارٍ التحميل، حاول مرة أخرى", "Still loading, try again")); return; }
+
+    const appliedCode = promoApplied?.code;
+    (paddleRef.current as any)._pendingPlanId = planId;
+    (paddleRef.current as any)._pendingPromoCode = appliedCode;
 
     setProcessing(planId);
     try {
-      const { initializePaddle } = await import("@paddle/paddle-js");
-      const appliedCode = promoApplied?.code;
-      const paddle = await initializePaddle({
-        token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
-        environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
-        eventCallback(event) {
-          if (event.name === "checkout.completed") {
-            // Increment used_count for the promo code
-            if (appliedCode) {
-              fetch("/api/discount-codes/use", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ code: appliedCode }),
-              }).catch((e) => console.error("[billing-modal] promo code tracking error:", e));
-            }
-            onUpgradeComplete(planId);
-            onClose();
-            const planNameAr = planId === "pro" ? "برو" : planId === "student" ? "طالب" : "فرق";
-            const planNameEn = planId === "pro" ? "Pro" : planId === "student" ? "Student" : "Teams";
-            toast.success(t(
-              `أنت الآن على خطة ${planNameAr}! 🎉`,
-              `You're now on the ${planNameEn} plan! 🎉`
-            ));
-          }
-        },
-      });
-      await paddle!.Checkout.open({
+      await paddleRef.current.Checkout.open({
         items: [{ priceId, quantity: 1 }],
         customer: userEmail ? { email: userEmail } : undefined,
         ...(appliedCode ? { discountCode: appliedCode } : {}),
