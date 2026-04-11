@@ -9,8 +9,9 @@ import { toast } from "sonner";
 import { useLanguage } from "@/components/language-provider";
 import type { PlanTier } from "@/hooks/use-subscription";
 
-const PRO_MONTHLY_PRICE_ID  = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY!;
-const TEAMS_MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY!;
+const PRO_MONTHLY_PRICE_ID     = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY!;
+const STUDENT_MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_STUDENT_MONTHLY!;
+const TEAMS_MONTHLY_PRICE_ID   = process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY!;
 
 interface PlanCard {
   id: PlanTier;
@@ -39,6 +40,21 @@ const PLANS: PlanCard[] = [
     ],
   },
   {
+    id: "student",
+    nameEn: "Student 🎓",
+    nameAr: "طالب 🎓",
+    price: "19 SAR/mo",
+    badge: "30-Day Trial",
+    accent: "#10b981",
+    features: [
+      { en: "50 plans per day", ar: "٥٠ خطة يومياً" },
+      { en: "200 memories", ar: "٢٠٠ ذاكرة" },
+      { en: "3 projects", ar: "٣ مشاريع" },
+      { en: "10 study templates 📚", ar: "١٠ قوالب دراسية 📚" },
+      { en: "Assignment & exam tracking", ar: "تتبع الواجبات والاختبارات" },
+    ],
+  },
+  {
     id: "pro",
     nameEn: "Pro",
     nameAr: "برو",
@@ -62,7 +78,10 @@ const PLANS: PlanCard[] = [
     noteSuffixAr: "لكل مستخدم",
     accent: "#F59E0B",
     features: [
-      { en: "Everything unlimited", ar: "كل شيء غير محدود" },
+      { en: "500 plans per day", ar: "٥٠٠ خطة يومياً" },
+      { en: "10,000 memories", ar: "١٠٠٠٠ ذاكرة" },
+      { en: "50 projects", ar: "٥٠ مشروعاً" },
+      { en: "60 meeting summaries/month", ar: "٦٠ ملخص اجتماع شهرياً" },
       { en: "Shared memories & notes", ar: "ذكريات وملاحظات مشتركة" },
       { en: "Priority support", ar: "دعم فني ذو أولوية" },
     ],
@@ -81,7 +100,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   const { t } = useLanguage();
   const [confirming, setConfirming] = useState<PlanTier | null>(null);
   const [processing, setProcessing] = useState<PlanTier | null>(null);
-  const [planPrices, setPlanPrices] = useState<Record<string, number>>({ pro: 29.99, teams: 59.99 });
+  const [planPrices, setPlanPrices] = useState<Record<string, number>>({ student: 19, pro: 29.99, teams: 59.99 });
 
   useEffect(() => {
     fetch("/api/plans")
@@ -99,7 +118,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   const [promoApplied, setPromoApplied] = useState<{ code: string; discountPercent: number } | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
 
-  async function applyPromoCode(planId: "pro" | "teams") {
+  async function applyPromoCode(planId: "student" | "pro" | "teams") {
     const code = promoInput.trim();
     if (!code) return;
     setPromoLoading(true);
@@ -123,8 +142,11 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
     }
   }
 
-  async function handleUpgrade(planId: "pro" | "teams") {
-    const priceId = planId === "pro" ? PRO_MONTHLY_PRICE_ID : TEAMS_MONTHLY_PRICE_ID;
+  async function handleUpgrade(planId: "student" | "pro" | "teams") {
+    const priceId =
+      planId === "pro" ? PRO_MONTHLY_PRICE_ID :
+      planId === "student" ? STUDENT_MONTHLY_PRICE_ID :
+      TEAMS_MONTHLY_PRICE_ID;
     if (!priceId) { toast.error("Price ID not configured"); return; }
 
     setProcessing(planId);
@@ -146,9 +168,11 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
             }
             onUpgradeComplete(planId);
             onClose();
+            const planNameAr = planId === "pro" ? "برو" : planId === "student" ? "طالب" : "فرق";
+            const planNameEn = planId === "pro" ? "Pro" : planId === "student" ? "Student" : "Teams";
             toast.success(t(
-              `أنت الآن على خطة ${planId === "pro" ? "برو" : "فرق"}! 🎉`,
-              `You're now on the ${planId === "pro" ? "Pro" : "Teams"} plan! 🎉`
+              `أنت الآن على خطة ${planNameAr}! 🎉`,
+              `You're now on the ${planNameEn} plan! 🎉`
             ));
           }
         },
@@ -188,7 +212,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { setConfirming(null); onClose(); } }}>
-      <DialogContent className="max-w-3xl w-full">
+      <DialogContent className="max-w-5xl w-full">
         <DialogHeader>
           <DialogTitle className="text-xl font-headline font-bold">
             {t("اختر خطتك", "Choose your plan")}
@@ -239,13 +263,13 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   placeholder={t("كود الخصم", "Promo code")}
                   value={promoInput}
                   onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
-                  onKeyDown={(e) => e.key === "Enter" && applyPromoCode(currentTier !== "free" ? currentTier as "pro" | "teams" : "pro")}
+                  onKeyDown={(e) => e.key === "Enter" && applyPromoCode(currentTier !== "free" ? currentTier as "student" | "pro" | "teams" : "pro")}
                   className="rounded-xl font-mono uppercase text-sm"
                 />
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => applyPromoCode(currentTier !== "free" ? currentTier as "pro" | "teams" : "pro")}
+                  onClick={() => applyPromoCode(currentTier !== "free" ? currentTier as "student" | "pro" | "teams" : "pro")}
                   disabled={promoLoading || !promoInput.trim()}
                   className="rounded-xl shrink-0 px-4"
                 >
@@ -255,15 +279,14 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
             {PLANS.map((plan) => {
+              const tierOrder: Record<string, number> = { free: 0, student: 1, pro: 2, teams: 3 };
+              const currentOrder = tierOrder[currentTier] ?? 0;
+              const planOrder = tierOrder[plan.id] ?? 0;
               const isCurrent = plan.id === currentTier;
-              const isUpgrade =
-                (plan.id === "pro" && currentTier === "free") ||
-                (plan.id === "teams" && currentTier !== "teams");
-              const isDowngrade =
-                (plan.id === "free" && currentTier !== "free") ||
-                (plan.id === "pro" && currentTier === "teams");
+              const isUpgrade = !isCurrent && planOrder > currentOrder;
+              const isDowngrade = !isCurrent && planOrder < currentOrder;
 
               return (
                 <div
@@ -283,7 +306,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   <div>
                     <p className="font-headline font-bold text-base text-foreground">{t(plan.nameAr, plan.nameEn)}</p>
                     <p className="text-xl font-bold mt-1" style={{ color: plan.accent }}>
-                      {plan.id === "free" ? plan.price : `${planPrices[plan.id] ?? (plan.id === "pro" ? 29.99 : 59.99)} SAR/mo`}
+                      {plan.id === "free" ? plan.price : `${planPrices[plan.id] ?? (plan.id === "student" ? 19 : plan.id === "pro" ? 29.99 : 59.99)} SAR/mo`}
                       {plan.noteSuffixEn && (
                         <span className="text-xs text-slate-400 font-normal ms-1">
                           {t(plan.noteSuffixAr!, plan.noteSuffixEn)}
@@ -308,7 +331,7 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
                   )}
                   {isUpgrade && plan.id !== "free" && (
                     <Button
-                      onClick={() => handleUpgrade(plan.id as "pro" | "teams")}
+                      onClick={() => handleUpgrade(plan.id as "student" | "pro" | "teams")}
                       disabled={!!processing}
                       className="w-full rounded-xl text-white font-bold"
                       style={{ background: `linear-gradient(135deg, #D97706, ${plan.accent})` }}
