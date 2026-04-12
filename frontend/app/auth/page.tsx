@@ -377,7 +377,7 @@ function AuthForm() {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md"
+      className="w-full max-w-md shell-panel rounded-3xl p-8 sm:p-10"
     >
       {/* Logo (mobile) */}
       <div className="lg:hidden text-center mb-8">
@@ -418,8 +418,7 @@ function AuthForm() {
       </div>
 
       {/* Tab switcher */}
-      <div className="flex gap-1 p-1 rounded-xl mb-8"
-        style={{ background: "rgba(217, 119, 6, 0.07)" }}>
+      <div className="flex gap-1 p-1 rounded-xl mb-8 bg-muted dark:bg-white/[0.04]">
         {(["signin", "signup"] as const).map((t_) => (
           <button key={t_} type="button"
             onClick={() => { setTab(t_); setErrors({}); }}
@@ -515,8 +514,7 @@ function AuthForm() {
 
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               type="submit" disabled={isLoading || !signInCaptchaToken}
-              className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60"
-              style={{ background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)", boxShadow: "0 4px 20px rgba(217,119,6,0.45)" }}
+              className="w-full py-3 rounded-xl font-bold font-label text-white transition-all disabled:opacity-60 btn-glow power-gradient"
             >
               {isLoading ? t("جارٍ الدخول...", "Signing in...") : t("دخول", "Sign In")}
             </motion.button>
@@ -648,8 +646,7 @@ function AuthForm() {
 
             <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
               type="submit" disabled={isLoading || !captchaToken}
-              className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60 mt-2"
-              style={{ background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)", boxShadow: "0 4px 20px rgba(217,119,6,0.45)" }}
+              className="w-full py-3 rounded-xl font-bold font-label text-white transition-all disabled:opacity-60 mt-2 btn-glow power-gradient"
             >
               {isLoading ? t("جارٍ التسجيل...", "Creating account...") : t("إنشاء حساب", "Create Account")}
             </motion.button>
@@ -667,10 +664,10 @@ export default function AuthPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#fbf9f8" }}>
+    <div className="min-h-screen flex bg-background">
 
       {/* ── Left panel: Cognitive Aura ────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
+      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden"
         style={{ background: "linear-gradient(135deg, #1A1007 0%, #7C3400 40%, #B45309 75%, #D97706 100%)" }}>
 
         {/* Mesh blobs */}
@@ -726,21 +723,20 @@ export default function AuthPage() {
       </div>
 
       {/* ── Right panel: Form ─────────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col bg-background">
+      <div className="w-full lg:w-[55%] flex flex-col bg-background">
 
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
           <Link href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
             {t("الرئيسية", "Home")}
           </Link>
-          {/* Language/theme slot */}
-          <div />
+          <span className="eyebrow-badge text-xs">{t("مرحباً بك", "Welcome")}</span>
         </div>
 
         {/* Form */}
-        <div className="flex-1 flex items-center justify-center p-8">
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
           <Suspense fallback={
             <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
           }>
@@ -749,9 +745,9 @@ export default function AuthPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground pb-6">
+        <p className="text-center text-xs text-muted-foreground pb-6 px-4">
           {t("بالتسجيل أنت توافق على", "By signing up you agree to our")}{" "}
-          <Link href="/privacy" className="hover:underline" style={{ color: "#D97706" }}>
+          <Link href="/privacy" className="hover:underline text-amber-600 dark:text-amber-400 font-medium">
             {t("سياسة الخصوصية", "Privacy Policy")}
           </Link>
         </p>

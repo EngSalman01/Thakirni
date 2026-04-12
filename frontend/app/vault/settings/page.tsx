@@ -17,7 +17,7 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown, User,
+  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown, User, Moon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -61,7 +61,7 @@ function SettingsCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
-      className={`bg-muted dark:bg-white/[0.03] rounded-2xl p-8 relative overflow-hidden ${className}`}
+      className={`shell-panel rounded-2xl p-8 relative overflow-hidden ${className}`}
     >
       {children}
     </motion.div>
@@ -227,6 +227,13 @@ export default function SettingsPage() {
   const [sendingInvite, setSendingInvite] = useState(false);
 
   const [exportingPdf, setExportingPdf] = useState<string | null>(null);
+
+  // ── Prayer subscription state ──────────────────────────────────────────────
+  const [prayerEnabled, setPrayerEnabled] = useState(false);
+  const [prayerCity, setPrayerCity] = useState("riyadh");
+  const [prayerPrayers, setPrayerPrayers] = useState<string[]>(["fajr", "dhuhr", "asr", "maghrib", "isha"]);
+  const [prayerLoaded, setPrayerLoaded] = useState(false);
+  const [prayerSaving, setPrayerSaving] = useState(false);
   const [planConfig, setPlanConfig] = useState<Array<{ plan_key: string; price_sar: number; features: string[] }> | null>(null);
 
   useEffect(() => {
@@ -235,6 +242,53 @@ export default function SettingsPage() {
       .then((d: Array<{ plan_key: string; price_sar: number; features: string[] }>) => setPlanConfig(d))
       .catch((e) => console.error("[settings] plan config fetch error:", e));
   }, []);
+
+  // ── Fetch prayer subscription ──────────────────────────────────────────────
+  useEffect(() => {
+    fetch("/api/prayer/subscription")
+      .then(r => r.json())
+      .then((d: { subscription?: { enabled: boolean; city: string; prayers: string[] } | null }) => {
+        if (d.subscription) {
+          setPrayerEnabled(d.subscription.enabled);
+          setPrayerCity(d.subscription.city.toLowerCase());
+          setPrayerPrayers(d.subscription.prayers);
+        }
+        setPrayerLoaded(true);
+      })
+      .catch(() => setPrayerLoaded(true));
+  }, []);
+
+  const handleSavePrayer = useCallback(async (
+    overrides?: Partial<{ enabled: boolean; city: string; prayers: string[] }>
+  ) => {
+    setPrayerSaving(true);
+    try {
+      const body = {
+        enabled:  overrides?.enabled  ?? prayerEnabled,
+        city:     overrides?.city     ?? prayerCity,
+        prayers:  overrides?.prayers  ?? prayerPrayers,
+      };
+      const res = await fetch("/api/prayer/subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await res.json() as { error?: string; message?: string };
+      if (!res.ok) {
+        if (json.error === "no_phone") {
+          toast.error(t("أضف رقم واتساب في الملف الشخصي أولاً", "Add a WhatsApp phone number in Profile first"));
+        } else {
+          toast.error(json.message ?? t("فشل الحفظ", "Failed to save"));
+        }
+        return;
+      }
+      toast.success(t("تم حفظ تذكيرات الصلاة ✅", "Prayer reminders saved ✅"));
+    } catch {
+      toast.error(t("فشل الاتصال", "Connection error"));
+    } finally {
+      setPrayerSaving(false);
+    }
+  }, [prayerEnabled, prayerCity, prayerPrayers, t]);
 
   const abortRef = useRef<AbortController | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -1070,6 +1124,131 @@ export default function SettingsPage() {
                   />
                 ))}
               </div>
+            </SettingsCard>
+
+            {/* ── Prayer Reminders ── */}
+            <SettingsCard delay={0.22}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <Moon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <h2 className="text-2xl font-headline font-bold text-foreground">
+                    {t("تذكيرات الصلاة", "Prayer Reminders")}
+                  </h2>
+                </div>
+                {prayerLoaded && (
+                  <div dir="ltr">
+                    <Switch
+                      checked={prayerEnabled}
+                      onCheckedChange={(v) => {
+                        setPrayerEnabled(v);
+                        handleSavePrayer({ enabled: v });
+                      }}
+                      disabled={prayerSaving}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {!profile?.phone_number ? (
+                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 text-sm text-amber-700 dark:text-amber-400 flex items-start gap-3">
+                  <span className="text-lg">📱</span>
+                  <div>
+                    <p className="font-bold mb-1">{t("رقم واتساب مطلوب", "WhatsApp number required")}</p>
+                    <p className="text-xs opacity-80">{t("أضف رقمك في تبويب الملف الشخصي لتفعيل تذكيرات الصلاة عبر واتساب.", "Add your number in the Profile tab to receive prayer reminders on WhatsApp.")}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "سيرسل لك واتساب تنبيهاً قبل 5 دقائق من كل صلاة وعند حلول الوقت.",
+                      "You'll get a WhatsApp message 5 min before each prayer and at prayer time."
+                    )}
+                  </p>
+
+                  {/* City */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-label font-semibold text-foreground">
+                      {t("المدينة", "City")}
+                    </label>
+                    <select
+                      value={prayerCity}
+                      onChange={(e) => setPrayerCity(e.target.value)}
+                      className="w-full rounded-xl border border-border bg-card text-foreground px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/40"
+                      dir="ltr"
+                    >
+                      {[
+                        { key: "riyadh",          ar: "الرياض",          en: "Riyadh" },
+                        { key: "jeddah",          ar: "جدة",             en: "Jeddah" },
+                        { key: "makkah",          ar: "مكة المكرمة",    en: "Makkah" },
+                        { key: "madinah",         ar: "المدينة المنورة", en: "Madinah" },
+                        { key: "dammam",          ar: "الدمام",          en: "Dammam" },
+                        { key: "khobar",          ar: "الخبر",           en: "Al Khobar" },
+                        { key: "ahsa",            ar: "الأحساء",         en: "Al-Ahsa" },
+                        { key: "jubail",          ar: "الجبيل",          en: "Jubail" },
+                        { key: "tabuk",           ar: "تبوك",            en: "Tabuk" },
+                        { key: "buraidah",        ar: "بريدة",           en: "Buraidah" },
+                        { key: "hail",            ar: "حائل",            en: "Hail" },
+                        { key: "abha",            ar: "أبها",            en: "Abha" },
+                        { key: "khamis mushait",  ar: "خميس مشيط",      en: "Khamis Mushait" },
+                        { key: "taif",            ar: "الطائف",          en: "Taif" },
+                        { key: "yanbu",           ar: "ينبع",            en: "Yanbu" },
+                        { key: "najran",          ar: "نجران",           en: "Najran" },
+                        { key: "jizan",           ar: "جازان",           en: "Jazan" },
+                        { key: "baha",            ar: "الباحة",          en: "Al Baha" },
+                        { key: "arar",            ar: "عرعر",            en: "Arar" },
+                        { key: "sakaka",          ar: "سكاكا",           en: "Sakaka" },
+                        { key: "hafr al batin",   ar: "حفر الباطن",      en: "Hafr Al-Batin" },
+                      ].map(({ key, ar, en }) => (
+                        <option key={key} value={key}>{t(ar, en)}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Prayers */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-label font-semibold text-foreground">{t("الصلوات", "Prayers")}</p>
+                    <div className="grid grid-cols-5 gap-2">
+                      {[
+                        { key: "fajr",    ar: "الفجر",   en: "Fajr",    icon: "🌄" },
+                        { key: "dhuhr",   ar: "الظهر",   en: "Dhuhr",   icon: "☀️" },
+                        { key: "asr",     ar: "العصر",   en: "Asr",     icon: "🌤" },
+                        { key: "maghrib", ar: "المغرب",  en: "Maghrib", icon: "🌇" },
+                        { key: "isha",    ar: "العشاء",  en: "Isha",    icon: "🌙" },
+                      ].map(({ key, ar, en, icon }) => {
+                        const active = prayerPrayers.includes(key);
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setPrayerPrayers(p =>
+                              active ? p.filter(x => x !== key) : [...p, key]
+                            )}
+                            className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl border text-xs font-bold font-label transition-all ${
+                              active
+                                ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
+                                : "border-border bg-card text-muted-foreground hover:border-amber-300"
+                            }`}
+                          >
+                            <span className="text-base">{icon}</span>
+                            <span>{t(ar, en)}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleSavePrayer()}
+                    disabled={prayerSaving}
+                    className="w-full py-3 rounded-full power-gradient text-white font-bold font-label disabled:opacity-50 transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    {prayerSaving
+                      ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{t("جاري الحفظ...", "Saving...")}</>
+                      : t("حفظ تذكيرات الصلاة", "Save Prayer Reminders")}
+                  </button>
+                </div>
+              )}
             </SettingsCard>
 
           </TabsContent>
