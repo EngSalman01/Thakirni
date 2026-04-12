@@ -1050,14 +1050,15 @@ RULE:
             }),
 
             set_reminder: tool({
-                description: "Schedule a reminder to be sent via WhatsApp at a specific time. CRITICAL: Call this tool ONLY ONCE per reminder request. Never call it again even if the user confirms or repeats — one call is enough. Optionally add a pre-reminder N minutes before the main reminder.",
+                description: "Schedule a reminder to be sent via WhatsApp at a specific time. CRITICAL: Call this tool ONLY ONCE per reminder request. Never call it again even if the user confirms or repeats — one call is enough. Optionally add a pre-reminder N minutes before the main reminder. For recurring reminders (e.g. 'every 8 hours', 'every day', 'every 30 minutes'), set repeat_interval_minutes — the reminder will automatically re-fire at that interval until cancelled.",
                 inputSchema: z.object({
                     title: z.string().describe("Short, clean reminder title. No filler words."),
-                    remind_at: z.string().describe("ISO datetime in Riyadh time e.g. 2026-03-25T15:00:00"),
+                    remind_at: z.string().describe("ISO datetime in Riyadh time e.g. 2026-03-25T15:00:00. For recurring reminders, this is the time of the FIRST occurrence."),
                     plan_id: z.string().optional(),
                     pre_reminder_minutes: z.number().optional().describe("If set, also send a reminder this many minutes BEFORE remind_at. E.g. 30 for a heads-up 30 min early."),
+                    repeat_interval_minutes: z.number().optional().describe("If set, this reminder repeats automatically at this interval in minutes. Examples: 60 = every hour, 480 = every 8 hours, 1440 = every day, 10080 = every week. Leave unset for one-time reminders."),
                 }),
-                execute: async ({ title, remind_at, plan_id, pre_reminder_minutes }) => {
+                execute: async ({ title, remind_at, plan_id, pre_reminder_minutes, repeat_interval_minutes }) => {
                     const remindMs = new Date(remind_at).getTime() - 3 * 60 * 60 * 1000 // Riyadh to UTC
                     if (remindMs <= Date.now()) return { success: false, message: "Reminder time is in the past." }
                     const { error } = await supabase.from("reminders").insert({
@@ -1067,9 +1068,10 @@ RULE:
                         plan_id: plan_id ?? null,
                         channel: "whatsapp",
                         is_sent: false,
+                        repeat_interval_minutes: repeat_interval_minutes ?? null,
                     })
                     if (error) return { success: false, message: error.message }
-                    // Optional pre-reminder
+                    // Optional pre-reminder (one-shot only, no repeat)
                     if (pre_reminder_minutes && pre_reminder_minutes > 0) {
                         const preMs = remindMs - pre_reminder_minutes * 60 * 1000
                         if (preMs > Date.now()) {
@@ -1084,7 +1086,38 @@ RULE:
                         }
                     }
                     const when = new Date(remindMs).toLocaleString(lang === "ar" ? "ar-SA" : "en-GB", { timeZone: "Asia/Riyadh", dateStyle: "short", timeStyle: "short" })
-                    return { success: true, message: `Reminder set for ${when}` }
+                    const repeatNote = repeat_interval_minutes
+                        ? lang === "ar"
+                            ? ` وتتكرر كل ${repeat_interval_minutes >= 1440 ? `${repeat_interval_minutes / 1440} يوم` : repeat_interval_minutes >= 60 ? `${repeat_interval_minutes / 60} ساعة` : `${repeat_interval_minutes} دقيقة`}`
+                            : ` (repeats every ${repeat_interval_minutes >= 1440 ? `${repeat_interval_minutes / 1440}d` : repeat_interval_minutes >= 60 ? `${repeat_interval_minutes / 60}h` : `${repeat_interval_minutes}min`})`
+                        : ""
+                    return { success: true, message: `Reminder set for ${when}${repeatNote}` }
+                },
+            }),
+
+            cancel_reminder: tool({
+                description: "Cancel one or all recurring/upcoming reminders for the user, matched by a keyword in the title. Use this when the user says 'stop reminding me about X', 'cancel my X reminder', or 'stop the recurring X'. Deletes all unsent reminders whose title contains the keyword.",
+                inputSchema: z.object({
+                    keyword: z.string().describe("Word or phrase to match against reminder titles. Case-insensitive. Use a distinctive word from the reminder title."),
+                }),
+                execute: async ({ keyword }) => {
+                    const { data: matches, error: fetchErr } = await supabase
+                        .from("reminders")
+                        .select("id, title")
+                        .eq("user_id", userId)
+                        .eq("is_sent", false)
+                        .ilike("title", `%${keyword}%`)
+                    if (fetchErr) return { success: false, message: fetchErr.message }
+                    if (!matches || matches.length === 0) {
+                        return { success: false, message: `No upcoming reminders found matching "${keyword}".` }
+                    }
+                    const ids = matches.map((m) => m.id)
+                    const { error: delErr } = await supabase
+                        .from("reminders")
+                        .delete()
+                        .in("id", ids)
+                    if (delErr) return { success: false, message: delErr.message }
+                    return { success: true, message: `Cancelled ${ids.length} reminder(s) matching "${keyword}".` }
                 },
             }),
 
