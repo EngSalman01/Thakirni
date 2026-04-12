@@ -468,7 +468,7 @@ plan=${planTier} | ai_chat=${fmt(u.ai_chat_requests ?? 0, limits.aiChatRequests)
     let aiResponse: string
     try {
     const { text } = await generateText({
-        model: google("gemini-2.5-flash-lite"),
+        model: google("gemini-2.5-flash"),
         stopWhen: stepCountIs(10),
         messages: [
             ...history,
