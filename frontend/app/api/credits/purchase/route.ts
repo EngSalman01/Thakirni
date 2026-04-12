@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { Environment, Paddle, LogLevel } from "@paddle/paddle-node-sdk"
+import { createPaddleServerClient } from "@/lib/paddle/server"
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit"
 
 const CREDIT_PACKS = [
@@ -24,12 +24,7 @@ const CREDIT_PACKS = [
 ]
 
 function getPaddleClient() {
-  return new Paddle(process.env.PADDLE_API_SECRET_KEY || "", {
-    environment: process.env.PADDLE_ENVIRONMENT === "production"
-      ? Environment.production
-      : Environment.sandbox,
-    logLevel: LogLevel.error,
-  })
+  return createPaddleServerClient()
 }
 
 /** GET: list available credit packs */

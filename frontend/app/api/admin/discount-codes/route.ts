@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/server";
-import { Paddle } from "@paddle/paddle-node-sdk";
+import { createPaddleServerClient } from "@/lib/paddle/server";
 
 function getPaddle() {
-  const key = process.env.PADDLE_API_SECRET_KEY;
-  if (!key) return null;
-  return new Paddle(key);
+  try {
+    return createPaddleServerClient();
+  } catch (error) {
+    console.error("[discount-codes] Paddle configuration error:", error instanceof Error ? error.message : error);
+    return null;
+  }
 }
 
 export async function GET() {
