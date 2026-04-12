@@ -237,16 +237,26 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: planId, discountCode: promoApplied?.code }),
       });
-      const data = await res.json() as { url?: string; error?: string };
+      const data = await res.json() as { url?: string; transactionId?: string; error?: string };
 
-      if (!res.ok || !data.url) {
+      if (!res.ok || (!data.url && !data.transactionId)) {
         console.error("[BillingModal] checkout-url error:", data.error);
         toast.error(data.error || t("تعذّر فتح نافذة الدفع", "Could not open checkout"));
         return;
       }
 
-      // Open Paddle hosted checkout in same tab (returns to /vault/settings?checkout=success)
-      window.location.href = data.url;
+      // Prefer Paddle.js overlay with pre-created transaction (stays on page)
+      if (data.transactionId && paddleRef.current) {
+        (paddleRef.current as any)._pendingPlanId = planId;
+        if (promoApplied?.code) (paddleRef.current as any)._pendingPromoCode = promoApplied.code;
+        await (paddleRef.current as any).Checkout.open({ transactionId: data.transactionId });
+        return;
+      }
+
+      // Fallback: full-page redirect to Paddle hosted checkout
+      if (data.url) {
+        window.location.href = data.url;
+      }
     } catch (err) {
       console.error("[BillingModal] fetch error:", err);
       toast.error(t("تعذّر الاتصال بنظام الدفع", "Could not connect to payment system"));

@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Paddle did not return a checkout URL" }, { status: 500 })
     }
 
-    return NextResponse.json({ url: checkoutUrl })
+    return NextResponse.json({ url: checkoutUrl, transactionId: (transaction as any)?.id })
   } catch (err: any) {
     console.error("[checkout-url] Paddle error:", err?.message || err)
     return NextResponse.json({ error: err?.message || "Paddle checkout failed" }, { status: 500 })
