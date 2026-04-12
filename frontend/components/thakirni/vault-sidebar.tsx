@@ -270,16 +270,8 @@ export function VaultSidebar() {
       <header className="fixed inset-x-0 top-0 z-40 h-16 px-3 pt-2 sm:px-5">
         <div className="mx-auto flex h-full max-w-7xl items-start">
           <div className="shell-panel flex h-12 w-full items-center gap-3 px-3 sm:px-4">
-            <Link href="/" className="flex shrink-0 items-center gap-3">
+            <Link href="/" className="flex shrink-0 items-center">
               <BrandLogo variant="auto" iconSize={32} />
-              <div className="hidden xl:block">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-amber-300">
-                  Vault
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("مساعدك اليومي", "Your daily command center")}
-                </p>
-              </div>
             </Link>
 
             <nav className="hidden flex-1 justify-center md:flex" aria-label="Primary navigation">
@@ -323,11 +315,8 @@ export function VaultSidebar() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hidden items-center gap-2 rounded-full nav-shell px-2 py-1.5 md:flex">
+                  <button className="hidden items-center gap-1.5 rounded-full nav-shell px-2 py-1.5 md:flex">
                     <Avatar profile={profile} />
-                    <p className="hidden max-w-32 min-w-0 truncate text-sm font-semibold text-foreground xl:block">
-                      {profile?.full_name ?? t("المستخدم", "User")}
-                    </p>
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
