@@ -494,6 +494,11 @@
     z-index: -1;
   }
 
+  .dark .page-shell::before {
+    background-image:
+      radial-gradient(circle at top, rgba(245, 158, 11, 0.06), transparent 32%);
+  }
+
   .shell-panel {
     position: relative;
     isolation: isolate;

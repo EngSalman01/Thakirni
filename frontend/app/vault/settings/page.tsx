@@ -26,6 +26,13 @@ import { useLanguage } from "@/components/language-provider";
 import { useSubscription, type PlanTier } from "@/hooks/use-subscription";
 import { BillingModal } from "@/components/thakirni/billing-modal";
 import { ReferralCard } from "@/components/thakirni/referral-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AffiliateCard } from "@/components/thakirni/affiliate-card";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -278,7 +285,7 @@ export default function SettingsPage() {
         if (json.error === "no_phone") {
           toast.error(t("أضف رقم واتساب في الملف الشخصي أولاً", "Add a WhatsApp phone number in Profile first"));
         } else {
-          toast.error(json.message ?? t("فشل الحفظ", "Failed to save"));
+          toast.error(json.message ?? json.error ?? t("فشل الحفظ", "Failed to save"));
         }
         return;
       }
@@ -1166,38 +1173,40 @@ export default function SettingsPage() {
                     <label className="text-sm font-label font-semibold text-foreground">
                       {t("المدينة", "City")}
                     </label>
-                    <select
-                      value={prayerCity}
-                      onChange={(e) => setPrayerCity(e.target.value)}
-                      className="w-full rounded-xl border border-border bg-card text-foreground px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-600/40"
-                      dir="ltr"
-                    >
-                      {[
-                        { key: "riyadh",          ar: "الرياض",          en: "Riyadh" },
-                        { key: "jeddah",          ar: "جدة",             en: "Jeddah" },
-                        { key: "makkah",          ar: "مكة المكرمة",    en: "Makkah" },
-                        { key: "madinah",         ar: "المدينة المنورة", en: "Madinah" },
-                        { key: "dammam",          ar: "الدمام",          en: "Dammam" },
-                        { key: "khobar",          ar: "الخبر",           en: "Al Khobar" },
-                        { key: "ahsa",            ar: "الأحساء",         en: "Al-Ahsa" },
-                        { key: "jubail",          ar: "الجبيل",          en: "Jubail" },
-                        { key: "tabuk",           ar: "تبوك",            en: "Tabuk" },
-                        { key: "buraidah",        ar: "بريدة",           en: "Buraidah" },
-                        { key: "hail",            ar: "حائل",            en: "Hail" },
-                        { key: "abha",            ar: "أبها",            en: "Abha" },
-                        { key: "khamis mushait",  ar: "خميس مشيط",      en: "Khamis Mushait" },
-                        { key: "taif",            ar: "الطائف",          en: "Taif" },
-                        { key: "yanbu",           ar: "ينبع",            en: "Yanbu" },
-                        { key: "najran",          ar: "نجران",           en: "Najran" },
-                        { key: "jizan",           ar: "جازان",           en: "Jazan" },
-                        { key: "baha",            ar: "الباحة",          en: "Al Baha" },
-                        { key: "arar",            ar: "عرعر",            en: "Arar" },
-                        { key: "sakaka",          ar: "سكاكا",           en: "Sakaka" },
-                        { key: "hafr al batin",   ar: "حفر الباطن",      en: "Hafr Al-Batin" },
-                      ].map(({ key, ar, en }) => (
-                        <option key={key} value={key}>{t(ar, en)}</option>
-                      ))}
-                    </select>
+                    <Select value={prayerCity} onValueChange={setPrayerCity}>
+                      <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground text-sm h-11 focus:ring-amber-600/40 focus:ring-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="shell-panel border-border rounded-xl max-h-64">
+                        {[
+                          { key: "riyadh",         ar: "الرياض",           en: "Riyadh" },
+                          { key: "jeddah",         ar: "جدة",              en: "Jeddah" },
+                          { key: "makkah",         ar: "مكة المكرمة",     en: "Makkah" },
+                          { key: "madinah",        ar: "المدينة المنورة",  en: "Madinah" },
+                          { key: "dammam",         ar: "الدمام",           en: "Dammam" },
+                          { key: "khobar",         ar: "الخبر",            en: "Al Khobar" },
+                          { key: "ahsa",           ar: "الأحساء",          en: "Al-Ahsa" },
+                          { key: "jubail",         ar: "الجبيل",           en: "Jubail" },
+                          { key: "tabuk",          ar: "تبوك",             en: "Tabuk" },
+                          { key: "buraidah",       ar: "بريدة",            en: "Buraidah" },
+                          { key: "hail",           ar: "حائل",             en: "Hail" },
+                          { key: "abha",           ar: "أبها",             en: "Abha" },
+                          { key: "khamis mushait", ar: "خميس مشيط",       en: "Khamis Mushait" },
+                          { key: "taif",           ar: "الطائف",           en: "Taif" },
+                          { key: "yanbu",          ar: "ينبع",             en: "Yanbu" },
+                          { key: "najran",         ar: "نجران",            en: "Najran" },
+                          { key: "jizan",          ar: "جازان",            en: "Jazan" },
+                          { key: "baha",           ar: "الباحة",           en: "Al Baha" },
+                          { key: "arar",           ar: "عرعر",             en: "Arar" },
+                          { key: "sakaka",         ar: "سكاكا",            en: "Sakaka" },
+                          { key: "hafr al batin",  ar: "حفر الباطن",       en: "Hafr Al-Batin" },
+                        ].map(({ key, ar, en }) => (
+                          <SelectItem key={key} value={key} className="text-sm cursor-pointer">
+                            {t(ar, en)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Prayers */}

@@ -167,20 +167,24 @@ export function LandingFooter() {
           </div>
         </div>
 
-        <div className="mt-10 soft-divider" />
+      </div>
 
-        <div className="flex flex-col gap-3 pt-6 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
-          <p>{t("© 2026 ذكرني. جميع الحقوق محفوظة.", "© 2026 Thakirni. All rights reserved.")}</p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/privacy" className="hover:text-amber-300">
-              {t("سياسة الخصوصية", "Privacy Policy")}
-            </Link>
-            <Link href="/terms" className="hover:text-amber-300">
-              {t("الشروط", "Terms")}
-            </Link>
-            <Link href="/contact" className="hover:text-amber-300">
-              {t("تواصل معنا", "Contact")}
-            </Link>
+      {/* Full-width bottom bar */}
+      <div className="relative border-t border-white/8 mt-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-8">
+          <div className="flex flex-col gap-3 py-6 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
+            <p>{t("© 2026 ذكرني. جميع الحقوق محفوظة.", "© 2026 Thakirni. All rights reserved.")}</p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/privacy" className="hover:text-amber-300">
+                {t("سياسة الخصوصية", "Privacy Policy")}
+              </Link>
+              <Link href="/terms" className="hover:text-amber-300">
+                {t("الشروط", "Terms")}
+              </Link>
+              <Link href="/contact" className="hover:text-amber-300">
+                {t("تواصل معنا", "Contact")}
+              </Link>
+            </div>
           </div>
         </div>
       </div>
