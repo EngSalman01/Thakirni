@@ -229,49 +229,29 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
   }
 
   async function handleUpgrade(planId: "student" | "pro" | "teams") {
-    const priceId =
-      planId === "pro" ? PRO_MONTHLY_PRICE_ID :
-      planId === "student" ? STUDENT_MONTHLY_PRICE_ID :
-      TEAMS_MONTHLY_PRICE_ID;
-    if (!priceId) {
-      console.error(`[BillingModal] Missing price ID for plan=${planId}. Check NEXT_PUBLIC_PADDLE_PRICE_${planId.toUpperCase()}_MONTHLY env var.`);
-      toast.error(`Price ID not configured for ${planId}`);
-      return;
-    }
-    if (!paddleRef.current) {
-      // Try one more time to get the singleton
-      const p = await getPaddle(handlePaddleEvent);
-      if (!p) {
-        toast.error(t("تعذّر تحميل نظام الدفع، حاول تحديث الصفحة", "Payment system failed to load — try refreshing"));
-        return;
-      }
-      paddleRef.current = p;
-    }
-
-    const appliedCode = promoApplied?.code;
-    (paddleRef.current as any)._pendingPlanId = planId;
-    (paddleRef.current as any)._pendingPromoCode = appliedCode;
-
     setProcessing(planId);
     try {
-      await paddleRef.current.Checkout.open({
-        items: [{ priceId, quantity: 1 }],
-        customer: userEmail ? { email: userEmail } : undefined,
-        ...(appliedCode ? { discountCode: appliedCode } : {}),
-        settings: { displayMode: "overlay", theme: "dark" },
+      // Server generates a Paddle hosted checkout URL — bypasses SDK entirely
+      const res = await fetch("/api/paddle/checkout-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: planId, discountCode: promoApplied?.code }),
       });
+      const data = await res.json() as { url?: string; error?: string };
+
+      if (!res.ok || !data.url) {
+        console.error("[BillingModal] checkout-url error:", data.error);
+        toast.error(data.error || t("تعذّر فتح نافذة الدفع", "Could not open checkout"));
+        return;
+      }
+
+      // Open Paddle hosted checkout in same tab (returns to /vault/settings?checkout=success)
+      window.location.href = data.url;
     } catch (err) {
-      console.error("[BillingModal] checkout error:", err);
-      toast.error(t("تعذّر فتح نافذة الدفع", "Could not open checkout"));
+      console.error("[BillingModal] fetch error:", err);
+      toast.error(t("تعذّر الاتصال بنظام الدفع", "Could not connect to payment system"));
     } finally {
       setProcessing(null);
-      // Always clean up any lingering Paddle overlay elements
-      document.querySelectorAll('iframe[src*="paddle"]').forEach((el) => {
-        (el as HTMLElement).style.pointerEvents = "none";
-      });
-      document.querySelectorAll('[id*="paddle"], [class*="paddle-frame"]').forEach((el) => {
-        (el as HTMLElement).style.pointerEvents = "none";
-      });
     }
   }
 
