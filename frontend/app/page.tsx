@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <main className="page-shell min-h-screen bg-background overflow-x-hidden">
+    <main className="page-shell min-h-screen bg-background" style={{ overflowX: "clip" }}>
       <LandingHeader />
 
       {/* Hero — the above-the-fold conversion zone */}
