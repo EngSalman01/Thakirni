@@ -10,11 +10,12 @@ import { toast } from "sonner";
 import { useLanguage } from "@/components/language-provider";
 import type { PlanTier } from "@/hooks/use-subscription";
 
-// NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY preferred; fallback to INDIVIDUAL_MONTHLY (same price, older var name)
-const PRO_MONTHLY_PRICE_ID     = process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY
-                                || process.env.NEXT_PUBLIC_PADDLE_PRICE_INDIVIDUAL_MONTHLY!;
-const STUDENT_MONTHLY_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRICE_STUDENT_MONTHLY!;
-const TEAMS_MONTHLY_PRICE_ID   = process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY!;
+// Client-side price IDs (NEXT_PUBLIC_) — used for direct Paddle.js open (no server round-trip)
+const CLIENT_PRICE_IDS: Record<string, string | undefined> = {
+  student: process.env.NEXT_PUBLIC_PADDLE_PRICE_STUDENT_MONTHLY,
+  pro:     process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_MONTHLY || process.env.NEXT_PUBLIC_PADDLE_PRICE_INDIVIDUAL_MONTHLY,
+  teams:   process.env.NEXT_PUBLIC_PADDLE_PRICE_TEAMS_MONTHLY,
+};
 
 // ── Module-level Paddle singleton ──────────────────────────────────────────────
 // initializePaddle must only be called ONCE per page load.
@@ -230,8 +231,36 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
 
   async function handleUpgrade(planId: "student" | "pro" | "teams") {
     setProcessing(planId);
+    const paddle = paddleRef.current;
+    const priceId = CLIENT_PRICE_IDS[planId];
+
+    // Fast path: open Paddle.js overlay directly with priceId (no server round-trip)
+    // Only falls back to server if priceId is missing or Paddle SDK unavailable
+    if (paddle && priceId) {
+      try {
+        (paddle as any)._pendingPlanId = planId;
+        if (promoApplied?.code) (paddle as any)._pendingPromoCode = promoApplied.code;
+
+        const checkoutOptions: Record<string, unknown> = {
+          items: [{ priceId, quantity: 1 }],
+        };
+        if (userEmail) checkoutOptions.customer = { email: userEmail };
+        if (promoApplied?.code) checkoutOptions.discountCode = promoApplied.code;
+
+        // Close dialog before Paddle mounts so Radix backdrop doesn't block the overlay
+        onCloseRef.current();
+        await (paddle as any).Checkout.open(checkoutOptions);
+        return;
+      } catch (err) {
+        console.error("[BillingModal] Paddle direct open failed, falling back to server URL:", err);
+        // fall through to server fallback
+      } finally {
+        setProcessing(null);
+      }
+    }
+
+    // Fallback: server creates Paddle transaction → redirect or overlay with transactionId
     try {
-      // Server generates a Paddle hosted checkout URL — bypasses SDK entirely
       const res = await fetch("/api/paddle/checkout-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -245,17 +274,14 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
         return;
       }
 
-      // Prefer Paddle.js overlay with pre-created transaction (stays on page)
       if (data.transactionId && paddleRef.current) {
         (paddleRef.current as any)._pendingPlanId = planId;
         if (promoApplied?.code) (paddleRef.current as any)._pendingPromoCode = promoApplied.code;
-        // Close the Dialog so its Radix backdrop doesn't sit on top of Paddle's iframe
         onCloseRef.current();
         await (paddleRef.current as any).Checkout.open({ transactionId: data.transactionId });
         return;
       }
 
-      // Fallback: full-page redirect to Paddle hosted checkout
       if (data.url) {
         window.location.href = data.url;
       }
