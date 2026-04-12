@@ -141,18 +141,18 @@ function BillingToggle({
   isArabic: boolean
 }) {
   return (
-    <div className="flex items-center gap-3 justify-center mb-10 sm:mb-14">
+    <div className="mb-10 flex items-center justify-center gap-3 sm:mb-14">
       <span className={`text-sm font-medium transition-colors ${!annual ? "text-foreground" : "text-muted-foreground"}`}>
         {isArabic ? "شهري" : "Monthly"}
       </span>
       <button
         onClick={onToggle}
-        className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${annual ? "power-gradient" : "bg-slate-200 dark:bg-slate-700"}`}
+        className={`relative h-7 w-14 rounded-full border transition-colors duration-200 ${annual ? "border-amber-400/40 power-gradient" : "border-border bg-white dark:bg-white/[0.06]"}`}
         aria-label="Toggle billing"
       >
         <motion.div
-          className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow"
-          animate={{ x: annual ? "calc(3rem - 1.375rem - 0.125rem)" : "0px" }}
+          className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow"
+          animate={{ x: annual ? "28px" : "0px" }}
           transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
         />
       </button>
@@ -190,10 +190,10 @@ function PlanCard({
       viewport={{ once: true, amount: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.2, 1, 0.3, 1] }}
       whileHover={{ y: plan.featured ? -6 : -3 }}
-      className={`relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 ${
+      className={`relative flex flex-col overflow-hidden transition-all duration-300 ${
         plan.featured
-          ? "bg-[#1A1007] dark:bg-[#1A1007] border-2 border-amber-500/70 shadow-[0_0_48px_rgba(217,119,6,0.20)]"
-          : "bg-white dark:bg-white/[0.03] border border-slate-100 dark:border-white/[0.07] shadow-sm hover:shadow-md"
+          ? "shell-panel-dark border-amber-500/50 shadow-[0_0_48px_rgba(217,119,6,0.18)]"
+          : "shell-panel"
       }`}
     >
       {/* Top accent line */}
@@ -203,7 +203,7 @@ function PlanCard({
 
       {/* Popular badge */}
       {plan.featured && (
-        <div className="absolute top-4 end-4 flex items-center gap-1 px-2.5 py-1 rounded-full power-gradient text-white text-[10px] font-bold">
+        <div className="absolute end-4 top-4 flex items-center gap-1 rounded-full power-gradient px-2.5 py-1 text-[10px] font-bold text-white">
           <Sparkles className="w-3 h-3" />
           {isArabic ? "الأكثر شعبية" : "Most Popular"}
         </div>
@@ -249,12 +249,12 @@ function PlanCard({
         {/* CTA */}
         <Link href={plan.id === "student" ? "/auth?plan=student" : "/auth"}>
           <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
             className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all ${
               plan.featured
                 ? "power-gradient text-white btn-glow"
-                : "bg-slate-100 dark:bg-white/[0.07] text-foreground hover:bg-slate-200 dark:hover:bg-white/[0.11] border border-slate-200 dark:border-white/[0.10]"
+                : "border border-slate-200 bg-slate-100 text-foreground hover:bg-slate-200 dark:border-white/[0.10] dark:bg-white/[0.07] dark:hover:bg-white/[0.11]"
             }`}
           >
             {isArabic ? plan.cta.ar : plan.cta.en}
@@ -270,48 +270,61 @@ export function PricingSection() {
   const [annual, setAnnual] = useState(false)
 
   return (
-    <section className="py-16 sm:py-32 bg-amber-50/40 dark:bg-[#0d0b08] overflow-hidden" id="pricing">
-      <div className="max-w-6xl mx-auto px-4 sm:px-8">
+    <section className="relative overflow-hidden py-16 sm:py-24" id="pricing">
+      <div className="mx-auto max-w-6xl px-4 sm:px-8">
+        <div className="shell-panel-strong p-6 sm:p-8 lg:p-10">
 
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-4 sm:mb-8"
-        >
-          <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3">
-            {t("الأسعار", "Pricing")}
-          </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-foreground">
-            {t("بدّل يومك — بدون ما تكسر جيبك", "Transform your day — without breaking the bank")}
-          </h2>
-          <p className="text-base sm:text-lg text-muted-foreground">
-            {t("ابدأ مجاناً. رقّي متى ما تجهز.", "Start free. Upgrade when you're ready.")}
-          </p>
-        </motion.div>
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="mx-auto mb-4 max-w-2xl text-center sm:mb-8"
+          >
+            <div className="eyebrow-badge">
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              {t("الأسعار", "Pricing")}
+            </div>
+            <h2 className="mt-4 text-3xl font-headline font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+              {t("بدّل يومك بدون ما تكسر جيبك", "Upgrade your day without breaking the budget")}
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground sm:text-lg">
+              {t("ابدأ مجاناً. رقّي متى ما تجهز.", "Start free. Upgrade whenever you are ready.")}
+            </p>
+          </motion.div>
 
-        <BillingToggle annual={annual} onToggle={() => setAnnual(!annual)} isArabic={isArabic} />
+          <BillingToggle annual={annual} onToggle={() => setAnnual(!annual)} isArabic={isArabic} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-          {PLANS.map((plan, i) => (
-            <PlanCard key={plan.id} plan={plan} annual={annual} isArabic={isArabic} index={i} />
-          ))}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+            {PLANS.map((plan, i) => (
+              <PlanCard key={plan.id} plan={plan} annual={annual} isArabic={isArabic} index={i} />
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="mt-10 flex flex-col items-center gap-3 text-center"
+          >
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "كل الأسعار بالريال السعودي. بدون عقد — ألغي في أي وقت.",
+                "All prices in SAR. No contract. Cancel any time."
+              )}
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <span className="stat-chip text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {t("بدون بطاقة في البداية", "No card to start")}
+              </span>
+              <span className="stat-chip text-xs font-semibold text-slate-700 dark:text-slate-200">
+                {t("ترقية فورية", "Instant upgrade")}
+              </span>
+            </div>
+          </motion.div>
         </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="text-center text-sm text-muted-foreground mt-10"
-        >
-          {t(
-            "كل الأسعار بالريال السعودي. بدون عقد — ألغي في أي وقت.",
-            "All prices in SAR. No contract — cancel any time."
-          )}
-        </motion.p>
       </div>
     </section>
   )

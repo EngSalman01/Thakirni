@@ -32,7 +32,7 @@ function StickyCTA({ isArabic }: { isArabic: boolean }) {
             <motion.div
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.985 }}
-              className="flex items-center gap-3 px-6 py-3.5 rounded-full power-gradient text-white font-bold text-sm shadow-2xl btn-glow"
+              className="flex items-center gap-3 rounded-full power-gradient px-6 py-3.5 text-sm font-bold text-white shadow-2xl btn-glow"
               style={{ willChange: "transform", transform: "translateZ(0)" }}
             >
               <Sparkles className="w-4 h-4 shrink-0" />
@@ -213,7 +213,7 @@ function PhoneMockup({ isArabic }: { isArabic: boolean }) {
 
 function StatPill({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 dark:bg-white/[0.05] border border-amber-100 dark:border-amber-900/30 backdrop-blur-sm">
+    <div className="stat-chip">
       <span className="text-sm font-bold text-slate-900 dark:text-amber-100">{value}</span>
       <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
     </div>
@@ -228,11 +228,16 @@ export function HeroSection() {
   const y = useTransform(scrollY, [0, 400], [0, -50])
 
   const ArrowIcon = isArabic ? ArrowLeft : ArrowRight
+  const quickWins = [
+    t("يشتغل على واتساب", "Works in WhatsApp"),
+    t("يفهم العربي الطبيعي", "Understands natural Arabic"),
+    t("فولت خاص وآمن", "Private secure vault"),
+  ]
 
   return (
     <>
       <section
-        className="relative pt-24 pb-16 sm:pt-36 sm:pb-28 overflow-hidden hero-mesh min-h-screen flex items-center"
+        className="relative flex min-h-screen items-center overflow-hidden hero-mesh pb-20 pt-28 sm:pb-28 sm:pt-40"
         id="hero"
       >
         {/* Background texture dots */}
@@ -264,99 +269,116 @@ export function HeroSection() {
           style={{ y, translateZ: 0 }}
           className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10 w-full"
         >
-          <div className="grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-20 items-center">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
 
             {/* ── Copy ── */}
             <motion.div
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="space-y-7 max-w-2xl w-full min-w-0"
+              className="w-full min-w-0"
             >
-              {/* Badge */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-semibold"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                {t("مساعدك الذكي في السعودية 🇸🇦", "Your AI Assistant in Saudi Arabia 🇸🇦")}
-              </motion.div>
+              <div className="shell-panel-strong relative overflow-hidden p-6 sm:p-8 lg:p-10">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
 
-              {/* Headline */}
-              <div className="space-y-1">
-                {isArabic ? (
-                  <h1 className="font-arabic text-[2.4rem] sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-[#F0E8D8]">
-                    خلّي{" "}
-                    <span className="relative inline-block">
-                      <span className="gradient-text">ذكرني</span>
-                      <span className="absolute -bottom-1 start-0 end-0 h-[3px] rounded-full power-gradient opacity-60" />
-                    </span>
-                    <br />
-                    يرتّب يومك
-                  </h1>
-                ) : (
-                  <h1 className="font-headline text-[2.4rem] sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.15] text-slate-900 dark:text-[#F0E8D8]">
-                    Let{" "}
-                    <span className="relative inline-block">
-                      <span className="gradient-text">Thakirni</span>
-                      <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full power-gradient opacity-60" />
-                    </span>
-                    <br />
-                    organise your day
-                  </h1>
-                )}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.08, duration: 0.45 }}
+                  className="eyebrow-badge"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {t("مساعدك الذكي في السعودية", "Your AI assistant in Saudi Arabia")}
+                </motion.div>
+
+                <div className="mt-6 max-w-2xl space-y-5">
+                  {isArabic ? (
+                    <h1 className="font-arabic text-[2.7rem] font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-6xl lg:text-[4.65rem] dark:text-[#F0E8D8]">
+                      خلّي{" "}
+                      <span className="relative inline-block">
+                        <span className="gradient-text">ذكرني</span>
+                        <span className="absolute -bottom-1 start-0 end-0 h-[3px] rounded-full power-gradient opacity-60" />
+                      </span>
+                      <br />
+                      يهدّي يومك
+                      <br />
+                      ويرتّب تفاصيله
+                    </h1>
+                  ) : (
+                    <h1 className="font-headline text-[2.7rem] font-extrabold leading-[1.05] tracking-tight text-slate-900 sm:text-6xl lg:text-[4.4rem] dark:text-[#F0E8D8]">
+                      Let{" "}
+                      <span className="relative inline-block">
+                        <span className="gradient-text">Thakirni</span>
+                        <span className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full power-gradient opacity-60" />
+                      </span>
+                      <br />
+                      calm the noise
+                      <br />
+                      and organise your day
+                    </h1>
+                  )}
+
+                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/35 bg-amber-500/10 px-4 py-2 text-[11px] font-semibold text-amber-700 dark:border-amber-700/40 dark:bg-amber-500/8 dark:text-amber-300">
+                    <span className="h-2 w-2 rounded-full bg-amber-500" />
+                    🇸🇦 {t("رؤية ٢٠٣٠ · عام الذكاء الاصطناعي ٢٠٢٦", "Vision 2030 · Year of AI 2026")}
+                  </div>
+
+                  <p className="max-w-xl text-base leading-8 text-slate-600 sm:text-lg dark:text-[#A39890]">
+                    {t(
+                      "قل اللي بخاطرك… والباقي علينا. يذكّرك، يرتب يومك، ويحفظ كل شيء مهم في فولت خاص يشتغل معك على واتساب والويب.",
+                      "Say what is on your mind and we handle the rest. Thakirni reminds you, organises the day, and stores what matters in a private vault that works across WhatsApp and the web."
+                    )}
+                  </p>
+
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {quickWins.map((item) => (
+                      <div
+                        key={item}
+                        className="flex items-center gap-2 rounded-2xl border border-border/70 bg-white/72 px-3.5 py-3 text-sm font-medium text-slate-700 dark:bg-white/[0.04] dark:text-slate-200"
+                      >
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-amber-500" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 pt-1">
+                    <Link href="/auth">
+                      <motion.button
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="inline-flex items-center gap-2.5 rounded-2xl power-gradient px-7 py-4 text-base font-bold text-white shadow-lg btn-glow"
+                        style={{ willChange: "transform", transform: "translateZ(0)" }}
+                      >
+                        {t("ابدأ الحين", "Start Now")}
+                        <ArrowIcon className="w-4 h-4" />
+                      </motion.button>
+                    </Link>
+                    <Link href="/auth">
+                      <motion.button
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="inline-flex items-center gap-2.5 rounded-2xl border border-amber-200 bg-white px-7 py-4 text-base font-bold text-slate-700 backdrop-blur-sm transition-all hover:border-amber-400 dark:border-amber-900/40 dark:bg-white/[0.06] dark:text-[#F0E8D8] dark:hover:border-amber-700"
+                        style={{ willChange: "transform", transform: "translateZ(0)" }}
+                      >
+                        <span className="text-base">🎤</span>
+                        {t("جرّب واتساب", "Try WhatsApp")}
+                      </motion.button>
+                    </Link>
+                  </div>
+                </div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55, duration: 0.45 }}
+                  className="mt-6 flex flex-wrap gap-3"
+                >
+                  <StatPill value="🇸🇦" label={t("مصنوع للسوق السعودي", "Made for KSA")} />
+                  <StatPill value="24/7" label={t("على واتساب", "On WhatsApp")} />
+                  <StatPill value="AI" label={t("ذاكرة ثانية عملية", "Practical second brain")} />
+                </motion.div>
               </div>
-
-              {/* Vision 2030 badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-950/30 border border-amber-700/40 text-amber-300 text-[11px] font-semibold">
-                🇸🇦 {t("رؤية ٢٠٣٠ · عام الذكاء الاصطناعي ٢٠٢٦", "Vision 2030 · Year of AI 2026")}
-              </div>
-
-              {/* Sub */}
-              <p className="text-base sm:text-lg md:text-xl text-slate-500 dark:text-[#A39890] leading-relaxed max-w-lg">
-                {t(
-                  "قل اللي بخاطرك… والباقي علينا. يذكّرك، يرتبلك يومك، ويشتغل على واتساب.",
-                  "Say what's on your mind… we handle the rest. Reminds you, organises your day, and works on WhatsApp."
-                )}
-              </p>
-
-              {/* CTAs */}
-              <div className="flex flex-wrap gap-3 pt-1">
-                <Link href="/auth">
-                  <motion.button
-                    whileHover={{ scale: 1.04, y: -2 }}
-                    whileTap={{ scale: 0.96 }}
-                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl power-gradient text-white font-bold text-base shadow-lg btn-glow"
-                    style={{ willChange: "transform", transform: "translateZ(0)" }}
-                  >
-                    {t("ابدأ الحين", "Start Now")}
-                    <ArrowIcon className="w-4 h-4" />
-                  </motion.button>
-                </Link>
-                <Link href="/auth">
-                  <motion.button
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.96 }}
-                    className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-white dark:bg-white/[0.06] border border-amber-200 dark:border-amber-900/40 text-slate-700 dark:text-[#F0E8D8] font-bold text-base hover:border-amber-400 dark:hover:border-amber-700 transition-all backdrop-blur-sm"
-                    style={{ willChange: "transform", transform: "translateZ(0)" }}
-                  >
-                    <span className="text-base">🎤</span>
-                    {t("جرّب واتساب", "Try WhatsApp")}
-                  </motion.button>
-                </Link>
-              </div>
-
-              {/* Social proof */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.5 }}
-                className="flex flex-wrap gap-2 pt-1"
-              >
-                <StatPill value="🇸🇦" label={t("مصنوع للسوق السعودي", "Made for KSA")} />
-              </motion.div>
             </motion.div>
 
             {/* ── Phone Visual ── */}
@@ -366,7 +388,44 @@ export function HeroSection() {
               transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
               className="relative flex justify-center lg:justify-end"
             >
-              <PhoneMockup isArabic={isArabic} />
+              <div className="shell-panel relative w-full max-w-[32rem] overflow-visible px-5 py-6 sm:px-6 sm:py-7">
+                <div className="mb-5 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-700 dark:text-amber-300">
+                      {t("معاينة التجربة", "Product preview")}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {t("أوامر بسيطة، تنفيذ مباشر.", "Simple prompts, instant execution.")}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border/80 bg-white/80 px-3 py-2 text-xs font-semibold text-slate-700 dark:bg-white/[0.04] dark:text-slate-200">
+                    {t("واتساب أولاً", "WhatsApp-first")}
+                  </div>
+                </div>
+
+                <div className="relative flex justify-center">
+                  <PhoneMockup isArabic={isArabic} />
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3 text-start">
+                  <div className="rounded-[1.4rem] border border-border/80 bg-white/78 px-4 py-4 dark:bg-white/[0.04]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
+                      {t("النتيجة", "Outcome")}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {t("أقل نسيان وأكثر وضوحاً في يومك.", "Less forgetting. More clarity every day.")}
+                    </p>
+                  </div>
+                  <div className="rounded-[1.4rem] border border-border/80 bg-white/78 px-4 py-4 dark:bg-white/[0.04]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 dark:text-amber-300">
+                      {t("الأسلوب", "Experience")}
+                    </p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {t("سريع، عربي، ومريح بصرياً.", "Fast, Arabic-native, and visually calm.")}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </motion.div>
 
           </div>

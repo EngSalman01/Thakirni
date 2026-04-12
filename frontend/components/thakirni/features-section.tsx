@@ -48,7 +48,7 @@ function WhatsAppCard({ t, isArabic }: { t: ReturnType<typeof useLanguage>["t"];
       viewport={{ once: true, amount: 0 }}
       variants={cardVariants}
       whileHover={{ y: -4 }}
-      className="md:col-span-2 bg-[#075e54] text-white rounded-2xl p-7 sm:p-10 grid md:grid-cols-2 gap-6 items-center border border-[#128c7e]/30 transition-all duration-300"
+      className="shell-panel-dark grid items-center gap-6 p-7 text-white transition-all duration-300 md:col-span-2 md:grid-cols-2 sm:p-10"
     >
       <div>
         <div className="w-10 h-10 rounded-xl bg-[#25d366] flex items-center justify-center mb-5">
@@ -84,7 +84,7 @@ export function FeaturesSection() {
   const { t, isArabic } = useLanguage()
 
   return (
-    <section className="py-16 sm:py-32 bg-background" id="features">
+    <section className="relative py-16 sm:py-24" id="features">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
 
         {/* Header */}
@@ -95,10 +95,11 @@ export function FeaturesSection() {
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-3xl mx-auto mb-12 sm:mb-20"
         >
-          <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3">
+          <div className="eyebrow-badge">
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
             {t("المميزات", "Features")}
-          </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-foreground">
+          </div>
+          <h2 className="mt-4 text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-foreground">
             {t("كل اللي تحتاجه في مكان واحد", "Everything you need in one place")}
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground">
@@ -120,7 +121,7 @@ export function FeaturesSection() {
             viewport={{ once: true, amount: 0 }}
             variants={cardVariants}
             whileHover={{ y: -4 }}
-            className="md:col-span-2 bg-amber-50 dark:bg-amber-950/20 rounded-2xl p-7 sm:p-10 relative overflow-hidden border border-amber-100 dark:border-amber-900/40 transition-all duration-300 hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800/50"
+            className="shell-panel md:col-span-2 relative p-7 sm:p-10 transition-all duration-300"
           >
             <div className="relative z-10">
               <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center mb-5">
@@ -147,7 +148,7 @@ export function FeaturesSection() {
             viewport={{ once: true, amount: 0 }}
             variants={cardVariants}
             whileHover={{ y: -4 }}
-            className="bg-gradient-to-br from-amber-600 to-orange-700 text-white rounded-2xl p-7 sm:p-10 flex flex-col justify-between transition-all duration-300 hover:shadow-lg hover:shadow-amber-900/20"
+            className="shell-panel-dark flex flex-col justify-between p-7 text-white transition-all duration-300 sm:p-10"
           >
             <div>
               <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-5">
@@ -204,7 +205,7 @@ export function FeaturesSection() {
               viewport={{ once: true, amount: 0 }}
               variants={cardVariants}
               whileHover={{ y: -4 }}
-              className="bg-white dark:bg-white/[0.03] rounded-2xl p-7 sm:p-9 border border-slate-100 dark:border-white/[0.07] transition-all duration-300 hover:shadow-sm hover:border-amber-100 dark:hover:border-amber-900/30"
+              className="shell-panel p-7 sm:p-9 transition-all duration-300"
             >
               <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-5 shadow-sm`}>
                 <Icon className="w-5 h-5 text-white" />
@@ -230,7 +231,7 @@ export function FeaturesSection() {
             viewport={{ once: true, amount: 0 }}
             variants={cardVariants}
             whileHover={{ y: -4 }}
-            className="bg-white dark:bg-white/[0.03] rounded-2xl p-7 sm:p-9 flex flex-col items-center text-center border border-slate-100 dark:border-white/[0.07] transition-all duration-300 hover:shadow-sm"
+            className="shell-panel flex flex-col items-center p-7 text-center transition-all duration-300 sm:p-9"
           >
             <div className="w-14 h-14 rounded-2xl power-gradient flex items-center justify-center mb-5 shadow-md">
               <span className="text-white text-2xl">🔒</span>

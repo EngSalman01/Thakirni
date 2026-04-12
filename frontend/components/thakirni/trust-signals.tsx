@@ -36,7 +36,7 @@ export function TrustSignals() {
   const { t, isArabic } = useLanguage()
 
   return (
-    <section className="py-16 sm:py-32 relative overflow-hidden bg-amber-50/40 dark:bg-[#0d0b08]" id="process">
+    <section className="relative overflow-hidden py-16 sm:py-24" id="process">
       {/* Subtle dot grid */}
       <div
         className="absolute inset-0 opacity-[0.04] dark:opacity-[0.07] pointer-events-none"
@@ -46,67 +46,70 @@ export function TrustSignals() {
         }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-8">
+        <div className="shell-panel-strong p-6 sm:p-8 lg:p-10">
 
-        {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center max-w-2xl mx-auto mb-12 sm:mb-16"
-        >
-          <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3">
-            {t("كيف يشتغل", "How it works")}
-          </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-headline font-bold mb-4 tracking-tight text-foreground">
-            {t("٣ خطوات بس — وبعدها هو يشتغل", "3 steps — then it works for you")}
-          </h2>
-          <p className="text-base sm:text-lg text-muted-foreground">
-            {t(
-              "٣ خطوات وكل شي يتنظم.",
-              "3 steps — and everything falls into place."
-            )}
-          </p>
-        </motion.div>
+          {/* Section header */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mb-12 max-w-2xl text-center sm:mb-16"
+          >
+            <div className="eyebrow-badge">
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              {t("كيف يشتغل", "How it works")}
+            </div>
+            <h2 className="mt-4 text-3xl font-headline font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+              {t("٣ خطوات واضحة — وبعدها هو يشتغل عنك", "Three clear steps, then it runs for you")}
+            </h2>
+            <p className="mt-4 text-base text-muted-foreground sm:text-lg">
+              {t(
+                "من الطلب إلى التنفيذ، التجربة مبنية لتكون مباشرة وسهلة.",
+                "From request to execution, the flow is built to feel immediate and effortless."
+              )}
+            </p>
+          </motion.div>
 
-        {/* Steps */}
-        <div className="relative">
-          {/* Connecting line — desktop */}
-          <div className="hidden lg:block absolute top-[4.5rem] left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent mx-32" />
+          {/* Steps */}
+          <div className="relative">
+            {/* Connecting line — desktop */}
+            <div className="mx-32 hidden h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent lg:absolute lg:left-0 lg:right-0 lg:top-[4.5rem] lg:block" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            {STEPS.map(({ icon: Icon, num, titleAr, titleEn, bodyAr, bodyEn }, i) => (
-              <motion.div
-                key={num}
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -4 }}
-                className="relative bg-white dark:bg-white/[0.04] rounded-2xl p-7 sm:p-9 border border-amber-100/60 dark:border-white/[0.07] shadow-sm hover:shadow-md hover:border-amber-200 dark:hover:border-amber-800/40 transition-all duration-300"
-              >
-                {/* Step number watermark */}
-                <div className="absolute top-6 end-6 text-5xl font-extrabold text-amber-400/15 dark:text-amber-400/10 leading-none select-none tabular">
-                  {num}
-                </div>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+              {STEPS.map(({ icon: Icon, num, titleAr, titleEn, bodyAr, bodyEn }, i) => (
+                <motion.div
+                  key={num}
+                  initial={{ opacity: 0, y: 28 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -4 }}
+                  className="shell-panel relative p-7 sm:p-9"
+                >
+                  {/* Step number watermark */}
+                  <div className="absolute end-6 top-6 select-none text-5xl font-extrabold leading-none text-amber-400/15 tabular dark:text-amber-400/10">
+                    {num}
+                  </div>
 
-                {/* Icon */}
-                <div className="w-12 h-12 rounded-xl power-gradient flex items-center justify-center mb-6 shadow-sm">
-                  <Icon className="w-6 h-6 text-white" />
-                </div>
+                  {/* Icon */}
+                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl power-gradient shadow-sm">
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
 
-                <h3 className="text-xl sm:text-2xl font-headline font-bold mb-3 text-foreground">
-                  {isArabic ? titleAr : titleEn}
-                </h3>
-                <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                  {isArabic ? bodyAr : bodyEn}
-                </p>
-              </motion.div>
-            ))}
+                  <h3 className="mb-3 text-xl font-headline font-bold text-foreground sm:text-2xl">
+                    {isArabic ? titleAr : titleEn}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    {isArabic ? bodyAr : bodyEn}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
 
+        </div>
       </div>
     </section>
   )

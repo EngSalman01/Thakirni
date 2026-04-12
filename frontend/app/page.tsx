@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden">
+    <main className="page-shell min-h-screen bg-background overflow-x-hidden">
       <LandingHeader />
 
       {/* Hero — the above-the-fold conversion zone */}
@@ -49,23 +49,6 @@ export default function Home() {
       <Vision2030Section />
 
       <LandingFooter />
-
-      {/* Server-rendered policy links — required for Google OAuth verification */}
-      <div
-        style={{
-          background: "#0E0B07",
-          padding: "12px",
-          textAlign: "center",
-          fontSize: "11px",
-        }}
-      >
-        <a href="/privacy" style={{ color: "#475569", marginInlineEnd: "16px" }}>
-          Privacy Policy
-        </a>
-        <a href="/terms" style={{ color: "#475569" }}>
-          Terms of Service
-        </a>
-      </div>
     </main>
   )
 }
