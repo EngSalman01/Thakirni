@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     .update({ is_sent: true, sent_at: now })
     .lte("remind_at", now)
     .eq("is_sent", false)
-    .select("id, user_id, title, channel, remind_at, plan_id")
+    .select("id, user_id, title, channel, remind_at, plan_id, repeat_interval_minutes")
     .limit(50)
 
   if (error) {
@@ -138,6 +138,23 @@ export async function GET(req: NextRequest) {
         await sendWhatsAppMessage(phone, message)
         log("reminder_sent", `user=${reminder.user_id} title="${reminder.title.slice(0, 40)}"`)
         sent++
+
+        // Re-schedule recurring reminder
+        if (reminder.repeat_interval_minutes && reminder.repeat_interval_minutes > 0) {
+          const nextAt = new Date(
+            new Date(reminder.remind_at).getTime() + reminder.repeat_interval_minutes * 60 * 1000
+          ).toISOString()
+          supabase.from("reminders").insert({
+            user_id: reminder.user_id,
+            title: reminder.title,
+            remind_at: nextAt,
+            plan_id: reminder.plan_id ?? null,
+            channel: reminder.channel,
+            repeat_interval_minutes: reminder.repeat_interval_minutes,
+            is_sent: false,
+          }).then(undefined, (e) => console.error("[Cron/Reminders] recurring re-insert error:", e))
+          log("recurring_scheduled", `user=${reminder.user_id} next="${nextAt}" interval=${reminder.repeat_interval_minutes}min`)
+        }
 
         // Schedule FU1 (30 min later) for WhatsApp plan reminders
         if (reminder.plan_id && reminder.channel === "whatsapp") {
