@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Flame } from "lucide-react"
 import { useLanguage } from "@/components/language-provider"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface DailyProgress {
   done: number
@@ -39,13 +40,14 @@ export function ProgressCard() {
 
       {!data ? (
         <div className="space-y-2">
-          <div className="h-4 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse w-3/4" />
-          <div className="h-2 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse" />
+          <Skeleton className="h-4 w-3/4 rounded-full" />
+          <Skeleton className="h-2 w-full rounded-full" />
         </div>
       ) : data.allDone ? (
         <motion.div
-          initial={{ scale: 0.95 }}
-          animate={{ scale: 1 }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/40 rounded-xl px-4 py-3 text-center"
         >
           <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">

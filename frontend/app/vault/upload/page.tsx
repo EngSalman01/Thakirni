@@ -14,6 +14,7 @@ import { useLanguage } from '@/components/language-provider';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const MAX_FILE_SIZE_MB = 25;
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -92,7 +93,7 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
   const cardColors = ['from-amber-600 to-amber-400', 'from-amber-600 to-amber-400', 'from-amber-800 to-amber-600'];
 
   return (
-    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.8 }}
+    <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
       className="relative bg-[#e4e2e1] rounded-3xl p-8 overflow-hidden">
       {/* Grid bg */}
       <div className="absolute inset-0 opacity-10"
@@ -102,11 +103,11 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
       <div className="relative space-y-3">
         {loading ? (
           [1, 2, 3].map(i => (
-            <div key={i} className="bg-white/70 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
-              <div className="w-10 h-10 rounded-xl bg-[#d0cece]" />
+            <div key={i} className="bg-white/70 rounded-2xl p-4 flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-xl" />
               <div className="flex-1 space-y-2">
-                <div className="h-3 bg-[#d0cece] rounded w-3/4" />
-                <div className="h-2 bg-[#d0cece] rounded w-1/3" />
+                <Skeleton className="h-3 w-3/4 rounded-full" />
+                <Skeleton className="h-2 w-1/3 rounded-full" />
               </div>
             </div>
           ))

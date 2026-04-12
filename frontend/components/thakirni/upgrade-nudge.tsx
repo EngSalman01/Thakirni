@@ -83,10 +83,10 @@ export function UpgradeNudge({ featureLocked = false, variant = "banner", onDism
     <AnimatePresence>
       {visible && nudge && (
         <motion.div
-          initial={{ opacity: 0, y: variant === "floating" ? 20 : -8, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.97 }}
-          transition={{ duration: 0.25 }}
+          initial={{ opacity: 0, y: variant === "floating" ? 20 : -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           className={variant === "floating"
             ? "fixed bottom-6 right-6 z-50 max-w-sm w-full shadow-2xl"
             : "w-full"
@@ -94,7 +94,7 @@ export function UpgradeNudge({ featureLocked = false, variant = "banner", onDism
           dir={isArabic ? "rtl" : "ltr"}
         >
           <div
-            className="rounded-2xl border p-4 flex items-start gap-3"
+            className="rounded-2xl border p-4 flex items-start gap-3 backdrop-blur-xl shadow-card"
             style={{
               borderColor: `${urgencyColor[nudge.urgency]}30`,
               backgroundColor: urgencyBg[nudge.urgency],
