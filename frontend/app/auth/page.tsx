@@ -465,7 +465,8 @@ function AuthForm() {
       {tab === "signin" && (
         <div className="space-y-5">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-foreground">
+            <span className="eyebrow-badge mb-3 inline-flex">{t("تسجيل الدخول", "Sign In")}</span>
+            <h2 className="text-2xl font-headline font-bold gradient-text">
               {t("أهلاً وسهلاً", "Welcome Back")}
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
@@ -526,7 +527,8 @@ function AuthForm() {
       {tab === "signup" && (
         <div className="space-y-4">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-foreground">
+            <span className="eyebrow-badge mb-3 inline-flex">{t("حساب جديد", "New Account")}</span>
+            <h2 className="text-2xl font-headline font-bold gradient-text">
               {t("ابدأ رحلتك", "Create Your Account")}
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
@@ -664,7 +666,7 @@ export default function AuthPage() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex page-shell">
 
       {/* ── Left panel: Cognitive Aura ────────────────────────────── */}
       <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden"
