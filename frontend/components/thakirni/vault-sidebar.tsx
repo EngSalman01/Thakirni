@@ -283,7 +283,7 @@ export function VaultSidebar() {
             </Link>
 
             <nav className="hidden flex-1 justify-center md:flex" aria-label="Primary navigation">
-              <div className="nav-shell flex items-center gap-1 p-1">
+              <div className="nav-shell flex items-center gap-0.5 p-1">
                 {PRIMARY_NAV.map((item) => {
                   const active = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
                   const Icon = item.icon;
@@ -325,14 +325,9 @@ export function VaultSidebar() {
                 <DropdownMenuTrigger asChild>
                   <button className="hidden items-center gap-2 rounded-full nav-shell px-2 py-1.5 md:flex">
                     <Avatar profile={profile} />
-                    <div className="hidden max-w-32 min-w-0 text-start lg:block">
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {profile?.full_name ?? t("المستخدم", "User")}
-                      </p>
-                      <p className="truncate text-[11px] text-muted-foreground">
-                        {t("فولت شخصي", "Personal vault")}
-                      </p>
-                    </div>
+                    <p className="hidden max-w-28 min-w-0 truncate text-sm font-semibold text-foreground lg:block">
+                      {profile?.full_name ?? t("المستخدم", "User")}
+                    </p>
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
