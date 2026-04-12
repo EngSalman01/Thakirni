@@ -1,11 +1,14 @@
-import { Environment, Paddle, LogLevel } from "@paddle/paddle-node-sdk";
+import type { Paddle } from "@paddle/paddle-node-sdk"
+import { createPaddleServerClient } from "@/lib/paddle/server";
 
-const paddleClient = new Paddle(process.env.PADDLE_API_SECRET_KEY || "", {
-  environment: process.env.PADDLE_ENVIRONMENT === "production"
-    ? Environment.production
-    : Environment.sandbox,
-  logLevel: LogLevel.error,
-});
+let paddleClient: Paddle | null = null
+
+function getPaddleSdkClient(): Paddle {
+  if (!paddleClient) {
+    paddleClient = createPaddleServerClient()
+  }
+  return paddleClient
+}
 
 export interface PaddleTransaction {
   id: string;
@@ -43,7 +46,7 @@ export async function verifyPaddleTransaction(
   transactionId: string
 ): Promise<PaddleTransaction | null> {
   try {
-    const transaction = await paddleClient.transactions.get(transactionId);
+    const transaction = await getPaddleSdkClient().transactions.get(transactionId);
     return transaction as unknown as PaddleTransaction;
   } catch (error) {
     console.error("[Paddle] Error verifying transaction:", error);
@@ -58,7 +61,7 @@ export async function getPaddleSubscription(
   subscriptionId: string
 ): Promise<PaddleSubscription | null> {
   try {
-    const subscription = await paddleClient.subscriptions.get(subscriptionId);
+    const subscription = await getPaddleSdkClient().subscriptions.get(subscriptionId);
     return subscription as unknown as PaddleSubscription;
   } catch (error) {
     console.error("[Paddle] Error retrieving subscription:", error);
@@ -73,7 +76,7 @@ export async function getCustomerSubscriptions(
   customerId: string
 ): Promise<PaddleSubscription[]> {
   try {
-    const collection = paddleClient.subscriptions.list({
+    const collection = getPaddleSdkClient().subscriptions.list({
       customerId: [customerId],
     });
     const results: PaddleSubscription[] = [];
@@ -95,7 +98,7 @@ export async function cancelPaddleSubscription(
   effectiveFrom?: "immediately" | "next_billing_period"
 ): Promise<boolean> {
   try {
-    await paddleClient.subscriptions.cancel(subscriptionId, {
+    await getPaddleSdkClient().subscriptions.cancel(subscriptionId, {
       effectiveFrom: effectiveFrom ?? "next_billing_period",
     });
     return true;
@@ -116,7 +119,7 @@ export async function createPaddlePrice(
   billingCycle: { frequency: number; interval: "month" | "year" } = { frequency: 1, interval: "month" }
 ): Promise<{ priceId: string } | { error: string }> {
   try {
-    const price = await paddleClient.prices.create({
+    const price = await getPaddleSdkClient().prices.create({
       productId,
       description,
       unitPrice: {
@@ -143,7 +146,7 @@ export async function updatePaddlePrice(
   amountSar: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await paddleClient.prices.update(priceId, {
+    await getPaddleSdkClient().prices.update(priceId, {
       unitPrice: {
         amount: Math.round(amountSar * 100).toString(),
         currencyCode: "USD",
@@ -161,5 +164,5 @@ export async function updatePaddlePrice(
  * Get the Paddle SDK client
  */
 export function getPaddleClient() {
-  return paddleClient;
+  return getPaddleSdkClient();
 }

@@ -5,6 +5,11 @@
 
 /* ─── Light Theme ──────────────────────────────────────────────────────────── */
 :root {
+  --font-tajawal: "Tajawal";
+  --font-plus-jakarta-sans: "Plus Jakarta Sans";
+  --font-syne: "Syne";
+  --font-be-vietnam-pro: "Be Vietnam Pro";
+
   /* Thakirni brand palette — Saffron & Obsidian */
   --background: #FAF8F3;
   --foreground: #1A1208;

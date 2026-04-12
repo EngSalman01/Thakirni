@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/server"
+import { cancelPaddleSubscription } from "@/lib/paddle/service"
 
 export async function POST() {
   const supabase = await createClient()
@@ -22,34 +23,8 @@ export async function POST() {
     return Response.json({ error: "No active subscription found" }, { status: 404 })
   }
 
-  // Call Paddle API to schedule cancellation at period end
-  const paddleApiKey = process.env.PADDLE_API_KEY
-  if (!paddleApiKey) {
-    return Response.json({ error: "Paddle not configured" }, { status: 500 })
-  }
-
-  const paddleBase =
-    process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === "sandbox"
-      ? "https://sandbox-api.paddle.com"
-      : "https://api.paddle.com"
-
-  const paddleRes = await fetch(
-    `${paddleBase}/subscriptions/${sub.paddle_subscription_id}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${paddleApiKey}`,
-      },
-      body: JSON.stringify({
-        scheduled_change: { action: "cancel", effective_at: "next_billing_period" },
-      }),
-    }
-  )
-
-  if (!paddleRes.ok) {
-    const errText = await paddleRes.text()
-    console.error("[cancel] Paddle error:", errText)
+  const cancelled = await cancelPaddleSubscription(sub.paddle_subscription_id, "next_billing_period")
+  if (!cancelled) {
     return Response.json({ error: "Failed to cancel with Paddle" }, { status: 502 })
   }
 
