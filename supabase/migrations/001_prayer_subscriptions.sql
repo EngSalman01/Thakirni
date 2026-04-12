@@ -10,6 +10,9 @@ create table if not exists public.prayer_subscriptions (
 
 alter table public.prayer_subscriptions enable row level security;
 
+create unique index if not exists prayer_subscriptions_user_id_key
+  on public.prayer_subscriptions (user_id);
+
 create policy "Users manage own prayer subscriptions"
   on public.prayer_subscriptions
   for all using (auth.uid() = user_id);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient, createServiceClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 
 // GET  /api/prayer/subscription  — fetch current user's subscription
 // POST /api/prayer/subscription  — upsert subscription
@@ -50,43 +50,23 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const service = createServiceClient()
-  const { data: existing } = await service
+  // Upsert using the user's own session (RLS: auth.uid() = user_id)
+  const { error } = await supabase
     .from("prayer_subscriptions")
-    .select("id")
-    .eq("user_id", user.id)
-    .maybeSingle()
-
-  if (existing) {
-    const { error } = await service
-      .from("prayer_subscriptions")
-      .update({
-        phone,
-        prayers: body.prayers ?? ["fajr", "dhuhr", "asr", "maghrib", "isha"],
-        city: body.city ?? "riyadh",
-        enabled: body.enabled ?? true,
-      })
-      .eq("id", existing.id)
-
-    if (error) {
-      console.error("[prayer/subscription] UPDATE error:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-  } else {
-    const { error } = await service
-      .from("prayer_subscriptions")
-      .insert({
+    .upsert(
+      {
         user_id: user.id,
         phone,
         prayers: body.prayers ?? ["fajr", "dhuhr", "asr", "maghrib", "isha"],
         city: body.city ?? "riyadh",
         enabled: body.enabled ?? true,
-      })
+      },
+      { onConflict: "user_id" }
+    )
 
-    if (error) {
-      console.error("[prayer/subscription] INSERT error:", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
+  if (error) {
+    console.error("[prayer/subscription] UPSERT error:", error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })
@@ -97,8 +77,7 @@ export async function DELETE() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
 
-  const service = createServiceClient()
-  const { error } = await service
+  const { error } = await supabase
     .from("prayer_subscriptions")
     .update({ enabled: false })
     .eq("user_id", user.id)
