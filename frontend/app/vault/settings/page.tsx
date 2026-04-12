@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -115,7 +115,22 @@ function ToggleRow({
 export default function SettingsPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { tier, isPaid, subscription } = useSubscription();
+
+  // Handle return from Paddle hosted checkout
+  useEffect(() => {
+    const checkout = searchParams.get("checkout");
+    const plan = searchParams.get("plan");
+    if (checkout === "success" && plan) {
+      toast.success(t(
+        `تم الاشتراك بنجاح! 🎉 خطتك الآن: ${plan}`,
+        `Subscribed successfully! 🎉 Your plan: ${plan}`
+      ));
+      // Remove query params without re-render loop
+      router.replace("/vault/settings?tab=subscription", { scroll: false });
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
   const [billingOpen, setBillingOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
