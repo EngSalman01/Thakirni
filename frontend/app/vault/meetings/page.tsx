@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Mic, Upload, Clock, Users, FileText, ChevronDown, ChevronUp, Trash2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { useMeetings } from "@/hooks/use-meetings"
@@ -313,7 +314,9 @@ export default function MeetingsPage() {
               </motion.div>
             ) : meetingsLoading ? (
               <div className="space-y-4">
-                {[1,2,3].map(i => <div key={i} className="bg-muted dark:bg-white/[0.03] rounded-2xl h-28 animate-pulse" />)}
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-28 rounded-2xl" />
+                ))}
               </div>
             ) : meetings.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

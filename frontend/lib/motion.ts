@@ -59,7 +59,7 @@ export const sparkTransition: Transition = {
   ease: ease.primary,
 }
 export const sparkAnimate: TargetAndTransition = {
-  scale: [1, 1.08, 0.97, 1],
+  scale: [1, 1.04, 0.99, 1],
 }
 
 /**
@@ -108,7 +108,7 @@ export const intelligentSlideVariants: Variants = {
 export const confirmPopVariants: Variants = {
   idle: { scale: 1 },
   pop: {
-    scale: [1, 0.88, 1.14, 1],
+    scale: [1, 0.94, 1.06, 1],
     transition: { duration: duration.normal + 0.04, ease: ease.smooth },
   },
 }
@@ -147,17 +147,17 @@ export const hover = {
   /** Standard card lift */
   lift:    { y: -3, transition: { duration: duration.fast, ease: ease.primary } },
   /** Subtle scale — for icons and small targets */
-  scale:   { scale: 1.04, transition: { duration: duration.fast, ease: ease.primary } },
+  scale:   { scale: 1.015, transition: { duration: duration.fast, ease: ease.primary } },
   /** Minimal — for list items */
   dim:     { opacity: 0.85 },
   /** Button glow — scale + brighten */
-  button:  { scale: 1.02, transition: { duration: duration.fast, ease: ease.primary } },
+  button:  { scale: 1.01, transition: { duration: duration.fast, ease: ease.primary } },
 } as const
 
 export const tap = {
-  press:    { scale: 0.96 },
-  pressSm:  { scale: 0.97 },
-  pressXs:  { scale: 0.98 },
+  press:    { scale: 0.985 },
+  pressSm:  { scale: 0.99 },
+  pressXs:  { scale: 0.992 },
 } as const
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -41,11 +41,11 @@ export function WhatsAppBanner() {
     <AnimatePresence>
       {show && (
         <motion.div
-          initial={{ opacity: 0, y: -12, scale: 0.97 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -12, scale: 0.97 }}
-          transition={{ duration: 0.4, ease: [0.2, 1, 0.3, 1] }}
-          className="flex items-center justify-between gap-3 px-5 py-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 mb-6 animate-pulse-glow"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center justify-between gap-3 px-5 py-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 mb-6 animate-pulse-glow shadow-card backdrop-blur-sm"
         >
           <div className="flex items-center gap-3">
             <span className="relative flex shrink-0">

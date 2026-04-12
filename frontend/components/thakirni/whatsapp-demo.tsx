@@ -56,10 +56,10 @@ function Bubble({ msg, isArabic, delay }: { msg: Msg; isArabic: boolean; delay: 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.96 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay, duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
       className={`flex ${isUser ? "justify-end" : "justify-start"}`}
     >
       {!isUser && (

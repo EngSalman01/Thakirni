@@ -6,6 +6,7 @@ import Link from "next/link"
 import { useLanguage } from "@/components/language-provider"
 import { usePlans } from "@/hooks/use-plans"
 import type { PlanWithSource } from "@/hooks/use-plans"
+import { Skeleton } from "@/components/ui/skeleton"
 
 function categoryIcon(plan: PlanWithSource) {
   if (plan._source === "gcal") return CalendarDays
@@ -84,10 +85,10 @@ export function RecentActivity() {
           <div className="px-5 py-6 space-y-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted dark:bg-white/[0.06] animate-pulse shrink-0" />
+                <Skeleton className="w-8 h-8 rounded-full shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-3 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse w-4/5" />
-                  <div className="h-2.5 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse w-1/3" />
+                  <Skeleton className="h-3 w-4/5 rounded-full" />
+                  <Skeleton className="h-2.5 w-1/3 rounded-full" />
                 </div>
               </div>
             ))}

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Sun, Loader2, Calendar } from "lucide-react";
 import { usePlans } from "@/hooks/use-plans";
 import { useLanguage } from "@/components/language-provider";
@@ -84,12 +85,12 @@ export function DailySummary() {
     return (
       <Card className="p-4 bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
             <Sun className="w-5 h-5 text-primary" />
           </div>
           <div className="space-y-2 flex-1">
-            <div className="h-4 bg-primary/10 rounded w-3/4 animate-pulse" />
-            <div className="h-3 bg-primary/10 rounded w-1/2 animate-pulse" />
+            <Skeleton className="h-4 w-3/4 rounded-full" />
+            <Skeleton className="h-3 w-1/2 rounded-full" />
           </div>
         </div>
       </Card>

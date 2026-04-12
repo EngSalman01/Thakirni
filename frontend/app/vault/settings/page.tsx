@@ -74,10 +74,57 @@ function SettingsSkeleton() {
   return (
     <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
       <main className="pt-32 px-8 pb-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-          {[7, 5, 7, 5].map((span, i) => (
-            <Skeleton key={i} className={`h-64 rounded-2xl md:col-span-${span}`} />
-          ))}
+        <div className="max-w-5xl mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-56 rounded-2xl" />
+              <Skeleton className="h-4 w-72 rounded-full" />
+            </div>
+            <Skeleton className="h-11 w-40 rounded-2xl" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div className="md:col-span-7 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-6">
+              <div className="space-y-3">
+                <Skeleton className="h-7 w-40 rounded-xl" />
+                <Skeleton className="h-4 w-2/3 rounded-full" />
+              </div>
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="rounded-2xl bg-card/80 dark:bg-white/[0.04] p-4 flex items-center justify-between gap-4">
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-40 rounded-full" />
+                      <Skeleton className="h-3 w-3/5 rounded-full" />
+                    </div>
+                    <Skeleton className="h-8 w-12 rounded-full" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="md:col-span-5 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-5">
+              <Skeleton className="h-7 w-32 rounded-xl" />
+              <Skeleton className="h-28 w-full rounded-[1.5rem]" />
+              <Skeleton className="h-11 w-full rounded-2xl" />
+              <Skeleton className="h-11 w-2/3 rounded-2xl" />
+            </div>
+
+            <div className="md:col-span-7 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-5">
+              <Skeleton className="h-7 w-44 rounded-xl" />
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+              ))}
+            </div>
+
+            <div className="md:col-span-5 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-5">
+              <Skeleton className="h-7 w-36 rounded-xl" />
+              <Skeleton className="h-44 w-full rounded-[1.5rem]" />
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>

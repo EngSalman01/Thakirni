@@ -7,6 +7,7 @@ import { useLanguage } from "@/components/language-provider"
 import { usePlans } from "@/hooks/use-plans"
 import type { PlanWithSource } from "@/hooks/use-plans"
 import type { Plan } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
 function priorityDot(priority: Plan["priority"]) {
   if (priority === "high") return "bg-red-400"
@@ -70,7 +71,7 @@ export function TodayFocus() {
         {isLoading ? (
           <div className="px-5 py-8 space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-4 bg-muted dark:bg-white/[0.06] rounded-full animate-pulse" style={{ width: `${75 - i * 10}%` }} />
+              <Skeleton key={i} className="h-4 rounded-full" style={{ width: `${75 - i * 10}%` }} />
             ))}
           </div>
         ) : isEmpty ? (

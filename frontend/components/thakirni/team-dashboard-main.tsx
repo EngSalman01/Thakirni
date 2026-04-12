@@ -176,9 +176,9 @@ export function TeamDashboardMain() {
             return (
               <motion.div
                 key={stat.title}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.15 + idx * 0.05 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + idx * 0.05, duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
               >
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between pb-2">

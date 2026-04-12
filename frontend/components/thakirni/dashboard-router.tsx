@@ -56,13 +56,25 @@ export function DashboardRouter() {
     return (
       <div className="min-h-screen bg-background hero-mesh p-6">
         <div className="max-w-7xl mx-auto space-y-6">
-          <Skeleton className="h-16 w-full" />
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-3 flex-1">
+              <Skeleton className="h-8 w-52 rounded-xl" />
+              <Skeleton className="h-4 w-72 rounded-full" />
+            </div>
+            <Skeleton className="h-11 w-40 rounded-2xl" />
+          </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-32" />
+              <Skeleton key={i} className="h-32 rounded-3xl" />
             ))}
           </div>
-          <Skeleton className="h-96 w-full" />
+          <div className="grid gap-6 lg:grid-cols-[1.35fr_0.9fr]">
+            <Skeleton className="h-[26rem] w-full rounded-[2rem]" />
+            <div className="space-y-6">
+              <Skeleton className="h-48 w-full rounded-[2rem]" />
+              <Skeleton className="h-60 w-full rounded-[2rem]" />
+            </div>
+          </div>
         </div>
       </div>
     );

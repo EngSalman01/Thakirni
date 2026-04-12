@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import { useLanguage } from "@/components/language-provider"
 import { useWorkspace, type Workspace } from "@/hooks/use-workspace"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   ChevronDown, User, Users, Check, Plus, Loader2, Building2,
 } from "lucide-react"
@@ -42,7 +43,7 @@ export function WorkspaceSwitcher() {
 
   if (loading) {
     return (
-      <div className="mx-4 mb-3 h-9 rounded-xl bg-muted animate-pulse" />
+      <Skeleton className="mx-4 mb-3 h-11 rounded-2xl" />
     )
   }
 
@@ -84,10 +85,10 @@ export function WorkspaceSwitcher() {
               onClick={() => setOpen(false)}
             />
             <motion.div
-              initial={{ opacity: 0, y: -4, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -4, scale: 0.97 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
               className="absolute top-full mt-1.5 left-0 right-0 z-20 bg-card border border-border rounded-xl shadow-lg overflow-hidden"
             >
               {/* Personal workspaces */}
