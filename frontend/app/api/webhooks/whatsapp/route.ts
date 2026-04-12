@@ -250,7 +250,7 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
                 return
             }
             const { text: summary } = await generateText({
-                model: google("gemini-2.5-flash-lite"),
+                model: google("gemini-2.5-flash"),
                 messages: [{
                     role: "user",
                     content: [
