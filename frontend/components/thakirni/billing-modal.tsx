@@ -249,6 +249,8 @@ export function BillingModal({ open, onClose, currentTier, userEmail, onUpgradeC
       if (data.transactionId && paddleRef.current) {
         (paddleRef.current as any)._pendingPlanId = planId;
         if (promoApplied?.code) (paddleRef.current as any)._pendingPromoCode = promoApplied.code;
+        // Close the Dialog so its Radix backdrop doesn't sit on top of Paddle's iframe
+        onCloseRef.current();
         await (paddleRef.current as any).Checkout.open({ transactionId: data.transactionId });
         return;
       }

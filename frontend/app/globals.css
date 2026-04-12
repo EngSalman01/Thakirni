@@ -9,6 +9,10 @@
   --font-plus-jakarta-sans: "Plus Jakarta Sans";
   --font-syne: "Syne";
   --font-be-vietnam-pro: "Be Vietnam Pro";
+  --skeleton-base: #ebe4d7;
+  --skeleton-glint: rgba(255, 255, 255, 0.7);
+  --skeleton-sheen: rgba(255, 255, 255, 0.3);
+  --skeleton-shadow: rgba(26, 18, 8, 0.06);
 
   /* Thakirni brand palette — Saffron & Obsidian */
   --background: #FAF8F3;
@@ -133,6 +137,11 @@
 
 /* ─── Dark Theme ───────────────────────────────────────────────────────────── */
 .dark {
+  --skeleton-base: #1f1812;
+  --skeleton-glint: rgba(255, 255, 255, 0.16);
+  --skeleton-sheen: rgba(255, 255, 255, 0.08);
+  --skeleton-shadow: rgba(0, 0, 0, 0.24);
+
   --background: #0E0B07;
   --foreground: #F0E8D8;
 
@@ -342,6 +351,11 @@
     50% { opacity: 0.85; }
   }
 
+  @keyframes skeleton-shimmer {
+    from { transform: translateX(-140%); }
+    to { transform: translateX(140%); }
+  }
+
   /* GPU-safe particle drift — only animates transform */
   @keyframes particle-drift {
     0%   { transform: translate(0, 0) scale(1); opacity: 0.6; }
@@ -529,7 +543,7 @@
     will-change: transform;
   }
   .hover-lift:hover {
-    transform: translateY(-4px) scale(1.01);
+    transform: translateY(-4px);
   }
 
   /* Press scale — transform only, GPU-composited */
@@ -538,7 +552,49 @@
     will-change: transform;
   }
   .press-scale:active {
-    transform: scale(0.96);
+    transform: scale(0.985);
+  }
+
+  .skeleton-base {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 55%),
+      var(--skeleton-base);
+    box-shadow:
+      inset 0 1px 0 var(--skeleton-sheen),
+      0 1px 2px var(--skeleton-shadow);
+  }
+
+  .skeleton-base::before,
+  .skeleton-base::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .skeleton-base::before {
+    inset: -1px;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      transparent 32%,
+      rgba(255, 255, 255, 0.06) 42%,
+      var(--skeleton-glint) 50%,
+      rgba(255, 255, 255, 0.06) 58%,
+      transparent 68%,
+      transparent 100%
+    );
+    animation: skeleton-shimmer 1.85s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .skeleton-base::after {
+    inset: 1px;
+    border-radius: inherit;
+    background: linear-gradient(180deg, var(--skeleton-sheen), transparent 45%);
+    opacity: 0.9;
   }
 
   /* GPU acceleration helper — forces hardware compositing layer */
@@ -618,21 +674,18 @@ input:-webkit-autofill:active {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  .skeleton-base::before {
+    animation: none !important;
+  }
 }
 
 /* ─── Paddle ghost iframe fix ────────────────────────────────────────────────── */
-/* Prevent lingering Paddle iframes from blocking pointer events after checkout close */
-iframe[src*="paddle.com"][style*="display: none"],
-iframe[src*="paddle.com"][style*="pointer-events: none"] {
+/* Only target iframes that Paddle explicitly hid — never block visible checkout */
+iframe[src*="paddle.com"][style*="display: none"] {
   display: none !important;
   pointer-events: none !important;
 }
-/* Nuclear option: any Paddle iframe that is hidden/zero-opacity blocks nothing */
-iframe[name*="paddle"],
-div[id*="paddle-frame"] {
-  pointer-events: none;
-}
-div[id*="paddle-frame"][style*="opacity: 1"],
-iframe[name*="paddle"][style*="opacity: 1"] {
-  pointer-events: auto;
+iframe[src*="paddle.com"][style*="pointer-events: none"] {
+  pointer-events: none !important;
 }
