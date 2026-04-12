@@ -72,7 +72,7 @@ function SettingsCard({
 
 function SettingsSkeleton() {
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+    <div className="min-h-screen page-shell hero-mesh overflow-x-hidden">
       <main className="pt-32 px-8 pb-20">
         <div className="max-w-5xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -711,7 +711,7 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+    <div className="min-h-screen page-shell hero-mesh overflow-x-hidden">
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}
@@ -761,7 +761,7 @@ export default function SettingsPage() {
 
             {/* Right — profile preview card */}
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
-              className="bg-card rounded-3xl shadow-2xl p-8 border border-border relative">
+              className="shell-panel-strong rounded-3xl p-8 relative">
               <div className="flex items-center gap-5 mb-8">
                 <div className="w-20 h-20 rounded-2xl power-gradient flex items-center justify-center text-white text-3xl font-bold font-headline overflow-hidden shrink-0">
                   {profile?.avatar_url ? <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" /> : initial}
@@ -819,9 +819,10 @@ export default function SettingsPage() {
             <SettingsCard delay={0.05}>
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6">
-                  <h2 className="text-2xl font-headline font-bold text-foreground">
+                  <span className="eyebrow-badge inline-flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5" />
                     {t("الملف الشخصي", "Profile")}
-                  </h2>
+                  </span>
                   <span
                     className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
                     style={{ background: planBadge.bg, color: planBadge.color }}
@@ -914,7 +915,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveName}
                     disabled={saving || !isDirty || !name.trim()}
-                    className="w-full py-4 rounded-full power-gradient text-white font-bold font-label disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:opacity-90 active:scale-[0.98]"
+                    className="w-full py-4 rounded-full power-gradient btn-glow text-white font-bold font-label disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:opacity-90 active:scale-[0.98]"
                   >
                     {saving ? (
                       <span className="flex items-center justify-center gap-2">
@@ -931,12 +932,10 @@ export default function SettingsPage() {
 
             {/* Aura Personalization */}
             <SettingsCard delay={0.1}>
-              <div className="flex items-center gap-3 mb-8">
-                <span className="text-amber-600 dark:text-amber-400 text-xl">🎨</span>
-                <h2 className="text-2xl font-headline font-bold text-foreground">
-                  {t("التخصيص", "Personalization")}
-                </h2>
-              </div>
+              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
+                <span>🎨</span>
+                {t("التخصيص", "Personalization")}
+              </span>
               <div className="space-y-4">
                 <ToggleRow
                   label={t("الحركة الأثيرية", "Ethereal Motion") as string}
@@ -978,12 +977,10 @@ export default function SettingsPage() {
 
             {/* Connected Apps */}
             <SettingsCard delay={0.08}>
-              <div className="flex items-center gap-3 mb-6">
-                <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-foreground">
-                  {t("التطبيقات المرتبطة", "Connected Apps")}
-                </h2>
-              </div>
+              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
+                <RefreshCw className="w-3.5 h-3.5" />
+                {t("التطبيقات المرتبطة", "Connected Apps")}
+              </span>
               <div className="space-y-3">
                 {/* Google Calendar */}
                 <div className="flex items-center justify-between p-4 bg-card rounded-xl">
@@ -1102,12 +1099,10 @@ export default function SettingsPage() {
 
             {/* Notifications */}
             <SettingsCard delay={0.16}>
-              <div className="flex items-center gap-3 mb-6">
-                <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-foreground">
-                  {t("الإشعارات", "Notifications")}
-                </h2>
-              </div>
+              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
+                <Bell className="w-3.5 h-3.5" />
+                {t("الإشعارات", "Notifications")}
+              </span>
               <div className="space-y-3">
                 {([
                   { key: "notification_email", ar: "إشعارات البريد", en: "Email Notifications", descAr: "تذكيرات عبر البريد", descEn: "Reminders via email" },
@@ -1241,7 +1236,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleSavePrayer()}
                     disabled={prayerSaving}
-                    className="w-full py-3 rounded-full power-gradient text-white font-bold font-label disabled:opacity-50 transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-full power-gradient btn-glow text-white font-bold font-label disabled:opacity-50 transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     {prayerSaving
                       ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{t("جاري الحفظ...", "Saving...")}</>
@@ -1258,12 +1253,10 @@ export default function SettingsPage() {
 
             {/* Privacy & Security */}
             <SettingsCard delay={0.05} className="border-l-4 border-amber-500">
-              <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-foreground">
-                  {t("الخصوصية والأمان", "Privacy & Security")}
-                </h2>
-              </div>
+              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5" />
+                {t("الخصوصية والأمان", "Privacy & Security")}
+              </span>
               <div className="space-y-4">
                 <div className="p-5 bg-muted dark:bg-white/[0.03] rounded-xl flex items-center justify-between">
                   <div>
@@ -1305,12 +1298,10 @@ export default function SettingsPage() {
 
             {/* Export Data */}
             <SettingsCard delay={0.2}>
-              <div className="flex items-center gap-3 mb-6">
-                <Download className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-foreground">
-                  {t("تصدير البيانات", "Export Data")}
-                </h2>
-              </div>
+              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
+                <Download className="w-3.5 h-3.5" />
+                {t("تصدير البيانات", "Export Data")}
+              </span>
               <p className="text-sm text-muted-foreground mb-5">
                 {t(
                   "حمّل بياناتك الشخصية في أي وقت بصيغة CSV أو PDF.",
@@ -1440,12 +1431,10 @@ export default function SettingsPage() {
 
             {/* Data & Privacy (PDPL) */}
             <SettingsCard delay={0.24} className="border-l-4 border-amber-600">
-              <div className="flex items-center gap-3 mb-6">
-                <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <h2 className="text-2xl font-headline font-bold text-foreground">
-                  {t("البيانات والخصوصية", "Data & Privacy")}
-                </h2>
-              </div>
+              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5" />
+                {t("البيانات والخصوصية", "Data & Privacy")}
+              </span>
               <p className="text-sm text-muted-foreground mb-5">
                 {t(
                   "بموجب نظام PDPL يمكنك تصدير جميع بياناتك أو حذف حسابك نهائياً.",
@@ -1537,9 +1526,10 @@ export default function SettingsPage() {
             <SettingsCard delay={0.08} className="relative overflow-hidden group">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-2xl font-headline font-bold text-foreground">
+                  <span className="eyebrow-badge inline-flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5" />
                     {t("الاشتراك", "Subscription")}
-                  </h2>
+                  </span>
                   <span
                     className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
                     style={{ background: planBadge.bg, color: planBadge.color }}
@@ -1589,11 +1579,11 @@ export default function SettingsPage() {
 
             {(resolvedTier === "teams") && (
               <SettingsCard delay={0.12} className="border-l-4 border-amber-600">
-                <div className="flex items-center gap-3 mb-6">
-                  <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  <h2 className="text-2xl font-headline font-bold text-foreground">
+                <div className="mb-6">
+                  <span className="eyebrow-badge inline-flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5" />
                     {t("دعوة أعضاء", "Invite Members")}
-                  </h2>
+                  </span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   {t("ادعُ زملاءك لينضموا إلى فريقك.", "Invite teammates to join your team.")}
@@ -1610,7 +1600,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSendInvite}
                     disabled={sendingInvite || !inviteEmail.trim()}
-                    className="px-5 py-2 rounded-full power-gradient text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
+                    className="px-5 py-2 rounded-full power-gradient btn-glow text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
                   >
                     {sendingInvite
                       ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
