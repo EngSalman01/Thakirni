@@ -325,7 +325,7 @@ export function VaultSidebar() {
                 <DropdownMenuTrigger asChild>
                   <button className="hidden items-center gap-2 rounded-full nav-shell px-2 py-1.5 md:flex">
                     <Avatar profile={profile} />
-                    <p className="hidden max-w-28 min-w-0 truncate text-sm font-semibold text-foreground lg:block">
+                    <p className="hidden max-w-32 min-w-0 truncate text-sm font-semibold text-foreground xl:block">
                       {profile?.full_name ?? t("المستخدم", "User")}
                     </p>
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
