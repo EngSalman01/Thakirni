@@ -209,11 +209,11 @@ export default function AnalyticsPage() {
     <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
 
       {/* Period picker */}
-      <div className="fixed top-14 inset-x-0 z-30 bg-background/90 backdrop-blur-sm border-b border-border/60 px-6 py-2 hidden lg:flex items-center justify-end gap-2">
-        <div className="flex items-center gap-1 bg-muted rounded-xl p-1 border border-border">
+      <div className="fixed top-14 inset-x-0 z-30 px-6 py-2 hidden lg:flex items-center justify-end gap-2 pointer-events-none">
+        <div className="flex items-center gap-1 nav-shell rounded-full p-1 pointer-events-auto">
           {([7, 14, 30] as const).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${period === p ? "bg-background text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${period === p ? "bg-amber-500/15 text-amber-700 dark:text-amber-300" : "text-muted-foreground hover:text-foreground"}`}>
               {p}d
             </button>
           ))}
