@@ -8,6 +8,13 @@ export function ThemeSync() {
   const { setTheme } = useTheme()
 
   useEffect(() => {
+    // If the user already has a theme in localStorage (set on this device),
+    // do NOT overwrite it — that causes flicker when the async Supabase fetch
+    // completes after the user has already toggled.
+    // Only sync from Supabase on a fresh device / fresh browser with no local preference.
+    const stored = localStorage.getItem("theme")
+    if (stored && stored !== "system") return
+
     async function syncTheme() {
       try {
         const supabase = createClient()
