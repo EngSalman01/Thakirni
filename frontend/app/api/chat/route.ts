@@ -369,7 +369,7 @@ export async function POST(req: Request) {
 
     // ── Stream ────────────────────────────────────────────────────────────────
     const result = streamText({
-      model: google("gemini-2.5-flash-lite"),
+      model: google("gemini-2.5-flash"),
       stopWhen: stepCountIs(15),
       messages: await convertToModelMessages(messages),
 
