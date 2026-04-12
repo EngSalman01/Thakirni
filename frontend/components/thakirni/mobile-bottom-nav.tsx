@@ -21,7 +21,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/60 safe-area-pb"
+      className="safe-area-pb fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background/88 backdrop-blur-2xl md:hidden"
       aria-label={isArabic ? "التنقل الرئيسي" : "Main navigation"}
     >
       <div className="flex items-stretch h-16">
@@ -41,7 +41,7 @@ export function MobileBottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="mobile-nav-active"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-primary"
+                  className="absolute left-1/2 top-0 h-0.5 w-8 -translate-x-1/2 rounded-full bg-primary"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
