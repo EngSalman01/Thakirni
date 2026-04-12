@@ -60,12 +60,12 @@ export function ConsentModal() {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-lg rounded-2xl border border-border [&>button]:hidden"
+        className="max-w-lg rounded-2xl border border-border [&>button]:hidden flex flex-col max-h-[calc(100dvh-2rem)] p-0 overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader>
-          <div className="flex items-center gap-3 mb-2">
+        <DialogHeader className="px-6 pt-6 pb-2 flex-shrink-0">
+          <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center flex-shrink-0">
               <Shield className="w-5 h-5 text-white" />
             </div>
@@ -75,7 +75,7 @@ export function ConsentModal() {
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 text-sm">
+        <div className="overflow-y-auto flex-1 px-6 space-y-4 text-sm">
           {/* Arabic */}
           <div dir="rtl" className="bg-muted dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
             <p className="font-label font-semibold text-foreground">عزيزي المستخدم،</p>
@@ -127,7 +127,7 @@ export function ConsentModal() {
           </div>
         </div>
 
-        <div className="pt-2">
+        <div className="px-6 pb-6 pt-4 flex-shrink-0">
           <Button
             onClick={handleAccept}
             disabled={accepting}

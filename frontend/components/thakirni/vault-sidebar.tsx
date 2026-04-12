@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   BarChart2,
+  Bell,
   Brain,
   Calendar,
   CheckSquare,
@@ -55,7 +56,8 @@ export function useSidebar() {
 
 const PRIMARY_NAV = [
   { href: "/vault", icon: LayoutDashboard, labelAr: "لوحتك", labelEn: "Dashboard" },
-  { href: "/vault/plans", icon: CheckSquare, labelAr: "خططك", labelEn: "Plans" },
+  { href: "/vault/plans",     icon: CheckSquare, labelAr: "خططك",      labelEn: "Plans"     },
+  { href: "/vault/reminders", icon: Bell,        labelAr: "تذكيراتك",  labelEn: "Reminders" },
   { href: "/vault/meetings", icon: Mic, labelAr: "اجتماعاتك", labelEn: "Meetings" },
   { href: "/vault/analytics", icon: BarChart2, labelAr: "تحليلات", labelEn: "Analytics" },
 ];

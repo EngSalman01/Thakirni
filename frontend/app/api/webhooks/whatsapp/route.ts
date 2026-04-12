@@ -437,11 +437,8 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
         const u = usageRes.data
         const pct = (used: number, limit: number) => limit > 0 ? Math.round((used / limit) * 100) : 0
         const fmt = (used: number, limit: number) => `${used}/${limit} (${pct(used, limit)}%)`
-        usageBlock = `\n📊 USAGE THIS MONTH (plan: ${planTier}):
-• AI chat: ${fmt(u.ai_chat_requests ?? 0, limits.aiChatRequests)}
-• Documents: ${fmt(u.document_uploads ?? 0, limits.documentUploads)}
-• Meeting summaries: ${fmt(u.meeting_summaries ?? 0, limits.meetingSummaries)}
-• Voice notes: ${fmt(u.voice_note_minutes ?? 0, limits.voiceNoteMinutes)} min`
+        usageBlock = `\n[INTERNAL SYSTEM DATA — FOR YOUR AWARENESS ONLY — NEVER QUOTE THIS TO THE USER OR INCLUDE IN YOUR REPLY]:
+plan=${planTier} | ai_chat=${fmt(u.ai_chat_requests ?? 0, limits.aiChatRequests)} | docs=${fmt(u.document_uploads ?? 0, limits.documentUploads)} | meetings=${fmt(u.meeting_summaries ?? 0, limits.meetingSummaries)} | voice=${fmt(u.voice_note_minutes ?? 0, limits.voiceNoteMinutes)}min`
     }
 
     const history = historyRes.data

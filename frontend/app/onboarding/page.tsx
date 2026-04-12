@@ -82,6 +82,17 @@ export default function OnboardingPage() {
   const [creating, setCreating] = useState(false)
   const supabase = createClient()
 
+  // Pre-fill name from profile (set during signup) so user doesn't enter it twice
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      const fromMeta = user.user_metadata?.full_name as string | undefined
+      if (fromMeta) { setName(fromMeta); return }
+      supabase.from("profiles").select("full_name").eq("id", user.id).single()
+        .then(({ data }) => { if (data?.full_name) setName(data.full_name) })
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   const progress = ((step - 1) / (STEPS - 1)) * 100
 
   function toggleUseCase(id: string) {
@@ -128,7 +139,7 @@ export default function OnboardingPage() {
   }
 
   function handlePhoneNext() {
-    const fullPhone = phone.trim() ? countryCode + phone.trim() : ""
+    const fullPhone = phone.trim() ? countryCode + phone.trim().replace(/^0+/, "") : ""
     setStep(4)
     if (fullPhone) {
       fetch("/api/whatsapp/send-welcome", {
