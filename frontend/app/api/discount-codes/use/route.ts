@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/server";
+import { limiters, rateLimitResponse } from "@/lib/rate-limit";
+import { parseBody, sanitizeString } from "@/lib/validate";
 
 export async function POST(req: NextRequest) {
   // Must be authenticated
@@ -8,7 +10,14 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { code } = await req.json() as { code?: string };
+  // Rate-limit authenticated user — prevents rapid code cycling
+  const rl = await limiters.api(user.id);
+  if (!rl.success) return rateLimitResponse(rl.reset);
+
+  const [body, parseErr] = await parseBody<Record<string, unknown>>(req, 2048);
+  if (parseErr) return parseErr;
+
+  const code = sanitizeString(body.code, 50);
   if (!code) return NextResponse.json({ error: "Code required" }, { status: 400 });
 
   const service = createServiceClient();
@@ -17,7 +26,7 @@ export async function POST(req: NextRequest) {
   const { data } = await service
     .from("discount_codes")
     .select("id, max_uses, used_count, is_active, expires_at")
-    .eq("code", code.toUpperCase().trim())
+    .eq("code", code.toUpperCase())
     .single();
 
   if (!data || !data.is_active) return NextResponse.json({ success: false });

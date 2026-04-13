@@ -91,7 +91,7 @@ function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -3 }}
-      className={`relative rounded-2xl p-5 overflow-hidden border border-white/8 transition-all duration-300 ${gradient ?? "bg-white/[0.04]"} hover:border-white/15 hover:shadow-[0_8px_32px_rgba(0,0,0,0.3)]`}
+      className="shell-panel-dark rounded-2xl p-5 transition-all duration-300 hover:border-white/15"
     >
       {/* Icon */}
       <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center mb-4`}>
@@ -273,16 +273,16 @@ export default function AdminDashboardPage() {
         className="flex items-start justify-between"
       >
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">Live</span>
-          </div>
+          <span className="eyebrow-badge mb-3 inline-flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Live
+          </span>
           <h1 className="text-2xl font-headline font-bold text-white">Admin Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{today}</p>
+          <p className="text-sm text-white/40 mt-0.5">{today}</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white/4 border border-white/8 rounded-xl">
+        <div className="flex items-center gap-2 px-4 py-2 shell-panel-dark rounded-xl">
           <Zap className="w-4 h-4 text-amber-400" />
-          <span className="text-xs font-semibold text-slate-300">Thakirni Admin</span>
+          <span className="text-xs font-semibold text-white/60">Thakirni Admin</span>
         </div>
       </motion.div>
 
@@ -309,7 +309,7 @@ export default function AdminDashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="lg:col-span-2 bg-white/[0.03] border border-white/8 rounded-2xl p-6"
+          className="lg:col-span-2 shell-panel-dark rounded-2xl p-6"
         >
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -348,7 +348,7 @@ export default function AdminDashboardPage() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 flex flex-col gap-3"
+          className="shell-panel-dark rounded-2xl p-6 flex flex-col gap-3"
         >
           <div className="flex items-center gap-2 mb-2">
             <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center">
@@ -370,7 +370,7 @@ export default function AdminDashboardPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white/[0.03] border border-white/8 rounded-2xl overflow-hidden"
+        className="shell-panel-dark rounded-2xl overflow-hidden"
       >
         {/* Table header */}
         <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/8">

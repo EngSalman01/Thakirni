@@ -1,40 +1,32 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Shield, ExternalLink } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Shield, X, ExternalLink } from "lucide-react"
+import { useLanguage } from "@/components/language-provider"
 
 const CONSENT_KEY = "thakirni_consent_v1"
 
 export function ConsentModal() {
-  const [open, setOpen] = useState(false)
+  const [visible, setVisible] = useState(false)
   const [accepting, setAccepting] = useState(false)
+  const { isArabic } = useLanguage()
 
   useEffect(() => {
-    // Only show if not already accepted locally
     const stored = typeof window !== "undefined" ? localStorage.getItem(CONSENT_KEY) : null
     if (stored === "accepted") return
 
-    // Check server-side consent status
     fetch("/api/user/consent")
-      .then((r) => {
-        // Don't show modal for unauthenticated users (401) or any error
-        if (!r.ok) return null
-        return r.json() as Promise<{ consented?: boolean }>
-      })
+      .then((r) => (r.ok ? r.json() as Promise<{ consented?: boolean }> : null))
       .then((d) => {
         if (!d) return
         if (!d.consented) {
-          setOpen(true)
+          setVisible(true)
         } else {
-          // Sync to localStorage so we don't hit the API every page load
           localStorage.setItem(CONSENT_KEY, "accepted")
         }
       })
-      .catch(() => {
-        // Network error or unauthenticated — don't show
-      })
+      .catch(() => {})
   }, [])
 
   const handleAccept = async () => {
@@ -45,108 +37,85 @@ export function ConsentModal() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ version: "1.0" }),
       })
-      if (res.ok) {
-        localStorage.setItem(CONSENT_KEY, "accepted")
-      }
-    } catch (err) {
-      console.error("[ConsentModal] accept error:", err)
+      if (res.ok) localStorage.setItem(CONSENT_KEY, "accepted")
+    } catch {
+      // ignore — will re-prompt next load
     } finally {
       setAccepting(false)
-      // Always dismiss — consent will be re-requested on next load if the API failed
-      setOpen(false)
+      setVisible(false)
     }
   }
 
+  const handleDecline = () => setVisible(false)
+
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent
-        className="max-w-lg rounded-2xl border border-border [&>button]:hidden flex flex-col max-h-[calc(100dvh-2rem)] p-0 overflow-hidden"
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <DialogHeader className="px-6 pt-6 pb-2 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-600 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-            <DialogTitle className="text-right leading-snug font-headline text-foreground text-base">
-              موافقة على معالجة البيانات / Data Processing Consent
-            </DialogTitle>
-          </div>
-        </DialogHeader>
-
-        <div className="overflow-y-auto flex-1 px-6 space-y-4 text-sm">
-          {/* Arabic */}
-          <div dir="rtl" className="bg-muted dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
-            <p className="font-label font-semibold text-foreground">عزيزي المستخدم،</p>
-            <p className="text-muted-foreground leading-relaxed">
-              تستخدم منصة <strong>ذاكرني</strong> تقنيات الذكاء الاصطناعي لمعالجة
-              مدخلاتك وتحليلها بهدف تقديم خدمات التخطيط والتذكير والتحليل الشخصي.
-              يتم تخزين بياناتك بأمان على خوادمنا لتمكينك من استخدام الخدمة.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              بموجب نظام حماية البيانات الشخصية (نظام PDPL)، يحق لك في أي وقت:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground space-y-1 ms-2">
-              <li>تصدير جميع بياناتك من صفحة الإعدادات</li>
-              <li>حذف حسابك ومعه جميع بياناتك نهائياً</li>
-              <li>التواصل معنا عبر support@thakirni.com</li>
-            </ul>
-            <p className="text-muted-foreground text-xs">
-              للاطلاع على سياسة الخصوصية كاملةً،{" "}
-              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer"
-                className="text-amber-600 dark:text-amber-400 underline inline-flex items-center gap-1">
-                اضغط هنا <ExternalLink className="w-3 h-3" />
-              </a>
-            </p>
-          </div>
-
-          {/* English */}
-          <div dir="ltr" className="bg-muted dark:bg-white/[0.03] rounded-xl p-4 space-y-2">
-            <p className="font-label font-semibold text-foreground">Dear User,</p>
-            <p className="text-muted-foreground leading-relaxed">
-              <strong>Thakirni</strong> uses AI to process your inputs and deliver
-              planning, reminders, and personal analytics. Your data is securely
-              stored to provide you with the service.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              Under Saudi Arabia&apos;s PDPL, you can at any time:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-2">
-              <li>Export all your data from the Settings page</li>
-              <li>Delete your account and all associated data permanently</li>
-              <li>Contact us at support@thakirni.com</li>
-            </ul>
-            <p className="text-muted-foreground text-xs">
-              Read the full Privacy Policy{" "}
-              <a href="/legal/privacy" target="_blank" rel="noopener noreferrer"
-                className="text-amber-600 dark:text-amber-400 underline inline-flex items-center gap-1">
-                here <ExternalLink className="w-3 h-3" />
-              </a>
-            </p>
-          </div>
-        </div>
-
-        <div className="px-6 pb-6 pt-4 flex-shrink-0">
-          <Button
-            onClick={handleAccept}
-            disabled={accepting}
-            className="w-full rounded-full bg-amber-600 hover:bg-[#1e42a8] text-white font-label font-bold py-6 text-base"
+    <AnimatePresence>
+      {visible && (
+        <motion.div
+          initial={{ opacity: 0, y: 24, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.96 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed bottom-5 end-5 z-50 w-[min(340px,calc(100vw-2.5rem))] shell-panel rounded-2xl p-4 shadow-xl"
+          dir={isArabic ? "rtl" : "ltr"}
+        >
+          {/* Dismiss X */}
+          <button
+            onClick={handleDecline}
+            className="absolute top-3 end-3 w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            aria-label="Dismiss"
           >
-            {accepting ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                جاري التسجيل...
-              </span>
-            ) : (
-              "أوافق وأبدأ / I Agree & Continue"
-            )}
-          </Button>
-          <p className="text-center text-xs text-slate-400 mt-3">
-            يجب الموافقة على الشروط للمتابعة · Acceptance required to continue
+            <X className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Header */}
+          <div className="flex items-center gap-2.5 mb-2.5">
+            <div className="w-7 h-7 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <p className="text-sm font-semibold text-foreground leading-tight">
+              {isArabic ? "موافقة على الخصوصية" : "Privacy Notice"}
+            </p>
+          </div>
+
+          {/* Body */}
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+            {isArabic
+              ? "تستخدم ذاكرني الذكاء الاصطناعي لمعالجة مدخلاتك وتقديم خدمات التذكير والتخطيط. بياناتك محمية وفق نظام PDPL."
+              : "Thakirni uses AI to process your inputs for reminders and planning. Your data is protected under Saudi Arabia's PDPL."}
+            {" "}
+            <a
+              href="/legal/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400 underline underline-offset-2 hover:no-underline"
+            >
+              {isArabic ? "سياسة الخصوصية" : "Privacy Policy"}
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
           </p>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+          {/* Buttons */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleAccept}
+              disabled={accepting}
+              className="flex-1 py-2 rounded-xl text-xs font-bold text-white power-gradient disabled:opacity-60 flex items-center justify-center gap-1.5"
+            >
+              {accepting && (
+                <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              )}
+              {isArabic ? "أوافق" : "Accept"}
+            </button>
+            <button
+              onClick={handleDecline}
+              className="flex-1 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            >
+              {isArabic ? "لاحقاً" : "Later"}
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }

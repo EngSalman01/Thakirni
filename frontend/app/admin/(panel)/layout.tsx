@@ -31,7 +31,7 @@ export default async function AdminLayout({
   const fullName = profile?.full_name ?? user.email?.split("@")[0] ?? "Admin";
 
   return (
-    <div className="min-h-screen bg-[#0E0B07]">
+    <div className="dark min-h-screen bg-[#0E0B07] hero-mesh">
       <AdminSidebar fullName={fullName} />
       <main className="ml-64 min-h-screen">
         <div className="p-8">{children}</div>

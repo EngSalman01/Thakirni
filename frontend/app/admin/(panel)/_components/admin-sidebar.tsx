@@ -56,12 +56,12 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
   const groups = Array.from(new Set(NAV_ITEMS.map((i) => i.group ?? "main")));
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-[#0E0B07] border-r border-white/8 flex flex-col z-40">
+    <aside className="fixed inset-y-0 left-0 w-64 shell-panel-dark flex flex-col z-40 rounded-none border-l-0 border-t-0 border-b-0">
 
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/8">
         <BrandLogo variant="full" iconSize={28} />
-        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/25">
+        <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/25">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
           <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Admin Panel</span>
         </div>
@@ -73,7 +73,7 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
           const items = NAV_ITEMS.filter((i) => (i.group ?? "main") === group);
           return (
             <div key={group}>
-              <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <p className="px-3 mb-2 text-[10px] font-bold text-amber-500/60 uppercase tracking-widest">
                 {GROUP_LABELS[group] ?? group}
               </p>
               <div className="space-y-0.5">
@@ -91,11 +91,11 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
                       className={cn(
                         "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
                         isActive
-                          ? "bg-amber-600 text-white shadow-lg shadow-amber-500/25"
-                          : "text-slate-400 hover:bg-white/6 hover:text-white"
+                          ? "bg-amber-500/15 border border-amber-500/25 text-amber-400 shadow-sm shadow-amber-500/10"
+                          : "text-white/50 hover:bg-white/6 hover:text-white/80 border border-transparent"
                       )}
                     >
-                      <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-white" : "text-slate-500")} />
+                      <Icon className={cn("w-4 h-4 flex-shrink-0", isActive ? "text-amber-400" : "text-white/30")} />
                       {item.label}
                     </Link>
                   );
@@ -108,13 +108,14 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
 
       {/* User / footer */}
       <div className="p-4 border-t border-white/8 space-y-3">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/4">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/8">
           <div className="w-8 h-8 rounded-full power-gradient flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
             {fullName?.charAt(0)?.toUpperCase() ?? "A"}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-semibold text-white truncate">{fullName || "Admin"}</p>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400">
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 border border-emerald-500/20 text-emerald-400">
+              <Shield className="w-2.5 h-2.5" />
               Admin
             </span>
           </div>
@@ -122,7 +123,7 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
 
         <Link
           href="/vault"
-          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-slate-500 hover:bg-white/6 hover:text-slate-300 transition-all"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-white/30 hover:bg-white/6 hover:text-white/60 border border-transparent hover:border-white/8 transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Vault
