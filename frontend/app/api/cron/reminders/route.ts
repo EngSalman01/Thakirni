@@ -3,6 +3,42 @@ import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
 import { buildViralAppend, logViralCTASent } from "@/lib/growth/viral"
+import { generateText } from "ai"
+import { createGoogleGenerativeAI } from "@ai-sdk/google"
+
+const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
+
+function getRiyadhHour(): number {
+  return parseInt(new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Riyadh", hour12: false }).slice(0, 2))
+}
+
+function timeOfDayLabel(hour: number, isArabic: boolean): string {
+  if (hour < 6)  return isArabic ? "وقت السحر" : "early morning"
+  if (hour < 12) return isArabic ? "الصبح" : "morning"
+  if (hour < 17) return isArabic ? "الظهر" : "afternoon"
+  if (hour < 21) return isArabic ? "المساء" : "evening"
+  return isArabic ? "الليل" : "night"
+}
+
+async function generateReminderMessage(title: string, isArabic: boolean, hour: number): Promise<string> {
+  const tod = timeOfDayLabel(hour, isArabic)
+  try {
+    const { text } = await generateText({
+      model: google("gemini-2.5-flash"),
+      maxTokens: 80,
+      messages: [{
+        role: "user",
+        content: isArabic
+          ? `اكتب جملة واحدة قصيرة جداً على واتساب لتذكير شخص بـ: "${title}". الوقت: ${tod}. قواعد: لهجة سعودية خليجية طبيعية، إيموجي مناسب، لا تقل كلمة "تذكير" مباشرة، غيّر الأسلوب — أحياناً ودي أحياناً مضحك أحياناً جاد أحياناً محفز. أرسل الجملة فقط بدون أي شرح.`
+          : `Write one very short WhatsApp reminder for: "${title}". Time: ${tod}. Rules: casual and natural, add a fitting emoji, don't say the word "reminder", vary the tone — sometimes caring, sometimes playful, sometimes urgent. Just the sentence, nothing else.`
+      }],
+    })
+    const clean = text.trim().replace(/^["']|["']$/g, "")
+    return clean || `🔔 ${title}`
+  } catch {
+    return `🔔 ${title}`
+  }
+}
 
 export const maxDuration = 60
 
@@ -121,9 +157,8 @@ export async function GET(req: NextRequest) {
 
       } else {
         // ── Regular reminder ──────────────────────────────────────────────────
-        let message = isArabic
-          ? `🔔 ${reminder.title}`
-          : `🔔 ${reminder.title}`
+        const hour = getRiyadhHour()
+        let message = await generateReminderMessage(reminder.title, isArabic, hour)
 
         // Append viral CTA occasionally (perfect value moment — they just got value)
         const referralCode = (profile as { referral_code?: string })?.referral_code
