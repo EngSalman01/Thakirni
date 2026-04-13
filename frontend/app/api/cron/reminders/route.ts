@@ -25,7 +25,7 @@ async function generateReminderMessage(title: string, isArabic: boolean, hour: n
   try {
     const { text } = await generateText({
       model: google("gemini-2.5-flash"),
-      maxTokens: 80,
+      maxOutputTokens: 80,
       messages: [{
         role: "user",
         content: isArabic
