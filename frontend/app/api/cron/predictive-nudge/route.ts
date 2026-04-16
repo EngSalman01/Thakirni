@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
         break // one nudge per user per run
       }
 
-      if (insights.length === 0 || insights.every(async i => wasInsightRecentlySent(profile.id, i.type, 24))) {
+      if (insights.length === 0) {
         skipped++
       }
     } catch (err) {

@@ -25,7 +25,7 @@ async function generateReminderMessage(title: string, isArabic: boolean, hour: n
   try {
     const { text } = await generateText({
       model: google("gemini-2.5-flash"),
-      maxOutputTokens: 80,
+      maxOutputTokens: 150,
       messages: [{
         role: "user",
         content: isArabic
@@ -34,7 +34,9 @@ async function generateReminderMessage(title: string, isArabic: boolean, hour: n
       }],
     })
     const clean = text.trim().replace(/^["']|["']$/g, "")
-    return clean || `🔔 ${title}`
+    // Reject truncated output: ends with bare definite article "ال" or dangling space
+    const looksComplete = clean.length > 5 && !/\sال$/.test(clean) && !/ $/.test(clean)
+    return (clean && looksComplete) ? clean : `🔔 ${title}`
   } catch {
     return `🔔 ${title}`
   }

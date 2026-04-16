@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
-
-// Rate limit: 3 demo requests per IP per hour
-const recentRequests = new Map<string, number[]>()
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
-  const now = Date.now()
-
-  // Clean old entries and check rate limit
-  const timestamps = (recentRequests.get(ip) ?? []).filter(t => now - t < 3_600_000)
-  if (timestamps.length >= 3) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
-  }
-  recentRequests.set(ip, [...timestamps, now])
+  const rl = await limiters.form(ip)
+  if (!rl.success) return rateLimitResponse(rl.reset)
 
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })

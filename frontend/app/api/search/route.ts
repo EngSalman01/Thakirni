@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
   if (error || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const rl = await limiters.api(user.id)
+  if (!rl.success) return rateLimitResponse(rl.reset)
 
   const q = req.nextUrl.searchParams.get("q")?.trim()
   if (!q || q.length < 2 || q.length > 100) return NextResponse.json({ results: [] })

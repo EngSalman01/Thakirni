@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 // GET /api/affiliate — get current user's affiliate info
 export async function GET() {
@@ -35,6 +36,9 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+  const rl = await limiters.api(user.id)
+  if (!rl.success) return rateLimitResponse(rl.reset)
 
   // Check if already an affiliate
   const { data: existing } = await supabase
