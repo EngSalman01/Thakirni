@@ -41,6 +41,7 @@ interface Profile {
   id: string;
   full_name?: string;
   avatar_url?: string;
+  plan_tier?: string | null;
 }
 
 interface SidebarContextType {
@@ -84,7 +85,7 @@ function useProfile() {
 
       supabase
         .from("profiles")
-        .select("id, full_name, avatar_url")
+        .select("id, full_name, avatar_url, plan_tier")
         .eq("id", user.id)
         .single()
         .then(({ data }) => {
@@ -305,13 +306,32 @@ export function VaultSidebar() {
                 <ThemeToggle />
               </div>
 
-              <Link
-                href="/vault/settings"
-                className="hidden items-center gap-2 rounded-full border border-amber-300/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-500/14 dark:border-amber-700/30 dark:text-amber-300 lg:inline-flex"
-              >
-                <Sparkles className="h-4 w-4" />
-                {t("ترقية الخطة", "Upgrade")}
-              </Link>
+              {(() => {
+                const tier = (profile?.plan_tier ?? "free").toUpperCase()
+                const isFree = tier === "FREE" || !profile
+                const label = tier === "PRO" ? "Pro" : tier === "TEAMS" ? "Teams" : null
+                if (isFree) {
+                  return (
+                    <Link
+                      href="/vault/settings/billing"
+                      className="hidden items-center gap-2 rounded-full border border-amber-300/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-500/14 dark:border-amber-700/30 dark:text-amber-300 lg:inline-flex"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      {t("ترقية الخطة", "Upgrade")}
+                    </Link>
+                  )
+                }
+                return (
+                  <span className={`hidden lg:inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-wide border ${
+                    tier === "TEAMS"
+                      ? "bg-violet-500/10 border-violet-500/25 text-violet-600 dark:text-violet-300"
+                      : "bg-blue-500/10 border-blue-500/25 text-blue-600 dark:text-blue-300"
+                  }`}>
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {label}
+                  </span>
+                )
+              })()}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
