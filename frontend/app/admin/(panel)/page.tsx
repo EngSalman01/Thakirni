@@ -91,7 +91,7 @@ function StatCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -3 }}
-      className="shell-panel-dark rounded-2xl p-5 transition-all duration-300 hover:border-white/15"
+      className="relative overflow-hidden shell-panel-dark rounded-2xl p-5 transition-all duration-300 hover:border-white/15"
     >
       {/* Icon */}
       <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center mb-4`}>

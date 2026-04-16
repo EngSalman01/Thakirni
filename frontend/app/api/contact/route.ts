@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
+import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-
-// In-memory rate limit: 1 submission per IP per minute
-const recentSubmissions = new Map<string, number>()
 
 export async function POST(req: NextRequest) {
   const contactEmail = process.env.CONTACT_EMAIL
@@ -12,12 +10,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Contact not configured" }, { status: 503 })
   }
 
-  // Rate limit
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
-  const now = Date.now()
-  if (now - (recentSubmissions.get(ip) ?? 0) < 60_000) {
-    return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 })
-  }
+  const rl = await limiters.form(ip)
+  if (!rl.success) return rateLimitResponse(rl.reset)
 
   const body = await req.json().catch(() => null)
   if (!body) return NextResponse.json({ error: "Invalid request" }, { status: 400 })
@@ -59,8 +54,6 @@ export async function POST(req: NextRequest) {
   if (message.length > 5000) {
     return NextResponse.json({ error: "Message too long" }, { status: 400 })
   }
-
-  recentSubmissions.set(ip, now)
 
   const safeMessage = message
     .replace(/&/g, "&amp;")

@@ -75,6 +75,17 @@ function detectDialect(text: string): Dialect {
     return "khobar"
 }
 
+// ─── Markdown Stripper (WhatsApp doesn't render ** or ##) ─────────────────────
+
+function stripMarkdown(text: string): string {
+    return text
+        .replace(/\*\*([^*\n]+)\*\*/g, "$1")  // **bold** → bold
+        .replace(/\*([^*\n]+)\*/g, "$1")       // *italic* → italic
+        .replace(/^#{1,6}\s+/gm, "")           // ## headers
+        .replace(/`([^`]+)`/g, "$1")           // `code`
+        .trim()
+}
+
 // ─── Structured Logging ───────────────────────────────────────────────────────
 
 function log(event: string, phone: string, detail?: string) {
@@ -488,8 +499,10 @@ You talk like someone from Khobar / Eastern Saudi Arabia.
 Natural, chill, real.
 
 If anyone asks who built you, who made you, or who is your developer:
-→ In Arabic: قل "المهندس سلمان المناصير"
-→ In English: say "ENG. Salman Almnaseer"
+→ FOLLOW THE LANGUAGE RULE ABOVE — never switch language just for this
+→ Arabic context (user writing Arabic): "المهندس سلمان المناصير"
+→ English context (user writing English): "ENG. Salman Almnaseer"
+🚨 If user is Arabic → ALWAYS use "المهندس سلمان المناصير" — never say the English form.
 Never say anyone else built you.
 
 ${profileName ? `The user's name is ${profileName}.` : ""}
@@ -1162,7 +1175,7 @@ RULE:
 
         },
     })
-    aiResponse = text
+    aiResponse = stripMarkdown(text)
     } catch (err) {
         const e = err as Error & { cause?: unknown; statusCode?: number; responseBody?: string }
         console.log("[WhatsApp AI] ERR:", e?.message ?? String(err), "| cause:", String(e?.cause), "| status:", e?.statusCode)
