@@ -56,7 +56,7 @@ export function AdminSidebar({ fullName }: AdminSidebarProps) {
   const groups = Array.from(new Set(NAV_ITEMS.map((i) => i.group ?? "main")));
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 shell-panel-dark flex flex-col z-40 rounded-none border-l-0 border-t-0 border-b-0">
+    <aside className="fixed inset-y-0 left-0 w-64 shell-panel-dark flex flex-col z-40 rounded-none border-l-0 border-t-0 border-b-0" style={{ position: "fixed" }}>
 
       {/* Logo */}
       <div className="px-5 py-5 border-b border-white/8">
