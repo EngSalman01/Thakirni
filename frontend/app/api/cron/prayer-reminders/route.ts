@@ -42,14 +42,15 @@ const CITY_COORDS: Record<string, { lat: string; lon: string }> = {
 
 const PRAYER_METHOD = "4"
 
-interface IslamicApiTiming {
+interface PrayerTiming {
   Fajr: string; Dhuhr: string; Asr: string; Maghrib: string; Isha: string;
 }
 
-interface IslamicApiResponse {
+// AlAdhan API (aladhan.com) — free, no API key required
+interface AlAdhanResponse {
   code: number
   status: string
-  data?: { times?: IslamicApiTiming }
+  data?: { timings?: PrayerTiming }
 }
 
 const PRAYER_AR: Record<string, string> = {
@@ -58,7 +59,7 @@ const PRAYER_AR: Record<string, string> = {
 const PRAYER_EN: Record<string, string> = {
   fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha",
 }
-const PRAYER_KEY: Record<string, keyof IslamicApiTiming> = {
+const PRAYER_KEY: Record<string, keyof PrayerTiming> = {
   fajr: "Fajr", dhuhr: "Dhuhr", asr: "Asr", maghrib: "Maghrib", isha: "Isha",
 }
 
@@ -81,7 +82,7 @@ interface FiringPrayer {
   type: ReminderType
 }
 
-function firingPrayersForTimings(timings: IslamicApiTiming, nowHhmm: string): FiringPrayer[] {
+function firingPrayersForTimings(timings: PrayerTiming, nowHhmm: string): FiringPrayer[] {
   const firing: FiringPrayer[] = []
   for (const key of ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const) {
     const prayerHhmm = timings[PRAYER_KEY[key]].slice(0, 5)
@@ -99,22 +100,18 @@ function firingPrayersForTimings(timings: IslamicApiTiming, nowHhmm: string): Fi
   return firing
 }
 
-async function fetchTimings(lat: string, lon: string, apiKey: string): Promise<IslamicApiTiming | null> {
-  const url = `https://islamicapi.com/api/v1/prayer-time/?lat=${lat}&lon=${lon}&method=${PRAYER_METHOD}&api_key=${apiKey}`
-  const res = await fetch(url, { cache: "no-store" })
-  const json = await res.json() as IslamicApiResponse
-  return json.data?.times ?? null
+async function fetchTimings(lat: string, lon: string): Promise<PrayerTiming | null> {
+  const date = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Riyadh" }) // YYYY-MM-DD
+  const url = `https://api.aladhan.com/v1/timings/${date}?latitude=${lat}&longitude=${lon}&method=${PRAYER_METHOD}`
+  const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8000) })
+  if (!res.ok) return null
+  const json = await res.json() as AlAdhanResponse
+  return json.data?.timings ?? null
 }
 
 export async function GET(req: NextRequest) {
   const authErr = requireCronSecret(req)
   if (authErr) return authErr
-
-  const apiKey = process.env.ISLAMIC_API_KEY
-  if (!apiKey) {
-    console.error("[prayer-reminders] ISLAMIC_API_KEY not set")
-    return NextResponse.json({ error: "missing_api_key" }, { status: 500 })
-  }
 
   const supabase = createServiceClient()
   const nowHhmm = getSaudiNow()
@@ -143,9 +140,9 @@ export async function GET(req: NextRequest) {
 
   for (const [cityKey, citySubs] of byCity) {
     const coords = CITY_COORDS[cityKey] ?? CITY_COORDS.riyadh // fallback to Riyadh
-    let timings: IslamicApiTiming | null = null
+    let timings: PrayerTiming | null = null
     try {
-      timings = await fetchTimings(coords.lat, coords.lon, apiKey)
+      timings = await fetchTimings(coords.lat, coords.lon)
     } catch (err) {
       console.error(`[prayer-reminders] fetch error for ${cityKey}:`, err)
       continue
