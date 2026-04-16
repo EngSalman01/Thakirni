@@ -1,10 +1,19 @@
 import { NextRequest } from "next/server"
 import { requireAuth, checkPlanFeature } from "@/lib/api-auth"
-import { processMeetingRecording } from "@/lib/services/transcription.service"
+import { createClient as createServiceSupabase } from "@supabase/supabase-js"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 import { trackEvent } from "@/lib/analytics"
 import { enforceUsage } from "@/lib/usage/enforce"
-import { incrementUsage } from "@/lib/usage/increment"
+import path from "path"
+
+export const maxDuration = 30 // just for the upload + queue step
+
+function getServiceClient() {
+  return createServiceSupabase(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
@@ -14,13 +23,13 @@ export async function POST(req: NextRequest) {
   const rl = await limiters.upload(auth.userId, auth.workspace?.workspaceId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
-  // Feature gate — resolved from workspace owner's plan
+  // Feature gate
   const { allowed: featureAllowed } = await checkPlanFeature(auth.workspace?.ownerId ?? auth.userId, "meeting_summary")
   if (!featureAllowed) {
     return Response.json({ error: "upgrade_required", message: "هذه الميزة تحتاج اشتراك Pro أو أعلى", feature: "meeting_summary" }, { status: 403 })
   }
 
-  // Usage enforcement (workspace-scoped)
+  // Usage enforcement
   const enforcement = await enforceUsage(
     auth.userId, "meeting_summary",
     auth.workspace?.workspaceId,
@@ -45,50 +54,80 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Unsupported audio format. Use MP3, WAV, M4A, MP4, or WebM." }, { status: 400 })
     }
 
-    if (file.size > 100 * 1024 * 1024) {
-      return Response.json({ error: "File too large. Maximum 100MB." }, { status: 400 })
+    if (file.size > 200 * 1024 * 1024) {
+      return Response.json({ error: "File too large. Maximum 200MB." }, { status: 400 })
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer())
-    const result = await processMeetingRecording(buffer, file.name, { meetingTitle: title, outputLanguage })
+    const service = getServiceClient()
 
-    const { data: meeting, error } = await auth.supabase
+    // ── 1. Create a "processing" meeting record first to get an ID ────────────
+    const { data: meeting, error: insertError } = await service
       .from("meetings")
       .insert({
         user_id: auth.userId,
         title,
-        duration_seconds: Math.round(result.duration),
-        language: result.language,
-        speaker_count: Object.keys(result.speakers).length,
-        speakers: result.speakers,
-        transcript: result.transcript,
-        summary: result.summary,
-        key_points: result.keyPoints,
-        action_items: result.actionItems,
-        file_size_bytes: file.size,
-        status: "completed",
+        status: "processing",
+        language: outputLanguage,
       })
       .select()
       .single()
 
-    if (error) return Response.json({ error: "Failed to save meeting" }, { status: 500 })
+    if (insertError || !meeting) {
+      console.error("[meetings/upload] insert error:", insertError)
+      return Response.json({ error: "Failed to create meeting record" }, { status: 500 })
+    }
 
-    // Increment after success (workspace-scoped)
-    incrementUsage(auth.userId, "meeting_summary", 1, auth.workspace?.workspaceId).catch(() => {})
+    // ── 2. Upload audio to Supabase Storage ───────────────────────────────────
+    const ext = path.extname(file.name).toLowerCase() || ".mp3"
+    const storagePath = `${auth.userId}/${meeting.id}${ext}`
+    const arrayBuffer = await file.arrayBuffer()
+
+    const { error: uploadError } = await service.storage
+      .from("meetings-audio")
+      .upload(storagePath, arrayBuffer, {
+        contentType: file.type || "audio/mpeg",
+        upsert: true,
+      })
+
+    if (uploadError) {
+      // Cleanup the meeting record on storage failure
+      await service.from("meetings").delete().eq("id", meeting.id)
+      console.error("[meetings/upload] storage error:", uploadError)
+      return Response.json({ error: "Failed to upload audio file" }, { status: 500 })
+    }
+
+    // ── 3. Update meeting with storage path + metadata ────────────────────────
+    await service.from("meetings").update({
+      audio_storage_path: storagePath,
+    }).eq("id", meeting.id)
+
+    // ── 4. Fire-and-forget: trigger background processing ─────────────────────
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL
+      ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+
+    fetch(`${appUrl}/api/meetings/${meeting.id}/process`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-internal-secret": process.env.CRON_SECRET ?? "",
+      },
+      body: JSON.stringify({ outputLanguage, meetingTitle: title }),
+    }).catch((err) => {
+      console.error("[meetings/upload] background trigger failed (cron will retry):", err)
+    })
+
+    // ── 5. Track & return immediately ─────────────────────────────────────────
     trackEvent("meeting_uploaded")
 
-    auth.service.from("timeline_events").insert({
-      user_id: auth.userId,
-      title: `Meeting recorded: ${title}`,
-      event_date: new Date().toISOString().split("T")[0],
-      source_type: "meeting_recorded",
-      source_id: meeting.id,
-      importance: 2,
-    }).then(undefined, (err) => { console.error("[Meetings] timeline_events insert failed:", err) })
+    return Response.json({
+      success: true,
+      processing: true,
+      meeting: { ...meeting, audio_storage_path: storagePath },
+    })
 
-    return Response.json({ success: true, meeting, summary: result.summary, speakers: result.speakers, keyPoints: result.keyPoints, actionItems: result.actionItems, transcript: result.transcript })
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Processing failed"
+    const msg = err instanceof Error ? err.message : "Upload failed"
+    console.error("[meetings/upload] error:", msg)
     return Response.json({ error: msg }, { status: 500 })
   }
 }

@@ -18,7 +18,13 @@ export function useMeetings() {
   const { data, error, mutate } = useSWR(
     `/api/meetings`,
     fetcher,
-    { refreshInterval: 0 }
+    {
+      // Poll every 5s while any meeting is still processing, then stop
+      refreshInterval: (meetings) => {
+        const list = meetings ?? []
+        return list.some((m) => (m as { status?: string }).status === "processing") ? 5000 : 0
+      },
+    }
   )
 
   return {

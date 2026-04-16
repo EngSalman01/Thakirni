@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Mic, Upload, Clock, Users, FileText, ChevronDown, ChevronUp, Trash2, Sparkles } from "lucide-react"
+import { Mic, Upload, Clock, Users, FileText, ChevronDown, ChevronUp, Trash2, Sparkles, ScrollText, Copy, Download, Loader2, X } from "lucide-react"
 import { toast } from "sonner"
 import { useMeetings } from "@/hooks/use-meetings"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface Meeting {
   id: string
@@ -146,6 +146,9 @@ export default function MeetingsPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [minutesModal, setMinutesModal] = useState<{ open: boolean; meetingId: string; title: string } | null>(null)
+  const [minutesText, setMinutesText] = useState<string>("")
+  const [minutesLoading, setMinutesLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { meetings, mutate, isLoading: meetingsLoading, isError: meetingsError } = useMeetings()
   const { t, isArabic } = useLanguage()
@@ -169,6 +172,7 @@ export default function MeetingsPage() {
         method: "POST",
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData,
+        signal: AbortSignal.timeout(290_000), // 290s — just under server maxDuration
       })
       setUploadProgress(90)
       const data = await res.json() as { error?: string; meeting?: { id: string } }
@@ -188,7 +192,12 @@ export default function MeetingsPage() {
       mutate()
     } catch (err) {
       console.error("[Meetings] upload error:", err)
-      toast.error(t("حدث خطأ أثناء الرفع", "An error occurred during upload"))
+      const isTimeout = err instanceof DOMException && err.name === "TimeoutError"
+      toast.error(
+        isTimeout
+          ? t("انتهت مهلة المعالجة — حاول ملفاً أقصر أو أصغر حجماً", "Processing timed out — try a shorter or smaller file")
+          : t("حدث خطأ أثناء الرفع", "An error occurred during upload")
+      )
     } finally {
       setIsUploading(false)
       setUploadProgress(0)
@@ -211,6 +220,37 @@ export default function MeetingsPage() {
     } catch (err) {
       console.error("[Meetings] delete error:", err)
       toast.error(t("فشل حذف الاجتماع", "Failed to delete meeting"))
+    }
+  }
+
+  async function handleExportMinutes(id: string, title: string) {
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) return
+    setMinutesText("")
+    setMinutesModal({ open: true, meetingId: id, title })
+    setMinutesLoading(true)
+    try {
+      const res = await fetch(`/api/meetings/${id}/minutes`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ language: isArabic ? "ar" : "en" }),
+      })
+      const data = await res.json() as { minutes?: string; error?: string }
+      if (!res.ok || !data.minutes) {
+        toast.error(data.error ?? t("فشل إنشاء المحاضر", "Failed to generate minutes"))
+        setMinutesModal(null)
+        return
+      }
+      setMinutesText(data.minutes)
+    } catch {
+      toast.error(t("حدث خطأ", "An error occurred"))
+      setMinutesModal(null)
+    } finally {
+      setMinutesLoading(false)
     }
   }
 
@@ -371,6 +411,17 @@ export default function MeetingsPage() {
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === "completed" ? "bg-green-100 text-green-700" : "bg-[#e4e2e1] text-muted-foreground"}`}>
                             {m.status === "completed" ? t("مكتمل", "Completed") : t("جاري...", "Processing...")}
                           </span>
+                          {m.status === "completed" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-9 gap-2 text-xs border-amber-300/60 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/10"
+                              onClick={() => handleExportMinutes(m.id, m.title)}
+                            >
+                              <ScrollText className="w-3.5 h-3.5" />
+                              {t("المحاضر", "Minutes")}
+                            </Button>
+                          )}
                           <Button variant="ghost" size="icon" aria-label="Delete meeting" className="h-9 w-9 text-slate-400 hover:text-red-500" onClick={() => handleDelete(m.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -471,6 +522,98 @@ export default function MeetingsPage() {
           </div>
         </section>
       </main>
+
+      {/* ═══ MINUTES MODAL ═══ */}
+      <AnimatePresence>
+        {minutesModal?.open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) setMinutesModal(null) }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full max-w-3xl max-h-[90vh] bg-card rounded-3xl shadow-2xl border border-border flex flex-col overflow-hidden"
+              dir={isArabic ? "rtl" : "ltr"}
+            >
+              {/* Modal header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl power-gradient flex items-center justify-center shrink-0">
+                    <ScrollText className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground line-clamp-1">{minutesModal.title}</p>
+                    <p className="text-xs text-muted-foreground">{t("محاضر الاجتماع", "Meeting Minutes")}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {!minutesLoading && minutesText && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-2 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(minutesText)
+                          toast.success(t("تم النسخ!", "Copied!"))
+                        }}
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        {t("نسخ", "Copy")}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-2 text-xs"
+                        onClick={() => {
+                          const blob = new Blob([minutesText], { type: "text/plain;charset=utf-8" })
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement("a")
+                          a.href = url
+                          a.download = `${minutesModal.title.replace(/[^a-zA-Z0-9\u0600-\u06FF ]/g, "_")}_minutes.txt`
+                          a.click()
+                          URL.revokeObjectURL(url)
+                        }}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        {t("تنزيل", "Download")}
+                      </Button>
+                    </>
+                  )}
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMinutesModal(null)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Modal body */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {minutesLoading ? (
+                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+                    <p className="text-sm text-muted-foreground">{t("جاري إنشاء المحاضر بالذكاء الاصطناعي...", "Generating minutes with AI...")}</p>
+                  </div>
+                ) : (
+                  <div className="prose prose-sm dark:prose-invert max-w-none">
+                    <pre
+                      className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground bg-muted/40 dark:bg-white/[0.03] rounded-2xl p-6 border border-border/60"
+                      style={{ fontFamily: isArabic ? "inherit" : "ui-monospace, monospace" }}
+                    >
+                      {minutesText}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
