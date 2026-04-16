@@ -4,9 +4,8 @@ import { createClient as createServiceSupabase } from "@supabase/supabase-js"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 import { trackEvent } from "@/lib/analytics"
 import { enforceUsage } from "@/lib/usage/enforce"
-import path from "path"
 
-export const maxDuration = 30 // just for the upload + queue step
+export const maxDuration = 30
 
 function getServiceClient() {
   return createServiceSupabase(
@@ -15,11 +14,20 @@ function getServiceClient() {
   )
 }
 
+/**
+ * POST /api/meetings/upload
+ *
+ * Accepts JSON metadata only — no file. The client uploads the audio file
+ * directly to Supabase Storage (bypassing the 4.5 MB Vercel body limit),
+ * then calls this route to create the DB record and get back the storage path.
+ *
+ * Body: { title, language, fileExt, fileSize }
+ * Returns: { meetingId, storagePath }
+ */
 export async function POST(req: NextRequest) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
 
-  // Rate limit: 10 uploads per hour (workspace-scoped)
   const rl = await limiters.upload(auth.userId, auth.workspace?.workspaceId)
   if (!rl.success) return rateLimitResponse(rl.reset)
 
@@ -42,25 +50,24 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const formData = await req.formData()
-    const file = formData.get("audio") as File | null
-    const title = (formData.get("title") as string) ?? "Meeting"
-    const outputLanguage = ((formData.get("language") as string) ?? "ar") as "ar" | "en"
+    const body = await req.json() as { title?: string; language?: string; fileExt?: string; fileSize?: number }
+    const title = body.title ?? "Meeting"
+    const outputLanguage = (body.language ?? "ar") as "ar" | "en"
+    const fileExt = (body.fileExt ?? ".mp3").replace(/^\.?/, ".").toLowerCase()
+    const fileSize = body.fileSize ?? null
 
-    if (!file) return Response.json({ error: "No audio file provided" }, { status: 400 })
-
-    const allowed_types = ["audio/mp3", "audio/mpeg", "audio/wav", "audio/ogg", "audio/m4a", "audio/mp4", "audio/webm", "video/mp4", "video/webm"]
-    if (!allowed_types.includes(file.type) && !file.name.match(/\.(mp3|wav|ogg|m4a|mp4|webm|flac)$/i)) {
+    const allowedExts = [".mp3", ".wav", ".ogg", ".m4a", ".mp4", ".webm", ".flac"]
+    if (!allowedExts.includes(fileExt)) {
       return Response.json({ error: "Unsupported audio format. Use MP3, WAV, M4A, MP4, or WebM." }, { status: 400 })
     }
 
-    if (file.size > 200 * 1024 * 1024) {
-      return Response.json({ error: "File too large. Maximum 200MB." }, { status: 400 })
+    if (fileSize && fileSize > 500 * 1024 * 1024) {
+      return Response.json({ error: "File too large. Maximum 500MB." }, { status: 400 })
     }
 
     const service = getServiceClient()
 
-    // ── 1. Create a "processing" meeting record first to get an ID ────────────
+    // Create the meeting record in "processing" state
     const { data: meeting, error: insertError } = await service
       .from("meetings")
       .insert({
@@ -68,8 +75,9 @@ export async function POST(req: NextRequest) {
         title,
         status: "processing",
         language: outputLanguage,
+        file_size_bytes: fileSize,
       })
-      .select()
+      .select("id")
       .single()
 
     if (insertError || !meeting) {
@@ -77,54 +85,19 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Failed to create meeting record" }, { status: 500 })
     }
 
-    // ── 2. Upload audio to Supabase Storage ───────────────────────────────────
-    const ext = path.extname(file.name).toLowerCase() || ".mp3"
-    const storagePath = `${auth.userId}/${meeting.id}${ext}`
-    const arrayBuffer = await file.arrayBuffer()
+    const storagePath = `${auth.userId}/${meeting.id}${fileExt}`
 
-    const { error: uploadError } = await service.storage
-      .from("meetings-audio")
-      .upload(storagePath, arrayBuffer, {
-        contentType: file.type || "audio/mpeg",
-        upsert: true,
-      })
+    // Store the path so the process route can find the audio
+    await service.from("meetings").update({ audio_storage_path: storagePath }).eq("id", meeting.id)
 
-    if (uploadError) {
-      // Cleanup the meeting record on storage failure
-      await service.from("meetings").delete().eq("id", meeting.id)
-      console.error("[meetings/upload] storage error:", uploadError)
-      return Response.json({ error: "Failed to upload audio file" }, { status: 500 })
-    }
-
-    // ── 3. Update meeting with storage path + metadata ────────────────────────
-    await service.from("meetings").update({
-      audio_storage_path: storagePath,
-    }).eq("id", meeting.id)
-
-    // ── 4. Fire-and-forget: trigger background processing ─────────────────────
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL
-      ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
-
-    fetch(`${appUrl}/api/meetings/${meeting.id}/process`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-internal-secret": process.env.CRON_SECRET ?? "",
-      },
-      body: JSON.stringify({ outputLanguage, meetingTitle: title }),
-    }).catch((err) => {
-      console.error("[meetings/upload] background trigger failed (cron will retry):", err)
-    })
-
-    // ── 5. Track & return immediately ─────────────────────────────────────────
     trackEvent("meeting_uploaded")
 
     return Response.json({
       success: true,
-      processing: true,
-      meeting: { ...meeting, audio_storage_path: storagePath },
+      meetingId: meeting.id,
+      storagePath,
+      bucket: "meetings-audio",
     })
-
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Upload failed"
     console.error("[meetings/upload] error:", msg)

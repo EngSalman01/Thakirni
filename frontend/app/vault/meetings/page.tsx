@@ -157,47 +157,87 @@ export default function MeetingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
     setIsUploading(true)
-    setUploadProgress(10)
+    setUploadProgress(5)
     try {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) { toast.error(t("يجب تسجيل الدخول أولاً", "Please sign in first")); return }
-      const formData = new FormData()
-      formData.append("audio", file)
-      formData.append("title", file.name.replace(/\.[^.]+$/, ""))
-      formData.append("language", isArabic ? "ar" : "en")
-      setUploadProgress(30)
-      toast.info(t("جاري معالجة التسجيل... قد يستغرق بضع دقائق", "Processing recording... this may take a few minutes"))
-      const res = await fetch(`/api/meetings/upload`, {
+
+      const fileExt = file.name.includes(".") ? `.${file.name.split(".").pop()!.toLowerCase()}` : ".mp3"
+      const title = file.name.replace(/\.[^.]+$/, "")
+
+      // ── Step 1: Create DB record + get storage path (small JSON request) ──
+      const metaRes = await fetch("/api/meetings/upload", {
         method: "POST",
-        headers: { Authorization: `Bearer ${session.access_token}` },
-        body: formData,
-        signal: AbortSignal.timeout(290_000), // 290s — just under server maxDuration
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title, language: isArabic ? "ar" : "en", fileExt, fileSize: file.size }),
       })
-      setUploadProgress(90)
-      const data = await res.json() as { error?: string; meeting?: { id: string } }
-      if (!res.ok) {
-        if (res.status === 403) {
+      const metaData = await metaRes.json() as { error?: string; meetingId?: string; storagePath?: string }
+      if (!metaRes.ok) {
+        if (metaRes.status === 403) {
           toast.error(
             t("ملخص الاجتماعات متاح لمشتركي Pro أو أعلى", "Meeting summaries require a Pro subscription or higher"),
             { action: { label: t("ترقية", "Upgrade"), onClick: () => window.location.href = "/pricing" } }
           )
         } else {
-          toast.error(data.error ?? t("فشل في معالجة التسجيل", "Failed to process recording"))
+          toast.error(metaData.error ?? t("فشل في إنشاء السجل", "Failed to create meeting record"))
         }
         return
       }
-      setUploadProgress(100)
-      toast.success(t("تم تحليل الاجتماع بنجاح! ✅", "Meeting analysed successfully! ✅"))
+
+      const { meetingId, storagePath } = metaData
+      if (!meetingId || !storagePath) {
+        toast.error(t("استجابة غير متوقعة من الخادم", "Unexpected server response"))
+        return
+      }
+
+      setUploadProgress(15)
+      toast.info(t("جاري رفع الملف... قد يستغرق بضع دقائق", "Uploading file... this may take a few minutes"))
+
+      // ── Step 2: Upload file DIRECTLY to Supabase Storage (bypasses Vercel) ──
+      const { error: storageError } = await supabase.storage
+        .from("meetings-audio")
+        .upload(storagePath, file, { contentType: file.type || "audio/mpeg", upsert: true })
+
+      if (storageError) {
+        console.error("[Meetings] storage upload error:", storageError)
+        toast.error(t("فشل رفع الملف الصوتي", "Failed to upload audio file"))
+        return
+      }
+
+      setUploadProgress(70)
+      toast.info(t("جاري تحليل الاجتماع بالذكاء الاصطناعي...", "Analysing meeting with AI..."))
+
+      // ── Step 3: Trigger background processing ─────────────────────────────
+      const processRes = await fetch(`/api/meetings/${meetingId}/process`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ outputLanguage: isArabic ? "ar" : "en", meetingTitle: title }),
+      })
+
+      if (!processRes.ok) {
+        const processData = await processRes.json().catch(() => ({})) as { error?: string }
+        console.error("[Meetings] process trigger error:", processData)
+        // Non-fatal: the meeting record exists, user can retry
+        toast.warning(t(
+          "تم رفع الملف لكن التحليل تأخر — ستظهر النتائج قريباً",
+          "File uploaded but analysis is delayed — results will appear shortly"
+        ))
+      } else {
+        setUploadProgress(100)
+        toast.success(t("تم رفع الاجتماع وجارٍ التحليل! ✅", "Meeting uploaded and being analysed! ✅"))
+      }
+
       mutate()
     } catch (err) {
       console.error("[Meetings] upload error:", err)
-      const isTimeout = err instanceof DOMException && err.name === "TimeoutError"
-      toast.error(
-        isTimeout
-          ? t("انتهت مهلة المعالجة — حاول ملفاً أقصر أو أصغر حجماً", "Processing timed out — try a shorter or smaller file")
-          : t("حدث خطأ أثناء الرفع", "An error occurred during upload")
-      )
+      toast.error(t("حدث خطأ أثناء الرفع", "An error occurred during upload"))
     } finally {
       setIsUploading(false)
       setUploadProgress(0)

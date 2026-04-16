@@ -2,6 +2,7 @@ import { NextRequest } from "next/server"
 import { createClient as createServiceSupabase } from "@supabase/supabase-js"
 import { processMeetingRecording } from "@/lib/services/transcription.service"
 import { incrementUsage } from "@/lib/usage/increment"
+import { requireAuth } from "@/lib/api-auth"
 
 export const maxDuration = 300 // 5 min — Vercel Fluid Compute max
 
@@ -16,10 +17,15 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  // ── Auth: internal secret only (called by upload route, not by users) ─────
+  // ── Auth: internal secret (cron/upload) OR valid user JWT ────────────────
   const secret = req.headers.get("x-internal-secret")
-  if (!secret || secret !== process.env.CRON_SECRET) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 })
+  const isInternal = secret && secret === process.env.CRON_SECRET
+
+  let callerUserId: string | null = null
+  if (!isInternal) {
+    const auth = await requireAuth(req)
+    if (auth instanceof Response) return auth
+    callerUserId = auth.userId
   }
 
   const { id } = await params
@@ -40,6 +46,11 @@ export async function POST(
   if (fetchError || !meeting) {
     console.error("[meetings/process] meeting not found:", id, fetchError)
     return Response.json({ error: "Meeting not found" }, { status: 404 })
+  }
+
+  // If called by a user (not internal), ensure they own the meeting
+  if (callerUserId && meeting.user_id !== callerUserId) {
+    return Response.json({ error: "Forbidden" }, { status: 403 })
   }
 
   // Idempotency: skip if already processed
