@@ -109,11 +109,18 @@ JSON only — no text outside the JSON block.`
   } = {}
 
   try {
-    // Try strict JSON parse first
-    const match = text.match(/\{[\s\S]*\}/)
-    if (match) parsed = JSON.parse(match[0])
+    // Find the outermost JSON object using brace counting (avoids greedy regex issues)
+    const start = text.indexOf("{")
+    if (start !== -1) {
+      let depth = 0
+      let end = -1
+      for (let i = start; i < text.length; i++) {
+        if (text[i] === "{") depth++
+        else if (text[i] === "}") { depth--; if (depth === 0) { end = i; break } }
+      }
+      if (end !== -1) parsed = JSON.parse(text.slice(start, end + 1))
+    }
   } catch {
-    // Fallback: use the raw text as summary only
     console.error("[transcription] JSON parse failed, using raw text as summary")
     parsed = { summary: text, transcript: [], speakers: {}, keyPoints: [], actionItems: [] }
   }

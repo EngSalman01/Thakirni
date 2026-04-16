@@ -204,7 +204,7 @@ export default function MeetingsPage() {
 
       if (storageError) {
         console.error("[Meetings] storage upload error:", storageError)
-        toast.error(t("فشل رفع الملف الصوتي", "Failed to upload audio file"))
+        toast.error(`${t("فشل رفع الملف الصوتي", "Failed to upload audio file")}: ${storageError.message}`)
         return
       }
 
