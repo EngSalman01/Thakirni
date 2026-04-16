@@ -119,17 +119,22 @@ export async function getWorkspacePlanTier(
     if (billing && billing.subscription_status === "active") {
       return billing.subscription_tier as string
     }
-    // Inactive/cancelled subscription → treat as FREE
-    if (billing) return "FREE"
 
-    // No billing row — fall through to profile lookup via workspace owner
+    // Billing row inactive OR missing — read owner's profile.plan_tier directly
+    // (Paddle webhook may have updated profile but not workspace_billing)
     const { data: ws } = await service
       .from("workspaces")
       .select("owner_id")
       .eq("id", workspaceIdOrOwnerId)
       .single()
     if (!ws) return "FREE"
-    return getWorkspacePlanTier(ws.owner_id, false)
+
+    const { data: profile } = await service
+      .from("profiles")
+      .select("plan_tier")
+      .eq("id", ws.owner_id)
+      .single()
+    return (profile?.plan_tier ?? "FREE") as string
   }
 
   // Legacy / fallback path: ownerId — find their personal workspace billing first
