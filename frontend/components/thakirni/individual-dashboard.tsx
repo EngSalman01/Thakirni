@@ -46,9 +46,9 @@ export function IndividualDashboard() {
       <main className="pt-14 relative z-10">
 
         {/* ── GREETING HERO ── */}
-        <section className="pt-10 pb-10 px-5 sm:px-8">
+        <section className="pt-6 pb-4 px-5 sm:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-[1fr_480px] gap-8 lg:gap-12 items-start">
+            <div className="grid lg:grid-cols-[1fr_480px] gap-6 lg:gap-8 items-center">
 
               {/* Greeting */}
               <motion.div
@@ -79,7 +79,7 @@ export function IndividualDashboard() {
         </section>
 
         {/* ── MAIN CONTENT ── */}
-        <section className="pb-24 px-5 sm:px-8">
+        <section className="pb-16 px-5 sm:px-8">
           <div className="max-w-7xl mx-auto space-y-6">
 
             <motion.div

@@ -58,12 +58,21 @@ function getSaudiTime() {
 
 // ─── Language detection ───────────────────────────────────────────────────────
 
+// Extract plain text from a UIMessage (AI SDK v6 uses parts[], no content field)
+function extractMessageText(msg: { content?: unknown; parts?: Array<{ type: string; text?: string }> }): string {
+  if (msg.parts && Array.isArray(msg.parts)) {
+    return msg.parts.filter(p => p.type === "text").map(p => p.text ?? "").join("")
+  }
+  if (typeof msg.content === "string") return msg.content
+  return ""
+}
+
 function detectLanguage(messages: unknown[]): "ar" | "en" {
-  const userMsgs = (messages as Array<{ role: string; content: unknown }>)
+  const userMsgs = (messages as Array<{ role: string; content?: unknown; parts?: Array<{ type: string; text?: string }> }>)
     .filter(m => m.role === "user")
     .slice(-3)
   for (const msg of userMsgs.reverse()) {
-    const text = typeof msg.content === "string" ? msg.content : JSON.stringify(msg.content)
+    const text = extractMessageText(msg)
     if (/[؀-ۿ]/.test(text)) return "ar"
   }
   return "en"
@@ -72,15 +81,12 @@ function detectLanguage(messages: unknown[]): "ar" | "en" {
 // ─── Intent classifier ────────────────────────────────────────────────────────
 
 function classifyIntent(messages: unknown[]): "task" | "chat" | "question" | "correction" {
-  const last = (messages as Array<{ role: string; content: unknown }>)
+  const last = (messages as Array<{ role: string; content?: unknown; parts?: Array<{ type: string; text?: string }> }>)
     .filter(m => m.role === "user")
     .slice(-1)[0]
   if (!last) return "chat"
 
-  const text = (typeof last.content === "string"
-    ? last.content
-    : JSON.stringify(last.content)
-  ).toLowerCase()
+  const text = extractMessageText(last).toLowerCase()
 
   if (/no[,\s]|wrong|mistake|not right|that'?s not|incorrect|لا |مو صح|غلط|مو كذا/.test(text))
     return "correction"
@@ -314,9 +320,7 @@ export async function POST(req: Request) {
         .insert({
           user_id: user.id,
           role: "user",
-          content: typeof lastUserMessage.content === "string"
-            ? lastUserMessage.content
-            : JSON.stringify(lastUserMessage.content),
+          content: extractMessageText(lastUserMessage),
         })
         .then(undefined, (err: unknown) =>
           console.error("[Thakirni] Failed to save user message:", err))
