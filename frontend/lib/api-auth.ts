@@ -67,13 +67,10 @@ export async function checkPlanFeature(
   const { getWorkspacePlanTier } = await import("@/lib/workspace/get-active-workspace")
   const tier = await getWorkspacePlanTier(planOwnerId)
 
-  const freeLimits: Record<string, boolean> = {
-    meeting_summary: false,
-    document_ai: false,
-    voice_note: false,
-  }
+  // Features available on FREE tier (all others require paid plan)
+  const freeFeatures = new Set<string>([])
 
-  return { allowed: tier !== "FREE" || freeLimits[feature] !== false, tier }
+  return { allowed: tier !== "FREE" || freeFeatures.has(feature), tier }
 }
 
 export { getUserSupabase, getServiceSupabase }
