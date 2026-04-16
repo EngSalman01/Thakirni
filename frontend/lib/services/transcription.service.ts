@@ -1,4 +1,4 @@
-import { getAiModel, getGoogle } from "./ai.service"
+import { getGoogle } from "./ai.service"
 import { generateText } from "ai"
 import path from "path"
 
@@ -20,88 +20,128 @@ export interface MeetingSummary {
   language: "ar" | "en"
 }
 
+const MIME_MAP: Record<string, string> = {
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  ".m4a": "audio/mp4",
+  ".flac": "audio/flac",
+  ".webm": "audio/webm",
+  ".mp4": "video/mp4",
+}
+
+/**
+ * Single-pass processing: send audio once to Gemini and get back
+ * transcript + speaker IDs + summary + key points + action items.
+ * This avoids 3 sequential API calls and easily fits within 300s.
+ */
+export async function processMeetingRecording(
+  audioBuffer: Buffer,
+  filename: string,
+  options: { language?: string; meetingTitle?: string; outputLanguage?: "ar" | "en" } = {}
+): Promise<MeetingSummary> {
+  const ext = path.extname(filename).toLowerCase()
+  const mimeType = MIME_MAP[ext] ?? "audio/mpeg"
+  const outputLang = options.outputLanguage ?? "ar"
+  const titleNote = options.meetingTitle ? ` for "${options.meetingTitle}"` : ""
+
+  const prompt = outputLang === "ar"
+    ? `أنت مساعد اجتماعات ذكي. استمع للتسجيل الصوتي${titleNote} وقم بما يلي في استجابة JSON واحدة:
+
+1. فرّغ النص كاملاً مع تحديد المتحدثين والأوقات التقريبية
+2. عرّف المتحدثين المختلفين (Speaker 1، Speaker 2، ...) وإذا ذُكر اسم أحدهم استخدمه
+3. اكتب ملخصاً شاملاً للاجتماع (2-3 فقرات)
+4. استخرج النقاط الرئيسية
+5. استخرج مهام المتابعة
+
+أرجع JSON فقط بهذا الشكل EXACTLY:
+{
+  "transcript": [
+    {"id": 0, "start": 0.0, "end": 5.0, "text": "النص هنا", "speaker": "Speaker 1"},
+    ...
+  ],
+  "speakers": {"Speaker 1": "الاسم إن وُجد", "Speaker 2": "..."},
+  "summary": "ملخص مفصل...",
+  "keyPoints": ["نقطة 1", "نقطة 2", ...],
+  "actionItems": ["مهمة 1 - المسؤول إن ذُكر", ...]
+}
+JSON فقط، بدون أي نص خارج الـ JSON.`
+    : `You are an expert meeting assistant. Listen to this audio recording${titleNote} and do the following in a single JSON response:
+
+1. Transcribe the full audio with speaker identification and approximate timestamps
+2. Identify distinct speakers (Speaker 1, Speaker 2, ...) — use actual names if mentioned
+3. Write a comprehensive meeting summary (2-3 paragraphs)
+4. Extract key discussion points
+5. Extract action items with owners where identifiable
+
+Return ONLY valid JSON in this EXACT structure:
+{
+  "transcript": [
+    {"id": 0, "start": 0.0, "end": 5.0, "text": "text here", "speaker": "Speaker 1"},
+    ...
+  ],
+  "speakers": {"Speaker 1": "name if known", "Speaker 2": "..."},
+  "summary": "detailed summary...",
+  "keyPoints": ["Point 1", "Point 2", ...],
+  "actionItems": ["Action item with owner if mentioned", ...]
+}
+JSON only — no text outside the JSON block.`
+
+  const { text } = await generateText({
+    model: getGoogle()("gemini-2.5-flash"),
+    messages: [{
+      role: "user",
+      content: [
+        { type: "text", text: prompt },
+        { type: "file", data: audioBuffer, mediaType: mimeType },
+      ],
+    }],
+    maxOutputTokens: 8000,
+  })
+
+  // Parse the JSON response
+  let parsed: {
+    transcript?: TranscriptSegment[]
+    speakers?: Record<string, string>
+    summary?: string
+    keyPoints?: string[]
+    actionItems?: string[]
+  } = {}
+
+  try {
+    // Try strict JSON parse first
+    const match = text.match(/\{[\s\S]*\}/)
+    if (match) parsed = JSON.parse(match[0])
+  } catch {
+    // Fallback: use the raw text as summary only
+    console.error("[transcription] JSON parse failed, using raw text as summary")
+    parsed = { summary: text, transcript: [], speakers: {}, keyPoints: [], actionItems: [] }
+  }
+
+  const transcript: TranscriptSegment[] = Array.isArray(parsed.transcript) ? parsed.transcript : []
+  const speakers: Record<string, string> = (parsed.speakers && typeof parsed.speakers === "object") ? parsed.speakers : {}
+  const duration = transcript.length > 0 ? transcript[transcript.length - 1].end : 0
+  const hasArabic = transcript.some(s => /[\u0600-\u06FF]/.test(s.text))
+
+  return {
+    transcript,
+    speakers,
+    summary: parsed.summary ?? "",
+    keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints : [],
+    actionItems: Array.isArray(parsed.actionItems) ? parsed.actionItems : [],
+    duration,
+    language: hasArabic ? "ar" : "en",
+  }
+}
+
+// Keep these exports for backward compatibility with any other callers
 export async function transcribeAudio(
   audioBuffer: Buffer,
   filename: string,
   language?: string
 ): Promise<TranscriptSegment[]> {
-  const ext = path.extname(filename).toLowerCase()
-  const mimeTypes: Record<string, string> = {
-    ".mp3": "audio/mpeg", ".wav": "audio/wav", ".ogg": "audio/ogg",
-    ".m4a": "audio/mp4", ".flac": "audio/flac", ".webm": "audio/webm",
-  }
-  const mimeType = mimeTypes[ext] ?? "audio/mpeg"
-  const langInstruction = language ? `The audio is in ${language}.` : ""
-
-  const { text } = await generateText({
-    model: getGoogle()("gemini-2.5-flash-lite"),
-    messages: [{
-      role: "user",
-      content: [
-        {
-          type: "text",
-          text: `Transcribe this audio file accurately. ${langInstruction}
-Return ONLY a JSON array of transcript segments:
-[{"id": 0, "start": 0.0, "end": 5.0, "text": "..."}, ...]
-Estimate timestamps based on audio duration. JSON only, no explanation.`,
-        },
-        { type: "file", data: audioBuffer, mediaType: mimeType },
-      ],
-    }],
-  })
-
-  try {
-    const match = text.match(/\[[\s\S]*\]/)
-    if (!match) return [{ id: 0, start: 0, end: 0, text: text.trim() }]
-    return JSON.parse(match[0])
-  } catch {
-    return [{ id: 0, start: 0, end: 0, text: text.trim() }]
-  }
-}
-
-export async function identifySpeakers(
-  segments: TranscriptSegment[],
-  language: "ar" | "en" = "en"
-): Promise<{ segments: TranscriptSegment[]; speakers: Record<string, string> }> {
-  if (!segments.length) return { segments, speakers: {} }
-
-  const transcriptText = segments
-    .map((s) => `[${formatTime(s.start)}-${formatTime(s.end)}] ${s.text}`)
-    .join("\n")
-
-  const prompt = language === "ar"
-    ? `أنت خبير في تحليل المحادثات الصوتية. التالي نص من اجتماع:\n\n${transcriptText}\n\nالمطلوب:\n1. حدد المتحدثين (Speaker 1, Speaker 2, ...) بناءً على تغيير المتحدث في السياق والأسلوب\n2. إذا ذُكر اسم شخص في النص، استخدم الاسم بدلاً من Speaker X\n3. أرجع JSON فقط بالشكل التالي:\n{\n  "speakers": {"Speaker 1": "اسم إن وُجد", "Speaker 2": "..."},\n  "segments": [{"id": 0, "speaker": "Speaker 1"}, ...]\n}\nفقط JSON، بدون شرح.`
-    : `You are an expert at analyzing conversation transcripts. Here is a meeting transcript:\n\n${transcriptText}\n\nTask:\n1. Identify speakers (Speaker 1, Speaker 2, ...) based on context, speaking style, and conversation flow\n2. If a name is mentioned in the text, use that name instead of Speaker X\n3. Return ONLY valid JSON:\n{\n  "speakers": {"Speaker 1": "name if detected", "Speaker 2": "..."},\n  "segments": [{"id": 0, "speaker": "Speaker 1"}, ...]\n}\nJSON only, no explanation.`
-
-  try {
-    const { text } = await generateText({ model: getAiModel(), prompt })
-    const match = text.match(/\{[\s\S]*\}/)
-    if (!match) throw new Error("No JSON in response")
-
-    const parsed = JSON.parse(match[0]) as {
-      speakers: Record<string, string>
-      segments: Array<{ id: number; speaker: string }>
-    }
-
-    const speakerMap = new Map(parsed.segments.map((s) => [s.id, s.speaker]))
-    const updatedSegments = segments.map((seg) => ({
-      ...seg,
-      speaker: speakerMap.get(seg.id) ?? "Unknown",
-    }))
-
-    const speakers: Record<string, string> = {}
-    for (const [key, name] of Object.entries(parsed.speakers)) {
-      speakers[key] = name && name !== key ? name : key
-    }
-
-    return { segments: updatedSegments, speakers }
-  } catch {
-    const updatedSegments = segments.map((seg, i) => ({
-      ...seg,
-      speaker: `Speaker ${(i % 2) + 1}`,
-    }))
-    return { segments: updatedSegments, speakers: {} }
-  }
+  const result = await processMeetingRecording(audioBuffer, filename, { language })
+  return result.transcript
 }
 
 export async function generateMeetingSummary(
@@ -110,16 +150,13 @@ export async function generateMeetingSummary(
   language: "ar" | "en" = "en",
   meetingTitle?: string
 ): Promise<{ summary: string; actionItems: string[]; keyPoints: string[] }> {
-  const namedTranscript = segments
-    .map((s) => `${s.speaker ?? "Unknown"}: ${s.text}`)
-    .join("\n")
-
+  const { generateText: gen } = await import("ai")
+  const namedTranscript = segments.map(s => `${s.speaker ?? "Unknown"}: ${s.text}`).join("\n")
   const prompt = language === "ar"
-    ? `أنت مساعد اجتماعات خبير. التالي نص الاجتماع${meetingTitle ? ` "${meetingTitle}"` : ""}:\n\n${namedTranscript}\n\nأنشئ ملخصاً شاملاً باللغة العربية (اللهجة السعودية). أرجع JSON بالشكل التالي:\n{\n  "summary": "ملخص مفصل للاجتماع ٢-٣ فقرات",\n  "keyPoints": ["نقطة ١", "نقطة ٢", ...],\n  "actionItems": ["مهمة ١ - المسؤول إن ذُكر", ...]\n}\nJSON فقط.`
-    : `You are an expert meeting assistant. Here is the meeting transcript${meetingTitle ? ` for "${meetingTitle}"` : ""}:\n\n${namedTranscript}\n\nGenerate a comprehensive meeting summary. Return ONLY valid JSON:\n{\n  "summary": "2-3 paragraph detailed summary",\n  "keyPoints": ["Key point 1", "Key point 2", ...],\n  "actionItems": ["Action item with owner if mentioned", ...]\n}\nJSON only.`
+    ? `ملخص الاجتماع${meetingTitle ? ` "${meetingTitle}"` : ""}:\n\n${namedTranscript}\n\nأرجع JSON:\n{"summary":"...","keyPoints":["..."],"actionItems":["..."]}`
+    : `Meeting${meetingTitle ? ` "${meetingTitle}"` : ""}:\n\n${namedTranscript}\n\nReturn JSON:\n{"summary":"...","keyPoints":["..."],"actionItems":["..."]}`
 
-  const { text } = await generateText({ model: getAiModel(), prompt })
-
+  const { text } = await gen({ model: getGoogle()("gemini-2.5-flash"), prompt })
   try {
     const match = text.match(/\{[\s\S]*\}/)
     if (!match) throw new Error("No JSON")
@@ -127,26 +164,4 @@ export async function generateMeetingSummary(
   } catch {
     return { summary: text, keyPoints: [], actionItems: [] }
   }
-}
-
-export async function processMeetingRecording(
-  audioBuffer: Buffer,
-  filename: string,
-  options: { language?: string; meetingTitle?: string; outputLanguage?: "ar" | "en" } = {}
-): Promise<MeetingSummary> {
-  const outputLang = options.outputLanguage ?? "ar"
-  const rawSegments = await transcribeAudio(audioBuffer, filename, options.language)
-  const duration = rawSegments.length ? rawSegments[rawSegments.length - 1].end : 0
-  const hasArabic = rawSegments.some((s) => /[\u0600-\u06FF]/.test(s.text))
-  const transcriptLang: "ar" | "en" = hasArabic ? "ar" : "en"
-  const { segments, speakers } = await identifySpeakers(rawSegments, transcriptLang)
-  const { summary, actionItems, keyPoints } = await generateMeetingSummary(segments, speakers, outputLang, options.meetingTitle)
-
-  return { transcript: segments, speakers, summary, actionItems, keyPoints, duration, language: transcriptLang }
-}
-
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
 }

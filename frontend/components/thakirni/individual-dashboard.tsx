@@ -10,6 +10,7 @@ import { RecentActivity } from "@/components/thakirni/dashboard/recent-activity"
 import { WhatsAppBanner } from "@/components/thakirni/whatsapp-banner"
 import { UpgradeNudge } from "@/components/thakirni/upgrade-nudge"
 import { UsageWidget } from "@/components/thakirni/usage-widget"
+import { MiniCalendar } from "@/components/thakirni/dashboard/mini-calendar"
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -104,6 +105,7 @@ export function IndividualDashboard() {
 
                 {/* Side column */}
                 <div className="space-y-6">
+                  <MiniCalendar />
                   <ProgressCard />
                   <UsageWidget />
                   <SmartCard />
