@@ -1,5 +1,3 @@
-import { getGoogle } from "./ai.service"
-import { generateText } from "ai"
 import path from "path"
 
 export interface TranscriptSegment {
@@ -30,10 +28,13 @@ const MIME_MAP: Record<string, string> = {
   ".mp4": "video/mp4",
 }
 
-// Gemini inline data limit is ~20 MB (base64 overhead ~33% so threshold at 14 MB binary)
-const GEMINI_INLINE_LIMIT = 14 * 1024 * 1024
+// ── Gemini REST helpers ────────────────────────────────────────────────────────
 
-// ── Gemini File API helpers ────────────────────────────────────────────────────
+function getApiKey(): string {
+  const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  if (!key) throw new Error("GOOGLE_GENERATIVE_AI_API_KEY not set")
+  return key
+}
 
 interface GeminiFileResponse {
   file: { uri: string; name: string; state: string; mimeType: string }
@@ -41,15 +42,15 @@ interface GeminiFileResponse {
 
 /**
  * Upload audio buffer to Gemini File API and return the file URI.
- * Used for files > 14 MB to avoid inline base64 limit (~20 MB request cap).
+ * All files go through the File API to avoid SDK version incompatibilities
+ * with inline base64 handling.
  */
 async function uploadToGeminiFileApi(
   buffer: Buffer,
   mimeType: string,
   displayName: string
 ): Promise<string> {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
-  if (!apiKey) throw new Error("GOOGLE_GENERATIVE_AI_API_KEY not set")
+  const apiKey = getApiKey()
 
   const boundary = `gemini_boundary_${Date.now()}`
   const metaPart = `--${boundary}\r\nContent-Type: application/json; charset=utf-8\r\n\r\n${JSON.stringify({ file: { displayName, mimeType } })}\r\n`
@@ -79,10 +80,9 @@ async function uploadToGeminiFileApi(
     throw new Error(`Gemini File API upload failed (${uploadRes.status}): ${errText}`)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
   const { file } = await uploadRes.json() as GeminiFileResponse
 
-  // Wait for file to become ACTIVE (usually instant for audio, but may take a few seconds)
+  // Wait for file to become ACTIVE
   if (file.state !== "ACTIVE") {
     for (let i = 0; i < 15; i++) {
       await new Promise(r => setTimeout(r, 2000))
@@ -112,13 +112,65 @@ async function deleteGeminiFile(uri: string): Promise<void> {
   ).catch(() => {})
 }
 
+/**
+ * Call Gemini generateContent REST endpoint directly.
+ * Bypasses @ai-sdk/google to avoid version incompatibilities with the
+ * convertToBase64 helper that is missing in @ai-sdk/provider-utils v2.
+ */
+async function callGeminiWithFileUri(
+  prompt: string,
+  fileUri: string,
+  mimeType: string,
+  maxOutputTokens = 8000
+): Promise<string> {
+  const apiKey = getApiKey()
+
+  const body = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        { fileData: { mimeType, fileUri } },
+      ]
+    }],
+    generationConfig: { maxOutputTokens },
+  }
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  )
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "")
+    throw new Error(`Gemini generateContent failed (${res.status}): ${errText}`)
+  }
+
+  interface GeminiContentResponse {
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string }> }
+    }>
+    error?: { message: string }
+  }
+
+  const data = await res.json() as GeminiContentResponse
+  if (data.error) throw new Error(`Gemini API error: ${data.error.message}`)
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+  if (!text) throw new Error("Gemini returned empty response")
+  return text
+}
+
 // ── Main processing function ───────────────────────────────────────────────────
 
 /**
  * Single-pass processing: send audio once to Gemini and get back
  * transcript + speaker IDs + summary + key points + action items.
  *
- * For files > 14 MB, uses the Gemini File API to avoid the 20 MB inline limit.
+ * Always uses the Gemini File API (avoids SDK convertToBase64 version issue).
  */
 export async function processMeetingRecording(
   audioBuffer: Buffer,
@@ -172,39 +224,16 @@ Return ONLY valid JSON in this EXACT structure:
 }
 JSON only — no text outside the JSON block.`
 
-  // ── Choose inline vs File API based on buffer size ─────────────────────────
-  const useLargeFileApi = audioBuffer.length > GEMINI_INLINE_LIMIT
-  let geminiFileUri: string | null = null
-
-  let fileContent: { type: "file"; data: string | Buffer; mimeType: string }
-
-  if (useLargeFileApi) {
-    console.log(`[transcription] File size ${Math.round(audioBuffer.length / 1024 / 1024)}MB > 14MB — using Gemini File API`)
-    geminiFileUri = await uploadToGeminiFileApi(audioBuffer, mimeType, filename)
-    // Pass URI as string — the AI SDK sends this as fileUri (not inline base64)
-    fileContent = { type: "file", data: geminiFileUri, mimeType }
-  } else {
-    fileContent = { type: "file", data: audioBuffer, mimeType }
-  }
+  // Always upload to Gemini File API — avoids @ai-sdk/google convertToBase64 bug
+  console.log(`[transcription] Uploading ${Math.round(audioBuffer.length / 1024)}KB to Gemini File API`)
+  const geminiFileUri = await uploadToGeminiFileApi(audioBuffer, mimeType, filename)
 
   let text: string
   try {
-    const result = await generateText({
-      model: getGoogle()("gemini-2.5-flash"),
-      messages: [{
-        role: "user",
-        content: [
-          { type: "text", text: prompt },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          fileContent as any,
-        ],
-      }],
-      maxOutputTokens: 8000,
-    })
-    text = result.text
+    text = await callGeminiWithFileUri(prompt, geminiFileUri, mimeType, 8000)
   } finally {
-    // Always clean up the Gemini file (free quota + no stale data)
-    if (geminiFileUri) deleteGeminiFile(geminiFileUri).catch(() => {})
+    // Always clean up the uploaded file
+    deleteGeminiFile(geminiFileUri).catch(() => {})
   }
 
   // ── Parse JSON response ────────────────────────────────────────────────────
@@ -266,13 +295,30 @@ export async function generateMeetingSummary(
   language: "ar" | "en" = "en",
   meetingTitle?: string
 ): Promise<{ summary: string; actionItems: string[]; keyPoints: string[] }> {
-  const { generateText: gen } = await import("ai")
   const namedTranscript = segments.map(s => `${s.speaker ?? "Unknown"}: ${s.text}`).join("\n")
   const prompt = language === "ar"
     ? `ملخص الاجتماع${meetingTitle ? ` "${meetingTitle}"` : ""}:\n\n${namedTranscript}\n\nأرجع JSON:\n{"summary":"...","keyPoints":["..."],"actionItems":["..."]}`
     : `Meeting${meetingTitle ? ` "${meetingTitle}"` : ""}:\n\n${namedTranscript}\n\nReturn JSON:\n{"summary":"...","keyPoints":["..."],"actionItems":["..."]}`
 
-  const { text } = await gen({ model: getGoogle()("gemini-2.5-flash"), prompt })
+  const apiKey = getApiKey()
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { maxOutputTokens: 4000 },
+  }
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  )
+
+  interface GeminiRes { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+  const data = await res.json() as GeminiRes
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
+
   try {
     const start = text.indexOf("{")
     if (start !== -1) {

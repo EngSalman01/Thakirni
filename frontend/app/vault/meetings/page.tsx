@@ -224,10 +224,9 @@ export default function MeetingsPage() {
       if (!processRes.ok) {
         const processData = await processRes.json().catch(() => ({})) as { error?: string }
         console.error("[Meetings] process trigger error:", processData)
-        // Non-fatal: the meeting record exists, user can retry
-        toast.warning(t(
-          "تم رفع الملف لكن التحليل تأخر — ستظهر النتائج قريباً",
-          "File uploaded but analysis is delayed — results will appear shortly"
+        toast.error(t(
+          `فشل تحليل الاجتماع: ${processData.error ?? "خطأ غير معروف"}`,
+          `Meeting analysis failed: ${processData.error ?? "Unknown error"}`
         ))
       } else {
         setUploadProgress(100)
