@@ -448,8 +448,14 @@ export default function MeetingsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${m.status === "completed" ? "bg-green-100 text-green-700" : "bg-[#e4e2e1] text-muted-foreground"}`}>
-                            {m.status === "completed" ? t("مكتمل", "Completed") : t("جاري...", "Processing...")}
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                            m.status === "completed" ? "bg-green-100 text-green-700" :
+                            m.status === "failed"    ? "bg-red-100 text-red-600" :
+                            "bg-[#e4e2e1] text-muted-foreground"
+                          }`}>
+                            {m.status === "completed" ? t("مكتمل", "Completed") :
+                             m.status === "failed"    ? t("فشل التحليل", "Analysis failed") :
+                             t("جاري...", "Processing...")}
                           </span>
                           {m.status === "completed" && (
                             <Button
