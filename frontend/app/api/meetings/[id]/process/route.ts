@@ -87,9 +87,10 @@ export async function POST(
       outputLanguage: outputLanguage ?? ((meeting.language as "ar" | "en") ?? "ar"),
     })
   } catch (processingErr) {
-    console.error("[meetings/process] Gemini processing failed:", processingErr)
+    const errMsg = processingErr instanceof Error ? processingErr.message : String(processingErr)
+    console.error("[meetings/process] Gemini processing failed:", errMsg)
     await service.from("meetings").update({ status: "failed" }).eq("id", id)
-    return Response.json({ error: "AI processing failed" }, { status: 500 })
+    return Response.json({ error: errMsg }, { status: 500 })
   }
 
   // ── 4. Persist results ─────────────────────────────────────────────────────
