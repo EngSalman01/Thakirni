@@ -164,7 +164,7 @@ export default function FocusPage() {
 
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-16">
 
         {/* ── HERO: Timer as centerpiece ── */}

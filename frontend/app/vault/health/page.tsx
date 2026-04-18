@@ -353,7 +353,7 @@ export default function HealthPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background hero-mesh" dir={isArabic ? "rtl" : "ltr"}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }} dir={isArabic ? "rtl" : "ltr"}>
       <main className="pt-16">
         <section className="pt-20 pb-16 px-4 sm:px-8 max-w-2xl mx-auto">
 

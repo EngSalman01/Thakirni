@@ -113,7 +113,7 @@ function PasswordField({
 
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-16 p-6 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
           <Skeleton className="h-8 w-40" />
@@ -224,7 +224,7 @@ export default function ChangePasswordPage() {
 
   if (isOAuthUser) {
     return (
-      <div className="min-h-screen bg-background">
+      <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
         <main className="pt-16 p-6 md:p-8">
           <div className="max-w-xl mx-auto">
             <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-6 gap-2">
@@ -257,7 +257,7 @@ export default function ChangePasswordPage() {
   // ── Main form ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-16 p-6 md:p-8">
         <div className="max-w-xl mx-auto">
 

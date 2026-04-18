@@ -58,7 +58,7 @@ function isValidSlug(slug: string): boolean {
 
 function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
 
       <main className="pt-16 p-4 md:p-8">
         <div className="max-w-xl mx-auto space-y-6">
@@ -172,7 +172,7 @@ export default function NewTeamPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
 
 
       <main className="pt-16 transition-all duration-300 p-4 md:p-8">

@@ -79,7 +79,7 @@ function SettingsCard({
 
 function SettingsSkeleton() {
   return (
-    <div className="min-h-screen page-shell hero-mesh overflow-x-hidden">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-32 px-8 pb-20">
         <div className="max-w-5xl mx-auto space-y-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -718,7 +718,7 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen page-shell hero-mesh overflow-x-hidden">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}

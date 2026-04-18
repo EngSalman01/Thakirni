@@ -139,7 +139,7 @@ export default function GoalsPage() {
   const avgProgress = goals.length ? Math.round(goals.reduce((s, g) => s + ((g as Record<string, unknown>).progress as number || 0), 0) / goals.length) : 0
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-16">
 
         {/* ── HERO ── */}

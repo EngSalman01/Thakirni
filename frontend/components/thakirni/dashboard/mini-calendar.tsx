@@ -199,7 +199,7 @@ export function MiniCalendar() {
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-card dark:bg-card border border-border/80 rounded-2xl shadow-sm overflow-hidden"
+      className="card" style={{ overflow: "hidden" }}
     >
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">

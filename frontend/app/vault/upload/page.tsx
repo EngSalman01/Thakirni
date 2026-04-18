@@ -249,7 +249,7 @@ export default function UploadPage() {
   const pendingCount = items.filter((i) => i.status === 'pending').length;
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-14 lg:pt-16 transition-all duration-300">
 
         {/* ═══ HERO ═══ */}

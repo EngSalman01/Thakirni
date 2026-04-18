@@ -87,7 +87,7 @@ export function AIInputBox() {
       {/* ── The box ─────────────────────────────────────────────────────────── */}
       <motion.div
         layout
-        className="rounded-2xl bg-card dark:bg-white/[0.04] border border-slate-300 dark:border-white/[0.12] overflow-hidden shadow-sm transition-shadow duration-200 focus-within:shadow-[0_0_0_3px_rgba(127,119,221,0.18),0_2px_12px_rgba(127,119,221,0.10)]"
+        className="ai-box" style={{ flexDirection: "column", alignItems: "stretch", padding: 0, overflow: "hidden" }}
       >
         {/* Messages area — only when chat started */}
         <AnimatePresence>

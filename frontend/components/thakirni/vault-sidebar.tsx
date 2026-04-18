@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/language-provider";
 import { useTheme } from "next-themes";
@@ -73,14 +74,15 @@ function Logo({ compact = false }: { compact?: boolean }) {
   const size = compact ? 32 : 34;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      <div style={{
-        width: size, height: size, borderRadius: Math.round(size * 0.3), flexShrink: 0,
-        background: "linear-gradient(135deg,#FBBF24 0%,#D97706 50%,#92400E 100%)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: Math.round(size * 0.47), fontWeight: 900, color: "#fff",
-        boxShadow: "0 4px 16px rgba(217,119,6,.35)",
-        fontFamily: "var(--font-tajawal),sans-serif",
-      }}>ذ</div>
+      <Image
+        src="/logo-icon.svg"
+        alt="Thakirni"
+        width={size}
+        height={size}
+        priority
+        unoptimized
+        style={{ width: size, height: size, borderRadius: Math.round(size * 0.25), flexShrink: 0 }}
+      />
       {!compact && (
         <div>
           <div style={{ fontSize: ".92rem", fontWeight: 900, color: "var(--tx)", lineHeight: 1, letterSpacing: "-.01em", fontFamily: "var(--font-tajawal),sans-serif" }}>ذكرني</div>

@@ -32,9 +32,9 @@ export function ProgressCard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-card dark:bg-white/[0.04] border border-border dark:border-white/[0.08] rounded-2xl p-5 space-y-4"
+      className="card" style={{ padding: "18px 20px" }}
     >
-      <h2 className="text-base font-semibold text-foreground dark:text-slate-100">
+      <h2 style={{ fontSize: ".9rem", fontWeight: 800, color: "var(--tx)" }}>
         {t("إنجازك اليوم", "Today's Progress")}
       </h2>
 

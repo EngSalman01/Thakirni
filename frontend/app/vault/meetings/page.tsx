@@ -302,8 +302,8 @@ export default function MeetingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
-      <main className="pt-14 lg:pt-16 transition-all duration-300">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <main>
 
         {/* ═══ HERO ═══ */}
         <section className="relative pt-32 pb-24 px-8 overflow-hidden">

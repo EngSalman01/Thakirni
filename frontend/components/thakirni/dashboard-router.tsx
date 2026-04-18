@@ -54,7 +54,7 @@ export function DashboardRouter() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background hero-mesh p-6">
+      <div className="page-wrap" style={{ minHeight: "100vh" }}>
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-3 flex-1">

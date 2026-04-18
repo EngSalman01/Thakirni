@@ -64,7 +64,7 @@ export function RecentActivity() {
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      className="bg-card dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl overflow-hidden"
+      className="card" style={{ overflow: "hidden" }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">

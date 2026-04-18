@@ -14,7 +14,7 @@ export default function VaultError({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 16px" }}>
       <div className="text-center max-w-md w-full">
         {/* Icon */}
         <div
@@ -25,15 +25,15 @@ export default function VaultError({ error, reset }: ErrorProps) {
         </div>
 
         {/* Card */}
-        <div className="bg-muted dark:bg-white/[0.03] rounded-2xl p-8 shadow-sm border border-border">
-          <h1 className="text-2xl font-bold text-foreground mb-1">
+        <div className="card" style={{ padding: "2rem" }}>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: "var(--tx)" }}>
             خطأ في الخزينة
           </h1>
-          <p className="text-sm text-muted-foreground mb-1">Vault Error</p>
-          <p className="text-muted-foreground text-sm mt-3 mb-8">
+          <p className="text-sm mb-1" style={{ color: "var(--tx2)" }}>Vault Error</p>
+          <p className="text-sm mt-3 mb-8" style={{ color: "var(--tx2)" }}>
             نعتذر، حدث خطأ غير متوقع في الخزينة
             <br />
-            <span className="text-muted-foreground">
+            <span style={{ color: "var(--tx2)" }}>
               An unexpected error occurred in the vault
             </span>
           </p>
@@ -42,17 +42,14 @@ export default function VaultError({ error, reset }: ErrorProps) {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={reset}
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
-              style={{
-                background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)",
-              }}
+              className="btn btn-primary"
             >
               حاول مجدداً / Try Again
             </button>
 
             <Link
               href="/vault"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-medium text-amber-600 dark:text-amber-400 bg-card border border-amber-600/30 transition-colors hover:bg-amber-600/5"
+              className="btn btn-sec"
             >
               العودة للخزينة / Back to Vault
             </Link>

@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+      <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
         <main className="pt-24 px-6 lg:px-12 pb-20">
           <div className="max-w-5xl mx-auto space-y-6">
             {[1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-2xl" />)}
@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
 
   if (fetchError) {
     return (
-      <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+      <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
         <main className="pt-24 px-6 lg:px-12 pb-20 flex items-center justify-center">
           <div className="text-center space-y-4">
             <p className="text-2xl">⚠️</p>
@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
 
       {/* Period picker */}
       <div className="fixed top-14 inset-x-0 z-30 px-6 py-2 hidden lg:flex items-center justify-end gap-2 pointer-events-none">
