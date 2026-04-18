@@ -25,6 +25,7 @@ export async function geminiText(
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       maxOutputTokens: options?.maxOutputTokens ?? 2000,
+      thinkingConfig: { thinkingBudget: 0 },  // disable adaptive thinking for fast, consistent latency
       ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
     },
   }

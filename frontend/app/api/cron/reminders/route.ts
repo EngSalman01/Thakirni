@@ -14,7 +14,7 @@ async function callGeminiText(prompt: string, maxOutputTokens = 150): Promise<st
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens },
+        generationConfig: { maxOutputTokens, thinkingConfig: { thinkingBudget: 0 } },
       }),
     }
   )

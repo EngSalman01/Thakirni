@@ -134,7 +134,7 @@ async function callGeminiWithFileUri(
         { fileData: { mimeType, fileUri } },
       ]
     }],
-    generationConfig: { maxOutputTokens },
+    generationConfig: { maxOutputTokens, thinkingConfig: { thinkingBudget: 0 } },
   }
 
   const RETRYABLE = new Set([429, 503])
@@ -320,7 +320,7 @@ export async function generateMeetingSummary(
   const apiKey = getApiKey()
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { maxOutputTokens: 4000 },
+    generationConfig: { maxOutputTokens: 4000, thinkingConfig: { thinkingBudget: 0 } },
   }
 
   const res = await fetch(

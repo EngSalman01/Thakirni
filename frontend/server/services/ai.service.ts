@@ -18,6 +18,7 @@ async function geminiText(
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
       maxOutputTokens: options?.maxOutputTokens ?? 400,
+      thinkingConfig: { thinkingBudget: 0 },
       ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
     },
   }
