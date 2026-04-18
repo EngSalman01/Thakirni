@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Thakirni — Atelier stacked wordmark (Latin over Arabic)
+  Rendered as static SVG so the mark stays pixel-stable even when web fonts are
+  late to load. Uses "Fraunces" + "Reem Kufi" as preferred families; substitutes
+  are chained for fallback.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 140" width="360" height="140" role="img" aria-label="Thakirni · ذكرني">
+  <defs>
+    <style>
+      .latin {
+        font-family: "Fraunces", "Cormorant Garamond", "Times New Roman", serif;
+        font-weight: 500;
+        font-size: 72px;
+        letter-spacing: -2px;
+        fill: #F1EADE;
+      }
+      .arabic {
+        font-family: "Reem Kufi", "Tajawal", sans-serif;
+        font-weight: 600;
+        font-size: 52px;
+        fill: #F1EADE;
+      }
+      .caption {
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        font-size: 9px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        fill: #9FAF9B;
+      }
+    </style>
+  </defs>
+
+  <!-- Latin line -->
+  <text x="0" y="62" class="latin">Thakirni</text>
+
+  <!-- Ember separator -->
+  <rect x="0" y="76" width="22" height="2" fill="#FF5113"/>
+
+  <!-- Arabic line, right-to-left baseline. Text-anchor end + x at 360 gives RTL flush. -->
+  <text x="0" y="120" class="arabic" direction="rtl">ذكرني</text>
+
+  <!-- Fine caption -->
+  <text x="120" y="78" class="caption">AI Second Brain</text>
+</svg>

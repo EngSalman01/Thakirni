@@ -1,31 +1,95 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, Sparkles, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useLanguage } from "@/components/language-provider";
-import { createClient } from "@/lib/supabase/client";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import {
+  ArrowLeft,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
+import { useLanguage } from "@/components/language-provider"
+import { createClient } from "@/lib/supabase/client"
+import {
+  OrbitSvg,
+  Pill,
+  WordmarkStacked,
+} from "@/components/thakirni/atelier"
+
+/* -----------------------------------------------------------------
+   /auth/update-password — atelier rewrite
+   Signed-in users change their password from settings or an invite
+   flow. Identical behaviour to reset-password but richer sell.
+----------------------------------------------------------------- */
+
+function AtelierField({
+  label,
+  hint,
+  children,
+  required,
+}: {
+  label: string
+  hint?: string
+  children: React.ReactNode
+  required?: boolean
+}) {
+  return (
+    <label className="block">
+      <span
+        className="atelier-eyebrow block mb-2"
+        style={{ color: "var(--atelier-text-subtle)" }}
+      >
+        {label}
+        {required ? (
+          <span style={{ color: "var(--c-ember)" }} className="ms-1">
+            *
+          </span>
+        ) : null}
+      </span>
+      {children}
+      {hint ? (
+        <span
+          className="mt-2 block text-xs"
+          style={{
+            color: "var(--atelier-text-subtle)",
+            fontFamily: "var(--atelier-font-body)",
+          }}
+        >
+          {hint}
+        </span>
+      ) : null}
+    </label>
+  )
+}
 
 export default function UpdatePasswordPage() {
-  const { t } = useLanguage();
-  const router = useRouter();
-  const supabase = createClient();
+  const { t } = useLanguage()
+  const router = useRouter()
+  const supabase = createClient()
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState("");
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [done, setDone] = useState(false)
+  const [error, setError] = useState("")
+
+  const inputCx =
+    "w-full bg-transparent border-0 border-b pb-2.5 pt-1 text-base outline-none transition-colors focus:border-[var(--c-ember)]"
+  const inputStyle: React.CSSProperties = {
+    borderBottomColor: "var(--atelier-border-strong)",
+    color: "var(--atelier-text)",
+    fontFamily: "var(--atelier-font-body)",
+    letterSpacing: "0.01em",
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError("");
+    e.preventDefault()
+    setError("")
 
     if (password.length < 8) {
       setError(
@@ -33,208 +97,265 @@ export default function UpdatePasswordPage() {
           "كلمة المرور لازم تكون ٨ أحرف على الأقل",
           "Password must be at least 8 characters.",
         ),
-      );
-      return;
+      )
+      return
     }
 
     if (password !== confirmPassword) {
       setError(
         t("كلمات المرور ما تطابقت، حاول مرة ثانية", "Passwords do not match."),
-      );
-      return;
+      )
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
 
     const { error: updateError } = await supabase.auth.updateUser({
       password,
-    });
+    })
 
     if (updateError) {
-      setError(updateError.message);
-      setIsLoading(false);
-      return;
+      setError(updateError.message)
+      setIsLoading(false)
+      return
     }
 
-    setDone(true);
-    setIsLoading(false);
+    setDone(true)
+    setIsLoading(false)
 
     setTimeout(() => {
-      router.push("/vault");
-    }, 2000);
-  };
+      router.push("/vault")
+    }, 2000)
+  }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#fbf9f8" }}>
-
-      {/* ── Left panel ──────────────────────────────────────────────── */}
-      <div
-        className="hidden lg:flex lg:w-1/2 relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, #92400e 0%, #D97706 40%, #F59E0B 75%, #FBBF24 100%)",
-        }}
-      >
-        {/* Mesh blobs */}
-        <motion.div
-          className="absolute top-10 left-10 w-80 h-80 rounded-full blur-3xl opacity-30"
-          style={{ background: "radial-gradient(circle, #FBBF24 0%, transparent 70%)" }}
-          animate={{ y: [0, -25, 0], x: [0, 15, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-10 w-72 h-72 rounded-full blur-3xl opacity-20"
-          style={{ background: "radial-gradient(circle, #D97706 0%, transparent 70%)" }}
-          animate={{ y: [0, 30, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        />
-
-        <div className="relative z-10 flex flex-col justify-center items-center h-full w-full p-14 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col items-center"
-          >
-            <motion.div
-              className="relative mb-10"
-              animate={{ scale: [1, 1.04, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <div
-                className="w-28 h-28 rounded-full flex items-center justify-center"
-                style={{
-                  background: "rgba(255,255,255,0.15)",
-                  backdropFilter: "blur(12px)",
-                  border: "1.5px solid rgba(255,255,255,0.25)",
-                  boxShadow:
-                    "0 0 50px rgba(253,101,194,0.4), 0 0 100px rgba(37,82,202,0.3)",
-                }}
-              >
-                <Sparkles className="w-12 h-12 text-white" />
-              </div>
-              <motion.div
-                className="absolute inset-[-12px] rounded-full border border-white/20"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-              />
-            </motion.div>
-
-            <h2 className="text-5xl font-bold text-white mb-3 tracking-tight">ذكرني</h2>
-            <p className="text-white/70 text-lg font-light" dir="ltr">
-              Your second brain. Yours forever.
-            </p>
-          </motion.div>
+    <div className="atelier-root min-h-screen flex flex-col lg:flex-row">
+      {/* ── Left aside ───────────────────────────────────────────── */}
+      <aside className="relative hidden lg:flex lg:w-[48%] overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <OrbitSvg preset="active" size={780} />
         </div>
-      </div>
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{
+            width: 600,
+            height: 600,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, color-mix(in oklab, var(--c-ember) 16%, transparent) 0%, transparent 70%)",
+            animation: "atelier-glow-pulse 8s ease-in-out infinite",
+          }}
+        />
 
-      {/* ── Right panel ─────────────────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col bg-background">
+        <div className="relative z-10 flex flex-col justify-between h-full w-full p-14">
+          <div className="flex items-center gap-3">
+            <span
+              className="atelier-eyebrow"
+              style={{ color: "var(--atelier-text-subtle)" }}
+            >
+              02 / Keys
+            </span>
+          </div>
 
+          <div>
+            <WordmarkStacked size="xl" primary="latin" withCaption />
+            <h2
+              className="atelier-display mt-10"
+              style={{
+                color: "var(--atelier-text)",
+                fontSize: "clamp(2.25rem, 4vw, 3.25rem)",
+                lineHeight: 1.05,
+              }}
+            >
+              {t("كلمة", "Set a")} <br />
+              <em
+                className="atelier-italic"
+                style={{ color: "var(--c-ember)" }}
+              >
+                {t("جديدة", "new")}
+              </em>{" "}
+              <br />
+              {t("للخزنة", "password")}
+            </h2>
+            <p
+              className="atelier-lead max-w-md mt-6"
+              style={{ color: "var(--atelier-text-muted)" }}
+            >
+              {t(
+                "خزنتك لا تكشف نفسها لأحد. المفتاح الجديد يبقى بين يديك.",
+                "Your vault reveals itself to no one. The new key stays with you.",
+              )}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span
+              className="atelier-eyebrow"
+              style={{ color: "var(--atelier-text-subtle)" }}
+            >
+              Vision 2030 · Year of AI 2026
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--atelier-font-body)",
+                color: "var(--atelier-text-subtle)",
+                fontSize: 13,
+              }}
+            >
+              {t(
+                "تشفير من طرف إلى طرف · المملكة العربية السعودية",
+                "End-to-end encrypted · Kingdom of Saudi Arabia",
+              )}
+            </span>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Right main ───────────────────────────────────────────── */}
+      <main className="flex-1 flex flex-col atelier-root">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
+        <div
+          className="flex items-center justify-between px-6 lg:px-10 py-6"
+          style={{ borderBottom: "1px solid var(--atelier-border)" }}
+        >
           <Link
             href="/auth"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 text-sm transition-colors"
+            style={{
+              color: "var(--atelier-text-muted)",
+              fontFamily: "var(--atelier-font-body)",
+            }}
           >
             <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
-            {t("تسجيل الدخول", "Sign In")}
+            {t("تسجيل الدخول", "Sign in")}
           </Link>
-          <div />
+          <span
+            className="atelier-eyebrow"
+            style={{ color: "var(--atelier-text-subtle)" }}
+          >
+            Thakirni · ذكرني
+          </span>
         </div>
 
         {/* Form area */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="w-full max-w-md"
-          >
-            {/* Logo (mobile) */}
-            <div className="lg:hidden text-center mb-8">
-              <div
-                className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center"
-                style={{
-                  background: "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)",
-                }}
-              >
-                <Sparkles className="w-7 h-7 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-foreground">ذكرني</h1>
+        <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
+          <div className="w-full max-w-md">
+            <div className="lg:hidden mb-8 text-center">
+              <WordmarkStacked size="md" primary="latin" />
             </div>
 
             {done ? (
-              /* ── Success state ── */
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center space-y-5 flex flex-col items-center"
-              >
+              <div className="text-center space-y-6 flex flex-col items-center">
                 <div
                   className="w-20 h-20 rounded-full flex items-center justify-center"
                   style={{
+                    border: "1.5px solid var(--c-ember)",
                     background:
-                      "linear-gradient(135deg, #D9770622 0%, #FBBF2422 100%)",
+                      "color-mix(in oklab, var(--c-ember) 8%, transparent)",
                   }}
                 >
-                  <CheckCircle2 className="w-10 h-10" style={{ color: "#D97706" }} />
+                  <CheckCircle2
+                    className="w-9 h-9"
+                    style={{ color: "var(--c-ember)" }}
+                  />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  {t("تم تحديث كلمة المرور!", "Password updated!")}
-                </h2>
-                <p className="text-muted-foreground leading-relaxed">
-                  {t(
-                    "كلمة مرورك الجديدة جاهزة، بيتم تحويلك للخزنة الآن...",
-                    "Your new password is set. Redirecting you to the vault...",
-                  )}
-                </p>
-                <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-              </motion.div>
-            ) : (
-              /* ── Form ── */
-              <div className="space-y-5">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-foreground">
-                    {t("تعيين كلمة مرور جديدة", "Set New Password")}
-                  </h2>
-                  <p className="text-muted-foreground text-sm mt-1">
+                <div>
+                  <span
+                    className="atelier-eyebrow block mb-3"
+                    style={{ color: "var(--atelier-text-subtle)" }}
+                  >
+                    03 / Done
+                  </span>
+                  <h1 className="atelier-h1" style={{ color: "var(--atelier-text)" }}>
+                    {t("تم تحديث كلمة المرور", "Password updated")}
+                  </h1>
+                  <p
+                    className="mt-3"
+                    style={{
+                      fontFamily: "var(--atelier-font-body)",
+                      color: "var(--atelier-text-muted)",
+                    }}
+                  >
                     {t(
-                      "اختر كلمة مرور قوية لحمايه حسابك",
-                      "Choose a strong password to secure your account",
+                      "كلمة مرورك الجديدة جاهزة. جارٍ تحويلك للخزنة...",
+                      "Your new password is set. Taking you to the vault...",
+                    )}
+                  </p>
+                </div>
+                <div
+                  className="w-5 h-5 rounded-full animate-spin"
+                  style={{
+                    border: "2px solid var(--c-ember)",
+                    borderTopColor: "transparent",
+                  }}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="mb-10">
+                  <span
+                    className="atelier-eyebrow block mb-3"
+                    style={{ color: "var(--atelier-text-subtle)" }}
+                  >
+                    01 / Change key
+                  </span>
+                  <h1
+                    className="atelier-h1"
+                    style={{ color: "var(--atelier-text)" }}
+                  >
+                    {t("تعيين كلمة ", "Set a new ")}
+                    <em
+                      className="atelier-italic"
+                      style={{ color: "var(--c-ember)" }}
+                    >
+                      {t("مرور جديدة", "password")}
+                    </em>
+                  </h1>
+                  <p
+                    className="mt-4"
+                    style={{
+                      fontFamily: "var(--atelier-font-body)",
+                      color: "var(--atelier-text-muted)",
+                    }}
+                  >
+                    {t(
+                      "اختر كلمة مرور قوية لحماية حسابك.",
+                      "Choose a strong password to secure your account.",
                     )}
                   </p>
                 </div>
 
-                {/* Error banner */}
                 {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-2 p-3 rounded-xl flex items-center gap-2 text-sm"
+                  <div
+                    role="alert"
+                    className="mb-6 p-4 rounded-none flex items-start gap-3 text-sm"
                     style={{
-                      background: "rgba(239,68,68,0.08)",
-                      border: "1px solid rgba(239,68,68,0.2)",
-                      color: "#ef4444",
+                      background: "var(--c-ember-soft)",
+                      borderLeft: "2px solid var(--c-ember)",
+                      color: "var(--atelier-text)",
+                      fontFamily: "var(--atelier-font-body)",
                     }}
                   >
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    {error}
-                  </motion.div>
+                    <AlertCircle
+                      className="w-4 h-4 shrink-0 mt-0.5"
+                      style={{ color: "var(--c-ember)" }}
+                    />
+                    <span>{error}</span>
+                  </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* New password */}
-                  <div className="space-y-1.5">
-                    <Label className="text-sm font-medium">
-                      {t("كلمة المرور الجديدة", "New Password")} <span className="text-red-500">*</span>
-                    </Label>
+                <form onSubmit={handleSubmit} className="space-y-7">
+                  <AtelierField
+                    label={t("كلمة المرور الجديدة", "New password")}
+                    hint={t("على الأقل ٨ أحرف", "At least 8 characters")}
+                    required
+                  >
                     <div className="relative">
-                      <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
+                      <input
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="ps-10 pe-10"
+                        className={inputCx}
+                        style={inputStyle}
                         dir="ltr"
                         required
                         value={password}
@@ -244,7 +365,8 @@ export default function UpdatePasswordPage() {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? "Hide password" : "Show password"}
-                        className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        className="absolute end-0 top-1/2 -translate-y-1/2 p-1 transition-colors"
+                        style={{ color: "var(--atelier-text-subtle)" }}
                       >
                         {showPassword ? (
                           <EyeOff className="w-4 h-4" />
@@ -253,22 +375,18 @@ export default function UpdatePasswordPage() {
                         )}
                       </button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t("على الأقل ٨ أحرف", "At least 8 characters")}
-                    </p>
-                  </div>
+                  </AtelierField>
 
-                  {/* Confirm password */}
-                  <div className="space-y-1.5">
-                    <Label className="text-sm font-medium">
-                      {t("تأكيد كلمة المرور", "Confirm Password")} <span className="text-red-500">*</span>
-                    </Label>
+                  <AtelierField
+                    label={t("تأكيد كلمة المرور", "Confirm password")}
+                    required
+                  >
                     <div className="relative">
-                      <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
+                      <input
                         type={showConfirm ? "text" : "password"}
                         placeholder="••••••••"
-                        className="ps-10 pe-10"
+                        className={inputCx}
+                        style={inputStyle}
                         dir="ltr"
                         required
                         value={confirmPassword}
@@ -277,8 +395,13 @@ export default function UpdatePasswordPage() {
                       <button
                         type="button"
                         onClick={() => setShowConfirm(!showConfirm)}
-                        aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
-                        className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        aria-label={
+                          showConfirm
+                            ? "Hide confirm password"
+                            : "Show confirm password"
+                        }
+                        className="absolute end-0 top-1/2 -translate-y-1/2 p-1 transition-colors"
+                        style={{ color: "var(--atelier-text-subtle)" }}
                       >
                         {showConfirm ? (
                           <EyeOff className="w-4 h-4" />
@@ -287,38 +410,72 @@ export default function UpdatePasswordPage() {
                         )}
                       </button>
                     </div>
-                  </div>
+                  </AtelierField>
 
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full py-2.5 rounded-xl font-semibold text-white transition-opacity disabled:opacity-60"
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #D97706 0%, #FBBF24 100%)",
-                      boxShadow: "0 4px 20px rgba(217,119,6,0.35)",
-                    }}
-                  >
-                    {isLoading
-                      ? t("جارٍ الحفظ...", "Saving...")
-                      : t("حفظ كلمة المرور", "Save Password")}
-                  </motion.button>
+                  <div className="pt-2">
+                    <Pill
+                      as="button"
+                      type="submit"
+                      variant="solid"
+                      size="lg"
+                      disabled={isLoading}
+                      trailing={
+                        !isLoading ? (
+                          <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                        ) : null
+                      }
+                      className="w-full justify-center"
+                    >
+                      {isLoading ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span
+                            className="w-4 h-4 rounded-full animate-spin"
+                            style={{
+                              border: "2px solid currentColor",
+                              borderTopColor: "transparent",
+                            }}
+                          />
+                          {t("جارٍ الحفظ...", "Saving...")}
+                        </span>
+                      ) : (
+                        t("حفظ كلمة المرور", "Save password")
+                      )}
+                    </Pill>
+                  </div>
                 </form>
-              </div>
+              </>
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground pb-6">
-          {t("بالتسجيل أنت توافق على", "By signing up you agree to our")}{" "}
-          <Link href="/privacy" className="hover:underline" style={{ color: "#D97706" }}>
-            {t("سياسة الخصوصية", "Privacy Policy")}
-          </Link>
-        </p>
-      </div>
+        <div
+          className="px-6 lg:px-10 py-6 flex items-center justify-between text-xs"
+          style={{
+            borderTop: "1px solid var(--atelier-border)",
+            color: "var(--atelier-text-subtle)",
+            fontFamily: "var(--atelier-font-body)",
+          }}
+        >
+          <span>
+            © {new Date().getFullYear()} Thakirni · {t("الرياض", "Riyadh")}
+          </span>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/privacy"
+              className="hover:text-[var(--atelier-text-muted)] transition-colors"
+            >
+              {t("الخصوصية", "Privacy")}
+            </Link>
+            <Link
+              href="/terms"
+              className="hover:text-[var(--atelier-text-muted)] transition-colors"
+            >
+              {t("الشروط", "Terms")}
+            </Link>
+          </div>
+        </div>
+      </main>
     </div>
-  );
+  )
 }

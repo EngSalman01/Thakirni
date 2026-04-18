@@ -61,7 +61,14 @@ function SettingsCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
-      className={`bg-transparent rounded-2xl p-8 relative overflow-hidden ${className}`}
+      className={`relative overflow-hidden ${className}`}
+      style={{
+        padding: "28px 32px",
+        background: "var(--s1)",
+        border: "1px solid var(--bd)",
+        borderRadius: "var(--r4)",
+        boxShadow: "var(--shadow-sm)",
+      }}
     >
       {children}
     </motion.div>
@@ -72,14 +79,14 @@ function SettingsCard({
 
 function SettingsSkeleton() {
   return (
-    <div className="min-h-screen [background:var(--bg)] hero-mesh overflow-x-hidden">
-      <main className="pt-32 px-8 pb-20">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-          {[7, 5, 7, 5].map((span, i) => (
-            <Skeleton key={i} className={`h-64 rounded-2xl md:col-span-${span}`} />
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <div className="page-wrap">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-48 rounded-2xl" />
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -557,10 +564,10 @@ export default function SettingsPage() {
 
   const planBadge =
     resolvedTier === "teams"
-      ? { label: "TEAMS",  bg: "#eff6ff", color: "#1d4ed8" }
+      ? { label: "TEAMS ✦", bg: "rgba(245,158,11,.14)", color: "var(--amb)" }
       : resolvedTier === "pro"
-      ? { label: "PRO",    bg: "#f5f3ff", color: "#7c3aed" }
-      : { label: "FREE",   bg: "#f1f5f9", color: "#64748b" };
+      ? { label: "PRO ✦",   bg: "rgba(245,158,11,.1)",  color: "var(--amb)" }
+      : { label: "FREE",     bg: "var(--s3)",            color: "var(--tx2)" };
 
   const configForTier = planConfig?.find(p => p.plan_key === resolvedTier);
   const planFeatures: Array<{ ar: string; en: string }> = configForTier
@@ -663,7 +670,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={avatarUploading}
-                      className="absolute bottom-0 end-0 w-7 h-7 rounded-full bg-amber-600 text-white flex items-center justify-center shadow-md hover:bg-[#1a3fa0] transition-colors disabled:opacity-50"
+                      className="absolute bottom-0 end-0 w-7 h-7 rounded-full bg-amber-600 text-white flex items-center justify-center shadow-md hover:bg-amber-700 transition-colors disabled:opacity-50"
                       aria-label={t("تغيير الصورة", "Change photo")}
                     >
                       {avatarUploading
@@ -956,7 +963,7 @@ export default function SettingsPage() {
           <TabsContent value="security" className="space-y-8">
 
             {/* Privacy & Security */}
-            <SettingsCard delay={0.05} className="border-l-4 border-amber-500">
+            <SettingsCard delay={0.05}>
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
@@ -1039,7 +1046,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("plans")}
                     disabled={exportingPdf === "plans"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "plans" ? (
@@ -1073,7 +1080,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("memories")}
                     disabled={exportingPdf === "memories"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "memories" ? (
@@ -1098,7 +1105,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("habits")}
                     disabled={exportingPdf === "habits"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "habits" ? (
@@ -1123,7 +1130,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleExportPDF("goals")}
                     disabled={exportingPdf === "goals"}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-[#1e42a8] disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shrink-0"
                     title={t("تحميل PDF", "Download PDF")}
                   >
                     {exportingPdf === "goals" ? (
@@ -1138,7 +1145,7 @@ export default function SettingsPage() {
             </SettingsCard>
 
             {/* Data & Privacy (PDPL) */}
-            <SettingsCard delay={0.24} className="border-l-4 border-amber-600">
+            <SettingsCard delay={0.24}>
               <div className="flex items-center gap-3 mb-6">
                 <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
@@ -1287,7 +1294,7 @@ export default function SettingsPage() {
             </SettingsCard>
 
             {(resolvedTier === "teams") && (
-              <SettingsCard delay={0.12} className="border-l-4 border-amber-600">
+              <SettingsCard delay={0.12}>
                 <div className="flex items-center gap-3 mb-6">
                   <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                   <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
@@ -1338,8 +1345,7 @@ export default function SettingsPage() {
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="w-full justify-start rounded-xl py-2.5 px-3 text-sm font-bold data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-500 flex items-center gap-2.5"
-                  style={{ color: "var(--tx2)" }}
+                  className="w-full justify-start rounded-xl py-2.5 px-3 text-sm font-bold data-[state=active]:bg-amber-500/15 [color:var(--tx2)] data-[state=active]:[color:var(--amb)] flex items-center gap-2.5"
                 >
                   {icon}
                   {label as string}

@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./atelier.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -378,6 +379,28 @@
   --font-headline: var(--font-syne), var(--font-inter), system-ui, sans-serif;
   --font-arabic: var(--font-tajawal), system-ui, sans-serif;
 
+  /* Atelier font families — exposed to Tailwind so utilities like
+   * font-atelier-display / font-atelier-body / font-atelier-arabic work.
+   * Names differ from the next/font CSS vars (--font-atelier-display) to
+   * avoid a self-referencing var loop. */
+  --font-atelier-serif: var(--atelier-font-display);
+  --font-atelier-sans: var(--atelier-font-body);
+  --font-atelier-arabic-display: var(--atelier-font-arabic-display);
+
+  /* Atelier palette tokens — exposed to Tailwind so utilities like
+   * bg-obsidian, text-parchment, border-ember work. */
+  --color-obsidian: var(--c-obsidian);
+  --color-obsidian-2: var(--c-obsidian-2);
+  --color-stone: var(--c-stone);
+  --color-stone-2: var(--c-stone-2);
+  --color-grey-atelier: var(--c-grey);
+  --color-brown-atelier: var(--c-brown);
+  --color-ember: var(--c-ember);
+  --color-sage: var(--c-sage);
+  --color-parchment: var(--c-parchment);
+  --color-parchment-2: var(--c-parchment-2);
+  --color-ivory: var(--c-ivory);
+
   /* Animations */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -468,6 +491,13 @@
     background-attachment: fixed;
   }
 
+  .dark body {
+    /* Remove light-mode white overlay — replace with subtle dark amber glow */
+    background-image:
+      radial-gradient(at 12% 8%, hsla(38, 92%, 50%, 0.06) 0, transparent 55%),
+      radial-gradient(at 88% 2%, hsla(25, 85%, 45%, 0.05) 0, transparent 50%);
+  }
+
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
   ::-webkit-scrollbar-thumb {
@@ -503,7 +533,7 @@
   }
 
   .font-headline {
-    font-family: var(--font-plus-jakarta-sans), system-ui, sans-serif;
+    font-family: var(--font-headline);
   }
 
   .tabular {
@@ -890,8 +920,7 @@
   .animate-fade-in-up { animation: fade-in-up 0.6s ease-out forwards; }
 }
 
-/* ─── Input autofill override ───────────────────────────────────────────────── */
-/* ─── Glassmorphism variants ─────────────────────────────────────────────────── */
+/* ─── Glassmorphism variants (unlayered — intentionally high specificity) ───── */
 .glass-dark {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);

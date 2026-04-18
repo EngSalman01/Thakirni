@@ -1,19 +1,22 @@
 import type { Metadata } from "next"
-import { LandingPageNew } from "@/components/thakirni/landing-page-new"
+// Atelier redesign (Phase 1). The previous landing still lives at
+// `@/components/thakirni/landing-page-new` and can be restored by swapping
+// the import during rollback if needed.
+import { LandingPageAtelier } from "@/components/thakirni/landing-page-atelier"
 
 export const metadata: Metadata = {
-  title: "ذكّرني | Thakirni – مساعدك الذكي الشخصي",
+  title: "ذكّرني | Thakirni — عقلك الثاني",
   description:
-    "ذكّرني هو أول مساعد ذكي شخصي وذاكرة ثانية مدعومة بالذكاء الاصطناعي في السعودية. رؤية ٢٠٣٠، عام الذكاء الاصطناعي ٢٠٢٦. The first AI-powered personal assistant built for Saudi Arabia — aligned with Vision 2030 and SDAIA.",
-  keywords: ["Vision 2030", "رؤية 2030", "ذكاء اصطناعي", "SDAIA", "Year of AI 2026", "عام الذكاء الاصطناعي", "Saudi AI", "ذكرني", "Thakirni"],
+    "ذكّرني — أداة هادئة تحفظ ما يهمّك وتعيده حين تحتاجه. مصنوع للعربية والإنجليزية، مواكب لرؤية 2030 وعام الذكاء الاصطناعي 2026. A quiet instrument that keeps what matters and brings it back when you need it — Arabic-first, built for Vision 2030.",
+  keywords: ["Vision 2030", "رؤية 2030", "ذكاء اصطناعي", "SDAIA", "Year of AI 2026", "عام الذكاء الاصطناعي", "Saudi AI", "ذكرني", "Thakirni", "second brain", "AI atelier"],
   alternates: { canonical: "https://thakirni.com" },
   openGraph: {
-    title: "ذكّرني | Thakirni – خل ذكّرني يرتب يومك 👀",
-    description: "قل اللي بخاطرك… والباقي علينا. مدعوم برؤية ٢٠٣٠.",
+    title: "Thakirni — your second brain, quietly",
+    description: "A quiet AI instrument that keeps what matters and brings it back when you need it. Arabic-first. Built for Vision 2030.",
     url: "https://thakirni.com",
   },
 }
 
 export default function Home() {
-  return <LandingPageNew />
+  return <LandingPageAtelier />
 }

@@ -1,68 +1,57 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { motion, Variants } from "framer-motion";
-import { Check, X, Sparkles, User, Zap, Users, Shield } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Check, X, ArrowRight, Sparkles, Shield, Repeat, Clock } from "lucide-react"
+import { toast } from "sonner"
+import { initializePaddle, Paddle } from "@paddle/paddle-js"
+import { createClient } from "@/lib/supabase/client"
+import { useLanguage } from "@/components/language-provider"
+import { cn } from "@/lib/utils"
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { LandingHeader } from "@/components/thakirni/landing-header";
-import { LandingFooter } from "@/components/thakirni/landing-footer";
-import { cn } from "@/lib/utils";
-import { useLanguage } from "@/components/language-provider";
-import { Switch } from "@/components/ui/switch";
-import { initializePaddle, Paddle } from "@paddle/paddle-js";
-import { createClient } from "@/lib/supabase/client";
+  FooterConstellation,
+  NavPills,
+  OrbitSvg,
+  Pill,
+  SectionTitle,
+  WordmarkStacked,
+} from "@/components/thakirni/atelier"
 
-// ── Animation Variants ────────────────────────────────────────────────────────
+/* ─────────────────────────────────────────────────────────────────
+   /pricing — atelier rewrite
+   The real checkout surface (the /checkout/* routes redirect here).
+   Preserves Paddle + Supabase logic from the previous implementation.
+───────────────────────────────────────────────────────────────── */
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
-};
+// ── Types ────────────────────────────────────────────────────────
 
-const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 32 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-};
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type TierId = "free" | "individual" | "team";
+type TierId = "free" | "individual" | "team"
 
 interface Feature {
-  ar: string;
-  en: string;
-  included: boolean;
+  ar: string
+  en: string
+  included: boolean
 }
 
 interface PricingTier {
-  id: TierId;
-  nameAr: string;
-  nameEn: string;
-  targetAr: string;
-  targetEn: string;
-  monthlyPrice: number;
-  annualPrice: number;
-  icon: React.ElementType;
-  features: Feature[];
-  ctaAr: string;
-  ctaEn: string;
-  popular: boolean;
-  comingSoon?: boolean;
-  noteSuffixAr?: string;
-  noteSuffixEn?: string;
+  id: TierId
+  nameAr: string
+  nameEn: string
+  targetAr: string
+  targetEn: string
+  monthlyPrice: number
+  annualPrice: number
+  features: Feature[]
+  ctaAr: string
+  ctaEn: string
+  popular: boolean
+  comingSoon?: boolean
+  noteSuffixAr?: string
+  noteSuffixEn?: string
 }
 
-// ── Paddle Price IDs (set in Vercel env vars) ─────────────────────────────────
+// ── Paddle Price IDs (set in Vercel env vars) ────────────────────
 
 const PADDLE_PRICES = {
   pro: {
@@ -75,7 +64,7 @@ const PADDLE_PRICES = {
   },
 }
 
-// ── Data ──────────────────────────────────────────────────────────────────────
+// ── Data ─────────────────────────────────────────────────────────
 
 const pricingTiers: PricingTier[] = [
   {
@@ -86,7 +75,6 @@ const pricingTiers: PricingTier[] = [
     targetEn: "Get started",
     monthlyPrice: 0,
     annualPrice: 0,
-    icon: Zap,
     features: [
       { ar: "١٠ خطط يومياً", en: "10 plans per day", included: true },
       { ar: "٢٥ ذاكرة", en: "25 memories", included: true },
@@ -108,14 +96,13 @@ const pricingTiers: PricingTier[] = [
     targetEn: "Professionals & Freelancers",
     monthlyPrice: 29.99,
     annualPrice: 287.99,
-    icon: User,
     features: [
       { ar: "١٠٠ خطة يومياً", en: "100 plans per day", included: true },
       { ar: "١٠٠٠ ذاكرة", en: "1,000 memories", included: true },
       { ar: "١٠ مشاريع", en: "10 projects", included: true },
-      { ar: "٣٠ ملخص اجتماع شهرياً 🎙️", en: "30 meeting summaries/month 🎙️", included: true },
-      { ar: "٥٠ وثيقة بالذكاء الاصطناعي شهرياً", en: "50 document AI/month", included: true },
-      { ar: "٣٠٠ دقيقة تسجيل شهرياً", en: "300 min voice/month", included: true },
+      { ar: "٣٠ ملخص اجتماع شهرياً", en: "30 meeting summaries / month", included: true },
+      { ar: "٥٠ وثيقة بالذكاء الاصطناعي شهرياً", en: "50 document AI / month", included: true },
+      { ar: "٣٠٠ دقيقة تسجيل شهرياً", en: "300 min voice / month", included: true },
       { ar: "تحليلات وتقارير", en: "Analytics & reports", included: true },
     ],
     ctaAr: "احصل على Pro",
@@ -130,7 +117,6 @@ const pricingTiers: PricingTier[] = [
     targetEn: "Teams & Organizations",
     monthlyPrice: 59.99,
     annualPrice: 575.99,
-    icon: Users,
     noteSuffixAr: "لكل مستخدم",
     noteSuffixEn: "per user",
     features: [
@@ -145,49 +131,82 @@ const pricingTiers: PricingTier[] = [
     ctaEn: "Get Teams",
     popular: false,
   },
-];
+]
 
-// ── Trust Badges ──────────────────────────────────────────────────────────────
+// ── Trust pillars ─────────────────────────────────────────────────
 
-const trustBadges = [
-  { ar: "ضمان استرداد ١٤ يوم", en: "14-day money back", icon: Sparkles },
-  { ar: "دعم فني على مدار الساعة", en: "24 / 7 support", icon: User },
-  { ar: "إلغاء في أي وقت", en: "Cancel anytime", icon: X },
-  { ar: "بياناتك آمنة ومحفوظة", en: "Secure data", icon: Shield },
-];
+const trustPillars = [
+  {
+    icon: Shield,
+    ar: "ضمان استرداد ١٤ يوم",
+    en: "14-day money back",
+    numeral: "01",
+  },
+  {
+    icon: Clock,
+    ar: "دعم على مدار الساعة",
+    en: "24 / 7 support",
+    numeral: "02",
+  },
+  {
+    icon: Repeat,
+    ar: "إلغاء في أي وقت",
+    en: "Cancel anytime",
+    numeral: "03",
+  },
+  {
+    icon: Sparkles,
+    ar: "بياناتك آمنة ومحفوظة",
+    en: "Your data, protected",
+    numeral: "04",
+  },
+]
 
-// ── Page ──────────────────────────────────────────────────────────────────────
+// ── Page ─────────────────────────────────────────────────────────
 
 export default function PricingPage() {
-  const { t } = useLanguage();
-  const router = useRouter();
-  const routerRef = useRef(router);
-  const tRef = useRef(t);
-  routerRef.current = router;
-  tRef.current = t;
+  const { t, language } = useLanguage()
+  const router = useRouter()
+  const routerRef = useRef(router)
+  const tRef = useRef(t)
+  routerRef.current = router
+  tRef.current = t
 
-  const [isAnnual, setIsAnnual] = useState(false);
-  const [isLoading, setIsLoading] = useState<TierId | null>(null);
-  const [paddle, setPaddle] = useState<Paddle | null>(null);
+  const isArabic = language === "ar"
 
-  // ── Init Paddle once on mount ─────────────────────────────────────────────
+  const [isAnnual, setIsAnnual] = useState(false)
+  const [isLoading, setIsLoading] = useState<TierId | null>(null)
+  const [paddle, setPaddle] = useState<Paddle | null>(null)
 
+  // ── Init Paddle once on mount ──────────────────────────────────
   useEffect(() => {
     initializePaddle({
       token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
-      environment: (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as "production" | "sandbox") ?? "production",
+      environment:
+        (process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT as
+          | "production"
+          | "sandbox") ?? "production",
       eventCallback(event) {
         if (event.name === "checkout.completed") {
-          toast.success(tRef.current("تم تفعيل الاشتراك بنجاح!", "Subscription activated successfully!"))
-          setTimeout(() => routerRef.current.push("/vault?subscribed=true"), 500)
+          toast.success(
+            tRef.current(
+              "تم تفعيل الاشتراك بنجاح!",
+              "Subscription activated successfully!",
+            ),
+          )
+          setTimeout(
+            () => routerRef.current.push("/vault?subscribed=true"),
+            500,
+          )
         }
       },
-    }).then((p) => { if (p) setPaddle(p) })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    }).then((p) => {
+      if (p) setPaddle(p)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
+  // ── Helpers ────────────────────────────────────────────────────
   function displayedPrice(tier: PricingTier): string {
     if (tier.monthlyPrice === 0) return "0"
     if (isAnnual) return Math.round(tier.annualPrice / 12).toString()
@@ -195,7 +214,9 @@ export default function PricingPage() {
   }
 
   function annualSaving(tier: PricingTier): number {
-    return Math.round(100 - (tier.annualPrice / (tier.monthlyPrice * 12)) * 100)
+    return Math.round(
+      100 - (tier.annualPrice / (tier.monthlyPrice * 12)) * 100,
+    )
   }
 
   function getPriceId(tierId: TierId): string | null {
@@ -208,8 +229,7 @@ export default function PricingPage() {
     return null
   }
 
-  // ── Subscribe handler ─────────────────────────────────────────────────────
-
+  // ── Subscribe handler ──────────────────────────────────────────
   async function handleSubscribe(tierId: TierId) {
     if (isLoading) return
 
@@ -220,11 +240,12 @@ export default function PricingPage() {
 
     const priceId = getPriceId(tierId)
     if (!priceId) {
-      // Price IDs not yet configured — direct user to sign up and we will contact them
-      toast.info(t(
-        "الدفع الإلكتروني قيد الإعداد — سجّل دخولك وسنتواصل معك لإتمام الاشتراك",
-        "Online payment is being set up — sign in and we will contact you to complete your subscription"
-      ))
+      toast.info(
+        t(
+          "الدفع الإلكتروني قيد الإعداد — سجّل دخولك وسنتواصل معك لإتمام الاشتراك",
+          "Online payment is being set up — sign in and we will contact you to complete your subscription",
+        ),
+      )
       setTimeout(() => router.push("/auth"), 2000)
       return
     }
@@ -233,9 +254,10 @@ export default function PricingPage() {
       return
     }
 
-    // Pre-fill checkout with user's email if logged in
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
     setIsLoading(tierId)
     try {
@@ -252,7 +274,6 @@ export default function PricingPage() {
           theme: "dark",
         },
       })
-      // Success is handled by eventCallback("checkout.completed") above
     } catch (err) {
       console.error("[Paddle] Checkout error:", err)
       toast.error(t("تعذّر فتح نافذة الدفع", "Could not open checkout"))
@@ -261,255 +282,486 @@ export default function PricingPage() {
     }
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
+  // ── Render ─────────────────────────────────────────────────────
   return (
-    <main className="min-h-screen bg-background">
-      <LandingHeader />
+    <div
+      className="atelier-root min-h-screen"
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      {/* ─── Top nav ────────────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-40 backdrop-blur"
+        style={{
+          background: "color-mix(in oklab, var(--c-obsidian) 82%, transparent)",
+          borderBottom: "1px solid var(--atelier-border)",
+        }}
+      >
+        <div className="atelier-container flex items-center justify-between py-5">
+          <Link href="/" className="flex items-center gap-3">
+            <WordmarkStacked
+              size="sm"
+              orientation="inline"
+              primary={isArabic ? "arabic" : "latin"}
+            />
+          </Link>
+          <NavPills
+            size="sm"
+            items={[
+              { label: t("الرئيسية", "Home"), href: "/" },
+              { label: t("الميزات", "Features"), href: "/#features" },
+              { label: t("الأسعار", "Pricing"), href: "/pricing" },
+              { label: t("من نحن", "About"), href: "/#about" },
+              { label: t("دخول", "Sign in"), href: "/auth", cta: true },
+            ]}
+          />
+        </div>
+      </header>
 
-      <section className="pt-32 pb-20 relative overflow-hidden">
-        <div className="absolute top-20 start-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-20 end-1/4 w-96 h-96 bg-emerald-500/5  rounded-full blur-[100px] pointer-events-none" />
+      {/* ─── Hero ────────────────────────────────────────────────── */}
+      <section className="relative atelier-section-lg overflow-hidden">
+        {/* Orbit backdrop */}
+        <div
+          aria-hidden
+          className="absolute inset-0 flex items-start justify-center pointer-events-none"
+          style={{ paddingTop: "4rem" }}
+        >
+          <OrbitSvg preset="ambient" size={820} />
+        </div>
 
-        <div className="container mx-auto px-4 relative z-10">
-
-          {/* ── Header ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-14"
+        <div className="relative atelier-container text-center max-w-3xl">
+          <span
+            className="atelier-eyebrow block mb-5"
+            style={{ color: "var(--atelier-text-subtle)" }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-5">
-              {t("خـطط مرنة تناسب طموحك", "Flexible Plans for Your Ambition")}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-10">
-              {t(
-                "سواء كنت فرداً يريد تنظيم حياته أو فريقاً يبحث عن ذكاء جماعي، لدينا ما يناسبك.",
-                "Whether you're an individual organising your life or a team seeking collective intelligence, we have you covered.",
-              )}
-            </p>
-
-            {/* Billing toggle */}
-            <div className="inline-flex items-center gap-4 bg-muted/50 border border-border rounded-full px-5 py-2.5">
-              <span className={cn("text-sm transition-colors", !isAnnual ? "text-foreground font-medium" : "text-muted-foreground")}>
-                {t("شهري", "Monthly")}
-              </span>
-              <Switch
-                checked={isAnnual}
-                onCheckedChange={setIsAnnual}
-                className="data-[state=checked]:bg-emerald-500"
-              />
-              <span className={cn("text-sm transition-colors flex items-center gap-2", isAnnual ? "text-foreground font-medium" : "text-muted-foreground")}>
-                {t("سنوي", "Yearly")}
-                <span className="text-xs bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-medium">
-                  {t("وفر ٢٠٪", "Save 20%")}
-                </span>
-              </span>
-            </div>
-          </motion.div>
-
-          {/* ── Cards ── */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch"
+            01 / Pricing · الأسعار
+          </span>
+          <h1
+            className="atelier-hero"
+            style={{ color: "var(--atelier-text)" }}
           >
-            {pricingTiers.map((tier) => (
-              <motion.div key={tier.id} variants={cardVariants} className="h-full">
-                <Card className={cn(
-                  "relative h-full flex flex-col transition-all duration-300 border overflow-hidden rounded-2xl",
-                  tier.popular
-                    ? "border-emerald-500 ring-2 ring-emerald-500/40 shadow-2xl shadow-emerald-500/15 lg:scale-105"
-                    : "border-border hover:border-primary/40 hover:shadow-lg hover:-translate-y-1",
-                )}>
+            {t("خطط ", "Plans ")}
+            <em
+              className="atelier-italic"
+              style={{ color: "var(--c-ember)" }}
+            >
+              {t("هادئة", "that stay")}
+            </em>
+            <br />
+            {t("بقدر ما تحتاج", "out of your way")}
+          </h1>
+          <p
+            className="atelier-lead mt-8 mx-auto max-w-2xl"
+            style={{ color: "var(--atelier-text-muted)" }}
+          >
+            {t(
+              "سواء كنت فرداً يرتب حياته أو فريقاً يبني ذاكرة جماعية، خزنتك تبقى هادئة وكاملة.",
+              "Whether you're one person keeping your life in order or a team building a shared memory, your vault stays quiet and whole.",
+            )}
+          </p>
 
-                  {/* Coming Soon Overlay */}
-                  {tier.comingSoon && (
-                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
-                      <div className="bg-muted border border-border rounded-xl px-6 py-5 text-center shadow-xl">
-                        <p className="text-lg font-bold text-foreground mb-1">{t("قريباً", "Coming Soon")}</p>
-                        <p className="text-sm text-muted-foreground">{t("قيد التطوير", "Under development")}</p>
-                      </div>
+          {/* Billing switch */}
+          <div
+            className="inline-flex items-center gap-6 mt-12 px-6 py-3 rounded-full"
+            style={{
+              border: "1px solid var(--atelier-border-strong)",
+              background: "var(--atelier-bg-elevated)",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setIsAnnual(false)}
+              className="atelier-eyebrow transition-colors"
+              style={{
+                color: !isAnnual
+                  ? "var(--atelier-text)"
+                  : "var(--atelier-text-subtle)",
+              }}
+            >
+              {t("شهري", "Monthly")}
+            </button>
+            <span
+              aria-hidden
+              className="w-px h-4"
+              style={{ background: "var(--atelier-border-strong)" }}
+            />
+            <button
+              type="button"
+              onClick={() => setIsAnnual(true)}
+              className="atelier-eyebrow transition-colors inline-flex items-center gap-2"
+              style={{
+                color: isAnnual
+                  ? "var(--atelier-text)"
+                  : "var(--atelier-text-subtle)",
+              }}
+            >
+              {t("سنوي", "Yearly")}
+              <span
+                className="text-[10px] tracking-[0.12em] px-2 py-0.5 rounded-full"
+                style={{
+                  background:
+                    "color-mix(in oklab, var(--c-ember) 15%, transparent)",
+                  color: "var(--c-ember)",
+                  border: "1px solid var(--c-ember)",
+                }}
+              >
+                {t("وفر ٢٠٪", "−20%")}
+              </span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Tiers ──────────────────────────────────────────────── */}
+      <section className="atelier-section pb-0">
+        <div className="atelier-container">
+          <div className="grid md:grid-cols-3 gap-0 md:gap-px items-stretch"
+               style={{ background: "var(--atelier-border)" }}>
+            {pricingTiers.map((tier) => {
+              const isPopular = tier.popular
+              return (
+                <article
+                  key={tier.id}
+                  className={cn(
+                    "flex flex-col p-10 transition-colors",
+                    "relative",
+                  )}
+                  style={{
+                    background: isPopular
+                      ? "var(--atelier-bg-elevated)"
+                      : "var(--atelier-bg)",
+                  }}
+                >
+                  {/* Popular ribbon */}
+                  {isPopular && (
+                    <div className="absolute top-0 left-0 right-0 flex justify-center">
+                      <span
+                        className="atelier-eyebrow px-4 py-1.5"
+                        style={{
+                          background: "var(--c-ember)",
+                          color: "var(--c-obsidian)",
+                          borderBottomLeftRadius: 9999,
+                          borderBottomRightRadius: 9999,
+                          letterSpacing: "0.18em",
+                        }}
+                      >
+                        {t("الأكثر اختياراً", "Most chosen")}
+                      </span>
                     </div>
                   )}
 
-                  {/* Popular Badge */}
-                  {tier.popular && (
-                    <div className="absolute -top-px inset-x-0 flex justify-center">
-                      <div className="bg-emerald-500 text-white px-4 py-1 rounded-b-full text-xs font-semibold flex items-center gap-1 shadow-md">
-                        <Sparkles className="w-3 h-3" />
-                        {t("الأكثر شعبية", "Most Popular")}
-                      </div>
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-8 mt-4">
+                    <div>
+                      <span
+                        className="atelier-eyebrow block mb-3"
+                        style={{ color: "var(--atelier-text-subtle)" }}
+                      >
+                        {tier.id === "free"
+                          ? "01"
+                          : tier.id === "individual"
+                          ? "02"
+                          : "03"}{" "}
+                        / {t(tier.targetAr, tier.targetEn)}
+                      </span>
+                      <h3
+                        className="atelier-h2"
+                        style={{ color: "var(--atelier-text)" }}
+                      >
+                        {t(tier.nameAr, tier.nameEn)}
+                      </h3>
                     </div>
-                  )}
+                  </div>
 
-                  <CardHeader className={cn("pb-4 pt-8 px-6", tier.comingSoon && "opacity-40")}>
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <CardTitle className="text-xl font-bold text-foreground mb-1">
-                          {t(tier.nameAr, tier.nameEn)}
-                        </CardTitle>
-                        <CardDescription>{t(tier.targetAr, tier.targetEn)}</CardDescription>
-                      </div>
-                      <div className={cn(
-                        "p-2 rounded-lg",
-                        tier.popular
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                          : "bg-muted text-muted-foreground",
-                      )}>
-                        <tier.icon className="w-5 h-5" />
-                      </div>
-                    </div>
-
-                    <div className="flex items-baseline gap-1 flex-wrap">
-                      <span className="text-4xl font-bold text-foreground tabular-nums">
+                  {/* Price */}
+                  <div className="mb-8">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span
+                        className="font-serif tabular-nums"
+                        style={{
+                          fontFamily: "var(--atelier-font-display)",
+                          fontSize: "clamp(3rem, 6vw, 5rem)",
+                          lineHeight: 1,
+                          color: "var(--atelier-text)",
+                        }}
+                      >
                         {displayedPrice(tier)}
                       </span>
-                      <span className="text-emerald-600 dark:text-emerald-400 text-lg font-semibold">
+                      <span
+                        className="atelier-eyebrow"
+                        style={{ color: "var(--c-ember)" }}
+                      >
                         {t("ر.س", "SAR")}
                       </span>
-                      <span className="text-muted-foreground text-sm ms-1">
+                      <span
+                        style={{
+                          fontFamily: "var(--atelier-font-body)",
+                          color: "var(--atelier-text-subtle)",
+                          fontSize: 14,
+                        }}
+                      >
                         / {t("شهر", "month")}
                       </span>
                     </div>
-
-                    <div className="min-h-[1.25rem] mt-1">
+                    <div
+                      className="min-h-[1.5rem] mt-2"
+                      style={{
+                        fontFamily: "var(--atelier-font-body)",
+                        color: "var(--atelier-text-subtle)",
+                        fontSize: 12,
+                      }}
+                    >
                       {isAnnual && tier.monthlyPrice > 0 ? (
-                        <p className="text-xs text-muted-foreground">
-                          {t(`يُفوتر ${tier.annualPrice} ر.س سنوياً`, `Billed ${tier.annualPrice} SAR / year`)}
-                          {" · "}
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                            {t(`وفر ${annualSaving(tier)}٪`, `Save ${annualSaving(tier)}%`)}
-                          </span>
-                        </p>
-                      ) : tier.noteSuffixEn ? (
-                        <p className="text-xs text-muted-foreground">
-                          {t(tier.noteSuffixAr ?? "", tier.noteSuffixEn)}
-                        </p>
-                      ) : null}
-                    </div>
-                  </CardHeader>
-
-                  <div className={cn("flex flex-col flex-1", tier.comingSoon && "opacity-40 pointer-events-none")}>
-                    <CardContent className="flex-1 px-6 pt-2">
-                      <div className="w-full h-px bg-border mb-5" />
-                      <ul className="space-y-3.5">
-                        {tier.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                            {feature.included ? (
-                              <div className="mt-0.5 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                              </div>
-                            ) : (
-                              <div className="mt-0.5 w-5 h-5 flex items-center justify-center shrink-0">
-                                <X className="w-4 h-4 text-muted-foreground/40" />
-                              </div>
+                        <>
+                          {t(
+                            `يُفوتر ${tier.annualPrice} ر.س سنوياً`,
+                            `Billed ${tier.annualPrice} SAR / year`,
+                          )}{" "}
+                          ·{" "}
+                          <span style={{ color: "var(--c-ember)" }}>
+                            {t(
+                              `وفر ${annualSaving(tier)}٪`,
+                              `Save ${annualSaving(tier)}%`,
                             )}
-                            <span className={cn(
-                              "text-sm leading-snug",
-                              feature.included ? "text-foreground/90" : "text-muted-foreground/60",
-                            )}>
-                              {t(feature.ar, feature.en)}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
+                          </span>
+                        </>
+                      ) : tier.noteSuffixEn ? (
+                        <span>{t(tier.noteSuffixAr ?? "", tier.noteSuffixEn)}</span>
+                      ) : (
+                        <span>&nbsp;</span>
+                      )}
+                    </div>
+                  </div>
 
-                    <CardFooter className="px-6 pb-7 pt-5">
-                      <Button
-                        className={cn(
-                          "w-full h-11 text-sm font-medium rounded-xl transition-all duration-200",
-                          tier.popular
-                            ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
-                            : tier.id === "free"
-                              ? "variant-secondary"
-                              : "bg-primary text-primary-foreground hover:bg-primary/90",
-                        )}
-                        disabled={!!tier.comingSoon || isLoading === tier.id}
-                        onClick={() => handleSubscribe(tier.id)}
-                        variant={tier.popular || tier.id === "team" ? "default" : "secondary"}
-                      >
-                        {isLoading === tier.id ? (
-                          <span className="flex items-center gap-2">
-                            <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                            {t("جاري...", "Loading...")}
+                  <hr
+                    className="atelier-rule mb-8"
+                    style={{ borderColor: "var(--atelier-border)" }}
+                  />
+
+                  {/* Features */}
+                  <ul className="flex flex-col gap-4 mb-10 flex-1">
+                    {tier.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        {feature.included ? (
+                          <span
+                            className="mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                            style={{
+                              background:
+                                "color-mix(in oklab, var(--c-ember) 14%, transparent)",
+                              border: "1px solid var(--c-ember)",
+                            }}
+                          >
+                            <Check
+                              className="w-3 h-3"
+                              style={{ color: "var(--c-ember)" }}
+                              strokeWidth={2.5}
+                            />
                           </span>
                         ) : (
-                          t(tier.ctaAr, tier.ctaEn)
+                          <span
+                            className="mt-0.5 w-5 h-5 flex items-center justify-center shrink-0"
+                            style={{ color: "var(--atelier-text-subtle)" }}
+                          >
+                            <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+                          </span>
                         )}
-                      </Button>
-                    </CardFooter>
-                  </div>
-                </Card>
-              </motion.div>
+                        <span
+                          style={{
+                            fontFamily: "var(--atelier-font-body)",
+                            fontSize: 14,
+                            lineHeight: 1.55,
+                            color: feature.included
+                              ? "var(--atelier-text-muted)"
+                              : "var(--atelier-text-subtle)",
+                          }}
+                        >
+                          {t(feature.ar, feature.en)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  <Pill
+                    as="button"
+                    type="button"
+                    onClick={() => handleSubscribe(tier.id)}
+                    disabled={!!tier.comingSoon || isLoading === tier.id}
+                    variant={isPopular ? "solid" : "outline"}
+                    size="lg"
+                    trailing={
+                      isLoading === tier.id ? null : (
+                        <ArrowRight className="w-4 h-4 rtl:rotate-180" />
+                      )
+                    }
+                    className="w-full justify-center"
+                  >
+                    {isLoading === tier.id ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span
+                          className="w-4 h-4 rounded-full animate-spin"
+                          style={{
+                            border: "2px solid currentColor",
+                            borderTopColor: "transparent",
+                          }}
+                        />
+                        {t("جارٍ...", "Loading...")}
+                      </span>
+                    ) : (
+                      t(tier.ctaAr, tier.ctaEn)
+                    )}
+                  </Pill>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Trust pillars ──────────────────────────────────────── */}
+      <section className="atelier-section">
+        <div className="atelier-container">
+          <SectionTitle
+            as="h2"
+            eyebrowNumeral="02"
+            eyebrow={t("ضمانات هادئة", "Quiet guarantees")}
+            headline={t("بدون مخاطر", "No risk")}
+            headlineAccent={t("بدون التزامات", "no lock-in")}
+          />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mt-14">
+            {trustPillars.map((item) => (
+              <div
+                key={item.numeral}
+                className="flex flex-col gap-3 pb-6 border-b"
+                style={{ borderColor: "var(--atelier-border)" }}
+              >
+                <span
+                  className="atelier-eyebrow"
+                  style={{ color: "var(--c-ember)" }}
+                >
+                  {item.numeral}
+                </span>
+                <span
+                  className="atelier-h3"
+                  style={{ color: "var(--atelier-text)" }}
+                >
+                  {t(item.ar, item.en)}
+                </span>
+              </div>
             ))}
-          </motion.div>
-
-          {/* ── Trust badges ── */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="mt-20 border-t border-border pt-10"
-          >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center max-w-3xl mx-auto">
-              {trustBadges.map((item, i) => (
-                <div key={i} className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <div className="w-9 h-9 rounded-full bg-emerald-500/10 flex items-center justify-center mb-1">
-                    <item.icon className="w-4 h-4 text-emerald-500" />
-                  </div>
-                  <span className="text-xs font-medium leading-snug">{t(item.ar, item.en)}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
+          </div>
         </div>
       </section>
 
-      {/* ── Enterprise CTA ── */}
-      <section className="py-16 bg-slate-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+      {/* ─── Enterprise CTA ─────────────────────────────────────── */}
+      <section
+        className="atelier-section relative overflow-hidden"
+        style={{ background: "var(--atelier-bg-elevated)" }}
+      >
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 30%, color-mix(in oklab, var(--c-ember) 10%, transparent) 0%, transparent 60%)",
+          }}
+        />
+        <div className="atelier-container relative text-center max-w-3xl">
+          <span
+            className="atelier-eyebrow block mb-5"
+            style={{ color: "var(--atelier-text-subtle)" }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white/80 text-sm font-semibold mb-6">
-              <Users className="w-4 h-4" />
-              {t("لفرق العمل والمؤسسات", "For teams & enterprises")}
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {t("فريق أكبر؟ لديك متطلبات خاصة؟", "Larger team? Special requirements?")}
-            </h2>
-            <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-              {t(
-                "نقدم خطط مخصصة للشركات والجامعات والمؤسسات الحكومية. خصومات خاصة لعملاء B2B.",
-                "We offer custom plans for companies, universities, and government entities. Special B2B discounts available."
-              )}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="/enterprise"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full power-gradient text-white font-bold hover:opacity-90 transition-all"
-              >
-                {t("احجز عرضاً توضيحياً مجانياً", "Book a Free Demo")}
-              </a>
-              <a
-                href="mailto:enterprise@thakirni.com"
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full border border-white/20 text-white font-bold hover:bg-white/10 transition-all"
-              >
-                enterprise@thakirni.com
-              </a>
-            </div>
-          </motion.div>
+            03 / Enterprise
+          </span>
+          <h2
+            className="atelier-display"
+            style={{ color: "var(--atelier-text)" }}
+          >
+            {t("فريق أكبر،", "A larger team,")}
+            <br />
+            <em
+              className="atelier-italic"
+              style={{ color: "var(--c-ember)" }}
+            >
+              {t("احتياج خاص؟", "a bespoke need?")}
+            </em>
+          </h2>
+          <p
+            className="atelier-lead mt-8 mx-auto max-w-xl"
+            style={{ color: "var(--atelier-text-muted)" }}
+          >
+            {t(
+              "نعد خططاً مخصصة للشركات والجامعات والجهات الحكومية. رؤية 2030 وعام الذكاء الاصطناعي 2026 يحتاجان أدوات تليق.",
+              "We craft custom plans for companies, universities, and government. Vision 2030 and the Year of AI 2026 deserve tools that belong.",
+            )}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+            <Pill
+              as="link"
+              href="/enterprise"
+              variant="solid"
+              size="lg"
+              trailing={<ArrowRight className="w-4 h-4 rtl:rotate-180" />}
+            >
+              {t("احجز عرضاً توضيحياً", "Book a demo")}
+            </Pill>
+            <Pill
+              as="link"
+              href="mailto:enterprise@thakirni.com"
+              variant="ghost"
+              size="lg"
+            >
+              enterprise@thakirni.com
+            </Pill>
+          </div>
         </div>
       </section>
 
-      <LandingFooter />
-    </main>
-  );
+      {/* ─── Footer ─────────────────────────────────────────────── */}
+      <FooterConstellation
+        locale={isArabic ? "ar" : "en"}
+        tagline={t(
+          "عقلك الثاني، هادئ بقدر ما تحتاج.",
+          "Your second brain, as quiet as you need it.",
+        )}
+        columns={[
+          {
+            heading: t("المنتج", "Product"),
+            links: [
+              { label: t("الميزات", "Features"), href: "/#features" },
+              { label: t("الأسعار", "Pricing"), href: "/pricing" },
+              { label: t("الفولت", "Vault"), href: "/vault" },
+            ],
+          },
+          {
+            heading: t("الشركة", "Company"),
+            links: [
+              { label: t("من نحن", "About"), href: "/#about" },
+              { label: t("المدونة", "Stories"), href: "/stories" },
+              { label: t("الشركات", "Enterprise"), href: "/enterprise" },
+            ],
+          },
+          {
+            heading: t("رؤية 2030", "Vision 2030"),
+            links: [
+              { label: t("SDAIA", "SDAIA"), href: "/sdaia" },
+              { label: t("عام الذكاء 2026", "Year of AI 2026"), href: "/ai-year" },
+              { label: t("الشراكات", "Partnerships"), href: "/partners" },
+            ],
+          },
+          {
+            heading: t("القانوني", "Legal"),
+            links: [
+              { label: t("الخصوصية", "Privacy"), href: "/privacy" },
+              { label: t("الشروط", "Terms"), href: "/terms" },
+              { label: t("الأمان", "Security"), href: "/security" },
+            ],
+          },
+        ]}
+        colophon={t(
+          `© ${new Date().getFullYear()} ذكرني · الرياض · جميع الحقوق محفوظة`,
+          `© ${new Date().getFullYear()} Thakirni · Riyadh · All rights reserved`,
+        )}
+      />
+    </div>
+  )
 }

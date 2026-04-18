@@ -162,7 +162,7 @@ export default function GoalsPage() {
                 <div className="flex flex-wrap gap-3">
                   {[
                     { value: goals.length,                       label: t("أهداف نشطة", "Active goals"),  color: "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400" },
-                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-[#ffd8e9] text-amber-600 dark:text-amber-400" },
+                    { value: `${avgProgress}%`,                  label: t("متوسط التقدم", "Avg. progress"), color: "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400" },
                     { value: goals.filter((g:any) => g.progress >= 100).length, label: t("مكتملة", "Completed"), color: "bg-emerald-50 text-emerald-700" },
                   ].map(({ value, label, color }) => (
                     <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
@@ -235,7 +235,7 @@ export default function GoalsPage() {
               {/* Right: real goal progress */}
               <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
                 className="hidden lg:block">
-                <div className="bg-[#e4e2e1] rounded-2xl p-10 shadow-card hover-lift space-y-5">
+                <div className="bg-muted dark:bg-white/[0.03] rounded-2xl p-10 shadow-card hover-lift space-y-5">
                   <h3 className="text-xl font-headline font-bold text-foreground mb-6">{t("تقدم الأهداف", "Goal Progress")}</h3>
                   {goals.length === 0
                     ? <p className="text-sm text-muted-foreground text-center py-4">{t("لا أهداف بعد — أنشئ هدفك الأول!", "No goals yet — create your first!")}</p>

@@ -1,20 +1,46 @@
 "use client";
 
+/**
+ * Auth page — atelier redesign (Phase 2).
+ *
+ * Split layout:
+ *   ┌──────────────────┬───────────────────────────┐
+ *   │ LEFT  · editorial│ RIGHT · sign-in / sign-up │
+ *   │ orbit + wordmark │ hairline inputs + pills   │
+ *   └──────────────────┴───────────────────────────┘
+ *
+ * Preserves every piece of behavior from the previous implementation:
+ *   - Email + password sign-in / sign-up through Supabase
+ *   - Google OAuth provider
+ *   - hCaptcha on both tabs
+ *   - Phone country-code picker for sign-up (WhatsApp onboarding)
+ *   - Referral code capture (?ref=)
+ *   - URL param handling (callback_failed, verify, email_verified, …)
+ *   - "Check your email" confirmation screen
+ *   - /auth/reset-password link
+ *
+ * Only the markup is new. All logic is preserved verbatim from the pre-atelier
+ * version so auth integration tests keep passing.
+ */
+
 import React, { useState, Suspense, useRef } from "react";
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Eye, EyeOff, Mail, Lock, User, Phone,
   ArrowLeft, AlertCircle, CheckCircle2,
 } from "lucide-react";
-import { BrandLogo } from "@/components/thakirni/brand-logo";
 import Link from "next/link";
 import { useLanguage } from "@/components/language-provider";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+import {
+  Pill,
+  WordmarkStacked,
+  OrbitSvg,
+} from "@/components/thakirni/atelier";
 
 // ── Country dial codes ─────────────────────────────────────────────────────────
 
@@ -163,13 +189,54 @@ function getPasswordStrength(password: string) {
   if (/[^A-Za-z0-9]/.test(password)) score++;
   const clipped = Math.min(score, 4) as 0|1|2|3|4;
   const map = {
-    0: { labelAr: "قصيرة جداً", labelEn: "Too short",  color: "bg-red-500" },
-    1: { labelAr: "ضعيفة",      labelEn: "Weak",        color: "bg-red-500" },
-    2: { labelAr: "متوسطة",     labelEn: "Fair",        color: "bg-yellow-500" },
-    3: { labelAr: "جيدة",       labelEn: "Good",        color: "bg-blue-500" },
-    4: { labelAr: "قوية",       labelEn: "Strong",      color: "bg-green-500" },
+    0: { labelAr: "قصيرة جداً", labelEn: "Too short", color: "bg-[var(--c-ember)]" },
+    1: { labelAr: "ضعيفة",      labelEn: "Weak",       color: "bg-[var(--c-ember)]" },
+    2: { labelAr: "متوسطة",     labelEn: "Fair",       color: "bg-[var(--c-brown)]" },
+    3: { labelAr: "جيدة",       labelEn: "Good",       color: "bg-[var(--c-sage)]" },
+    4: { labelAr: "قوية",       labelEn: "Strong",     color: "bg-[var(--c-sage)]" },
   };
   return { score: clipped, ...map[clipped] };
+}
+
+// ── Atelier input — hairline underlined style ─────────────────────────────────
+
+function AtelierField({
+  label,
+  hint,
+  error,
+  required,
+  children,
+}: {
+  label: React.ReactNode
+  hint?: React.ReactNode
+  error?: string
+  required?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label className="atelier-label flex items-baseline gap-1 text-[var(--atelier-text-subtle)]">
+        <span>{label}</span>
+        {required && <span className="text-[var(--c-ember)]">*</span>}
+      </Label>
+      <div
+        className={cn(
+          "relative border-b transition-colors duration-[var(--atelier-dur-2)]",
+          "border-[var(--atelier-border-strong)]",
+          "focus-within:border-[var(--c-ember)]",
+          error && "border-[var(--c-ember)]",
+        )}
+      >
+        {children}
+      </div>
+      {hint && !error && (
+        <p className="atelier-label text-[var(--atelier-text-subtle)]">{hint}</p>
+      )}
+      {error && (
+        <p className="atelier-label text-[var(--c-ember)]">{error}</p>
+      )}
+    </div>
+  )
 }
 
 // ── Auth Form ─────────────────────────────────────────────────────────────────
@@ -232,6 +299,7 @@ function AuthForm() {
     if (urlMessage === "invite_accepted") {
       setSuccessMessage(t("تم قبول الدعوة! أنشئ كلمة مرورك وسجّل دخولك.", "Invite accepted! Set a password and sign in."));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlError, urlMessage]);
 
   // ── Sign In ──────────────────────────────────────────────────────
@@ -346,414 +414,521 @@ function AuthForm() {
   // ── Email confirm screen ─────────────────────────────────────────
   if (signUpDone) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md text-center space-y-5 flex flex-col items-center"
-      >
-        <div className="w-20 h-20 rounded-full flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg, #D9770622 0%, #F59E0B22 100%)" }}>
-          <CheckCircle2 className="w-10 h-10" style={{ color: "#D97706" }} />
+      <div className="w-full max-w-md text-center flex flex-col items-center gap-6 atelier-rise">
+        <div className="relative">
+          <div
+            aria-hidden
+            className="absolute -inset-6 rounded-full"
+            style={{
+              background: "radial-gradient(closest-side, var(--c-ember-glow), transparent 70%)",
+              filter: "blur(20px)",
+            }}
+          />
+          <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-[var(--c-ember)]/40 bg-[var(--atelier-bg-elevated)]">
+            <CheckCircle2 className="h-10 w-10 text-[var(--c-ember)]" strokeWidth={1.5} />
+          </div>
         </div>
-        <h2 className="text-2xl font-bold text-foreground">
-          {t("تحقق من إيميلك", "Check your email")}
+        <div className="atelier-eyebrow text-[var(--atelier-text-subtle)]">
+          <span className="tabular-nums text-[var(--c-ember)]">01</span>
+          <span className="mx-3" aria-hidden>/</span>
+          <span>{t("تم الإرسال", "Email sent")}</span>
+        </div>
+        <h2 className="atelier-h1 atelier-display text-[var(--atelier-text)]">
+          {t("تحقق من بريدك", "Check your email")}
         </h2>
-        <p className="text-muted-foreground leading-relaxed">
+        <p className="atelier-lead max-w-sm text-[var(--atelier-text-muted)]">
           {t(
-            "أرسلنا لك رابط التأكيد، راجع إيميلك وافتح الرابط عشان تكمل التسجيل.",
-            "We sent you a confirmation link. Check your email to continue.",
+            "أرسلنا لك رابط التأكيد. افتح الرابط لإكمال إنشاء حسابك.",
+            "We sent you a confirmation link. Open it to finish creating your account.",
           )}
         </p>
-        <Button variant="outline" onClick={() => { setSignUpDone(false); setTab("signin"); }}>
-          {t("ارجع لتسجيل الدخول", "Back to Sign In")}
-        </Button>
-      </motion.div>
+        <Pill
+          as="button"
+          variant="outline"
+          size="lg"
+          onClick={() => { setSignUpDone(false); setTab("signin"); }}
+        >
+          {t("ارجع لتسجيل الدخول", "Back to sign in")}
+        </Pill>
+      </div>
     );
   }
 
   // ── Main form ────────────────────────────────────────────────────
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-md shell-panel rounded-3xl p-8 sm:p-10"
-    >
-      {/* Logo (mobile) */}
-      <div className="lg:hidden text-center mb-8">
-        <BrandLogo className="h-10 w-auto mx-auto" />
+    <div className="w-full max-w-md flex flex-col gap-8 atelier-rise">
+      {/* Tab switcher — two pill buttons */}
+      <div className="atelier-eyebrow flex items-baseline gap-3 text-[var(--atelier-text-subtle)]">
+        <span className="tabular-nums text-[var(--c-ember)]">00</span>
+        <span aria-hidden>/</span>
+        <span>{t("ذكرني · الدخول", "Thakirni · Enter")}</span>
       </div>
 
-      {/* Google — primary CTA */}
-      <motion.button
-        whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-        type="button" onClick={handleGoogleLogin} disabled={isGoogleLoading}
-        className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-semibold text-sm disabled:opacity-60 mb-5 shadow-sm hover:shadow-md transition-all"
-        style={{ background: "linear-gradient(135deg, #D9770608 0%, #F59E0B10 100%)", border: "1.5px solid rgba(217,119,6,0.3)" }}
-      >
-        {isGoogleLoading
-          ? <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          : (
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-          )
-        }
-        <span>{t("متابعة بحساب Google", "Continue with Google")}</span>
-      </motion.button>
-
-      {/* Divider */}
-      <div className="relative mb-5">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center">
-          <span className="bg-background px-3 text-xs text-muted-foreground uppercase tracking-wide">
-            {t("أو بالبريد الإلكتروني", "or with email")}
-          </span>
-        </div>
-      </div>
-
-      {/* Tab switcher */}
-      <div className="flex gap-1 p-1 rounded-xl mb-8 bg-muted dark:bg-white/[0.04]">
+      <div className="flex items-center gap-2">
         {(["signin", "signup"] as const).map((t_) => (
-          <button key={t_} type="button"
+          <button
+            key={t_}
+            type="button"
             onClick={() => { setTab(t_); setErrors({}); }}
-            className="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
-            style={tab === t_
-              ? { background: "linear-gradient(135deg, #D97706 0%, #F59E0B 100%)", color: "#fff", boxShadow: "0 2px 12px rgba(217,119,6,0.4)" }
-              : { color: "#6b7280" }
-            }
+            className={cn(
+              "flex-1 py-2.5 text-center transition-all duration-[var(--atelier-dur-2)]",
+              "border-t atelier-label",
+              tab === t_
+                ? "border-[var(--c-ember)] text-[var(--c-parchment)]"
+                : "border-[var(--atelier-border)] text-[var(--atelier-text-subtle)] hover:text-[var(--c-parchment)] hover:border-[var(--atelier-border-strong)]",
+            )}
           >
             {t_ === "signin" ? t("تسجيل الدخول", "Sign In") : t("حساب جديد", "Sign Up")}
           </button>
         ))}
       </div>
 
-      {/* Success banner */}
-      <AnimatePresence>
-        {successMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="mb-5 p-3 rounded-xl flex items-center gap-2 text-sm"
-            style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", color: "#16a34a" }}
-          >
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            {successMessage}
-          </motion.div>
+      {/* Headline */}
+      <div className="flex flex-col gap-3">
+        <h2 className={cn(
+          "atelier-h1 text-[var(--atelier-text)]",
+          isArabic ? "atelier-display-ar" : "atelier-display",
+        )}>
+          {tab === "signin"
+            ? t("أهلاً وسهلاً", "Welcome back")
+            : t("ابدأ رحلتك", "Create your account")}
+        </h2>
+        <p className="atelier-lead text-[var(--atelier-text-muted)]">
+          {tab === "signin"
+            ? t("سجّل دخولك لفولتك الخاص", "Sign in to your vault")
+            : t("أنشئ حسابك وابدأ تحفظ ذكرياتك", "Begin preserving what matters to you")}
+        </p>
+      </div>
+
+      {/* Google provider — hairline-style pill */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={isGoogleLoading}
+        className={cn(
+          "flex items-center justify-center gap-3 py-3.5 px-6 rounded-full",
+          "bg-[var(--atelier-bg-elevated)] border border-[var(--atelier-border-strong)]",
+          "atelier-body text-[var(--atelier-text)]",
+          "hover:border-[var(--c-parchment)] hover:-translate-y-px",
+          "transition-all duration-[var(--atelier-dur-2)]",
+          "disabled:opacity-60 disabled:cursor-not-allowed",
         )}
-      </AnimatePresence>
+      >
+        {isGoogleLoading ? (
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+        ) : (
+          <svg className="h-5 w-5" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+        )}
+        <span>{t("متابعة بحساب Google", "Continue with Google")}</span>
+      </button>
+
+      {/* Divider */}
+      <div className="relative flex items-center gap-4">
+        <hr className="atelier-rule flex-1" />
+        <span className="atelier-eyebrow text-[var(--atelier-text-subtle)]">
+          {t("أو بالبريد", "Or with email")}
+        </span>
+        <hr className="atelier-rule flex-1" />
+      </div>
+
+      {/* Success banner */}
+      {successMessage && (
+        <div
+          className="flex items-center gap-3 rounded-[var(--atelier-radius-md)] border p-4 atelier-body"
+          style={{
+            background: "color-mix(in oklab, var(--c-sage) 12%, transparent)",
+            borderColor: "color-mix(in oklab, var(--c-sage) 40%, transparent)",
+            color: "var(--c-sage)",
+          }}
+        >
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>{successMessage}</span>
+        </div>
+      )}
 
       {/* Error banner */}
-      <AnimatePresence>
-        {errors.form && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="mb-5 p-3 rounded-xl flex items-center gap-2 text-sm"
-            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444" }}
-          >
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            {errors.form}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {errors.form && (
+        <div
+          className="flex items-center gap-3 rounded-[var(--atelier-radius-md)] border p-4 atelier-body"
+          style={{
+            background: "var(--c-ember-soft)",
+            borderColor: "color-mix(in oklab, var(--c-ember) 40%, transparent)",
+            color: "var(--c-ember)",
+          }}
+        >
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{errors.form}</span>
+        </div>
+      )}
 
       {/* ── SIGN IN ── */}
       {tab === "signin" && (
-        <div className="space-y-5">
-          <div className="mb-6">
-            <span className="eyebrow-badge mb-3 inline-flex">{t("تسجيل الدخول", "Sign In")}</span>
-            <h2 className="text-2xl font-headline font-bold gradient-text">
-              {t("أهلاً وسهلاً", "Welcome Back")}
-            </h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              {t("سجّل دخولك وارجع لذكرياتك", "Sign in to access your vault")}
-            </p>
+        <form onSubmit={handleSignIn} className="flex flex-col gap-6">
+          <AtelierField label={t("البريد الإلكتروني", "Email")} required>
+            <Mail className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+            <Input
+              name="email"
+              type="email"
+              placeholder="example@email.com"
+              className="h-11 border-0 bg-transparent ps-7 shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+              dir="ltr"
+              required
+            />
+          </AtelierField>
+
+          <AtelierField
+            label={
+              <span className="flex items-baseline gap-3">
+                <span>{t("كلمة المرور", "Password")}</span>
+                <Link
+                  href="/auth/reset-password"
+                  className="text-[var(--c-ember)] hover:text-[var(--c-parchment)] transition-colors !tracking-normal normal-case text-[0.7rem] !font-normal"
+                >
+                  {t("نسيت كلمة المرور؟", "Forgot?")}
+                </Link>
+              </span>
+            }
+            required
+          >
+            <Lock className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+            <Input
+              name="password"
+              type={showSignInPw ? "text" : "password"}
+              placeholder="••••••••"
+              className="h-11 border-0 bg-transparent ps-7 pe-8 shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+              dir="ltr"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowSignInPw(!showSignInPw)}
+              aria-label={showSignInPw ? "Hide password" : "Show password"}
+              className="absolute end-0 top-1/2 -translate-y-1/2 text-[var(--atelier-text-subtle)] hover:text-[var(--c-parchment)] transition-colors"
+            >
+              {showSignInPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </AtelierField>
+
+          <div className="flex justify-center py-2">
+            <HCaptcha
+              ref={signInCaptchaRef}
+              sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+              onVerify={(token) => setSignInCaptchaToken(token)}
+              onExpire={() => setSignInCaptchaToken("")}
+              size="normal"
+              theme="dark"
+            />
           </div>
 
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="email" type="email" placeholder="example@email.com"
-                  className="ps-10" dir="ltr" required />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">{t("كلمة المرور", "Password")} <span className="text-red-500">*</span></Label>
-                <Link href="/auth/reset-password"
-                  className="text-xs hover:underline" style={{ color: "#D97706" }}>
-                  {t("نسيت كلمة المرور؟", "Forgot password?")}
-                </Link>
-              </div>
-              <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="password" type={showSignInPw ? "text" : "password"}
-                  placeholder="••••••••" className="ps-10 pe-10" dir="ltr" required />
-                <button type="button" onClick={() => setShowSignInPw(!showSignInPw)} aria-label={showSignInPw ? "Hide password" : "Show password"}
-                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  {showSignInPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex justify-center">
-              <HCaptcha
-                ref={signInCaptchaRef}
-                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
-                onVerify={(token) => setSignInCaptchaToken(token)}
-                onExpire={() => setSignInCaptchaToken("")}
-                size="normal"
-              />
-            </div>
-
-            <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-              type="submit" disabled={isLoading || !signInCaptchaToken}
-              className="w-full py-3 rounded-xl font-bold font-label text-white transition-all disabled:opacity-60 btn-glow power-gradient"
-            >
-              {isLoading ? t("جارٍ الدخول...", "Signing in...") : t("دخول", "Sign In")}
-            </motion.button>
-          </form>
-        </div>
+          <Pill
+            as="button"
+            variant="solid"
+            size="lg"
+            type="submit"
+            disabled={isLoading || !signInCaptchaToken}
+            trailing={<span aria-hidden>{isArabic ? "←" : "→"}</span>}
+            className="w-full"
+          >
+            {isLoading ? t("جارٍ الدخول...", "Signing in…") : t("دخول", "Sign in")}
+          </Pill>
+        </form>
       )}
 
       {/* ── SIGN UP ── */}
       {tab === "signup" && (
-        <div className="space-y-4">
-          <div className="mb-6">
-            <span className="eyebrow-badge mb-3 inline-flex">{t("حساب جديد", "New Account")}</span>
-            <h2 className="text-2xl font-headline font-bold gradient-text">
-              {t("ابدأ رحلتك", "Create Your Account")}
-            </h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              {t("سجّل وابدأ تحفظ ذكرياتك", "Sign up and start preserving your memories")}
-            </p>
+        <form onSubmit={handleSignUp} className="flex flex-col gap-6">
+          <AtelierField label={t("الاسم الكامل", "Full name")} required>
+            <User className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+            <Input
+              name="name"
+              type="text"
+              placeholder={t("محمد العمري", "Salman Almnaseer")}
+              className="h-11 border-0 bg-transparent ps-7 shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+              required
+            />
+          </AtelierField>
+
+          <AtelierField label={t("البريد الإلكتروني", "Email")} required>
+            <Mail className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+            <Input
+              name="email"
+              type="email"
+              placeholder="example@email.com"
+              className="h-11 border-0 bg-transparent ps-7 shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+              dir="ltr"
+              required
+            />
+          </AtelierField>
+
+          <AtelierField
+            label={
+              <span className="flex items-baseline gap-2">
+                <span>{t("رقم الجوال", "Phone")}</span>
+                <span className="!tracking-normal normal-case text-[0.7rem] text-[var(--atelier-text-subtle)] !font-normal">
+                  {t("(اختياري — للواتساب)", "(optional — WhatsApp)")}
+                </span>
+              </span>
+            }
+          >
+            <div className="flex items-center gap-3 pe-1" dir="ltr">
+              <select
+                value={dialCode}
+                onChange={(e) => setDialCode(e.target.value)}
+                className="h-11 cursor-pointer border-0 bg-transparent atelier-body text-[var(--c-parchment)] focus:outline-none focus:ring-0"
+                style={{ minWidth: "5.5rem" }}
+              >
+                {COUNTRY_CODES.map((c, i) => (
+                  <option key={`${c.dial}-${i}`} value={c.dial} className="bg-[var(--atelier-bg-elevated)] text-[var(--c-parchment)]">
+                    {c.flag} +{c.dial}
+                  </option>
+                ))}
+              </select>
+              <div className="relative flex-1">
+                <Phone className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+                <Input
+                  name="phone"
+                  type="tel"
+                  placeholder={dialCode === "966" ? "5xxxxxxxx" : "xxxxxxxxx"}
+                  className="h-11 border-0 bg-transparent ps-7 w-full shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
+              </div>
+            </div>
+          </AtelierField>
+
+          <AtelierField
+            label={t("كلمة المرور", "Password")}
+            required
+            hint={signUpPassword.length === 0
+              ? t("٨ أحرف على الأقل، يفضّل مع أرقام ورموز", "At least 8 characters — letters, numbers & symbols for a stronger password.")
+              : undefined
+            }
+            error={errors.password}
+          >
+            <Lock className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+            <Input
+              name="password"
+              type={showSignUpPw ? "text" : "password"}
+              placeholder="••••••••"
+              className="h-11 border-0 bg-transparent ps-7 pe-8 shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+              dir="ltr"
+              required
+              minLength={8}
+              onChange={(e) => setSignUpPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowSignUpPw(!showSignUpPw)}
+              aria-label={showSignUpPw ? "Hide password" : "Show password"}
+              className="absolute end-0 top-1/2 -translate-y-1/2 text-[var(--atelier-text-subtle)] hover:text-[var(--c-parchment)] transition-colors"
+            >
+              {showSignUpPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </AtelierField>
+
+          {signUpPassword.length > 0 && (
+            <div className="-mt-3 flex flex-col gap-1.5">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "h-[2px] flex-1 transition-colors",
+                      i <= strength.score ? strength.color : "bg-[var(--atelier-border)]",
+                    )}
+                  />
+                ))}
+              </div>
+              <p className="atelier-label text-[var(--atelier-text-subtle)]">
+                {isArabic ? strength.labelAr : strength.labelEn}
+              </p>
+            </div>
+          )}
+
+          <AtelierField
+            label={t("تأكيد كلمة المرور", "Confirm password")}
+            required
+            error={errors.confirmPassword}
+          >
+            <Lock className="pointer-events-none absolute start-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--atelier-text-subtle)]" />
+            <Input
+              name="confirmPassword"
+              type={showSignUpPw ? "text" : "password"}
+              placeholder="••••••••"
+              className="h-11 border-0 bg-transparent ps-7 shadow-none focus-visible:ring-0 placeholder:text-[var(--atelier-text-subtle)] text-[var(--c-parchment)]"
+              dir="ltr"
+              required
+            />
+          </AtelierField>
+
+          <div className="flex justify-center py-2">
+            <HCaptcha
+              ref={captchaRef}
+              sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
+              onVerify={(token) => setCaptchaToken(token)}
+              onExpire={() => setCaptchaToken("")}
+              size="normal"
+              theme="dark"
+            />
           </div>
 
-          <form onSubmit={handleSignUp} className="space-y-4">
-            {/* Name */}
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <User className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="name" type="text" placeholder={t("محمد العمري", "John Doe")}
-                  className="ps-10" required />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("البريد الإلكتروني", "Email")} <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="email" type="email" placeholder="example@email.com"
-                  className="ps-10" dir="ltr" required />
-              </div>
-            </div>
-
-            {/* Phone */}
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">
-                {t("رقم الجوال", "Phone")}
-                <span className="text-muted-foreground text-xs ms-1.5">
-                  {t("(اختياري - للواتساب)", "(optional — WhatsApp)")}
-                </span>
-              </Label>
-              <div className="flex gap-2" dir="ltr">
-                {/* Country code picker */}
-                <select
-                  value={dialCode}
-                  onChange={(e) => setDialCode(e.target.value)}
-                  className="shrink-0 h-10 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 cursor-pointer"
-                  style={{ minWidth: "5.5rem" }}
-                >
-                  {COUNTRY_CODES.map((c, i) => (
-                    <option key={`${c.dial}-${i}`} value={c.dial}>
-                      {c.flag} +{c.dial}
-                    </option>
-                  ))}
-                </select>
-                {/* Local number */}
-                <div className="relative flex-1">
-                  <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    name="phone"
-                    type="tel"
-                    placeholder={dialCode === "966" ? "5xxxxxxxx" : "xxxxxxxxx"}
-                    className="ps-10 w-full"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("كلمة المرور", "Password")} <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="password" type={showSignUpPw ? "text" : "password"}
-                  placeholder="••••••••" className="ps-10 pe-10" dir="ltr" required minLength={8}
-                  onChange={(e) => setSignUpPassword(e.target.value)} />
-                <button type="button" onClick={() => setShowSignUpPw(!showSignUpPw)} aria-label={showSignUpPw ? "Hide password" : "Show password"}
-                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  {showSignUpPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {signUpPassword.length === 0
-                ? <p className="text-xs text-muted-foreground pt-1">{t("٨ أحرف على الأقل، يُفضَّل مع أرقام ورموز", "At least 8 characters — mix letters, numbers & symbols for a stronger password.")}</p>
-                : (
-                  <div className="space-y-1 pt-1">
-                    <div className="flex gap-1">
-                      {[1,2,3,4].map((i) => (
-                        <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= strength.score ? strength.color : "bg-muted"}`} />
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{isArabic ? strength.labelAr : strength.labelEn}</p>
-                  </div>
-                )
-              }
-              {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
-            </div>
-
-            {/* Confirm Password */}
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium">{t("تأكيد كلمة المرور", "Confirm Password")} <span className="text-red-500">*</span></Label>
-              <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input name="confirmPassword" type={showSignUpPw ? "text" : "password"}
-                  placeholder="••••••••"
-                  className={`ps-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
-                  dir="ltr" required />
-              </div>
-              {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
-            </div>
-
-            <div className="flex justify-center">
-              <HCaptcha
-                ref={captchaRef}
-                sitekey={process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY!}
-                onVerify={(token) => setCaptchaToken(token)}
-                onExpire={() => setCaptchaToken("")}
-                size="normal"
-              />
-            </div>
-
-            <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-              type="submit" disabled={isLoading || !captchaToken}
-              className="w-full py-3 rounded-xl font-bold font-label text-white transition-all disabled:opacity-60 mt-2 btn-glow power-gradient"
-            >
-              {isLoading ? t("جارٍ التسجيل...", "Creating account...") : t("إنشاء حساب", "Create Account")}
-            </motion.button>
-          </form>
-        </div>
+          <Pill
+            as="button"
+            variant="solid"
+            size="lg"
+            type="submit"
+            disabled={isLoading || !captchaToken}
+            trailing={<span aria-hidden>{isArabic ? "←" : "→"}</span>}
+            className="w-full"
+          >
+            {isLoading ? t("جارٍ التسجيل...", "Creating account…") : t("إنشاء حساب", "Create account")}
+          </Pill>
+        </form>
       )}
-
-    </motion.div>
+    </div>
   );
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function AuthPage() {
-  const { t } = useLanguage();
+  const { t, isArabic } = useLanguage();
 
   return (
-    <div className="min-h-screen flex page-shell">
-
-      {/* ── Left panel: Cognitive Aura ────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #1A1007 0%, #7C3400 40%, #B45309 75%, #D97706 100%)" }}>
-
-        {/* Mesh blobs */}
-        <motion.div className="absolute top-10 left-10 w-80 h-80 rounded-full blur-3xl opacity-30"
-          style={{ background: "radial-gradient(circle, #FBBF24 0%, transparent 70%)" }}
-          animate={{ y: [0, -25, 0], x: [0, 15, 0] }}
-          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
-        <motion.div className="absolute bottom-20 right-10 w-72 h-72 rounded-full blur-3xl opacity-20"
-          style={{ background: "radial-gradient(circle, #D97706 0%, transparent 70%)" }}
-          animate={{ y: [0, 30, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
-
-        <div className="relative z-10 flex flex-col justify-center items-center h-full w-full p-14 text-center">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }} className="flex flex-col items-center">
-
-            {/* Logo mark */}
-            <motion.div className="mb-10"
-              animate={{ scale: [1, 1.04, 1] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-              <img
-                src="/logo-icon.svg"
-                alt="Thakirni"
-                className="w-24 h-24 rounded-[25%]"
-                style={{ boxShadow: "0 0 50px rgba(251,191,36,0.4), 0 0 100px rgba(217,119,6,0.4)" }}
-              />
-            </motion.div>
-
-            <h2 className="text-5xl font-bold text-white mb-3 tracking-tight">{t("ذكرني", "Thakirni")}</h2>
-            <p className="text-white/70 text-lg mb-10 font-light">{t("ذاكرتك الثانية. ملكك للأبد.", "Your second brain. Yours forever.")}</p>
-
-            {/* Feature pills */}
-            <div className="flex flex-col gap-3 w-full max-w-xs">
-              {[
-                { ar: "ذاكرتك الثانية تحفظ كل شيء",  en: "Your second brain, remembers everything", icon: "🧠" },
-                { ar: "تشفير كامل وخصوصية تامة",       en: "Full encryption & complete privacy",      icon: "🔒" },
-                { ar: "مساعد ذكي يفهم بالسعودي",       en: "AI assistant that speaks your language",  icon: "✨" },
-                { ar: "بيانات مستضافة في السعودية",    en: "Data hosted in Saudi Arabia",             icon: "🇸🇦" },
-              ].map((item, i) => (
-                <motion.div key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + i * 0.1, duration: 0.5 }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/90"
-                  style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-                  <span className="text-base">{item.icon}</span>
-                  <span>{t(item.ar, item.en)}</span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+    <div
+      className={cn("atelier-root min-h-screen flex")}
+      dir={isArabic ? "rtl" : "ltr"}
+    >
+      {/* ── Left · editorial panel ─────────────────────────────────── */}
+      <aside className="hidden lg:flex lg:w-[48%] relative overflow-hidden border-e border-[var(--atelier-border)]">
+        {/* Ember radial */}
+        <div
+          aria-hidden
+          className="atelier-glow-pulse pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 35%, rgba(255,81,19,0.18), transparent 65%)",
+          }}
+        />
+        {/* Orbit */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
+        >
+          <OrbitSvg preset="active" size={780} />
         </div>
-      </div>
 
-      {/* ── Right panel: Form ─────────────────────────────────────── */}
-      <div className="w-full lg:w-[55%] flex flex-col bg-background">
+        <div className="relative z-10 flex flex-col justify-between h-full w-full p-14">
+          {/* Top row: brand + eyebrow */}
+          <div className="flex flex-col gap-8">
+            <div className="atelier-eyebrow text-[var(--atelier-text-subtle)]">
+              <span className="tabular-nums text-[var(--c-ember)]">ذ</span>
+              <span aria-hidden className="mx-3">/</span>
+              <span>{t("ذكرني · الدخول", "Thakirni · Auth")}</span>
+            </div>
+            <WordmarkStacked
+              size="xl"
+              orientation="stacked"
+              primary={isArabic ? "arabic" : "latin"}
+              withCaption
+            />
+          </div>
 
+          {/* Bottom row: editorial sell */}
+          <div className="flex flex-col gap-8 max-w-lg">
+            <h2 className={cn(
+              "atelier-h1 text-[var(--c-parchment)]",
+              isArabic ? "atelier-display-ar" : "atelier-display",
+            )}>
+              {t(
+                "ذاكرتك الثانية.",
+                "Your second brain.",
+              )}
+              <span className="block atelier-italic text-[var(--c-parchment-2)]">
+                {t("ملكك للأبد.", "Yours forever.")}
+              </span>
+            </h2>
+
+            <ul className="flex flex-col gap-4 border-t border-[var(--atelier-border)] pt-8">
+              {[
+                { ar: "ذاكرة ثانية تحفظ كل شيء",  en: "A second brain that remembers everything" },
+                { ar: "تشفير كامل وخصوصية تامة",   en: "Full encryption, complete privacy" },
+                { ar: "يفهم العربي السعودي",       en: "Speaks your language — in your dialect" },
+                { ar: "بيانات مستضافة في السعودية", en: "Data hosted in Saudi Arabia" },
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-4">
+                  <span
+                    aria-hidden
+                    className="mt-2 inline-block h-[2px] w-5 shrink-0 bg-[var(--c-ember)]"
+                  />
+                  <span className="atelier-body text-[var(--atelier-text-muted)]">
+                    {t(item.ar, item.en)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="atelier-label text-[var(--atelier-text-subtle)] pt-4 border-t border-[var(--atelier-border)]">
+              {t(
+                "مبني لرؤية المملكة 2030 · عام الذكاء الاصطناعي 2026",
+                "Built for Vision 2030 · Year of AI 2026",
+              )}
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Right · form panel ─────────────────────────────────────── */}
+      <main className="w-full lg:w-[52%] flex flex-col relative isolate">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
-          <Link href="/"
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
-            {t("الرئيسية", "Home")}
+        <div className="flex items-center justify-between px-6 md:px-10 py-6 border-b border-[var(--atelier-border)]">
+          <Link
+            href="/"
+            className="atelier-label inline-flex items-center gap-2 text-[var(--atelier-text-muted)] hover:text-[var(--c-parchment)] transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 rtl:rotate-180" strokeWidth={1.5} />
+            <span>{t("الرئيسية", "Home")}</span>
           </Link>
-          <span className="eyebrow-badge text-xs">{t("مرحباً بك", "Welcome")}</span>
+          {/* Mobile wordmark */}
+          <div className="lg:hidden">
+            <WordmarkStacked size="sm" orientation="inline" primary={isArabic ? "arabic" : "latin"} />
+          </div>
+          <span className="atelier-eyebrow text-[var(--atelier-text-subtle)]">
+            {t("مرحباً بك", "Welcome")}
+          </span>
         </div>
 
         {/* Form */}
-        <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
-          <Suspense fallback={
-            <div className="w-10 h-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          }>
+        <div className="flex-1 flex items-center justify-center px-6 md:px-10 py-12">
+          <Suspense
+            fallback={
+              <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--c-ember)] border-t-transparent" />
+            }
+          >
             <AuthForm />
           </Suspense>
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground pb-6 px-4">
-          {t("بالتسجيل أنت توافق على", "By signing up you agree to our")}{" "}
-          <Link href="/privacy" className="hover:underline text-amber-600 dark:text-amber-400 font-medium">
-            {t("سياسة الخصوصية", "Privacy Policy")}
-          </Link>
-        </p>
-      </div>
+        <div className="px-6 md:px-10 py-6 border-t border-[var(--atelier-border)]">
+          <p className="atelier-label text-[var(--atelier-text-subtle)] text-center">
+            {t("بالاستمرار أنت توافق على", "By continuing you agree to our")}{" "}
+            <Link href="/privacy" className="text-[var(--c-ember)] hover:text-[var(--c-parchment)] transition-colors">
+              {t("سياسة الخصوصية", "Privacy Policy")}
+            </Link>
+            {" · "}
+            <Link href="/terms" className="text-[var(--c-ember)] hover:text-[var(--c-parchment)] transition-colors">
+              {t("الشروط", "Terms")}
+            </Link>
+          </p>
+        </div>
+      </main>
     </div>
   );
 }

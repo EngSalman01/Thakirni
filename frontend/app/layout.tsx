@@ -5,9 +5,18 @@ import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
 import { MotionProvider } from "@/components/motion-provider"
-import { Tajawal, Inter, Syne } from "next/font/google"
+import {
+  Tajawal,
+  Inter,
+  Syne,
+  Cormorant_Garamond,
+  Fraunces,
+  Plus_Jakarta_Sans,
+  Reem_Kufi,
+} from "next/font/google"
 import "./globals.css"
 
+// ── Legacy brand fonts (kept during migration) ──
 const tajawal = Tajawal({
   subsets: ["arabic", "latin"],
   weight: ["300", "400", "500", "700", "800", "900"],
@@ -26,6 +35,42 @@ const syne = Syne({
   subsets: ["latin"],
   weight: ["600", "700", "800"],
   variable: "--font-syne",
+  display: "swap",
+})
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+})
+
+// ── Atelier fonts (Obsidian Assembly-style redesign) ──
+// Display serif — used for the wordmark and oversized section headings.
+// Opsz axis: high optical size yields the sharp-contrast feel of OT Jubilee / Voyage.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  axes: ["opsz", "SOFT"],
+  variable: "--font-atelier-display",
+  display: "swap",
+})
+
+// Body sans — Plus Jakarta Sans as a free substitute for Switzer.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-atelier-body",
+  display: "swap",
+})
+
+// Arabic display — Reem Kufi carries an editorial display feel to mirror the Latin serif.
+const reemKufi = Reem_Kufi({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-atelier-arabic",
   display: "swap",
 })
 
@@ -91,7 +136,7 @@ export default function RootLayout({
      * both inject classes that differ between server and client renders.
      */
     <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth"
-      className={`${tajawal.variable} ${inter.variable} ${syne.variable}`}>
+      className={`${tajawal.variable} ${inter.variable} ${syne.variable} ${cormorant.variable} ${fraunces.variable} ${jakarta.variable} ${reemKufi.variable}`}>
       <body
         className="font-sans antialiased"
         suppressHydrationWarning
