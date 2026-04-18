@@ -56,21 +56,30 @@ export async function POST(
     ? Object.entries(speakers).map(([key, name]) => name !== key ? `${name} (${key})` : key).join(", ")
     : `${meeting.speaker_count ?? 1} ${outputLang === "ar" ? "متحدث" : "participant(s)"}`
 
+  // Safely parse a DB value that may be a JSONB array OR a serialised JSON string
+  function safeArr<T>(val: unknown): T[] {
+    if (Array.isArray(val)) return val as T[]
+    if (typeof val === "string") {
+      try { const p = JSON.parse(val); return Array.isArray(p) ? p : [] } catch { return [] }
+    }
+    return []
+  }
+
   // Build key points block
-  const keyPoints = (meeting.key_points as string[] | null) ?? []
+  const keyPoints = safeArr<string>(meeting.key_points)
   const keyPointsBlock = keyPoints.length > 0
     ? keyPoints.map((pt, i) => `${i + 1}. ${pt}`).join("\n")
     : outputLang === "ar" ? "لا توجد نقاط مسجلة" : "No key points recorded"
 
   // Build action items block
-  const actionItems = (meeting.action_items as string[] | null) ?? []
+  const actionItems = safeArr<string>(meeting.action_items)
   const actionBlock = actionItems.length > 0
     ? actionItems.map((item) => `- ${item}`).join("\n")
     : outputLang === "ar" ? "لا توجد مهام" : "No action items"
 
   // Build transcript excerpt (first 20 segments, max)
   type TranscriptSeg = { start: number; end: number; text: string; speaker?: string }
-  const transcript = (meeting.transcript as TranscriptSeg[] | null) ?? []
+  const transcript = safeArr<TranscriptSeg>(meeting.transcript)
   const transcriptBlock = transcript.length > 0
     ? transcript
         .slice(0, 20)
