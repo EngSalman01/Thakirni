@@ -3,10 +3,26 @@ import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage } from "@/lib/whatsapp/kapso"
 import { buildViralAppend, logViralCTASent } from "@/lib/growth/viral"
-import { generateText } from "ai"
-import { createGoogleGenerativeAI } from "@ai-sdk/google"
 
-const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
+const GEMINI_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? ""
+
+async function callGeminiText(prompt: string, maxOutputTokens = 150): Promise<string> {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens },
+      }),
+    }
+  )
+  if (!res.ok) throw new Error(`Gemini failed (${res.status})`)
+  interface GRes { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+  const data = await res.json() as GRes
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
+}
 
 function getRiyadhHour(): number {
   return parseInt(new Date().toLocaleTimeString("en-GB", { timeZone: "Asia/Riyadh", hour12: false }).slice(0, 2))
@@ -22,19 +38,12 @@ function timeOfDayLabel(hour: number, isArabic: boolean): string {
 
 async function generateReminderMessage(title: string, isArabic: boolean, hour: number): Promise<string> {
   const tod = timeOfDayLabel(hour, isArabic)
+  const prompt = isArabic
+    ? `اكتب جملة واحدة قصيرة جداً على واتساب لتذكير شخص بـ: "${title}". الوقت: ${tod}. قواعد: لهجة سعودية خليجية طبيعية، إيموجي مناسب، لا تقل كلمة "تذكير" مباشرة، غيّر الأسلوب — أحياناً ودي أحياناً مضحك أحياناً جاد أحياناً محفز. أرسل الجملة فقط بدون أي شرح.`
+    : `Write one very short WhatsApp reminder for: "${title}". Time: ${tod}. Rules: casual and natural, add a fitting emoji, don't say the word "reminder", vary the tone — sometimes caring, sometimes playful, sometimes urgent. Just the sentence, nothing else.`
   try {
-    const { text } = await generateText({
-      model: google("gemini-2.5-flash"),
-      maxOutputTokens: 150,
-      messages: [{
-        role: "user",
-        content: isArabic
-          ? `اكتب جملة واحدة قصيرة جداً على واتساب لتذكير شخص بـ: "${title}". الوقت: ${tod}. قواعد: لهجة سعودية خليجية طبيعية، إيموجي مناسب، لا تقل كلمة "تذكير" مباشرة، غيّر الأسلوب — أحياناً ودي أحياناً مضحك أحياناً جاد أحياناً محفز. أرسل الجملة فقط بدون أي شرح.`
-          : `Write one very short WhatsApp reminder for: "${title}". Time: ${tod}. Rules: casual and natural, add a fitting emoji, don't say the word "reminder", vary the tone — sometimes caring, sometimes playful, sometimes urgent. Just the sentence, nothing else.`
-      }],
-    })
-    const clean = text.trim().replace(/^["']|["']$/g, "")
-    // Reject truncated output: ends with bare definite article "ال" or dangling space
+    const raw = await callGeminiText(prompt, 150)
+    const clean = raw.trim().replace(/^["']|["']$/g, "")
     const looksComplete = clean.length > 5 && !/\sال$/.test(clean) && !/ $/.test(clean)
     return (clean && looksComplete) ? clean : `🔔 ${title}`
   } catch {
@@ -42,7 +51,7 @@ async function generateReminderMessage(title: string, isArabic: boolean, hour: n
   }
 }
 
-export const maxDuration = 60
+export const maxDuration = 300
 
 // Follow-up title encoding: [FU:generation:originalSentAt] CleanTitle
 // generation = 1 or 2, originalSentAt = ISO timestamp when original reminder fired

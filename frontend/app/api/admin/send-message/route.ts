@@ -7,7 +7,7 @@ import { logAuditEvent } from "@/lib/compliance/audit";
 
 export async function POST(request: NextRequest) {
   const { user: adminUser, error } = await requireAdmin();
-  if (error) return error;
+  if (error || !adminUser) return error ?? NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const [body, parseErr] = await parseBody<Record<string, unknown>>(request, 8192);
   if (parseErr) return parseErr;
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
   // Audit log: admin messaging a specific user
   await logAuditEvent(
-    adminUser!.id,
+    adminUser.id,
     "admin_action",
     `Admin sent WhatsApp message to user ${userId}`,
     { targetUserId: userId, messageLength: message.length }

@@ -6,13 +6,63 @@ import { createServiceClient } from "@/lib/supabase/server"
 import { sendWhatsAppMessage, downloadKapsoMedia } from "@/lib/whatsapp/kapso"
 import { rateLimit } from "@/lib/rate-limit"
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 // ─── SQL migration (run once in Supabase SQL Editor) ──────────────────────────
 // alter table public.profiles add column if not exists phone_number text unique;
 // create index if not exists profiles_phone_idx on public.profiles(phone_number);
 
 const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
+
+// ─── Gemini File API helpers (avoids convertToBase64 SDK bug for binary data) ──
+
+async function uploadToGeminiFileApi(buffer: Buffer, mimeType: string, displayName: string): Promise<string> {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? ""
+    const boundary = `wa_boundary_${Date.now()}`
+    const metaPart = `--${boundary}\r\nContent-Type: application/json; charset=utf-8\r\n\r\n${JSON.stringify({ file: { displayName, mimeType } })}\r\n`
+    const dataPart = `--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`
+    const closing  = `\r\n--${boundary}--`
+    const body = Buffer.concat([Buffer.from(metaPart), Buffer.from(dataPart), buffer, Buffer.from(closing)])
+    const res = await fetch(
+        `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`,
+        { method: "POST", headers: { "Content-Type": `multipart/related; boundary=${boundary}`, "X-Goog-Upload-Protocol": "multipart" }, body }
+    )
+    if (!res.ok) throw new Error(`File API upload failed (${res.status})`)
+    const { file } = await res.json() as { file: { uri: string; name: string; state: string } }
+    if (file.state !== "ACTIVE") {
+        for (let i = 0; i < 10; i++) {
+            await new Promise(r => setTimeout(r, 2000))
+            const check = await fetch(`https://generativelanguage.googleapis.com/v1beta/${file.name}?key=${apiKey}`)
+            if (!check.ok) break
+            const d = await check.json() as { state: string }
+            if (d.state === "ACTIVE") break
+            if (d.state === "FAILED") throw new Error("Gemini file processing FAILED")
+        }
+    }
+    return file.uri
+}
+
+async function geminiWithFile(prompt: string, fileUri: string, mimeType: string): Promise<string> {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? ""
+    const body = {
+        contents: [{ parts: [{ text: prompt }, { fileData: { mimeType, fileUri } }] }],
+        generationConfig: { maxOutputTokens: 2000 },
+    }
+    const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+    )
+    if (!res.ok) throw new Error(`Gemini generateContent failed (${res.status})`)
+    interface GRes { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+    const data = await res.json() as GRes
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
+}
+
+async function deleteGeminiFile(uri: string) {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? ""
+    const match = uri.match(/files\/[^/?]+/)
+    if (match) await fetch(`https://generativelanguage.googleapis.com/v1beta/${match[0]}?key=${apiKey}`, { method: "DELETE" }).catch(() => {})
+}
 
 // ─── Time Helpers ─────────────────────────────────────────────────────────────
 
@@ -105,18 +155,16 @@ function normalizeAudioMime(mime: string): string {
 
 async function transcribeAudio(audioBuffer: Buffer, rawMimeType: string): Promise<string> {
     const mimeType = normalizeAudioMime(rawMimeType)
-    const { text } = await generateText({
-        // gemini-2.0-flash has proven audio support; lite models may not
-        model: google("gemini-2.5-flash"),
-        messages: [{
-            role: "user",
-            content: [
-                { type: "text", text: "Transcribe this audio message exactly as spoken. Return only the transcript, nothing else." },
-                { type: "file", data: audioBuffer, mediaType: mimeType },
-            ],
-        }],
-    })
-    return text.trim()
+    const fileUri = await uploadToGeminiFileApi(audioBuffer, mimeType, `wa_audio_${Date.now()}`)
+    try {
+        const text = await geminiWithFile(
+            "Transcribe this audio message exactly as spoken. Return only the transcript, nothing else.",
+            fileUri, mimeType
+        )
+        return text.trim()
+    } finally {
+        deleteGeminiFile(fileUri).catch(() => {})
+    }
 }
 
 // ─── Main Webhook Handler ─────────────────────────────────────────────────────
@@ -151,6 +199,7 @@ export async function POST(req: NextRequest) {
         await processEvents(events)
     } catch (err: unknown) {
         console.error("[WhatsApp Webhook] Processing error:", (err as Error)?.message)
+        return new Response("Processing failed", { status: 500 })
     }
 
     return new Response("OK", { status: 200 })
@@ -260,16 +309,16 @@ async function processMessage(event: unknown, supabase: ReturnType<typeof create
                 await sendWhatsAppMessage(phone, "الملف كبير شوي 😅 حاول ترسل نسخة أصغر")
                 return
             }
-            const { text: summary } = await generateText({
-                model: google("gemini-2.5-flash"),
-                messages: [{
-                    role: "user",
-                    content: [
-                        { type: "text", text: "Extract and summarize the key points from this PDF document in the same language as the document. Be concise but comprehensive. Format with bullet points. If the PDF is unreadable or empty, respond only with: UNREADABLE" },
-                        { type: "file", data: fileBuffer, mediaType: "application/pdf" },
-                    ],
-                }],
-            })
+            const pdfUri = await uploadToGeminiFileApi(fileBuffer, "application/pdf", `wa_pdf_${Date.now()}`)
+            let summary: string
+            try {
+                summary = await geminiWithFile(
+                    "Extract and summarize the key points from this PDF document in the same language as the document. Be concise but comprehensive. Format with bullet points. If the PDF is unreadable or empty, respond only with: UNREADABLE",
+                    pdfUri, "application/pdf"
+                )
+            } finally {
+                deleteGeminiFile(pdfUri).catch(() => {})
+            }
             if (summary.trim().toUpperCase() === "UNREADABLE") {
                 await sendWhatsAppMessage(phone, "ما قدرت أستخرج شي واضح 🤔 جرّب ملف ثاني")
                 return

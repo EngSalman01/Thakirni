@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server"
 import { requireAuth } from "@/lib/api-auth"
-import { getAiModel } from "@/lib/services/ai.service"
-import { generateText } from "ai"
+import { geminiText } from "@/lib/services/ai.service"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 import { enforceUsage } from "@/lib/usage/enforce"
 import { incrementUsage } from "@/lib/usage/increment"
@@ -35,14 +34,14 @@ export async function POST(req: NextRequest) {
     : `You are an expert success coach. User's goal:\nTitle: ${title}\nDescription: ${description ?? ""}\nCategory: ${category}\nTarget date: ${targetDate ?? "not specified"}\n\nSuggest 5-8 practical milestones to achieve this goal. Return JSON only:\n{"milestones": [{"title": "Step 1", "description": "..."}]}`
 
   try {
-    const { text } = await generateText({ model: getAiModel(), prompt })
-
+    const text = await geminiText(prompt, { maxOutputTokens: 1000 })
     incrementUsage(auth.userId, "ai_chat", 1, auth.workspace?.workspaceId).catch(() => {})
-
     const match = text.match(/\{[\s\S]*\}/)
     const parsed = match ? JSON.parse(match[0]) : { milestones: [] }
     return Response.json(parsed)
-  } catch {
-    return Response.json({ milestones: [] })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to generate milestones"
+    console.error("[goals/ai-suggest] error:", msg)
+    return Response.json({ error: msg }, { status: 500 })
   }
 }

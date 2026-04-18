@@ -315,7 +315,7 @@ export async function GET(req: NextRequest) {
           ...gcalEvents
             .filter(e => e.start?.dateTime)
             .map(e => {
-              const t = formatGCalTime(e.start!.dateTime!, isArabic)
+              const t = formatGCalTime(e.start?.dateTime ?? "", isArabic)
               const loc = e.location ? ` - ${e.location}` : ""
               return `📅 ${t} ${e.summary ?? (isArabic ? "حدث" : "Event")}${loc}`
             }),
