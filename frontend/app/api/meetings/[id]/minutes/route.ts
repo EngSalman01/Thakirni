@@ -151,7 +151,10 @@ Use formal professional language. Do not fabricate information not present in th
     const body = {
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: [{ parts: [{ text: userPrompt }] }],
-      generationConfig: { maxOutputTokens: 2000 },
+      generationConfig: {
+        maxOutputTokens: 2000,
+        thinkingConfig: { thinkingBudget: 0 },  // disable adaptive thinking — fast, reliable latency
+      },
     }
 
     const RETRYABLE = new Set([429, 503])
