@@ -94,7 +94,7 @@ function UploadVisual({ t }: { t: (a: string, b: string) => string }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-      className="relative bg-[#e4e2e1] rounded-3xl p-8 overflow-hidden">
+      className="relative bg-muted dark:bg-white/[0.03] rounded-3xl p-8 overflow-hidden">
       {/* Grid bg */}
       <div className="absolute inset-0 opacity-10"
         style={{ backgroundImage: 'linear-gradient(#D97706 1px,transparent 1px),linear-gradient(90deg,#D97706 1px,transparent 1px)', backgroundSize: '32px 32px' }} />
@@ -316,7 +316,7 @@ export default function UploadPage() {
 
                 <motion.div animate={{ scale: isDragging ? 1.08 : 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                   className="flex flex-col items-center gap-4 relative z-10">
-                  <div className={cn('w-20 h-20 rounded-3xl flex items-center justify-center transition-colors', isDragging ? 'power-gradient' : 'bg-[#e4e2e1]')}>
+                  <div className={cn('w-20 h-20 rounded-3xl flex items-center justify-center transition-colors', isDragging ? 'power-gradient' : '[background:var(--s3)]')}>
                     <Upload className={cn('w-8 h-8 transition-colors', isDragging ? 'text-white' : 'text-slate-400')} />
                   </div>
                   <div>
@@ -340,7 +340,7 @@ export default function UploadPage() {
 
                 {items.length === 0 ? (
                   <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-[#e4e2e1] flex items-center justify-center mb-4">
+                    <div className="w-16 h-16 rounded-2xl bg-muted dark:bg-white/[0.05] flex items-center justify-center mb-4">
                       <File className="w-8 h-8 text-slate-400" />
                     </div>
                     <p className="text-muted-foreground">{t('لا توجد ملفات محددة بعد', 'No files selected yet')}</p>

@@ -93,7 +93,7 @@ function MeetingVisual({ t, latestMeeting }: {
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("الملخص", "Summary")}</p>
             {[100, 85, 65].map((w, i) => (
               <motion.div key={i} initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ delay: 0.6 + i * 0.1, duration: 0.5 }}
-                className="h-2 bg-[#e4e2e1] rounded-full origin-left" style={{ width: `${w}%` }} />
+                className="h-2 [background:var(--s4)] rounded-full origin-left" style={{ width: `${w}%` }} />
             ))}
           </div>
         ) : (
@@ -452,7 +452,7 @@ export default function MeetingsPage() {
                           <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                             m.status === "completed" ? "bg-green-100 text-green-700" :
                             m.status === "failed"    ? "bg-red-100 text-red-600" :
-                            "bg-[#e4e2e1] text-muted-foreground"
+                            "bg-muted dark:bg-white/[0.05] text-muted-foreground"
                           }`}>
                             {m.status === "completed" ? t("مكتمل", "Completed") :
                              m.status === "failed"    ? t("فشل التحليل", "Analysis failed") :

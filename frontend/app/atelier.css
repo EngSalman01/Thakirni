@@ -1,0 +1,354 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+ * Atelier — Obsidian Assembly-style design system for Thakirni
+ *
+ * This layer introduces a new palette, type scale, motion defaults, and
+ * spacing primitives. It lives alongside the legacy amber/saffron tokens in
+ * globals.css during the migration so un-migrated pages keep working.
+ *
+ * Usage:
+ *   - New atelier pages/components consume --c-* and --atelier-* tokens.
+ *   - Legacy pages continue to use --primary/--background etc.
+ *   - Once all pages migrate, legacy tokens can be retired in Phase 6.
+ * ──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Atelier palette (dark editorial base — the primary theme) ─────────── */
+  --c-obsidian: #151415;      /* page background, deep matte black */
+  --c-obsidian-2: #1c1a1c;    /* card background, one step up */
+  --c-stone: #242324;         /* surface / section divider */
+  --c-stone-2: #2c2a2c;       /* hover surface */
+  --c-grey: #3f383c;          /* muted UI chrome */
+  --c-grey-2: #584f54;        /* secondary text */
+  --c-brown: #7b5136;         /* earthy accent, admission details */
+  --c-ember: #ff5113;         /* primary accent — CTAs, focus, brand flame */
+  --c-ember-glow: rgba(255, 81, 19, 0.18);
+  --c-ember-soft: rgba(255, 81, 19, 0.08);
+  --c-sage: #9faf9b;          /* secondary accent — calm counterpoint */
+  --c-parchment: #f1eade;     /* primary text on dark, warm cream */
+  --c-parchment-2: #e2d9c8;   /* secondary text on dark */
+  --c-ivory: #ffffff;         /* pure highlight, only for titles */
+
+  /* ── Semantic surface + text (atelier defaults — dark first) ──────────── */
+  --atelier-bg: var(--c-obsidian);
+  --atelier-bg-elevated: var(--c-obsidian-2);
+  --atelier-surface: var(--c-stone);
+  --atelier-surface-hover: var(--c-stone-2);
+  --atelier-border: rgba(241, 234, 222, 0.08);
+  --atelier-border-strong: rgba(241, 234, 222, 0.18);
+  --atelier-text: var(--c-parchment);
+  --atelier-text-muted: var(--c-parchment-2);
+  --atelier-text-subtle: var(--c-grey-2);
+  --atelier-accent: var(--c-ember);
+  --atelier-accent-soft: var(--c-ember-soft);
+  --atelier-accent-glow: var(--c-ember-glow);
+  --atelier-sage: var(--c-sage);
+
+  /* ── Type scale (editorial display-first) ─────────────────────────────── */
+  /* Display serif (Fraunces substituting OT Jubilee Platinum). High opsz axis
+   * activates sharp high-contrast shapes at large sizes. */
+  --atelier-font-display: var(--font-atelier-display), "Fraunces",
+    "Cormorant Garamond", ui-serif, Georgia, serif;
+  /* Body sans (Plus Jakarta Sans substituting Switzer). */
+  --atelier-font-body: var(--font-atelier-body), "Plus Jakarta Sans",
+    "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Arabic display + body (Reem Kufi for display; Tajawal for body). */
+  --atelier-font-arabic-display: var(--font-atelier-arabic), "Reem Kufi",
+    "Tajawal", ui-sans-serif, sans-serif;
+  --atelier-font-arabic-body: var(--font-tajawal), "Tajawal",
+    ui-sans-serif, sans-serif;
+
+  /* Monospace, small caps, labels use Jakarta at heavy tracking. */
+  --atelier-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Fluid scale — clamp(min, preferred, max). Mobile-first. */
+  --atelier-fs-hero:    clamp(3.25rem, 12vw + 0.5rem, 15rem);  /* 52 → 240 */
+  --atelier-fs-display: clamp(2.5rem, 7vw + 0.5rem, 7rem);     /* 40 → 112 */
+  --atelier-fs-h1:      clamp(2rem, 4.5vw + 0.25rem, 4.5rem);  /* 32 → 72  */
+  --atelier-fs-h2:      clamp(1.5rem, 2.5vw + 0.5rem, 3rem);   /* 24 → 48  */
+  --atelier-fs-h3:      clamp(1.25rem, 1.5vw + 0.5rem, 2rem);  /* 20 → 32  */
+  --atelier-fs-lead:    clamp(1.0625rem, 0.75vw + 0.9rem, 1.375rem);
+  --atelier-fs-body:    1rem;
+  --atelier-fs-small:   0.8125rem;  /* 13 */
+  --atelier-fs-micro:   0.6875rem;  /* 11 — pill + eyebrow */
+
+  /* Line-heights tuned for editorial flow. */
+  --atelier-lh-tight:   0.95;
+  --atelier-lh-display: 1.02;
+  --atelier-lh-heading: 1.1;
+  --atelier-lh-body:    1.55;
+  --atelier-lh-lead:    1.4;
+
+  /* Tracking for caps/eyebrows/pills. */
+  --atelier-tracking-pill: 0.18em;
+  --atelier-tracking-label: 0.12em;
+  --atelier-tracking-tight: -0.03em;
+  --atelier-tracking-tighter: -0.05em;
+
+  /* ── Spacing (12-column editorial grid) ───────────────────────────────── */
+  --atelier-gutter: clamp(1rem, 2vw + 0.5rem, 3rem);
+  --atelier-section-y: clamp(4rem, 8vw, 8rem);
+  --atelier-section-y-lg: clamp(6rem, 12vw, 12rem);
+  --atelier-container: 1440px;
+
+  /* ── Radii — sharp by default, pill forms for nav ─────────────────────── */
+  --atelier-radius-0: 0;
+  --atelier-radius-sm: 2px;
+  --atelier-radius-md: 4px;
+  --atelier-radius-lg: 8px;
+  --atelier-radius-pill: 999px;
+
+  /* ── Shadows (warm vignette + inner depth) ────────────────────────────── */
+  --atelier-shadow-vignette:
+    inset 0 0 160px rgba(0, 0, 0, 0.55),
+    inset 0 0 420px rgba(255, 81, 19, 0.05);
+  --atelier-shadow-card:
+    0 1px 0 rgba(241, 234, 222, 0.04) inset,
+    0 20px 50px -30px rgba(0, 0, 0, 0.7);
+  --atelier-shadow-hover:
+    0 1px 0 rgba(241, 234, 222, 0.08) inset,
+    0 30px 80px -30px rgba(0, 0, 0, 0.85);
+
+  /* ── Motion (Obsidian Assembly is slow, patient, cinematic) ───────────── */
+  --atelier-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --atelier-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --atelier-ease-editorial: cubic-bezier(0.16, 1, 0.3, 1);
+  --atelier-dur-1: 180ms;
+  --atelier-dur-2: 320ms;
+  --atelier-dur-3: 620ms;
+  --atelier-dur-4: 1200ms;
+
+  /* ── Z-index scale ────────────────────────────────────────────────────── */
+  --atelier-z-base: 0;
+  --atelier-z-raised: 10;
+  --atelier-z-dropdown: 50;
+  --atelier-z-sticky: 100;
+  --atelier-z-overlay: 200;
+  --atelier-z-modal: 300;
+  --atelier-z-toast: 400;
+}
+
+/* ── Light mode (atelier parchment theme) ─────────────────────────────────
+ * Atelier is dark-first; light mode exists but the design truly sings in dark.
+ * Parchment background with obsidian text, ember accents stay constant. */
+.light-atelier,
+.light .atelier-root {
+  --atelier-bg: var(--c-parchment);
+  --atelier-bg-elevated: #f7f1e6;
+  --atelier-surface: #ece3d2;
+  --atelier-surface-hover: #e2d7c2;
+  --atelier-border: rgba(21, 20, 21, 0.1);
+  --atelier-border-strong: rgba(21, 20, 21, 0.22);
+  --atelier-text: var(--c-obsidian);
+  --atelier-text-muted: #3b2f26;
+  --atelier-text-subtle: #7a6a5a;
+  --atelier-shadow-vignette:
+    inset 0 0 180px rgba(123, 81, 54, 0.08),
+    inset 0 0 480px rgba(255, 81, 19, 0.03);
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --atelier-dur-1: 0ms;
+    --atelier-dur-2: 0ms;
+    --atelier-dur-3: 0ms;
+    --atelier-dur-4: 0ms;
+  }
+}
+
+/* ── Atelier root — apply to any subtree to switch to the new system ─────
+ * Example:
+ *   <section className="atelier-root">
+ *     …editorial content here…
+ *   </section>
+ *
+ * Sets background, text, font defaults, and the warm vignette shadow.
+ * Nested atelier components inherit these values. */
+.atelier-root {
+  background: var(--atelier-bg);
+  color: var(--atelier-text);
+  font-family: var(--atelier-font-body);
+  font-size: var(--atelier-fs-body);
+  line-height: var(--atelier-lh-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01", "ss02", "cv01", "kern";
+  letter-spacing: 0;
+  position: relative;
+}
+
+/* Warm vignette overlay — a hallmark of OA. Applied via pseudo-element so it
+ * never intercepts pointer events. */
+.atelier-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: var(--atelier-shadow-vignette);
+  z-index: var(--atelier-z-raised);
+}
+
+/* When Arabic locale is active on an atelier subtree, swap display + body. */
+.atelier-root[dir="rtl"],
+html[dir="rtl"] .atelier-root {
+  font-family: var(--atelier-font-arabic-body);
+}
+
+/* ── Utility classes (atelier namespace) ─────────────────────────────────
+ * Low-level helpers for editorial typography. Prefer these over ad-hoc
+ * Tailwind combos inside atelier components to keep the system consistent. */
+
+.atelier-display {
+  font-family: var(--atelier-font-display);
+  font-weight: 400;
+  line-height: var(--atelier-lh-display);
+  letter-spacing: var(--atelier-tracking-tight);
+  font-feature-settings: "liga", "dlig", "ss01";
+}
+
+.atelier-display-ar {
+  font-family: var(--atelier-font-arabic-display);
+  font-weight: 500;
+  line-height: var(--atelier-lh-display);
+  letter-spacing: 0;
+}
+
+.atelier-hero {
+  font-family: var(--atelier-font-display);
+  font-size: var(--atelier-fs-hero);
+  line-height: var(--atelier-lh-tight);
+  letter-spacing: var(--atelier-tracking-tighter);
+  font-weight: 400;
+}
+
+.atelier-h1 {
+  font-family: var(--atelier-font-display);
+  font-size: var(--atelier-fs-h1);
+  line-height: var(--atelier-lh-display);
+  letter-spacing: var(--atelier-tracking-tight);
+  font-weight: 400;
+}
+
+.atelier-h2 {
+  font-family: var(--atelier-font-display);
+  font-size: var(--atelier-fs-h2);
+  line-height: var(--atelier-lh-heading);
+  letter-spacing: var(--atelier-tracking-tight);
+  font-weight: 400;
+}
+
+.atelier-h3 {
+  font-family: var(--atelier-font-display);
+  font-size: var(--atelier-fs-h3);
+  line-height: var(--atelier-lh-heading);
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+.atelier-lead {
+  font-family: var(--atelier-font-body);
+  font-size: var(--atelier-fs-lead);
+  line-height: var(--atelier-lh-lead);
+  color: var(--atelier-text-muted);
+  font-weight: 400;
+}
+
+.atelier-body {
+  font-family: var(--atelier-font-body);
+  font-size: var(--atelier-fs-body);
+  line-height: var(--atelier-lh-body);
+  color: var(--atelier-text);
+}
+
+.atelier-eyebrow {
+  font-family: var(--atelier-font-body);
+  font-size: var(--atelier-fs-micro);
+  letter-spacing: var(--atelier-tracking-pill);
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--atelier-text-subtle);
+}
+
+.atelier-label {
+  font-family: var(--atelier-font-body);
+  font-size: var(--atelier-fs-small);
+  letter-spacing: var(--atelier-tracking-label);
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--atelier-text-muted);
+}
+
+/* Italic display — used for accent words inside hero copy, OA-style. */
+.atelier-italic {
+  font-style: italic;
+  font-variation-settings: "SOFT" 80;
+}
+
+/* Rule — thin hairline divider. */
+.atelier-rule {
+  height: 1px;
+  background: var(--atelier-border);
+  border: 0;
+  width: 100%;
+}
+
+/* Container + grid */
+.atelier-container {
+  width: 100%;
+  max-width: var(--atelier-container);
+  margin-inline: auto;
+  padding-inline: var(--atelier-gutter);
+}
+
+.atelier-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--atelier-gutter);
+}
+
+/* Section spacing. */
+.atelier-section {
+  padding-block: var(--atelier-section-y);
+}
+
+.atelier-section-lg {
+  padding-block: var(--atelier-section-y-lg);
+}
+
+/* Keyframes — slow editorial reveal. */
+@keyframes atelier-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes atelier-glow-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    filter: blur(40px);
+  }
+  50% {
+    opacity: 0.55;
+    filter: blur(60px);
+  }
+}
+
+@keyframes atelier-orbit-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.atelier-rise { animation: atelier-rise var(--atelier-dur-4) var(--atelier-ease-editorial) both; }
+.atelier-glow-pulse { animation: atelier-glow-pulse 6s ease-in-out infinite; }
+.atelier-orbit-spin { animation: atelier-orbit-spin 120s linear infinite; }
+
+/* Selection — ember on obsidian. */
+.atelier-root ::selection {
+  background: var(--atelier-accent);
+  color: var(--c-obsidian);
+}
