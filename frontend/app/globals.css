@@ -105,6 +105,38 @@
   --scrollbar-thumb: #D6D0C4;
   --scrollbar-track: transparent;
 
+  /* ─── Design System v2 vars (light) ────────────────────────────────────── */
+  --bg: #FAF8F3;
+  --s0: #F2EDE3;
+  --s1: #FFFFFF;
+  --s2: #F7F3EB;
+  --s3: #EDE8DF;
+  --s4: #E3DDD1;
+  --bd: rgba(26,18,8,.07);
+  --bd-a: rgba(217,119,6,.18);
+  --bd-h: rgba(217,119,6,.3);
+  --tx: #1A1208;
+  --tx2: #7A7268;
+  --tx3: #B5AFA5;
+  --amb: #F59E0B;
+  --amb-l: #FBBF24;
+  --amb-d: #D97706;
+  --amb-dp: #92400E;
+  --grn: #22C55E;
+  --red: #EF4444;
+  --blu: #38BDF8;
+  --prp: #A78BFA;
+  --grad: linear-gradient(135deg,#FBBF24 0%,#D97706 50%,#92400E 100%);
+  --shadow-sm: 0 2px 8px rgba(26,18,8,.06);
+  --shadow-md: 0 8px 32px rgba(26,18,8,.08);
+  --shadow-lg: 0 20px 60px rgba(26,18,8,.12);
+  --nav-bg: rgba(250,248,243,.88);
+  --nav-border: rgba(26,18,8,.09);
+  --r1: 6px; --r2: 10px; --r3: 14px; --r4: 18px; --r5: 24px; --r6: 32px; --rp: 999px;
+  --sw: 256px; --swc: 64px;
+  --ease: cubic-bezier(.22,1,.36,1);
+  --ease2: cubic-bezier(.4,0,.2,1);
+
   /* Chart */
   --chart-1: #D97706;
   --chart-2: #15803D;
@@ -217,6 +249,38 @@
   --scrollbar-thumb: #3D3428;
   --scrollbar-track: transparent;
 
+  /* ─── Design System v2 vars (dark) ─────────────────────────────────────── */
+  --bg: #0C0906;
+  --s0: #080604;
+  --s1: #111008;
+  --s2: #1A1510;
+  --s3: #231C14;
+  --s4: #2D2519;
+  --bd: rgba(255,255,255,.055);
+  --bd-a: rgba(245,158,11,.18);
+  --bd-h: rgba(245,158,11,.30);
+  --tx: #F0E8D8;
+  --tx2: #9C8E7C;
+  --tx3: #4E4438;
+  --amb: #F59E0B;
+  --amb-l: #FBBF24;
+  --amb-d: #D97706;
+  --amb-dp: #92400E;
+  --grn: #22C55E;
+  --red: #EF4444;
+  --blu: #38BDF8;
+  --prp: #A78BFA;
+  --grad: linear-gradient(135deg,#FBBF24 0%,#D97706 50%,#92400E 100%);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.4);
+  --shadow-md: 0 8px 32px rgba(0,0,0,.5);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,.6);
+  --nav-bg: rgba(8,6,4,.85);
+  --nav-border: rgba(255,255,255,.07);
+  --r1: 6px; --r2: 10px; --r3: 14px; --r4: 18px; --r5: 24px; --r6: 32px; --rp: 999px;
+  --sw: 256px; --swc: 64px;
+  --ease: cubic-bezier(.22,1,.36,1);
+  --ease2: cubic-bezier(.4,0,.2,1);
+
   --chart-1: #F59E0B;
   --chart-2: #22C55E;
   --chart-3: #F87171;
@@ -310,8 +374,8 @@
   --radius-xl: calc(var(--radius) * 3);
 
   /* Font families */
-  --font-sans: var(--font-be-vietnam-pro), var(--font-tajawal), system-ui, sans-serif;
-  --font-headline: var(--font-syne), var(--font-plus-jakarta-sans), system-ui, sans-serif;
+  --font-sans: var(--font-tajawal), var(--font-inter), system-ui, sans-serif;
+  --font-headline: var(--font-syne), var(--font-inter), system-ui, sans-serif;
   --font-arabic: var(--font-tajawal), system-ui, sans-serif;
 
   /* Animations */
@@ -872,4 +936,289 @@ iframe[src*="paddle.com"][style*="display: none"] {
 }
 iframe[src*="paddle.com"][style*="pointer-events: none"] {
   pointer-events: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Design System v2 — Animations, Components, Layout
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px) translateZ(0)}to{opacity:1;transform:translateY(0) translateZ(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInScale{from{opacity:0;transform:scale(.94) translateZ(0)}to{opacity:1;transform:scale(1) translateZ(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(24px) translateZ(0)}to{opacity:1;transform:translateX(0) translateZ(0)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-24px) translateZ(0)}to{opacity:1;transform:translateX(0) translateZ(0)}}
+@keyframes chatIn{from{opacity:0;transform:translateY(10px) scale(.96) translateZ(0)}to{opacity:1;transform:translateY(0) scale(1) translateZ(0)}}
+@keyframes badgeIn{from{opacity:0;transform:translateY(14px) scale(.9) translateZ(0)}to{opacity:1;transform:translateY(0) scale(1) translateZ(0)}}
+@keyframes floatY{0%,100%{transform:translateY(0) translateZ(0)}50%{transform:translateY(-10px) translateZ(0)}}
+@keyframes pRing{from{transform:scale(.7) translateZ(0);opacity:.9}to{transform:scale(2.4) translateZ(0);opacity:0}}
+@keyframes navIn{from{opacity:0;transform:translateX(-50%) translateY(-12px) translateZ(0)}to{opacity:1;transform:translateX(-50%) translateY(0) translateZ(0)}}
+@keyframes progressFill{from{width:0}to{width:var(--w,100%)}}
+@keyframes gradMove{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes ds-shimmer{from{transform:translateX(120%) translateZ(0)}to{transform:translateX(-120%) translateZ(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(.85) translateZ(0)}to{opacity:1;transform:scale(1) translateZ(0)}}
+@keyframes maskUp{from{transform:translateY(108%) translateZ(0)}to{transform:translateY(0) translateZ(0)}}
+@keyframes maskDown{from{transform:translateY(-108%) translateZ(0)}to{transform:translateY(0) translateZ(0)}}
+@keyframes marqueeRTL{from{transform:translateX(0) translateZ(0)}to{transform:translateX(-50%) translateZ(0)}}
+@keyframes marqueeLTR{from{transform:translateX(-50%) translateZ(0)}to{transform:translateX(0) translateZ(0)}}
+@keyframes lineGrow{from{transform:scaleX(0) translateZ(0)}to{transform:scaleX(1) translateZ(0)}}
+@keyframes glowPulse{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes scrollHint{0%,100%{transform:translateY(0) translateZ(0);opacity:.6}50%{transform:translateY(6px) translateZ(0);opacity:1}}
+
+/* ── Animation stagger utilities ─────────────────────────────────────────── */
+.fu{animation:fadeUp .55s var(--ease) both}
+.fu1{animation:fadeUp .55s var(--ease) .07s both}
+.fu2{animation:fadeUp .55s var(--ease) .14s both}
+.fu3{animation:fadeUp .55s var(--ease) .21s both}
+.fu4{animation:fadeUp .55s var(--ease) .28s both}
+.fu5{animation:fadeUp .55s var(--ease) .35s both}
+.fu6{animation:fadeUp .55s var(--ease) .42s both}
+.fi{animation:fadeIn .4s ease both}
+.fis{animation:fadeInScale .45s var(--ease) both}
+.sil{animation:slideInLeft .5s var(--ease) both}
+.sir{animation:slideInRight .5s var(--ease) both}
+
+/* ── Grain overlay (global) ──────────────────────────────────────────────── */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9998;opacity:.025;mix-blend-mode:overlay;
+}
+html:not(.dark) body::after{opacity:.012}
+
+/* ── App shell layout ─────────────────────────────────────────────────────── */
+.app-shell{display:flex;min-height:100vh}
+
+/* ── New sidebar ──────────────────────────────────────────────────────────── */
+.ds-sidebar{
+  position:fixed;top:0;inset-inline-end:0;height:100vh;width:var(--sw);
+  background:var(--s0);border-inline-start:1px solid var(--bd);
+  display:flex;flex-direction:column;z-index:200;overflow:hidden;
+  transition:width .24s var(--ease);will-change:width;
+}
+.ds-sidebar.coll{width:var(--swc)}
+.ds-main{flex:1;margin-inline-end:var(--sw);min-height:100vh;transition:margin-inline-end .24s var(--ease)}
+.ds-main.coll{margin-inline-end:var(--swc)}
+
+/* ── Landing nav pill ─────────────────────────────────────────────────────── */
+.nav-pill{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;
+  width:min(820px,calc(100% - 40px));height:54px;
+  display:flex;align-items:center;padding:0 8px 0 14px;gap:4px;
+  background:var(--nav-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--nav-border);border-radius:var(--rp);
+  box-shadow:var(--shadow-md),0 0 0 1px rgba(245,158,11,.04);
+  animation:navIn .5s var(--ease) .1s both;will-change:transform;
+}
+.nav-link{
+  padding:8px 13px;border-radius:var(--rp);font-size:.82rem;font-weight:600;
+  color:var(--tx2);cursor:pointer;border:none;background:none;font-family:inherit;
+  white-space:nowrap;
+}
+.nav-link:hover{color:var(--tx);background:rgba(128,96,32,.07)}
+.icon-btn{
+  width:36px;height:36px;border-radius:var(--rp);display:flex;align-items:center;
+  justify-content:center;cursor:pointer;border:none;background:var(--s2);
+  color:var(--tx2);font-size:.78rem;font-weight:800;
+}
+.icon-btn:hover{background:var(--s3);color:var(--tx)}
+
+/* ── Hero background ──────────────────────────────────────────────────────── */
+.hero-dots{
+  position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(146,64,14,.22) 1px,transparent 1px);
+  background-size:28px 28px;opacity:.5;
+}
+html:not(.dark) .hero-dots{background-image:radial-gradient(circle,rgba(146,64,14,.12) 1px,transparent 1px)}
+
+/* ── Phone frame (WhatsApp demo) ─────────────────────────────────────────── */
+.phone-frame{
+  width:230px;border-radius:40px;
+  border:7px solid #1c1a17;
+  box-shadow:0 32px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.05),inset 0 1px 0 rgba(255,255,255,.1);
+  overflow:hidden;background:#111;flex-shrink:0;
+  animation:fadeUp .8s .3s var(--ease) both;will-change:transform;
+}
+html:not(.dark) .phone-frame{border-color:#2d2a26}
+
+/* ── DS2 Cards ─────────────────────────────────────────────────────────────── */
+.ds-card{
+  background:var(--s1);border:1px solid var(--bd);border-radius:var(--r4);
+  box-shadow:var(--shadow-sm);transition:transform .2s var(--ease),border-color .2s ease,box-shadow .2s ease;
+}
+.ds-card:hover{transform:translateY(-2px) translateZ(0);border-color:var(--bd-a);box-shadow:var(--shadow-md)}
+.ds-card-amber{background:linear-gradient(135deg,rgba(251,191,36,.07) 0%,rgba(146,64,14,.04) 100%);border:1px solid var(--bd-a)}
+html:not(.dark) .ds-card{box-shadow:0 1px 4px rgba(26,18,8,.06)}
+html:not(.dark) .ds-card:hover{box-shadow:0 8px 24px rgba(26,18,8,.1)}
+
+/* ── DS2 Buttons ───────────────────────────────────────────────────────────── */
+.ds-btn{display:inline-flex;align-items:center;gap:8px;font-family:inherit;font-weight:700;border-radius:var(--rp);cursor:pointer;will-change:transform;backface-visibility:hidden;border:none;transition:transform .15s var(--ease),opacity .15s ease}
+.ds-btn:active{transform:scale(.96) translateZ(0)}
+.ds-btn-primary{
+  background:var(--grad);color:#fff;padding:12px 24px;font-size:.88rem;
+  position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(217,119,6,.3);
+}
+.ds-btn-primary:hover{opacity:.92;box-shadow:0 8px 32px rgba(217,119,6,.4)}
+.ds-btn-sec{background:rgba(245,158,11,.09);color:var(--amb-l);border:1px solid var(--bd-a) !important;padding:12px 24px;font-size:.88rem}
+.ds-btn-sec:hover{background:rgba(245,158,11,.14);border-color:var(--bd-h) !important}
+html:not(.dark) .ds-btn-sec{background:rgba(217,119,6,.08);color:var(--amb-d)}
+.ds-btn-ghost{color:var(--tx2);padding:8px 14px;font-size:.85rem;border-radius:var(--r3)}
+.ds-btn-ghost:hover{background:rgba(128,96,32,.06);color:var(--tx)}
+.ds-btn-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--r2);color:var(--tx2);cursor:pointer;border:none;background:none}
+.ds-btn-icon:hover{background:var(--s2);color:var(--tx)}
+
+/* ── DS2 Inputs ────────────────────────────────────────────────────────────── */
+.ds-inp{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r3);padding:11px 14px;color:var(--tx);font-family:inherit;font-size:.9rem;outline:none}
+.ds-inp:focus{border-color:var(--amb-d);box-shadow:0 0 0 3px rgba(217,119,6,.12)}
+.ds-inp::placeholder{color:var(--tx3)}
+
+/* ── DS2 Badges ────────────────────────────────────────────────────────────── */
+.ds-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:var(--rp);font-size:.72rem;font-weight:700}
+.ds-badge-amber{background:rgba(245,158,11,.12);color:var(--amb-l);border:1px solid rgba(245,158,11,.2)}
+html:not(.dark) .ds-badge-amber{color:var(--amb-d)}
+.ds-badge-green{background:rgba(34,197,94,.1);color:#16a34a;border:1px solid rgba(34,197,94,.2)}
+.ds-badge-red{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+.ds-badge-blue{background:rgba(56,189,248,.1);color:#0284c7;border:1px solid rgba(56,189,248,.2)}
+.ds-badge-muted{background:var(--s3);color:var(--tx2);border:1px solid var(--bd)}
+
+/* ── DS2 Eyebrow / grad text ─────────────────────────────────────────────── */
+.grad-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ds-eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--amb);display:flex;align-items:center;gap:6px}
+
+/* ── DS2 Page wrapper ─────────────────────────────────────────────────────── */
+.ds-page-wrap{padding:28px 30px 56px;max-width:1300px}
+.ds-page-h1{font-size:1.6rem;font-weight:900;color:var(--tx)}
+.ds-page-sub{font-size:.88rem;color:var(--tx2);margin-top:4px}
+
+/* ── DS2 Dividers ─────────────────────────────────────────────────────────── */
+.ds-divider{height:1px;background:var(--bd);margin:18px 0}
+.ds-divider-text{display:flex;align-items:center;gap:12px;color:var(--tx3);font-size:.8rem}
+.ds-divider-text::before,.ds-divider-text::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+/* ── DS2 Progress ─────────────────────────────────────────────────────────── */
+.ds-prog-wrap{background:var(--s3);border-radius:var(--rp);overflow:hidden;height:5px}
+.ds-prog-bar{height:100%;border-radius:var(--rp);background:var(--grad);animation:progressFill .9s var(--ease) .4s both}
+
+/* ── DS2 Stats ────────────────────────────────────────────────────────────── */
+.ds-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ds-stat-block{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r4);padding:18px 20px;display:flex;flex-direction:column;gap:6px;cursor:default;transition:transform .2s var(--ease),border-color .2s ease}
+.ds-stat-block:hover{transform:translateY(-2px) translateZ(0);border-color:var(--bd-a)}
+.ds-stat-num{font-size:1.85rem;font-weight:900;line-height:1}
+.ds-stat-label{font-size:.75rem;color:var(--tx2)}
+
+/* ── DS2 Kanban ───────────────────────────────────────────────────────────── */
+.ds-kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+.ds-kanban-col{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r4);padding:16px;min-height:420px}
+.ds-task-card{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r3);padding:14px;margin-bottom:10px;cursor:grab;transition:transform .18s var(--ease),border-color .18s ease}
+.ds-task-card:hover{transform:translateY(-2px) translateZ(0);border-color:var(--bd-a);box-shadow:var(--shadow-sm)}
+
+/* ── DS2 Habits ───────────────────────────────────────────────────────────── */
+.ds-habit-grid{display:flex;gap:4px}
+.ds-h-dot{width:24px;height:24px;border-radius:7px;background:var(--s3);cursor:pointer;transition:background-color .15s ease,transform .15s ease}
+.ds-h-dot:hover{transform:scale(1.12) translateZ(0)}
+.ds-h-dot.done{background:var(--amb)}
+html:not(.dark) .ds-h-dot{background:var(--s4)}
+
+/* ── DS2 Calendar ─────────────────────────────────────────────────────────── */
+.ds-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.ds-cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r2);font-size:.8rem;cursor:pointer;position:relative}
+.ds-cal-day:hover{background:var(--s2)}
+.ds-cal-day.today{background:rgba(245,158,11,.12);color:var(--amb-l);font-weight:700}
+html:not(.dark) .ds-cal-day.today{background:rgba(217,119,6,.1);color:var(--amb-d)}
+.ds-cal-day.active{background:var(--amb);color:#0C0906;font-weight:800}
+.ds-cal-dot{width:4px;height:4px;border-radius:50%;background:var(--amb);position:absolute;bottom:3px}
+
+/* ── DS2 Settings layout ──────────────────────────────────────────────────── */
+.ds-settings-layout{display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:start}
+.ds-settings-nav{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r4);padding:8px}
+.ds-settings-item{padding:10px 14px;border-radius:var(--r2);font-size:.88rem;cursor:pointer;display:flex;align-items:center;gap:10px;color:var(--tx2)}
+.ds-settings-item:hover{background:var(--s2);color:var(--tx)}
+.ds-settings-item.active{background:rgba(245,158,11,.1);color:var(--amb)}
+html:not(.dark) .ds-settings-item.active{color:var(--amb-d)}
+
+/* ── DS2 Auth ──────────────────────────────────────────────────────────────── */
+.ds-auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.ds-auth-card{width:100%;max-width:420px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r5);padding:36px 32px;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.ds-auth-card::before{content:'';position:absolute;top:0;inset-x:0;height:1px;background:linear-gradient(90deg,transparent,var(--bd-a),transparent)}
+.ds-tab-row{display:flex;background:var(--s2);border-radius:var(--r3);padding:3px;gap:3px;margin-bottom:22px}
+.ds-tab{flex:1;text-align:center;padding:9px;border-radius:var(--r2);font-size:.85rem;font-weight:700;cursor:pointer;color:var(--tx2)}
+.ds-tab.active{background:var(--s4);color:var(--tx)}
+html:not(.dark) .ds-tab.active{background:var(--s1);box-shadow:0 2px 8px rgba(26,18,8,.08)}
+
+/* ── DS2 AI box ────────────────────────────────────────────────────────────── */
+.ds-ai-box{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r5);padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-sm)}
+.ds-ai-box:focus-within{border-color:var(--amb-d);box-shadow:0 0 0 3px rgba(217,119,6,.1),var(--shadow-glow)}
+.ds-ai-box-inp{flex:1;background:none;border:none;outline:none;color:var(--tx);font-size:.95rem;font-family:inherit}
+.ds-ai-box-inp::placeholder{color:var(--tx3)}
+
+/* ── DS2 Mobile nav ────────────────────────────────────────────────────────── */
+.ds-mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:66px;background:var(--s0);border-top:1px solid var(--bd);z-index:200;align-items:center;justify-content:space-around;padding:0 8px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+
+/* ── Marquee ───────────────────────────────────────────────────────────────── */
+.mq-outer{overflow:hidden;white-space:nowrap}
+.mq-track{display:inline-flex;will-change:transform}
+.mq-rtl{animation:marqueeRTL 28s linear infinite}
+.mq-ltr{animation:marqueeLTR 28s linear infinite}
+html[dir="ltr"] .mq-rtl{animation-name:marqueeLTR}
+html[dir="ltr"] .mq-ltr{animation-name:marqueeRTL}
+
+/* ── Scroll reveal ─────────────────────────────────────────────────────────── */
+.rv-wrap{transform:translateY(40px) translateZ(0);opacity:0;transition:transform 1s var(--ease),opacity .8s ease;will-change:transform,opacity}
+.rv-wrap.show{transform:translateY(0) translateZ(0);opacity:1}
+.rv-wrap.delay-1{transition-delay:.12s}
+.rv-wrap.delay-2{transition-delay:.24s}
+.rv-wrap.delay-3{transition-delay:.36s}
+.rv-wrap.delay-4{transition-delay:.48s}
+
+/* ── Cinematic divider ─────────────────────────────────────────────────────── */
+.c-divider{height:1px;background:var(--bd);transform-origin:left;animation:lineGrow 1.2s var(--ease) both}
+.c-divider.from-right{transform-origin:right}
+
+/* ── Ambient orb ───────────────────────────────────────────────────────────── */
+.orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px);opacity:.35;will-change:transform}
+html:not(.dark) .orb{opacity:.2}
+
+/* ── Hero scroll hint ─────────────────────────────────────────────────────── */
+.scroll-hint{animation:scrollHint 2.2s ease-in-out infinite}
+
+/* ── Underline gradient ────────────────────────────────────────────────────── */
+.underline-grad{position:relative;display:inline-block}
+.underline-grad::after{content:'';position:absolute;bottom:-3px;right:0;left:0;height:3px;background:var(--grad);border-radius:2px;animation:lineGrow 1s .9s var(--ease) both;transform-origin:right}
+
+/* ── Pricing featured card ────────────────────────────────────────────────── */
+.price-card-featured{
+  background:linear-gradient(160deg,rgba(251,191,36,.1) 0%,rgba(146,64,14,.06) 100%);
+  border:1px solid var(--bd-a) !important;position:relative;overflow:hidden;
+}
+html:not(.dark) .price-card-featured{background:linear-gradient(160deg,rgba(251,191,36,.08) 0%,rgba(146,64,14,.04) 100%)}
+.price-card-featured::before{content:'';position:absolute;top:0;inset-x:0;height:2px;background:var(--grad)}
+
+/* ── Nav sidebar item ─────────────────────────────────────────────────────── */
+.ds-nav-item{
+  width:100%;display:flex;align-items:center;
+  border-radius:10px;margin-bottom:3px;cursor:pointer;border:none;
+  font-family:inherit;font-size:.88rem;font-weight:700;
+  background:transparent;color:var(--tx2);position:relative;
+  transition:background .15s ease,color .15s ease;
+}
+.ds-nav-item:hover{background:rgba(128,96,32,.06);color:var(--tx)}
+.ds-nav-item.active{background:rgba(245,158,11,.1);color:var(--amb)}
+.ds-nav-item .active-bar{position:absolute;inset-inline-end:0;top:20%;height:60%;width:3px;background:var(--grad);border-radius:0 2px 2px 0}
+
+/* ── Responsive for new DS2 classes ──────────────────────────────────────── */
+@media(max-width:1100px){
+  .ds-sidebar{width:var(--swc)}
+  .ds-main{margin-inline-end:var(--swc)}
+  .ds-stat-row{grid-template-columns:repeat(2,1fr)}
+  .ds-kanban{grid-template-columns:1fr}
+  .ds-settings-layout{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .ds-sidebar{display:none}
+  .ds-main{margin-inline-end:0;padding-bottom:72px}
+  .ds-mob-nav{display:flex}
+  .ds-page-wrap{padding:18px 16px 80px}
+  .ds-stat-row{grid-template-columns:repeat(2,1fr)}
+  .phone-frame{width:190px}
+  .nav-pill{height:auto;padding:10px 14px;flex-wrap:wrap;border-radius:20px;top:8px}
 }

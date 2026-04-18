@@ -5,7 +5,29 @@ import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/components/language-provider"
 import { MotionProvider } from "@/components/motion-provider"
+import { Tajawal, Inter, Syne } from "next/font/google"
 import "./globals.css"
+
+const tajawal = Tajawal({
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "700", "800", "900"],
+  variable: "--font-tajawal",
+  display: "swap",
+})
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+})
+
+const syne = Syne({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  variable: "--font-syne",
+  display: "swap",
+})
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
@@ -68,7 +90,8 @@ export default function RootLayout({
      * suppressHydrationWarning on both html and body — next/font and ThemeProvider
      * both inject classes that differ between server and client renders.
      */
-    <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="ar" dir="rtl" suppressHydrationWarning data-scroll-behavior="smooth"
+      className={`${tajawal.variable} ${inter.variable} ${syne.variable}`}>
       <body
         className="font-sans antialiased"
         suppressHydrationWarning
@@ -81,7 +104,7 @@ export default function RootLayout({
          */}
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
