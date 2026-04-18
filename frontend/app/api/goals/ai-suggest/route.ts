@@ -24,9 +24,12 @@ export async function POST(req: NextRequest) {
     return Response.json({ error: "Monthly AI limit reached. Upgrade for more.", code: "limit_exceeded" }, { status: 429 })
   }
 
-  const { title, description, category, targetDate, language } = await req.json() as {
-    title: string; description?: string; category: string; targetDate?: string; language?: string
-  }
+  const [body, planProfile] = await Promise.all([
+    req.json() as Promise<{ title: string; description?: string; category: string; targetDate?: string; language?: string }>,
+    auth.service.from("profiles").select("plan_tier").eq("id", auth.workspace?.ownerId ?? auth.userId).single(),
+  ])
+  const { title, description, category, targetDate, language } = body
+  const tier = ((planProfile.data?.plan_tier as string | null) ?? "FREE").toUpperCase()
 
   const isAr = (language ?? "ar") === "ar"
   const prompt = isAr
@@ -34,7 +37,7 @@ export async function POST(req: NextRequest) {
     : `You are an expert success coach. User's goal:\nTitle: ${title}\nDescription: ${description ?? ""}\nCategory: ${category}\nTarget date: ${targetDate ?? "not specified"}\n\nSuggest 5-8 practical milestones to achieve this goal. Return JSON only:\n{"milestones": [{"title": "Step 1", "description": "..."}]}`
 
   try {
-    const text = await geminiText(prompt, { maxOutputTokens: 1000 })
+    const text = await geminiText(prompt, { maxOutputTokens: 1000, tier })
     incrementUsage(auth.userId, "ai_chat", 1, auth.workspace?.workspaceId).catch(() => {})
     const match = text.match(/\{[\s\S]*\}/)
     const parsed = match ? JSON.parse(match[0]) : { milestones: [] }

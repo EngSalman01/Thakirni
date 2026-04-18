@@ -1,16 +1,26 @@
 // ── Direct Gemini REST helper (replaces @ai-sdk/google to avoid convertToBase64 bug) ──
 
+import { getModelForTier } from "@/lib/ai/model-selector"
+
 const RETRYABLE = new Set([429, 503])
 
-/** Call Gemini text-only generateContent with retry on 503/429. */
+/**
+ * Call Gemini text-only generateContent with retry on 503/429.
+ *
+ * Pass `tier` + optional `usageRatio` to auto-select model by plan:
+ *   FREE → gemini-2.5-flash-lite
+ *   PRO/TEAMS → gemini-2.5-flash (lite at ≥90% usage)
+ *
+ * Or pass `model` directly to override.
+ */
 export async function geminiText(
   prompt: string,
-  options?: { system?: string; maxOutputTokens?: number; temperature?: number; model?: string }
+  options?: { system?: string; maxOutputTokens?: number; temperature?: number; model?: string; tier?: string; usageRatio?: number }
 ): Promise<string> {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
   if (!apiKey) throw new Error("GOOGLE_GENERATIVE_AI_API_KEY not set")
 
-  const model = options?.model ?? "gemini-2.5-flash-lite"
+  const model = options?.model ?? getModelForTier(options?.tier ?? "FREE", options?.usageRatio)
   const body: Record<string, unknown> = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: {
