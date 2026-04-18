@@ -1,296 +1,384 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useLanguage } from "@/components/language-provider"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CheckCircle2, Circle, Flame, Plus, Trash2 } from "lucide-react"
+import { Flame, Plus, Trash2, Trophy, Zap, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import useSWR from "swr"
-import { motion } from "framer-motion"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ConfirmationPop } from "@/components/thakirni/motion-primitives"
 
-const HABIT_ICONS = ["✅","🏃","💧","📚","🧘","🍎","💪","☀️","🧠","🎯","💤","🙏"]
+const HABIT_ICONS = ["✅","🏃","💧","📚","🧘","🍎","💪","☀️","🧠","🎯","💤","🙏","🔥","⚡","🎵","✍️"]
 
-function ParticleLayer() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const ps: HTMLDivElement[] = [];
-    for (let i = 0; i < 14; i++) {
-      const p = document.createElement("div");
-      const s = Math.random()*6+3, d = Math.random()*20+10, dl = Math.random()*-20;
-      p.style.cssText = `position:absolute;width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${Math.random()*100}%;background:rgba(173,29,127,0.08);border-radius:50%;filter:blur(1px);--drift-x:${(Math.random()-0.5)*160}px;--drift-y:${(Math.random()-0.5)*160}px;animation:particle-drift ${d}s linear ${dl}s infinite;pointer-events:none;`;
-      el.appendChild(p); ps.push(p);
-    }
-    return () => ps.forEach(p => p.remove());
-  }, []);
-  return <div ref={ref} className="absolute inset-0 overflow-hidden pointer-events-none z-0" />;
+interface Habit {
+  id: string
+  name: string
+  icon: string
+  color: string
+  frequency: string
+  current_streak: number
+  longest_streak: number
+  completed_today: boolean
+  week_done: boolean[]
 }
 
-async function fetchHabits() {
+async function fetchHabits(): Promise<Habit[]> {
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return []
   const res = await fetch(`/api/habits`, { headers: { Authorization: `Bearer ${session.access_token}` } })
-  if (!res.ok) throw new Error(`Failed to fetch habits: ${res.status}`)
-  const d = await res.json() as { habits?: Record<string, unknown>[] }
+  if (!res.ok) throw new Error(`Failed: ${res.status}`)
+  const d = await res.json() as { habits?: Habit[] }
   return d.habits ?? []
 }
 
+async function getSession() {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  return session
+}
+
 export default function HabitsPage() {
-  const { data: habits = [], mutate, isLoading: habitsLoading, error: habitsError } = useSWR(`/api/habits`, fetchHabits, { refreshInterval: 60000 })
-  const { t } = useLanguage()
+  const { data: habits = [], mutate, isLoading, error } = useSWR(`/api/habits`, fetchHabits, { refreshInterval: 60000 })
+  const { t, isArabic } = useLanguage()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ name: "", icon: "✅", color: "#D97706", frequency: "daily", category: "general" })
+  const [saving, setSaving] = useState(false)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  async function getSession() {
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
-    return session
-  }
+  const completedCount = habits.filter(h => h.completed_today).length
+  const total = habits.length
+  const totalStreak = habits.reduce((s, h) => s + (h.current_streak || 0), 0)
+  const maxStreak = habits.reduce((s, h) => Math.max(s, h.longest_streak || 0), 0)
 
   async function createHabit(e: React.FormEvent) {
     e.preventDefault()
     const session = await getSession(); if (!session) return
-    const res = await fetch(`/api/habits`, {
-      method: "POST", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(form)
-    })
-    if (res.ok) { toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉")); setOpen(false); setForm({ name: "", icon: "✅", color: "#D97706", frequency: "daily", category: "general" }); mutate() }
-    else toast.error(t("حدث خطأ", "An error occurred"))
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/habits`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      if (res.ok) {
+        toast.success(t("تمت إضافة العادة! 🎉", "Habit added! 🎉"))
+        setOpen(false)
+        setForm({ name: "", icon: "✅", color: "#D97706", frequency: "daily", category: "general" })
+        mutate()
+      } else {
+        toast.error(t("حدث خطأ", "An error occurred"))
+      }
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function toggleHabit(id: string, completedToday: boolean) {
     const session = await getSession(); if (!session) return
-    const url = completedToday ? `/api/habits/${id}/uncomplete` : `/api/habits/${id}/complete`
+    setTogglingId(id)
     try {
+      const url = completedToday ? `/api/habits/${id}/uncomplete` : `/api/habits/${id}/complete`
       const res = await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${session.access_token}` } })
       if (!res.ok) throw new Error(await res.text())
       mutate()
-    } catch (err) {
-      console.error("[Habits] toggle error:", err)
+    } catch {
       toast.error(t("فشل تحديث العادة", "Failed to update habit"))
+    } finally {
+      setTogglingId(null)
     }
   }
 
   async function deleteHabit(id: string) {
     const session = await getSession(); if (!session) return
+    setDeletingId(id)
     try {
       const res = await fetch(`/api/habits/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${session.access_token}` } })
       if (!res.ok) throw new Error(await res.text())
       toast.success(t("تم حذف العادة", "Habit deleted"))
       mutate()
-    } catch (err) {
-      console.error("[Habits] delete error:", err)
+    } catch {
       toast.error(t("فشل حذف العادة", "Failed to delete habit"))
+    } finally {
+      setDeletingId(null)
     }
   }
 
-  const completedCount = habits.filter((h: Record<string, unknown>) => h.completed_today).length
-  const total = habits.length
+  const weekDayLabels = isArabic
+    ? ["ح","ن","ث","ر","خ","ج","س"]
+    : ["M","T","W","T","F","S","S"]
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <main>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--tx)" }}>
+      <div className="page-wrap">
 
-        {/* ── HERO ── */}
-        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
-          <ParticleLayer />
-          <div className="absolute -top-20 right-0 w-80 h-80 bg-amber-600/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/5 rounded-full blur-[80px] pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.2,1,0.3,1] }} className="space-y-6">
-                <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-foreground leading-[1.1]">
-                    {t("عاداتي ", "My ")}<span className="gradient-text">{t("اليومية", "Habits")}</span>
-                  </h1>
-                  <p className="text-xl text-muted-foreground mt-4 max-w-lg">
-                    {t("الاتساق هو سر النجاح. تتبع عاداتك اليومية وابنِ حياتك.", "Consistency is the secret to success. Track your habits and build your life.")}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { value: completedCount, label: t("مكتملة اليوم", "Done today"),  color: "bg-emerald-50 text-emerald-700" },
-                    { value: total - completedCount, label: t("متبقية", "Remaining"), color: "bg-amber-50 text-amber-700" },
-                    { value: total, label: t("مجموع العادات", "Total habits"),          color: "bg-[#ffd8e9] text-amber-600 dark:text-amber-400" },
-                  ].map(({ value, label, color }) => (
-                    <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
-                      <span className="text-xl font-headline font-extrabold">{value}</span>
-                      <span className="opacity-80">{label as string}</span>
-                    </div>
-                  ))}
-                </div>
-                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => setOpen(true)}
-                  className="flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold text-sm btn-glow">
-                  <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
-                </motion.button>
-              </motion.div>
-
-              {/* Right: progress ring */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2,1,0.3,1] }}
-                className="hidden lg:flex justify-center">
-                <div className="relative bg-card rounded-2xl p-12 shadow-card hover-lift flex flex-col items-center">
-                  <div className="relative w-48 h-48 mb-6">
-                    <svg className="w-48 h-48 -rotate-90" viewBox="0 0 192 192">
-                      <circle cx="96" cy="96" r="80" fill="none" stroke="#f0eded" strokeWidth="12" />
-                      <circle cx="96" cy="96" r="80" fill="none" stroke="url(#ring-grad)" strokeWidth="12"
-                        strokeDasharray={`${total > 0 ? (completedCount / total) * 502.7 : 0} 502.7`} strokeLinecap="round" />
-                      <defs>
-                        <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                          <stop offset="0%" stopColor="#D97706" /><stop offset="100%" stopColor="#FBBF24" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-4xl font-headline font-extrabold gradient-text">{total > 0 ? Math.round((completedCount/total)*100) : 0}%</span>
-                      <span className="text-sm text-muted-foreground">{t("مكتمل", "complete")}</span>
-                    </div>
-                  </div>
-                  <p className="font-headline font-bold text-foreground text-center">
-                    {completedCount === total && total > 0 ? t("أنجزت كل عاداتك! 🔥", "All habits done! 🔥") : t(`${completedCount} من ${total}`, `${completedCount} of ${total}`)}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
+        {/* ── Header ── */}
+        <div className="page-head fu">
+          <div>
+            <p className="eyebrow">{t("التتبع اليومي", "Daily Tracking")}</p>
+            <h1 className="page-h1">{t("عاداتي", "My Habits")}</h1>
+            <p className="page-sub">{t("الاتساق هو سر النجاح", "Consistency is the secret to success")}</p>
           </div>
-        </section>
+          <button
+            className="btn btn-primary"
+            onClick={() => setOpen(true)}
+            style={{ display: "flex", alignItems: "center", gap: 8 }}
+          >
+            <Plus style={{ width: 16, height: 16 }} />
+            {t("عادة جديدة", "New Habit")}
+          </button>
+        </div>
 
-        {/* ── HABITS BENTO ── */}
-        <section className="pb-24 px-8">
-          <div className="max-w-7xl mx-auto">
-            {habitsError ? (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-red-50 border border-red-200 rounded-2xl p-10 text-center">
-                <p className="text-red-600 font-semibold mb-3">{t("فشل تحميل العادات", "Failed to load habits")}</p>
-                <button onClick={() => mutate()} className="px-4 py-2 rounded-full border border-red-300 text-red-600 text-sm hover:bg-red-50">
-                  {t("إعادة المحاولة", "Retry")}
-                </button>
-              </motion.div>
-            ) : habitsLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden">
-                    <Skeleton className="h-2 w-full rounded-none" />
-                    <div className="p-10 space-y-4">
-                      <Skeleton className="h-12 w-12 rounded-xl" />
-                      <Skeleton className="h-6 w-3/4 rounded-lg" />
-                      <Skeleton className="h-4 w-1/2 rounded-lg" />
-                      <Skeleton className="h-8 w-24 rounded-full" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : habits.length === 0 ? (
-              <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-muted dark:bg-white/[0.03] rounded-2xl p-24 text-center hover-lift">
-                <Flame className="w-16 h-16 mx-auto mb-4 text-amber-600 dark:text-amber-400/30" />
-                <h2 className="text-2xl font-headline font-bold text-muted-foreground mb-2">{t("لا يوجد عادات بعد", "No habits yet")}</h2>
-                <p className="text-muted-foreground mb-8">{t("أضف عادتك الأولى وابدأ رحلتك!", "Add your first habit and start your journey!")}</p>
-                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => setOpen(true)}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full power-gradient text-white font-bold btn-glow">
-                  <Plus className="w-4 h-4" />{t("عادة جديدة", "New Habit")}
-                </motion.button>
-              </motion.div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {habits.map((h: Record<string, unknown>, i) => (
-                  <motion.div key={h.id as string}
-                    custom={i} initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }}
-                    transition={{ duration: 0.28, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                    className={`relative bg-muted dark:bg-white/[0.03] rounded-2xl overflow-hidden group hover-lift cursor-pointer ${h.completed_today ? "opacity-70" : ""}`}
-                    onClick={() => toggleHabit(h.id as string, h.completed_today as boolean)}>
-                    {/* Color stripe */}
-                    <div className="h-2 w-full" style={{ background: (h.color as string) || "#D97706" }} />
-                    <div className="p-10">
-                      <div className="flex items-start justify-between mb-4">
-                        <span className="text-5xl">{h.icon as string}</span>
-                        <div className="flex items-center gap-2">
-                          <ConfirmationPop triggerKey={h.completed_today as boolean}>
-                            {h.completed_today
-                              ? <CheckCircle2 className="w-7 h-7 text-emerald-500" />
-                              : <Circle className="w-7 h-7 text-slate-300" />}
-                          </ConfirmationPop>
-                          <Button variant="ghost" size="icon" aria-label="Delete habit" className="h-8 w-8 text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
-                            onClick={e => { e.stopPropagation(); deleteHabit(h.id as string) }}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <h3 className={`text-xl font-headline font-bold mb-3 ${h.completed_today ? "line-through text-slate-400" : "text-foreground"}`}>
-                        {h.name as string}
-                      </h3>
-                      {(h.current_streak as number) > 0 && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 power-gradient text-white rounded-full text-sm font-bold">
-                          <Flame className="w-3.5 h-3.5" />
-                          {t(`${h.current_streak} يوم 🔥`, `${h.current_streak} day streak 🔥`)}
-                        </span>
-                      )}
-                    </div>
-                    {/* Decorative blob */}
-                    <div className="absolute right-0 bottom-0 w-1/2 translate-y-6 translate-x-6 group-hover:translate-y-0 group-hover:translate-x-0 transition-transform duration-700 opacity-20 pointer-events-none">
-                      <div className="w-full h-24 rounded-tl-2xl" style={{ background: `linear-gradient(135deg, ${(h.color as string)||"#D97706"}40, transparent)` }} />
-                    </div>
-                  </motion.div>
-                ))}
-
-                {/* Add new habit card */}
-                <motion.div custom={habits.length} initial={{ opacity: 0, y: 28 }}
-                  whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0 }}
-                  transition={{ duration: 0.7, delay: habits.length * 0.08, ease: [0.2,1,0.3,1] }}>
-                  <button onClick={() => setOpen(true)}
-                    className="w-full h-full min-h-[200px] bg-card border-2 border-dashed border-border rounded-2xl p-10 flex flex-col items-center justify-center gap-4 hover:border-amber-600/50 hover:bg-muted dark:bg-white/[0.03] transition-all group">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#dce1ff] to-[#ffd8e9] flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Plus className="w-7 h-7 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <span className="font-headline font-bold text-muted-foreground">{t("أضف عادة", "Add habit")}</span>
-                  </button>
-                </motion.div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Single dialog instance — stable in the tree, never remounted */}
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader><DialogTitle>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle></DialogHeader>
-            <form onSubmit={createHabit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-medium text-muted-foreground">
-                  {t("اسم العادة", "Habit name")} <span className="text-red-500">*</span>
-                </label>
-                <Input placeholder={t("اسم العادة", "Habit name")} value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
+        {/* ── Stats Row ── */}
+        <div className="fu1" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 24 }}>
+          {[
+            {
+              icon: <Flame style={{ width: 20, height: 20, color: "#F59E0B" }} />,
+              value: `${completedCount}/${total}`,
+              label: t("مكتملة اليوم", "Done today"),
+            },
+            {
+              icon: <Zap style={{ width: 20, height: 20, color: "#F59E0B" }} />,
+              value: totalStreak,
+              label: t("مجموع الاستريكات", "Total streaks"),
+            },
+            {
+              icon: <Trophy style={{ width: 20, height: 20, color: "#F59E0B" }} />,
+              value: maxStreak,
+              label: t("أطول استريك", "Best streak"),
+            },
+          ].map(({ icon, value, label }, i) => (
+            <div key={i} className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: "rgba(245,158,11,.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {icon}
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-2">{t("اختر أيقونة:", "Choose icon:")}</p>
-                <div className="flex flex-wrap gap-2">
-                  {HABIT_ICONS.map(icon => (
-                    <button key={icon} type="button" onClick={() => setForm({...form, icon})}
-                      className={`text-xl p-1.5 rounded-lg border-2 transition-colors ${form.icon === icon ? "border-amber-600 bg-amber-600/10" : "border-transparent hover:border-muted"}`}>{icon}</button>
-                  ))}
-                </div>
+                <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--tx)", lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: ".75rem", color: "var(--tx2)", marginTop: 3 }}>{label}</div>
               </div>
-              <Select value={form.frequency} onValueChange={v => setForm({...form, frequency: v})}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
-                  <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button type="submit" className="w-full" style={{ background: "linear-gradient(135deg,#D97706,#FBBF24)" }}>{t("إضافة العادة", "Add Habit")}</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </main>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Habits List ── */}
+        <div className="fu2 card" style={{ overflow: "hidden" }}>
+          {/* Week header */}
+          <div style={{ display: "flex", alignItems: "center", padding: "12px 20px", borderBottom: "1px solid var(--bd)", gap: 12 }}>
+            <div style={{ flex: 1, fontSize: ".75rem", fontWeight: 700, color: "var(--tx3)", textTransform: "uppercase", letterSpacing: ".1em" }}>
+              {t("العادة", "Habit")}
+            </div>
+            <div style={{ display: "flex", gap: 6, marginInlineEnd: 8 }}>
+              {weekDayLabels.map((d, i) => (
+                <div key={i} style={{ width: 22, textAlign: "center", fontSize: ".65rem", fontWeight: 700, color: "var(--tx3)" }}>{d}</div>
+              ))}
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div style={{ display: "flex", justifyContent: "center", padding: "40px 0" }}>
+              <Loader2 style={{ width: 28, height: 28, color: "var(--amb)" }} className="animate-spin" />
+            </div>
+          ) : error ? (
+            <div style={{ padding: 40, textAlign: "center", color: "var(--tx2)" }}>
+              <p style={{ marginBottom: 12 }}>{t("فشل تحميل العادات", "Failed to load habits")}</p>
+              <button className="btn btn-sec" onClick={() => mutate()}>{t("إعادة المحاولة", "Retry")}</button>
+            </div>
+          ) : habits.length === 0 ? (
+            <div style={{ padding: "60px 20px", textAlign: "center" }}>
+              <Flame style={{ width: 48, height: 48, color: "var(--amb)", opacity: .3, margin: "0 auto 16px" }} />
+              <p style={{ color: "var(--tx2)", marginBottom: 16 }}>{t("لا توجد عادات بعد — أضف أولى عاداتك!", "No habits yet — add your first one!")}</p>
+              <button className="btn btn-primary" onClick={() => setOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <Plus style={{ width: 16, height: 16 }} />
+                {t("عادة جديدة", "New Habit")}
+              </button>
+            </div>
+          ) : (
+            habits.map((h, i) => {
+              const weekDone = h.week_done ?? Array(7).fill(false)
+              const isToggling = togglingId === h.id
+              const isDeleting = deletingId === h.id
+              return (
+                <div
+                  key={h.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "14px 20px",
+                    borderBottom: i < habits.length - 1 ? "1px solid var(--bd)" : "none",
+                    transition: "background .15s",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => !isToggling && toggleHabit(h.id, h.completed_today)}
+                >
+                  {/* Icon */}
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+                    background: `${h.color || "#D97706"}22`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "1.1rem",
+                  }}>
+                    {h.icon}
+                  </div>
+
+                  {/* Name + streak */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontWeight: 700,
+                      fontSize: ".92rem",
+                      color: h.completed_today ? "var(--tx3)" : "var(--tx)",
+                      textDecoration: h.completed_today ? "line-through" : "none",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}>
+                      {h.name}
+                    </div>
+                    {(h.current_streak > 0) && (
+                      <div style={{ fontSize: ".72rem", color: "var(--amb)", marginTop: 2, display: "flex", alignItems: "center", gap: 3 }}>
+                        <Flame style={{ width: 11, height: 11 }} />
+                        {h.current_streak} {t("يوم", "days")}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Week dots */}
+                  <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                    {weekDone.map((done: boolean, di: number) => (
+                      <div
+                        key={di}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 5,
+                          background: done
+                            ? h.color || "#F59E0B"
+                            : "var(--s3)",
+                          border: di === 6 ? `1px solid ${done ? (h.color || "#F59E0B") : "var(--amb)"}` : "none",
+                          flexShrink: 0,
+                          transition: "background .2s",
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Spinner / Delete */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, marginInlineStart: 4 }} onClick={e => e.stopPropagation()}>
+                    {isToggling ? (
+                      <Loader2 style={{ width: 16, height: 16, color: "var(--amb)" }} className="animate-spin" />
+                    ) : null}
+                    <button
+                      disabled={isDeleting}
+                      onClick={e => { e.stopPropagation(); deleteHabit(h.id) }}
+                      style={{
+                        width: 28, height: 28, border: "none", background: "none", cursor: "pointer",
+                        color: "var(--tx3)", display: "flex", alignItems: "center", justifyContent: "center",
+                        borderRadius: 6, opacity: isDeleting ? .4 : 1,
+                      }}
+                    >
+                      {isDeleting
+                        ? <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" />
+                        : <Trash2 style={{ width: 14, height: 14 }} />}
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* Add habit floating button (mobile) */}
+        <div style={{ height: 80 }} />
+      </div>
+
+      {/* ── Add Habit Dialog ── */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-sm" style={{ background: "var(--s1)", border: "1px solid var(--bd)", color: "var(--tx)" }}>
+          <DialogHeader>
+            <DialogTitle style={{ color: "var(--tx)" }}>{t("إضافة عادة جديدة", "Add New Habit")}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={createHabit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div>
+              <label style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--tx2)", display: "block", marginBottom: 6 }}>
+                {t("اسم العادة", "Habit name")} *
+              </label>
+              <input
+                className="inp"
+                placeholder={t("مثال: شرب الماء", "e.g. Drink water")}
+                value={form.name}
+                onChange={e => setForm({ ...form, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--tx2)", display: "block", marginBottom: 8 }}>
+                {t("الأيقونة", "Icon")}
+              </label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {HABIT_ICONS.map(icon => (
+                  <button
+                    key={icon}
+                    type="button"
+                    onClick={() => setForm({ ...form, icon })}
+                    style={{
+                      fontSize: "1.25rem",
+                      padding: "6px 8px",
+                      borderRadius: 8,
+                      border: `2px solid ${form.icon === icon ? "var(--amb)" : "var(--bd)"}`,
+                      background: form.icon === icon ? "rgba(245,158,11,.1)" : "var(--s2)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {icon}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--tx2)", display: "block", marginBottom: 6 }}>
+                {t("اللون", "Color")}
+              </label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {["#D97706","#F59E0B","#10B981","#3B82F6","#8B5CF6","#EF4444","#EC4899"].map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setForm({ ...form, color: c })}
+                    style={{
+                      width: 28, height: 28, borderRadius: "50%", border: `3px solid ${form.color === c ? "var(--tx)" : "transparent"}`,
+                      background: c, cursor: "pointer",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <Select value={form.frequency} onValueChange={v => setForm({ ...form, frequency: v })}>
+              <SelectTrigger style={{ background: "var(--s2)", border: "1px solid var(--bd)", color: "var(--tx)" }}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">{t("يومي", "Daily")}</SelectItem>
+                <SelectItem value="weekly">{t("أسبوعي", "Weekly")}</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={!form.name.trim() || saving}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+            >
+              {saving && <Loader2 style={{ width: 14, height: 14 }} className="animate-spin" />}
+              {t("إضافة العادة", "Add Habit")}
+            </button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

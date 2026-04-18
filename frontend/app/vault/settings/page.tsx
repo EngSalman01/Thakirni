@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,7 @@ import {
 import {
   Bell, Shield, Mail, LogOut,
   Crown, CheckCircle2, AlertCircle, Loader2, Phone,
-  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown, User, Moon,
+  Sparkles, RefreshCw, Calendar, X, Camera, Download, Trash2, FileDown, User,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -26,13 +26,6 @@ import { useLanguage } from "@/components/language-provider";
 import { useSubscription, type PlanTier } from "@/hooks/use-subscription";
 import { BillingModal } from "@/components/thakirni/billing-modal";
 import { ReferralCard } from "@/components/thakirni/referral-card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { AffiliateCard } from "@/components/thakirni/affiliate-card";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -68,7 +61,7 @@ function SettingsCard({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5, ease: [0.2, 1, 0.3, 1] }}
-      className={`shell-panel rounded-2xl p-8 relative overflow-hidden ${className}`}
+      className={`bg-transparent rounded-2xl p-8 relative overflow-hidden ${className}`}
     >
       {children}
     </motion.div>
@@ -79,59 +72,12 @@ function SettingsCard({
 
 function SettingsSkeleton() {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div className="min-h-screen [background:var(--bg)] hero-mesh overflow-x-hidden">
       <main className="pt-32 px-8 pb-20">
-        <div className="max-w-5xl mx-auto space-y-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="space-y-3">
-              <Skeleton className="h-10 w-56 rounded-2xl" />
-              <Skeleton className="h-4 w-72 rounded-full" />
-            </div>
-            <Skeleton className="h-11 w-40 rounded-2xl" />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-            <div className="md:col-span-7 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-6">
-              <div className="space-y-3">
-                <Skeleton className="h-7 w-40 rounded-xl" />
-                <Skeleton className="h-4 w-2/3 rounded-full" />
-              </div>
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="rounded-2xl bg-card/80 dark:bg-white/[0.04] p-4 flex items-center justify-between gap-4">
-                    <div className="space-y-2 flex-1">
-                      <Skeleton className="h-4 w-40 rounded-full" />
-                      <Skeleton className="h-3 w-3/5 rounded-full" />
-                    </div>
-                    <Skeleton className="h-8 w-12 rounded-full" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:col-span-5 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-5">
-              <Skeleton className="h-7 w-32 rounded-xl" />
-              <Skeleton className="h-28 w-full rounded-[1.5rem]" />
-              <Skeleton className="h-11 w-full rounded-2xl" />
-              <Skeleton className="h-11 w-2/3 rounded-2xl" />
-            </div>
-
-            <div className="md:col-span-7 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-5">
-              <Skeleton className="h-7 w-44 rounded-xl" />
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-16 w-full rounded-2xl" />
-              ))}
-            </div>
-
-            <div className="md:col-span-5 rounded-[2rem] bg-muted/50 dark:bg-white/[0.03] p-8 space-y-5">
-              <Skeleton className="h-7 w-36 rounded-xl" />
-              <Skeleton className="h-44 w-full rounded-[1.5rem]" />
-              <div className="grid grid-cols-2 gap-3">
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
-              </div>
-            </div>
-          </div>
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+          {[7, 5, 7, 5].map((span, i) => (
+            <Skeleton key={i} className={`h-64 rounded-2xl md:col-span-${span}`} />
+          ))}
         </div>
       </main>
     </div>
@@ -149,8 +95,8 @@ function ToggleRow({
   return (
     <div className="flex justify-between items-center p-4 bg-card rounded-xl">
       <div>
-        <p className="font-label font-bold text-sm text-foreground">{label}</p>
-        <p className="text-sm text-muted-foreground">{desc}</p>
+        <p className="font-label font-bold text-sm [color:var(--tx)]">{label}</p>
+        <p className="text-sm [color:var(--tx2)]">{desc}</p>
       </div>
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
@@ -169,22 +115,7 @@ function ToggleRow({
 export default function SettingsPage() {
   const { t } = useLanguage();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { tier, isPaid, subscription } = useSubscription();
-
-  // Handle return from Paddle hosted checkout
-  useEffect(() => {
-    const checkout = searchParams.get("checkout");
-    const plan = searchParams.get("plan");
-    if (checkout === "success" && plan) {
-      toast.success(t(
-        `تم الاشتراك بنجاح! 🎉 خطتك الآن: ${plan}`,
-        `Subscribed successfully! 🎉 Your plan: ${plan}`
-      ));
-      // Remove query params without re-render loop
-      router.replace("/vault/settings?tab=subscription", { scroll: false });
-    }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
   const [billingOpen, setBillingOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -234,13 +165,6 @@ export default function SettingsPage() {
   const [sendingInvite, setSendingInvite] = useState(false);
 
   const [exportingPdf, setExportingPdf] = useState<string | null>(null);
-
-  // ── Prayer subscription state ──────────────────────────────────────────────
-  const [prayerEnabled, setPrayerEnabled] = useState(false);
-  const [prayerCity, setPrayerCity] = useState("riyadh");
-  const [prayerPrayers, setPrayerPrayers] = useState<string[]>(["fajr", "dhuhr", "asr", "maghrib", "isha"]);
-  const [prayerLoaded, setPrayerLoaded] = useState(false);
-  const [prayerSaving, setPrayerSaving] = useState(false);
   const [planConfig, setPlanConfig] = useState<Array<{ plan_key: string; price_sar: number; features: string[] }> | null>(null);
 
   useEffect(() => {
@@ -249,53 +173,6 @@ export default function SettingsPage() {
       .then((d: Array<{ plan_key: string; price_sar: number; features: string[] }>) => setPlanConfig(d))
       .catch((e) => console.error("[settings] plan config fetch error:", e));
   }, []);
-
-  // ── Fetch prayer subscription ──────────────────────────────────────────────
-  useEffect(() => {
-    fetch("/api/prayer/subscription")
-      .then(r => r.json())
-      .then((d: { subscription?: { enabled: boolean; city: string; prayers: string[] } | null }) => {
-        if (d.subscription) {
-          setPrayerEnabled(d.subscription.enabled);
-          setPrayerCity(d.subscription.city.toLowerCase());
-          setPrayerPrayers(d.subscription.prayers);
-        }
-        setPrayerLoaded(true);
-      })
-      .catch(() => setPrayerLoaded(true));
-  }, []);
-
-  const handleSavePrayer = useCallback(async (
-    overrides?: Partial<{ enabled: boolean; city: string; prayers: string[] }>
-  ) => {
-    setPrayerSaving(true);
-    try {
-      const body = {
-        enabled:  overrides?.enabled  ?? prayerEnabled,
-        city:     overrides?.city     ?? prayerCity,
-        prayers:  overrides?.prayers  ?? prayerPrayers,
-      };
-      const res = await fetch("/api/prayer/subscription", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const json = await res.json() as { error?: string; message?: string };
-      if (!res.ok) {
-        if (json.error === "no_phone") {
-          toast.error(t("أضف رقم واتساب في الملف الشخصي أولاً", "Add a WhatsApp phone number in Profile first"));
-        } else {
-          toast.error(json.message ?? json.error ?? t("فشل الحفظ", "Failed to save"));
-        }
-        return;
-      }
-      toast.success(t("تم حفظ تذكيرات الصلاة ✅", "Prayer reminders saved ✅"));
-    } catch {
-      toast.error(t("فشل الاتصال", "Connection error"));
-    } finally {
-      setPrayerSaving(false);
-    }
-  }, [prayerEnabled, prayerCity, prayerPrayers, t]);
 
   const abortRef = useRef<AbortController | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -357,15 +234,12 @@ export default function SettingsPage() {
     if (!name.trim()) { toast.error(t("الاسم مطلوب", "Name is required")); return; }
 
     // Validate phone BEFORE setting saving state so button doesn't get stuck
-    const rawPhone = phone.trim().replace(/[\s\-()]/g, "");
+    const rawPhone = phone.trim().replace(/\s+/g, "");
     const normPhone = rawPhone
-      ? rawPhone
-          .replace(/^\+/, "")   // strip leading +
-          .replace(/^00/, "")   // strip leading 00
-          .replace(/^0(\d{9})$/, "966$1")  // Saudi local 05xxxxxxxx → 9665xxxxxxxx
+      ? rawPhone.replace(/^\+/, "").replace(/^00/, "").replace(/^0/, "966")
       : "";
-    if (normPhone && !/^\d{7,15}$/.test(normPhone)) {
-      toast.error(t("رقم الهاتف غير صحيح — أدخل الرقم مع رمز الدولة مثل 05xxxxxxxx أو +1xxxxxxxxxx", "Invalid phone — enter with country code e.g. 05xxxxxxxx or +1xxxxxxxxxx"));
+    if (normPhone && !/^966\d{9}$/.test(normPhone)) {
+      toast.error(t("رقم الهاتف غير صحيح — أدخل رقم سعودي مثل 05xxxxxxxx", "Invalid phone — enter a Saudi number like 05xxxxxxxx"));
       return;
     }
 
@@ -718,104 +592,47 @@ export default function SettingsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <main className="pt-14 lg:pt-16 transition-all duration-300">
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--tx)" }}>
+      <main>
+        <div className="page-wrap" style={{ maxWidth: 1060 }}>
 
-        {/* ═══ HERO ═══ */}
-        <section className="relative pt-32 pb-16 px-8 overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} style={{
-                position: 'absolute', borderRadius: '50%',
-                width: `${4 + Math.random() * 6}px`, height: `${4 + Math.random() * 6}px`,
-                left: `${(i / 12) * 100}%`, top: `${Math.random() * 100}%`,
-                background: i % 2 === 0 ? '#D97706' : '#F59E0B', opacity: 0.08,
-              }} />
-            ))}
+          {/* ── Header ── */}
+          <div className="page-head fu">
+            <div>
+              <p className="eyebrow">{t("الحساب", "Account")}</p>
+              <h1 className="page-h1">{t("الإعدادات", "Settings")}</h1>
+              <p className="page-sub">{t("أدر ملفك الشخصي وتفضيلاتك وأمان حسابك", "Manage your profile, preferences and account security")}</p>
+            </div>
+            {/* Plan badge */}
+            <span style={{ padding: "5px 16px", borderRadius: 99, fontWeight: 800, fontSize: ".82rem", background: planBadge.bg, color: planBadge.color, alignSelf: "flex-start" }}>
+              {planBadge.label}
+            </span>
           </div>
-
-          <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left copy */}
-            <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, ease: [0.2, 1, 0.3, 1] }}>
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-amber-600/20 rounded-full px-4 py-2 mb-8 shadow-sm">
-                <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-label font-medium text-muted-foreground" style={{ background: planBadge.bg, color: planBadge.color, padding: '2px 10px', borderRadius: '999px', fontWeight: 700 }}>{planBadge.label}</span>
-              </motion.div>
-
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight leading-none mb-8">
-                <span className="text-foreground">{t("إعدادات", "Your")}</span>{" "}
-                <span className="gradient-text">{t("حسابك", "Account")}</span>
-              </h1>
-
-              <p className="text-xl text-muted-foreground font-body mb-10 leading-relaxed max-w-lg">
-                {t("أدر ملفك الشخصي واشتراكك وتفضيلاتك وأمان حسابك من مكان واحد.", "Manage your profile, subscription, preferences, and account security all in one place.")}
-              </p>
-
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { icon: '👤', label: t('الملف الشخصي', 'Profile'), color: 'bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400' },
-                  { icon: '🔔', label: t('الإشعارات', 'Notifications'), color: 'bg-amber-50 text-amber-600 dark:text-amber-400' },
-                  { icon: '🔒', label: t('الأمان', 'Security'), color: 'bg-emerald-50 text-emerald-700' },
-                  { icon: '📊', label: t('الاشتراك', 'Subscription'), color: 'bg-amber-50 text-amber-700' },
-                ].map(({ icon, label, color }) => (
-                  <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
-                    <span>{icon}</span> <span>{label as string}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Right — profile preview card */}
-            <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.2, 1, 0.3, 1] }}
-              className="shell-panel-strong rounded-3xl p-8 relative">
-              <div className="flex items-center gap-5 mb-8">
-                <div className="w-20 h-20 rounded-2xl power-gradient flex items-center justify-center text-white text-3xl font-bold font-headline overflow-hidden shrink-0">
-                  {profile?.avatar_url ? <img src={profile.avatar_url} alt={name} className="w-full h-full object-cover" /> : initial}
-                </div>
-                <div>
-                  <h3 className="text-2xl font-headline font-bold text-foreground">{name || t('المستخدم', 'User')}</h3>
-                  <p className="text-muted-foreground text-sm" dir="ltr">{email}</p>
-                  <span className="mt-1 inline-block px-3 py-0.5 rounded-full text-xs font-bold" style={{ background: planBadge.bg, color: planBadge.color }}>{planBadge.label}</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {planFeatures.slice(0, 3).map(({ ar, en }) => (
-                  <div key={en} className="flex items-center gap-3 p-3 bg-muted dark:bg-white/[0.03] rounded-xl">
-                    <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                    <p className="text-sm font-label text-muted-foreground">{t(ar, en)}</p>
-                  </div>
-                ))}
-              </div>
-              <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute -top-4 -right-4 bg-card rounded-2xl shadow-lg border border-border px-3 py-2 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-xs font-bold text-foreground">{t('محمي', 'Secured')}</span>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
-
-        <div className="px-4 sm:px-8 pb-20">
-        <div className="max-w-3xl mx-auto">
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="w-full mb-8 bg-muted dark:bg-white/[0.03] p-1 rounded-2xl h-auto grid grid-cols-4 gap-1">
-            <TabsTrigger value="profile" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
-              <User className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("الملف الشخصي", "Profile")}</span>
+          {/* Two-column: content left, nav right */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 200px", gap: 20, alignItems: "flex-start" }}>
+
+          {/* ── Left: Tab Contents ── */}
+          <div style={{ minWidth: 0 }}>
+
+          {/* Tab nav triggers - shown at top on mobile, hidden on desktop (sidebar handles it) */}
+          <TabsList className="w-full mb-6 lg:hidden bg-transparent p-0 h-auto grid grid-cols-4 gap-2">
+            <TabsTrigger value="profile" className="rounded-xl py-2 text-xs font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1 justify-center">
+              <User className="w-3.5 h-3.5 shrink-0" />
+              {t("الملف", "Profile")}
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
-              <Bell className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("الإشعارات", "Notifications")}</span>
+            <TabsTrigger value="notifications" className="rounded-xl py-2 text-xs font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1 justify-center">
+              <Bell className="w-3.5 h-3.5 shrink-0" />
+              {t("الإشعارات", "Notifs")}
             </TabsTrigger>
-            <TabsTrigger value="security" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
-              <Shield className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("الأمان", "Security")}</span>
+            <TabsTrigger value="security" className="rounded-xl py-2 text-xs font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1 justify-center">
+              <Shield className="w-3.5 h-3.5 shrink-0" />
+              {t("الأمان", "Security")}
             </TabsTrigger>
-            <TabsTrigger value="subscription" className="rounded-xl py-2.5 text-sm font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1.5">
-              <Crown className="w-4 h-4 shrink-0" />
-              <span className="hidden sm:inline">{t("الاشتراك", "Subscription")}</span>
+            <TabsTrigger value="subscription" className="rounded-xl py-2 text-xs font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm flex items-center gap-1 justify-center">
+              <Crown className="w-3.5 h-3.5 shrink-0" />
+              {t("الاشتراك", "Plan")}
             </TabsTrigger>
           </TabsList>
 
@@ -826,10 +643,9 @@ export default function SettingsPage() {
             <SettingsCard delay={0.05}>
               <div className="relative z-10">
                 <div className="flex justify-between items-start mb-6">
-                  <span className="eyebrow-badge inline-flex items-center gap-1.5">
-                    <User className="w-3.5 h-3.5" />
+                  <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
                     {t("الملف الشخصي", "Profile")}
-                  </span>
+                  </h2>
                   <span
                     className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
                     style={{ background: planBadge.bg, color: planBadge.color }}
@@ -863,8 +679,8 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xl font-headline font-bold text-foreground">{name || t("المستخدم", "User")}</h3>
-                    <p className="text-muted-foreground" dir="ltr">{email}</p>
+                    <h3 className="text-xl font-headline font-bold [color:var(--tx)]">{name || t("المستخدم", "User")}</h3>
+                    <p className="[color:var(--tx2)]" dir="ltr">{email}</p>
                     <button
                       onClick={() => avatarInputRef.current?.click()}
                       disabled={avatarUploading}
@@ -880,20 +696,20 @@ export default function SettingsPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-muted-foreground">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
+                    <Label className="font-label font-semibold [color:var(--tx2)]">{t("الاسم الكامل", "Full Name")} <span className="text-red-500">*</span></Label>
                     <Input
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={t("أدخل اسمك", "Enter your name")}
                       maxLength={60}
-                      className="rounded-xl bg-card border-border focus-visible:ring-amber-600/40"
+                      className="rounded-xl bg-card [border-color:var(--bd)] focus-visible:ring-amber-600/40"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-muted-foreground">{t("البريد الإلكتروني", "Email")}</Label>
+                    <Label className="font-label font-semibold [color:var(--tx2)]">{t("البريد الإلكتروني", "Email")}</Label>
                     <div className="flex gap-2">
                       <Input type="email" value={email} disabled dir="ltr"
-                        className="opacity-60 rounded-xl bg-card border-border flex-1" />
+                        className="opacity-60 rounded-xl bg-card [border-color:var(--bd)] flex-1" />
                       <button
                         onClick={() => { setChangeEmailOpen(true); setNewEmail(""); setChangeEmailSent(false); }}
                         className="px-3 py-2 rounded-xl border border-amber-600/30 text-amber-600 dark:text-amber-400 text-xs font-bold hover:bg-amber-100 dark:bg-amber-950/60 transition-colors shrink-0"
@@ -903,7 +719,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="font-label font-semibold text-muted-foreground">
+                    <Label className="font-label font-semibold [color:var(--tx2)]">
                       {t("رقم الجوال", "Phone Number")}
                       <span className="text-slate-400 text-xs ms-1">{t("(للواتساب)", "(WhatsApp)")}</span>
                     </Label>
@@ -913,8 +729,8 @@ export default function SettingsPage() {
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder={t("05xxxxxxxx أو +966xxxxxxxxx", "05xxxxxxxx or +1xxxxxxxxxx")}
-                        className="ps-10 rounded-xl bg-card border-border focus-visible:ring-amber-600/40"
+                        placeholder="05xxxxxxxx"
+                        className="ps-10 rounded-xl bg-card [border-color:var(--bd)] focus-visible:ring-amber-600/40"
                         dir="ltr"
                       />
                     </div>
@@ -922,7 +738,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveName}
                     disabled={saving || !isDirty || !name.trim()}
-                    className="w-full py-4 rounded-full power-gradient btn-glow text-white font-bold font-label disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:opacity-90 active:scale-[0.98]"
+                    className="w-full py-4 rounded-full power-gradient text-white font-bold font-label disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:opacity-90 active:scale-[0.98]"
                   >
                     {saving ? (
                       <span className="flex items-center justify-center gap-2">
@@ -939,10 +755,12 @@ export default function SettingsPage() {
 
             {/* Aura Personalization */}
             <SettingsCard delay={0.1}>
-              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
-                <span>🎨</span>
-                {t("التخصيص", "Personalization")}
-              </span>
+              <div className="flex items-center gap-3 mb-8">
+                <span className="text-amber-600 dark:text-amber-400 text-xl">🎨</span>
+                <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
+                  {t("التخصيص", "Personalization")}
+                </h2>
+              </div>
               <div className="space-y-4">
                 <ToggleRow
                   label={t("الحركة الأثيرية", "Ethereal Motion") as string}
@@ -966,8 +784,8 @@ export default function SettingsPage() {
                 />
                 <div className="flex justify-between items-center p-4 bg-card rounded-xl">
                   <div>
-                    <p className="font-label font-bold text-sm text-foreground">{t("المظهر واللغة", "Theme & Language")}</p>
-                    <p className="text-sm text-muted-foreground">{t("الوضع الليلي أو النهاري والعربي/الإنجليزي", "Dark/light mode & Arabic/English")}</p>
+                    <p className="font-label font-bold text-sm [color:var(--tx)]">{t("المظهر واللغة", "Theme & Language")}</p>
+                    <p className="text-sm [color:var(--tx2)]">{t("الوضع الليلي أو النهاري والعربي/الإنجليزي", "Dark/light mode & Arabic/English")}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <LanguageToggle />
@@ -984,10 +802,12 @@ export default function SettingsPage() {
 
             {/* Connected Apps */}
             <SettingsCard delay={0.08}>
-              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
-                <RefreshCw className="w-3.5 h-3.5" />
-                {t("التطبيقات المرتبطة", "Connected Apps")}
-              </span>
+              <div className="flex items-center gap-3 mb-6">
+                <RefreshCw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
+                  {t("التطبيقات المرتبطة", "Connected Apps")}
+                </h2>
+              </div>
               <div className="space-y-3">
                 {/* Google Calendar */}
                 <div className="flex items-center justify-between p-4 bg-card rounded-xl">
@@ -1002,14 +822,14 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-sm font-label text-foreground">Google Calendar</p>
+                        <p className="font-bold text-sm font-label [color:var(--tx)]">Google Calendar</p>
                         {calendarConnected && (
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                             {t("مرتبط", "Connected")}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs [color:var(--tx2)] mt-0.5">
                         {calendarConnected
                           ? t("أحداث Google Calendar تظهر في تقويمك", "Google Calendar events appear in your calendar")
                           : t("اربط تقويم Google لتظهر مواعيدك تلقائياً", "Connect to see your Google events automatically")}
@@ -1027,7 +847,7 @@ export default function SettingsPage() {
                   ) : (
                     <a
                       href="/api/google-calendar/connect"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-border text-muted-foreground text-xs font-bold hover:shadow-md transition-shadow"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border [border-color:var(--bd)] [color:var(--tx2)] text-xs font-bold hover:shadow-md transition-shadow"
                     >
                       <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -1048,7 +868,7 @@ export default function SettingsPage() {
                     ]).map(({ key, ar, en, descAr, descEn }) => (
                       <div key={key} className="flex items-center justify-between px-4 py-3">
                         <div>
-                          <p className="text-sm font-semibold text-muted-foreground">{t(ar, en)}</p>
+                          <p className="text-sm font-semibold [color:var(--tx2)]">{t(ar, en)}</p>
                           <p className="text-xs text-slate-400 mt-0.5">{t(descAr, descEn)}</p>
                         </div>
                         <button
@@ -1073,14 +893,14 @@ export default function SettingsPage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="font-bold text-sm font-label text-foreground">WhatsApp</p>
+                        <p className="font-bold text-sm font-label [color:var(--tx)]">WhatsApp</p>
                         {profile?.phone_number && (
                           <span className="text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                             {t("نشط", "Active")}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs [color:var(--tx2)] mt-0.5">
                         {t("تحدث مع مساعدك الذكي وتلقّى تذكيرات عبر واتساب", "Chat with your AI assistant and get reminders via WhatsApp")}
                       </p>
                     </div>
@@ -1106,10 +926,12 @@ export default function SettingsPage() {
 
             {/* Notifications */}
             <SettingsCard delay={0.16}>
-              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
-                <Bell className="w-3.5 h-3.5" />
-                {t("الإشعارات", "Notifications")}
-              </span>
+              <div className="flex items-center gap-3 mb-6">
+                <Bell className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
+                  {t("الإشعارات", "Notifications")}
+                </h2>
+              </div>
               <div className="space-y-3">
                 {([
                   { key: "notification_email", ar: "إشعارات البريد", en: "Email Notifications", descAr: "تذكيرات عبر البريد", descEn: "Reminders via email" },
@@ -1128,133 +950,6 @@ export default function SettingsPage() {
               </div>
             </SettingsCard>
 
-            {/* ── Prayer Reminders ── */}
-            <SettingsCard delay={0.22}>
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <Moon className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                  <h2 className="text-2xl font-headline font-bold text-foreground">
-                    {t("تذكيرات الصلاة", "Prayer Reminders")}
-                  </h2>
-                </div>
-                {prayerLoaded && (
-                  <div dir="ltr">
-                    <Switch
-                      checked={prayerEnabled}
-                      onCheckedChange={(v) => {
-                        setPrayerEnabled(v);
-                        handleSavePrayer({ enabled: v });
-                      }}
-                      disabled={prayerSaving}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {!profile?.phone_number ? (
-                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 text-sm text-amber-700 dark:text-amber-400 flex items-start gap-3">
-                  <span className="text-lg">📱</span>
-                  <div>
-                    <p className="font-bold mb-1">{t("رقم واتساب مطلوب", "WhatsApp number required")}</p>
-                    <p className="text-xs opacity-80">{t("أضف رقمك في تبويب الملف الشخصي لتفعيل تذكيرات الصلاة عبر واتساب.", "Add your number in the Profile tab to receive prayer reminders on WhatsApp.")}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  <p className="text-sm text-muted-foreground">
-                    {t(
-                      "سيرسل لك واتساب تنبيهاً قبل 5 دقائق من كل صلاة وعند حلول الوقت.",
-                      "You'll get a WhatsApp message 5 min before each prayer and at prayer time."
-                    )}
-                  </p>
-
-                  {/* City */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-label font-semibold text-foreground">
-                      {t("المدينة", "City")}
-                    </label>
-                    <Select value={prayerCity} onValueChange={setPrayerCity}>
-                      <SelectTrigger className="w-full rounded-xl border-border bg-card text-foreground text-sm h-11 focus:ring-amber-600/40 focus:ring-2">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="shell-panel border-border rounded-xl max-h-64">
-                        {[
-                          { key: "riyadh",         ar: "الرياض",           en: "Riyadh" },
-                          { key: "jeddah",         ar: "جدة",              en: "Jeddah" },
-                          { key: "makkah",         ar: "مكة المكرمة",     en: "Makkah" },
-                          { key: "madinah",        ar: "المدينة المنورة",  en: "Madinah" },
-                          { key: "dammam",         ar: "الدمام",           en: "Dammam" },
-                          { key: "khobar",         ar: "الخبر",            en: "Al Khobar" },
-                          { key: "ahsa",           ar: "الأحساء",          en: "Al-Ahsa" },
-                          { key: "jubail",         ar: "الجبيل",           en: "Jubail" },
-                          { key: "tabuk",          ar: "تبوك",             en: "Tabuk" },
-                          { key: "buraidah",       ar: "بريدة",            en: "Buraidah" },
-                          { key: "hail",           ar: "حائل",             en: "Hail" },
-                          { key: "abha",           ar: "أبها",             en: "Abha" },
-                          { key: "khamis mushait", ar: "خميس مشيط",       en: "Khamis Mushait" },
-                          { key: "taif",           ar: "الطائف",           en: "Taif" },
-                          { key: "yanbu",          ar: "ينبع",             en: "Yanbu" },
-                          { key: "najran",         ar: "نجران",            en: "Najran" },
-                          { key: "jizan",          ar: "جازان",            en: "Jazan" },
-                          { key: "baha",           ar: "الباحة",           en: "Al Baha" },
-                          { key: "arar",           ar: "عرعر",             en: "Arar" },
-                          { key: "sakaka",         ar: "سكاكا",            en: "Sakaka" },
-                          { key: "hafr al batin",  ar: "حفر الباطن",       en: "Hafr Al-Batin" },
-                        ].map(({ key, ar, en }) => (
-                          <SelectItem key={key} value={key} className="text-sm cursor-pointer">
-                            {t(ar, en)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Prayers */}
-                  <div className="space-y-2">
-                    <p className="text-sm font-label font-semibold text-foreground">{t("الصلوات", "Prayers")}</p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[
-                        { key: "fajr",    ar: "الفجر",   en: "Fajr",    icon: "🌄" },
-                        { key: "dhuhr",   ar: "الظهر",   en: "Dhuhr",   icon: "☀️" },
-                        { key: "asr",     ar: "العصر",   en: "Asr",     icon: "🌤" },
-                        { key: "maghrib", ar: "المغرب",  en: "Maghrib", icon: "🌇" },
-                        { key: "isha",    ar: "العشاء",  en: "Isha",    icon: "🌙" },
-                      ].map(({ key, ar, en, icon }) => {
-                        const active = prayerPrayers.includes(key);
-                        return (
-                          <button
-                            key={key}
-                            type="button"
-                            onClick={() => setPrayerPrayers(p =>
-                              active ? p.filter(x => x !== key) : [...p, key]
-                            )}
-                            className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl border text-xs font-bold font-label transition-all ${
-                              active
-                                ? "border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
-                                : "border-border bg-card text-muted-foreground hover:border-amber-300"
-                            }`}
-                          >
-                            <span className="text-base">{icon}</span>
-                            <span>{t(ar, en)}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => handleSavePrayer()}
-                    disabled={prayerSaving}
-                    className="w-full py-3 rounded-full power-gradient btn-glow text-white font-bold font-label disabled:opacity-50 transition-all hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
-                  >
-                    {prayerSaving
-                      ? <><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />{t("جاري الحفظ...", "Saving...")}</>
-                      : t("حفظ تذكيرات الصلاة", "Save Prayer Reminders")}
-                  </button>
-                </div>
-              )}
-            </SettingsCard>
-
           </TabsContent>
 
           {/* ── Tab: Security ── */}
@@ -1262,15 +957,17 @@ export default function SettingsPage() {
 
             {/* Privacy & Security */}
             <SettingsCard delay={0.05} className="border-l-4 border-amber-500">
-              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5" />
-                {t("الخصوصية والأمان", "Privacy & Security")}
-              </span>
+              <div className="flex items-center gap-3 mb-6">
+                <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
+                  {t("الخصوصية والأمان", "Privacy & Security")}
+                </h2>
+              </div>
               <div className="space-y-4">
-                <div className="p-5 bg-muted dark:bg-white/[0.03] rounded-xl flex items-center justify-between">
+                <div className="p-5 bg-transparent rounded-xl flex items-center justify-between">
                   <div>
-                    <p className="font-bold text-foreground text-sm">{t("كلمة المرور", "Password")}</p>
-                    <p className="text-muted-foreground text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
+                    <p className="font-bold [color:var(--tx)] text-sm">{t("كلمة المرور", "Password")}</p>
+                    <p className="[color:var(--tx2)] text-xs mt-0.5">{t("غيّر كلمة مرور حسابك", "Change your account password")}</p>
                   </div>
                   <Link href="/vault/settings/security/change-password"
                     className="px-4 py-2 rounded-full border border-amber-500 text-amber-600 dark:text-amber-400 font-bold text-sm hover:bg-amber-50 transition-colors font-label">
@@ -1281,7 +978,7 @@ export default function SettingsPage() {
                   <h3 className="text-red-600 font-headline font-bold mb-2">
                     {t("منطقة الخطر", "Danger Zone")}
                   </h3>
-                  <p className="text-muted-foreground text-sm mb-4">
+                  <p className="[color:var(--tx2)] text-sm mb-4">
                     {t("هذه الإجراءات دائمة ولا يمكن التراجع عنها.", "These actions are permanent and cannot be reversed.")}
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -1307,11 +1004,13 @@ export default function SettingsPage() {
 
             {/* Export Data */}
             <SettingsCard delay={0.2}>
-              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
-                <Download className="w-3.5 h-3.5" />
-                {t("تصدير البيانات", "Export Data")}
-              </span>
-              <p className="text-sm text-muted-foreground mb-5">
+              <div className="flex items-center gap-3 mb-6">
+                <Download className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
+                  {t("تصدير البيانات", "Export Data")}
+                </h2>
+              </div>
+              <p className="text-sm [color:var(--tx2)] mb-5">
                 {t(
                   "حمّل بياناتك الشخصية في أي وقت بصيغة CSV أو PDF.",
                   "Download your personal data at any time in CSV or PDF format."
@@ -1321,17 +1020,17 @@ export default function SettingsPage() {
                 {/* Plans & Tasks */}
                 <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-foreground">
+                    <p className="font-bold text-sm font-label [color:var(--tx)]">
                       {t("الخطط والمهام", "Plans & Tasks")}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs [color:var(--tx2)] mt-0.5">
                       {t("جميع خططك ومهامك", "All your plans and tasks")}
                     </p>
                   </div>
                   <a
                     href="/api/export/plans"
                     download
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted hover:bg-muted transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium [color:var(--tx2)] bg-muted hover:bg-muted transition-colors shrink-0"
                     title={t("تحميل CSV", "Download CSV")}
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -1355,17 +1054,17 @@ export default function SettingsPage() {
                 {/* Memories */}
                 <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-foreground">
+                    <p className="font-bold text-sm font-label [color:var(--tx)]">
                       {t("الذكريات", "Memories")}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs [color:var(--tx2)] mt-0.5">
                       {t("جميع ذكرياتك المحفوظة", "All your saved memories")}
                     </p>
                   </div>
                   <a
                     href="/api/export/memories"
                     download
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-muted hover:bg-muted transition-colors shrink-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium [color:var(--tx2)] bg-muted hover:bg-muted transition-colors shrink-0"
                     title={t("تحميل CSV", "Download CSV")}
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -1389,10 +1088,10 @@ export default function SettingsPage() {
                 {/* Habits */}
                 <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-foreground">
+                    <p className="font-bold text-sm font-label [color:var(--tx)]">
                       {t("العادات", "Habits")}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs [color:var(--tx2)] mt-0.5">
                       {t("جميع عاداتك وسلاسلك", "All your habits and streaks")}
                     </p>
                   </div>
@@ -1414,10 +1113,10 @@ export default function SettingsPage() {
                 {/* Goals */}
                 <div className="flex items-center gap-2 p-4 bg-card rounded-xl">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm font-label text-foreground">
+                    <p className="font-bold text-sm font-label [color:var(--tx)]">
                       {t("الأهداف", "Goals")}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs [color:var(--tx2)] mt-0.5">
                       {t("جميع أهدافك وتقدمها", "All your goals and progress")}
                     </p>
                   </div>
@@ -1440,11 +1139,13 @@ export default function SettingsPage() {
 
             {/* Data & Privacy (PDPL) */}
             <SettingsCard delay={0.24} className="border-l-4 border-amber-600">
-              <span className="eyebrow-badge mb-6 inline-flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5" />
-                {t("البيانات والخصوصية", "Data & Privacy")}
-              </span>
-              <p className="text-sm text-muted-foreground mb-5">
+              <div className="flex items-center gap-3 mb-6">
+                <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
+                  {t("البيانات والخصوصية", "Data & Privacy")}
+                </h2>
+              </div>
+              <p className="text-sm [color:var(--tx2)] mb-5">
                 {t(
                   "بموجب نظام PDPL يمكنك تصدير جميع بياناتك أو حذف حسابك نهائياً.",
                   "Under PDPL you can export all your data or permanently delete your account."
@@ -1454,10 +1155,10 @@ export default function SettingsPage() {
                 {/* Export full data */}
                 <div className="flex items-center justify-between p-4 bg-card rounded-xl">
                   <div>
-                    <p className="font-label font-bold text-sm text-foreground">
+                    <p className="font-label font-bold text-sm [color:var(--tx)]">
                       {t("تصدير جميع بياناتي", "Export All My Data")}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs [color:var(--tx2)] mt-0.5">
                       {t("ملف JSON يحتوي على كل بياناتك", "A JSON file with all your data")}
                     </p>
                   </div>
@@ -1535,10 +1236,9 @@ export default function SettingsPage() {
             <SettingsCard delay={0.08} className="relative overflow-hidden group">
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="eyebrow-badge inline-flex items-center gap-1.5">
-                    <Crown className="w-3.5 h-3.5" />
+                  <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
                     {t("الاشتراك", "Subscription")}
-                  </span>
+                  </h2>
                   <span
                     className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider font-label"
                     style={{ background: planBadge.bg, color: planBadge.color }}
@@ -1546,7 +1246,7 @@ export default function SettingsPage() {
                     {planBadge.label}
                   </span>
                 </div>
-                <p className="text-muted-foreground text-sm mb-6">
+                <p className="[color:var(--tx2)] text-sm mb-6">
                   {resolvedTier === "free"
                     ? t("أنت على الخطة المجانية", "You're on the Free plan")
                     : resolvedTier === "pro"
@@ -1563,7 +1263,7 @@ export default function SettingsPage() {
                 </div>
                 <button
                   onClick={() => setBillingOpen(true)}
-                  className="w-full py-4 rounded-full bg-card text-foreground font-headline font-bold shadow-sm hover:shadow-md transition-all"
+                  className="w-full py-4 rounded-full bg-card [color:var(--tx)] font-headline font-bold shadow-sm hover:shadow-md transition-all"
                 >
                   {t("إدارة الفواتير", "Manage Billing")}
                 </button>
@@ -1588,13 +1288,13 @@ export default function SettingsPage() {
 
             {(resolvedTier === "teams") && (
               <SettingsCard delay={0.12} className="border-l-4 border-amber-600">
-                <div className="mb-6">
-                  <span className="eyebrow-badge inline-flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-3 mb-6">
+                  <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                  <h2 className="text-2xl font-headline font-bold [color:var(--tx)]">
                     {t("دعوة أعضاء", "Invite Members")}
-                  </span>
+                  </h2>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm [color:var(--tx2)] mb-4">
                   {t("ادعُ زملاءك لينضموا إلى فريقك.", "Invite teammates to join your team.")}
                 </p>
                 <div className="flex gap-2">
@@ -1604,12 +1304,12 @@ export default function SettingsPage() {
                     onChange={(e) => setInviteEmail(e.target.value)}
                     placeholder={t("البريد الإلكتروني", "Email address") as string}
                     dir="ltr"
-                    className="rounded-xl bg-card border-border flex-1"
+                    className="rounded-xl bg-card [border-color:var(--bd)] flex-1"
                   />
                   <button
                     onClick={handleSendInvite}
                     disabled={sendingInvite || !inviteEmail.trim()}
-                    className="px-5 py-2 rounded-full power-gradient btn-glow text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
+                    className="px-5 py-2 rounded-full power-gradient text-white font-bold text-sm disabled:opacity-50 transition-all hover:opacity-90"
                   >
                     {sendingInvite
                       ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin inline-block" />
@@ -1624,9 +1324,35 @@ export default function SettingsPage() {
 
           </TabsContent>
 
+          </div>{/* end left content */}
+
+          {/* ── Right: Vertical Nav ── */}
+          <div className="hidden lg:block card" style={{ padding: 0, overflow: "hidden", position: "sticky", top: 80 }}>
+            <TabsList className="flex flex-col w-full bg-transparent h-auto p-2 gap-1">
+              {[
+                { value: "profile",       icon: <User style={{ width: 15, height: 15 }} />,   label: t("الحساب الشخصي", "Profile") },
+                { value: "subscription",  icon: <Crown style={{ width: 15, height: 15 }} />,  label: t("الاشتراك الحالي", "Subscription") },
+                { value: "notifications", icon: <Bell style={{ width: 15, height: 15 }} />,   label: t("الإشعارات", "Notifications") },
+                { value: "security",      icon: <Shield style={{ width: 15, height: 15 }} />, label: t("الخصوصية والأمان", "Privacy & Security") },
+              ].map(({ value, icon, label }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="w-full justify-start rounded-xl py-2.5 px-3 text-sm font-bold data-[state=active]:bg-amber-500/15 data-[state=active]:text-amber-500 flex items-center gap-2.5"
+                  style={{ color: "var(--tx2)" }}
+                >
+                  {icon}
+                  {label as string}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          </div>{/* end two-col grid */}
         </Tabs>
-        </div>
-        </div>{/* end px-4 sm:px-8 pb-20 */}
+
+        <div style={{ height: 60 }} />
+        </div>{/* end page-wrap */}
       </main>
 
       {/* Change email dialog */}
@@ -1644,7 +1370,7 @@ export default function SettingsPage() {
           </AlertDialogHeader>
           {!changeEmailSent && (
             <div className="py-2">
-              <Label className="text-sm text-muted-foreground">{t("البريد الجديد", "New email")}</Label>
+              <Label className="text-sm [color:var(--tx2)]">{t("البريد الجديد", "New email")}</Label>
               <Input
                 type="email"
                 className="mt-2"
@@ -1716,7 +1442,7 @@ export default function SettingsPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
-            <Label htmlFor="delete-confirm" className="text-sm text-muted-foreground">
+            <Label htmlFor="delete-confirm" className="text-sm [color:var(--tx2)]">
               {t('اكتب "DELETE" للتأكيد', 'Type "DELETE" to confirm')}
             </Label>
             <Input
@@ -1795,7 +1521,7 @@ export default function SettingsPage() {
               {t("ربط واتساب", "Connect WhatsApp")}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="space-y-3 text-sm [color:var(--tx2)]">
                 <p>
                   {t(
                     "بربط واتساب ستتمكن من التحدث مع مساعدك الذكي وتلقّي التذكيرات مباشرةً عبر تطبيق واتساب.",
@@ -1840,8 +1566,8 @@ export default function SettingsPage() {
               {t("كيف تستخدم واتساب", "How to Use WhatsApp")}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-4 text-sm text-muted-foreground">
-                <p className="font-semibold text-foreground">
+              <div className="space-y-4 text-sm [color:var(--tx2)]">
+                <p className="font-semibold [color:var(--tx)]">
                   {t("ابدأ محادثتك مع المساعد الذكي عبر واتساب:", "Start chatting with your AI assistant on WhatsApp:")}
                 </p>
 
@@ -1850,9 +1576,9 @@ export default function SettingsPage() {
                   <img
                     src="/whatsapp-qr.png"
                     alt="WhatsApp QR Code"
-                    className="w-44 h-44 rounded-xl border border-border"
+                    className="w-44 h-44 rounded-xl border [border-color:var(--bd)]"
                   />
-                  <p className="text-xs text-muted-foreground text-center">
+                  <p className="text-xs [color:var(--tx2)] text-center">
                     {t("امسح الكود بكاميرا هاتفك للانتقال مباشرة", "Scan with your phone camera to open directly")}
                   </p>
                 </div>
@@ -1872,7 +1598,7 @@ export default function SettingsPage() {
                         "Save the Thakirni number in your contacts:"
                       )}
                       {" "}
-                      <span className="font-bold text-foreground font-mono" dir="ltr">+966 55 475 1681</span>
+                      <span className="font-bold [color:var(--tx)] font-mono" dir="ltr">+966 55 475 1681</span>
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
