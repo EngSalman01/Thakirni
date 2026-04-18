@@ -13,7 +13,9 @@ export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim()
   if (!q || q.length < 2 || q.length > 100) return NextResponse.json({ results: [] })
 
-  const search = `%${q}%`
+  // Strip characters that break PostgREST .or() filter syntax (commas split conditions, parens nest them)
+  const safeQ = q.replace(/[,()]/g, " ").trim()
+  const search = `%${safeQ}%`
 
   const [memories, plans, habits, goals] = await Promise.all([
     supabase

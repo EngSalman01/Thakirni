@@ -74,7 +74,10 @@ export async function POST(req: NextRequest) {
     // Increment after success (workspace-scoped)
     incrementUsage(auth.userId, "document_upload", 1, auth.workspace?.workspaceId).catch(() => {})
 
-    if (error) return Response.json({ success: true, saved: false, ...result })
+    if (error) {
+      console.error("[documents/summarize] DB insert failed:", error.message)
+      return Response.json({ success: false, saved: false, error: error.message, ...result }, { status: 500 })
+    }
     return Response.json({ success: true, saved: true, document: doc, ...result })
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Processing failed"

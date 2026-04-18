@@ -1,5 +1,3 @@
-import { getModelForTier } from "@/lib/ai/model-selector"
-
 // ── Direct Gemini REST helper (replaces @ai-sdk/google to avoid convertToBase64 bug) ──
 
 const RETRYABLE = new Set([429, 503])
@@ -46,7 +44,3 @@ export async function geminiText(
   throw lastErr
 }
 
-/** @deprecated Use geminiText() directly. Kept for compatibility. */
-export function getAiModelForTier(tier: string, usageRatio?: number) {
-  return getModelForTier(tier, usageRatio)
-}
