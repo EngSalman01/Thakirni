@@ -278,15 +278,17 @@ export default function MeetingsPage() {
         },
         body: JSON.stringify({ language: isArabic ? "ar" : "en" }),
       })
-      const data = await res.json() as { minutes?: string; error?: string }
+      let data: { minutes?: string; error?: string } = {}
+      try { data = await res.json() } catch { /* non-JSON response (e.g. 504 timeout) */ }
       if (!res.ok || !data.minutes) {
         toast.error(data.error ?? t("فشل إنشاء المحاضر", "Failed to generate minutes"))
         setMinutesModal(null)
         return
       }
       setMinutesText(data.minutes)
-    } catch {
-      toast.error(t("حدث خطأ", "An error occurred"))
+    } catch (err) {
+      console.error("[Meetings] minutes error:", err)
+      toast.error(t("حدث خطأ في الاتصال", "Connection error — please try again"))
       setMinutesModal(null)
     } finally {
       setMinutesLoading(false)
