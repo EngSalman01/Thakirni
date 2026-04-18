@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server"
 import { requireAuth } from "@/lib/api-auth"
+import { getModelForTier } from "@/lib/ai/model-selector"
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 export async function POST(
   req: NextRequest,
@@ -24,7 +25,13 @@ export async function POST(
     return Response.json({ error: "Meeting not found" }, { status: 404 })
   }
 
-  const { language: reqLang } = await req.json().catch(() => ({})) as { language?: string }
+  // Resolve plan tier for model selection (parallel with request body parse)
+  const [{ language: reqLang }, planProfile] = await Promise.all([
+    req.json().catch(() => ({})) as Promise<{ language?: string }>,
+    auth.supabase.from("profiles").select("plan_tier").eq("id", auth.userId).single(),
+  ])
+  const tier = ((planProfile.data?.plan_tier as string | null) ?? "FREE").toUpperCase()
+  const aiModel = getModelForTier(tier)
   const outputLang: "ar" | "en" = reqLang === "ar" ? "ar" : "en"
 
   // Format duration
@@ -156,7 +163,7 @@ Use formal professional language. Do not fabricate information not present in th
         await new Promise(r => setTimeout(r, Math.min(4000 * 2 ** (attempt - 1), 30000)))
       }
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${aiModel}:generateContent?key=${apiKey}`,
         { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
       )
       if (!res.ok) {

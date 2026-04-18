@@ -36,16 +36,28 @@ function timeOfDayLabel(hour: number, isArabic: boolean): string {
   return isArabic ? "الليل" : "night"
 }
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, "$1") // **bold**
+    .replace(/\*(.*?)\*/g, "$1")     // *italic*
+    .replace(/^#+\s*/gm, "")        // # headings
+    .replace(/^[-*]\s+/gm, "")      // - bullet / * bullet
+    .replace(/^["']|["']$/g, "")    // surrounding quotes
+    .trim()
+}
+
 async function generateReminderMessage(title: string, isArabic: boolean, hour: number): Promise<string> {
   const tod = timeOfDayLabel(hour, isArabic)
+  // Strict prompt: no address forms ("حبيبي", "حبي", names), no markdown, no gendered alternatives (word/word)
   const prompt = isArabic
-    ? `اكتب جملة واحدة قصيرة جداً على واتساب لتذكير شخص بـ: "${title}". الوقت: ${tod}. قواعد: لهجة سعودية خليجية طبيعية، إيموجي مناسب، لا تقل كلمة "تذكير" مباشرة، غيّر الأسلوب — أحياناً ودي أحياناً مضحك أحياناً جاد أحياناً محفز. أرسل الجملة فقط بدون أي شرح.`
-    : `Write one very short WhatsApp reminder for: "${title}". Time: ${tod}. Rules: casual and natural, add a fitting emoji, don't say the word "reminder", vary the tone — sometimes caring, sometimes playful, sometimes urgent. Just the sentence, nothing else.`
+    ? `اكتب رسالة واتساب قصيرة جداً (جملة واحدة) تذكّر شخصاً بـ: "${title}". الوقت: ${tod}. القواعد الصارمة: (1) لا تناديه بأي لقب أو اسم مثل "حبيبي" أو "أخي" أو أي مخاطبة شخصية — ابدأ مباشرة بالتذكير. (2) لا تستخدم كلمة "تذكير" صراحةً. (3) لهجة سعودية خليجية طبيعية. (4) إيموجي واحد مناسب. (5) ممنوع markdown مثل * أو **. (6) لا تكتب خيارين بفاصل مائل مثل كلمة/كلمة. أرسل الجملة فقط بدون شرح أو أقواس.`
+    : `Write one short WhatsApp message reminding someone about: "${title}". Time: ${tod}. Strict rules: (1) No greeting or address — start directly with the reminder content. (2) Don't use the word "reminder". (3) Casual English. (4) One fitting emoji only. (5) No markdown like * or **. (6) No alternatives like word/word. Just the sentence, nothing else.`
   try {
-    const raw = await callGeminiText(prompt, 150)
-    const clean = raw.trim().replace(/^["']|["']$/g, "")
-    const looksComplete = clean.length > 5 && !/\sال$/.test(clean) && !/ $/.test(clean)
-    return (clean && looksComplete) ? clean : `🔔 ${title}`
+    const raw = await callGeminiText(prompt, 120)
+    const clean = stripMarkdown(raw)
+    // Must contain at least one Arabic or Latin letter (reject emoji-only, star-only, slash pairs, etc.)
+    const hasRealContent = /[\u0600-\u06FFa-zA-Z]/.test(clean) && clean.length > 3
+    return hasRealContent ? clean : `🔔 ${title}`
   } catch {
     return `🔔 ${title}`
   }

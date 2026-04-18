@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (auth instanceof Response) return auth
 
   // Feature gate — resolved from workspace owner's plan
-  const { allowed: featureAllowed } = await checkPlanFeature(auth.workspace?.ownerId ?? auth.userId, "document_ai")
+  const { allowed: featureAllowed, tier } = await checkPlanFeature(auth.workspace?.ownerId ?? auth.userId, "document_ai")
   if (!featureAllowed) {
     return Response.json({ error: "upgrade_required", message: "هذه الميزة تحتاج اشتراك Pro أو أعلى", feature: "document_ai" }, { status: 403 })
   }
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     : `You are an expert document analyst. Analyze this document:\n\n${truncated}\n\nGenerate a comprehensive summary. Return ONLY JSON:\n{\n  "summary": "2-4 paragraph summary",\n  "keyPoints": ["Key point 1", ...],\n  "mainTopics": ["Topic 1", ...],\n  "sentiment": "positive|negative|neutral",\n  "readingTime": ${Math.ceil(wordCount / 200)}\n}`
 
   try {
-    const text = await geminiText(prompt, { maxOutputTokens: 2000 })
+    const text = await geminiText(prompt, { maxOutputTokens: 2000, tier })
     const match = text.match(/\{[\s\S]*\}/)
     const result = match ? JSON.parse(match[0]) : { summary: text, keyPoints: [], mainTopics: [], sentiment: "neutral", readingTime: Math.ceil(wordCount / 200) }
 
