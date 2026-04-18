@@ -26,7 +26,7 @@ export default function AssistantPage() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background">
+      <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
         <main className="pt-16 transition-all duration-300 px-4 sm:px-6 lg:px-8 pb-8">
           {/* Header */}
           <div className="mb-6 pt-16">

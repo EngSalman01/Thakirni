@@ -124,89 +124,34 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
-      <main className="pt-16">
-
-        {/* ── HERO ── */}
-        <section className="relative pt-32 pb-20 px-8 overflow-hidden">
-          <ParticleLayer />
-          <div className="absolute -top-20 right-0 w-80 h-80 bg-amber-600/8 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/6 rounded-full blur-[80px] pointer-events-none" />
-
-          <div className="max-w-7xl mx-auto relative z-10">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-
-              {/* Copy */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} className="space-y-6">
-                <div>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-headline font-extrabold tracking-tight text-foreground leading-[1.1]">
-                    {t("خططي ", "My ")}<span className="gradient-text">{t("ومهامي", "Plans")}</span>
-                  </h1>
-                  <p className="text-xl text-muted-foreground mt-4 max-w-lg">
-                    {t("نظّم يومك، تابع مهامك، ولا تنسى مقاضيك.", "Organise your day, track your tasks, and never forget your groceries.")}
-                  </p>
-                </div>
-                {/* Stat pills */}
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { value: pendingCount,   label: t("معلّق", "Pending"),   color: "bg-amber-50 text-amber-700" },
-                    { value: completedCount, label: t("مكتمل", "Completed"), color: "bg-emerald-50 text-emerald-700" },
-                    { value: plans.length,   label: t("الكل", "Total"),      color: "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300" },
-                  ].map(({ value, label, color }) => (
-                    <div key={label as string} className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm ${color}`}>
-                      <span className="text-xl font-headline font-extrabold">{value}</span>
-                      <span className="opacity-80">{label as string}</span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Right: real plans preview */}
-              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="hidden lg:block relative">
-                <div className="bg-card rounded-2xl p-8 shadow-card hover-lift space-y-3">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-amber-400 flex items-center justify-center">
-                      <ListTodo className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-headline font-bold text-foreground">{t("قائمة اليوم", "Today's List")}</span>
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <main>
+        <div className="page-wrap">
+          {/* ── Header ── */}
+          <div className="page-head fu">
+            <div>
+              <h1 className="page-h1">{t("خططك", "Your Plans")}</h1>
+              <p className="page-sub">{t("نظّم يومك وتابع مهامك", "Organise your day, track your tasks.")}</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                {[
+                  { value: pendingCount,   label: t("معلّق", "Pending"),   color: "var(--amb)" },
+                  { value: completedCount, label: t("مكتمل", "Completed"), color: "var(--grn)" },
+                  { value: plans.length,   label: t("الكل", "Total"),      color: "var(--tx2)" },
+                ].map(({ value, label, color }) => (
+                  <div key={label as string} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 99, background: "var(--s2)", border: "1px solid var(--bd)", fontWeight: 700, fontSize: ".82rem" }}>
+                    <span style={{ fontWeight: 900, fontSize: "1rem", color }}>{value}</span>
+                    <span style={{ color: "var(--tx2)" }}>{label as string}</span>
                   </div>
-                  {isLoading
-                    ? [1, 2, 3].map(i => <Skeleton key={i} className="h-12 rounded-xl" />)
-                    : plans.length === 0
-                    ? <p className="text-sm text-slate-400 text-center py-4">{t("لا خطط بعد — أضف مهمتك الأولى!", "No plans yet — add your first task!")}</p>
-                    : plans.slice(0, 3).map((plan, i) => {
-                        const catColor = plan.category === "grocery" ? "bg-emerald-500" : plan.category === "meeting" ? "bg-amber-600" : "bg-amber-600";
-                        const done = plan.status === "done";
-                        return (
-                          <motion.div key={plan.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.1 }}
-                            className={`flex items-center gap-3 p-3 rounded-xl ${done ? "opacity-50" : "bg-muted dark:bg-white/[0.03]"}`}>
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${done ? "bg-emerald-500 border-emerald-500" : "border-slate-300"}`}>
-                              {done && <CheckCircle2 className="w-3 h-3 text-white" />}
-                            </div>
-                            <span className={`text-sm font-medium flex-1 truncate ${done ? "line-through text-slate-400" : "text-muted-foreground"}`}>{plan.title}</span>
-                            <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${catColor}`} />
-                          </motion.div>
-                        );
-                      })
-                  }
-                </div>
-                {/* Floating badge — real completion % */}
-                {!isLoading && plans.length > 0 && (
-                  <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute -bottom-4 -right-4 bg-gradient-to-br from-amber-600 to-amber-400 text-white px-4 py-2 rounded-full shadow-lg text-sm font-bold">
-                    {Math.round((completedCount / plans.length) * 100)}% {t("منجز", "done")} ✓
-                  </motion.div>
-                )}
-              </motion.div>
+                ))}
+              </div>
             </div>
+            <button onClick={() => {}} style={{ display: "flex", gap: 8 }}>
+            </button>
           </div>
-        </section>
 
-        {/* ── MAIN CONTENT ── */}
-        <section className="pb-24 px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* ── MAIN CONTENT ── */}
+          <div>
+            <div className="grid grid-cols-1 lg:grid-cols-3" style={{ gap: 20 }}>
 
               {/* Add form — feature card */}
               <motion.div custom={0} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -323,7 +268,7 @@ export default function PlansPage() {
               </motion.div>
             </div>
           </div>
-        </section>
+        </div>
 
         <BulkActionBar selectedCount={selectedIds.size} onDelete={handleBulkDelete} onClear={() => setSelectedIds(new Set())} deleting={bulkDeleting} />
       </main>

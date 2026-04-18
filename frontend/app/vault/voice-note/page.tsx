@@ -218,7 +218,7 @@ export default function VoiceNotePage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-16 px-4 pb-8">
         <div className="max-w-xl mx-auto">
 

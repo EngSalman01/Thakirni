@@ -276,7 +276,7 @@ export default function TributesPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="transition-all duration-300 pt-16">
         <div className="pt-16 p-6 md:p-8 max-w-6xl mx-auto space-y-6">
 

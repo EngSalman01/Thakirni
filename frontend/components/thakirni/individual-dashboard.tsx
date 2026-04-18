@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { useLanguage } from "@/components/language-provider"
 import { AIInputBox } from "@/components/thakirni/dashboard/ai-input-box"
 import { TodayFocus } from "@/components/thakirni/dashboard/today-focus"
@@ -11,8 +10,6 @@ import { WhatsAppBanner } from "@/components/thakirni/whatsapp-banner"
 import { UpgradeNudge } from "@/components/thakirni/upgrade-nudge"
 import { UsageWidget } from "@/components/thakirni/usage-widget"
 import { MiniCalendar } from "@/components/thakirni/dashboard/mini-calendar"
-
-const ease = [0.22, 1, 0.36, 1] as const
 
 function getGreeting(isArabic: boolean): { headline: string; accent: string } {
   const h = new Date().getHours()
@@ -38,93 +35,57 @@ export function IndividualDashboard() {
   const dateLine = getDateLine(isArabic)
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
-      {/* Warm ambient glow */}
-      <div className="fixed top-0 end-0 w-[600px] h-[400px] pointer-events-none -z-0 opacity-40">
-        <div className="w-full h-full" style={{ background: "radial-gradient(ellipse 70% 60% at 80% 0%, rgba(217,119,6,0.08) 0%, transparent 70%)" }} />
+    <div className="page-wrap" dir={isArabic ? "rtl" : "ltr"}
+      style={{ fontFamily: isArabic ? "var(--font-tajawal),sans-serif" : "var(--font-inter),sans-serif", color: "var(--tx)", minHeight: "100vh" }}>
+
+      {/* ── Ambient orb ── */}
+      <div className="orb" style={{ width: 600, height: 400, top: 0, insetInlineEnd: 0, background: "radial-gradient(ellipse 70% 60% at 80% 0%,rgba(217,119,6,.1),transparent 70%)", borderRadius: 0 }} />
+
+      {/* ── Greeting ── */}
+      <div className="fu" style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: ".8rem", fontWeight: 700, color: "var(--amb)", textTransform: "uppercase", letterSpacing: ".14em", marginBottom: 6 }}>{dateLine}</div>
+        <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 900, color: "var(--tx)", lineHeight: 1.1, fontFamily: isArabic ? "var(--font-tajawal),sans-serif" : "var(--font-syne),sans-serif" }}>{headline}</h1>
+        <p style={{ color: "var(--tx2)", marginTop: 6, fontSize: "1rem" }}>{accent}</p>
       </div>
 
-      <main className="pt-14 relative z-10">
+      {/* ── AI Input ── */}
+      <div className="fu1" style={{ marginBottom: 28 }}>
+        <AIInputBox />
+      </div>
 
-        {/* ── GREETING HERO ── */}
-        <section className="pt-6 pb-4 px-5 sm:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-[1fr_480px] gap-6 lg:gap-8 items-center">
+      {/* ── WhatsApp Banner ── */}
+      <div className="fu2" style={{ marginBottom: 22 }}>
+        <WhatsAppBanner />
+      </div>
 
-              {/* Greeting */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, ease }}
-                className="space-y-1 pt-2"
-              >
-                <p className="text-sm font-medium text-amber-600 dark:text-amber-500 tracking-wide uppercase">
-                  {dateLine}
-                </p>
-                <h1 className={`${isArabic ? "font-arabic" : "font-headline"} text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]`}>
-                  {headline}
-                </h1>
-                <p className="text-xl text-muted-foreground font-medium">{accent}</p>
-              </motion.div>
+      {/* ── Main grid ── */}
+      <div className="fu3" style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "start" }}>
+        {/* Main column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <TodayFocus />
+          <RecentActivity />
+        </div>
 
-              {/* AI input */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.12, ease }}
-              >
-                <AIInputBox />
-              </motion.div>
-            </div>
-          </div>
-        </section>
+        {/* Side column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <MiniCalendar />
+          <ProgressCard />
+          <UsageWidget />
+          <SmartCard />
+        </div>
+      </div>
 
-        {/* ── MAIN CONTENT ── */}
-        <section className="pb-16 px-5 sm:px-8">
-          <div className="max-w-7xl mx-auto space-y-6">
+      {/* ── Upgrade nudge ── */}
+      <div className="fu4" style={{ marginTop: 22 }}>
+        <UpgradeNudge />
+      </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease, delay: 0.1 }}
-            >
-              <WhatsAppBanner />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease, delay: 0.16 }}
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main column */}
-                <div className="lg:col-span-2 space-y-6">
-                  <TodayFocus />
-                  <RecentActivity />
-                </div>
-
-                {/* Side column */}
-                <div className="space-y-6">
-                  <MiniCalendar />
-                  <ProgressCard />
-                  <UsageWidget />
-                  <SmartCard />
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease, delay: 0.22 }}
-            >
-              <UpgradeNudge />
-            </motion.div>
-
-          </div>
-        </section>
-
-      </main>
+      <style>{`
+        @media(max-width:900px){
+          .page-wrap .fu3>div:first-child{grid-column:1/-1}
+          .page-wrap .fu3{grid-template-columns:1fr!important}
+        }
+      `}</style>
     </div>
   )
 }

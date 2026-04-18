@@ -49,12 +49,11 @@ export function TodayFocus() {
   return (
     <section
       dir={isArabic ? "rtl" : "ltr"}
-      // Primary card — shadow-sm for lift
-      className="bg-card dark:bg-card border border-amber-100/80 dark:border-border rounded-2xl shadow-sm overflow-hidden"
+      className="card" style={{ overflow: "hidden" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/[0.06]">
-        <h2 className="text-base font-semibold text-foreground dark:text-slate-100">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid var(--bd)" }}>
+        <h2 style={{ fontSize: ".9rem", fontWeight: 800, color: "var(--tx)" }}>
           {t("وش أسوي الحين؟", "What to do now")}
         </h2>
         <Link

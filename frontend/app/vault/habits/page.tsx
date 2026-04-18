@@ -94,8 +94,8 @@ export default function HabitsPage() {
   const total = habits.length
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden">
-      <main className="pt-16">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <main>
 
         {/* ── HERO ── */}
         <section className="relative pt-32 pb-20 px-8 overflow-hidden">

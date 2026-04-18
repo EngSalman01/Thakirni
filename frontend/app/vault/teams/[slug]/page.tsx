@@ -31,7 +31,7 @@ interface TeamMember {
 
 function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
       <main className="pt-16 transition-all duration-300 p-6">
         {children}
       </main>

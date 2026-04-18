@@ -100,7 +100,7 @@ export default function WorkspacePage({ params }: { params: Promise<{ id: string
   const canManage = ["owner", "admin"].includes(myRole)
 
   return (
-    <div className="min-h-screen bg-background hero-mesh overflow-x-hidden" dir={isArabic ? "rtl" : "ltr"}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }} dir={isArabic ? "rtl" : "ltr"}>
       <main className="pt-20 px-4 sm:px-8 pb-20">
         <div className="max-w-3xl mx-auto space-y-6">
 

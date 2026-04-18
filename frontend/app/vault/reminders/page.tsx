@@ -248,22 +248,14 @@ export default function RemindersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background hero-mesh">
-      <main className="pt-16">
-        <section className="pt-20 pb-10 px-4 sm:px-8 max-w-3xl mx-auto">
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <main>
+        <section className="page-wrap" style={{ maxWidth: 900 }}>
 
-          <div className="flex items-center justify-between mb-8">
+          <div className="page-head fu">
             <div>
-              <span className="eyebrow-badge mb-3 inline-flex items-center gap-1.5">
-                <Bell className="w-3.5 h-3.5" />
-                {t("التذكيرات", "Reminders")}
-              </span>
-              <h1 className="text-3xl font-headline font-bold text-foreground">
-                {t("تذكيراتك", "Your Reminders")}
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                {t("كل التذكيرات اللي ضفتها من واتساب أو الموقع", "All reminders added via WhatsApp or the web")}
-              </p>
+              <h1 className="page-h1">{t("تذكيراتك", "Your Reminders")}</h1>
+              <p className="page-sub">{t("ما راح تنسى شيء مهم بعد اليوم", "All reminders added via WhatsApp or the web")}</p>
             </div>
             <button onClick={load}
               className="w-10 h-10 rounded-xl shell-panel flex items-center justify-center text-muted-foreground hover:text-amber-600 transition-colors">
