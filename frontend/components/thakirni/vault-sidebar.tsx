@@ -1,41 +1,13 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import {
-  BarChart2,
-  Bell,
-  Brain,
-  Calendar,
-  CheckSquare,
-  ChevronDown,
-  Flame,
-  Heart,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Mic,
-  Settings,
-  Sparkles,
-  Target,
-} from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import { useLanguage } from "@/components/language-provider";
-import { BrandLogo } from "@/components/thakirni/brand-logo";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageToggle } from "@/components/language-toggle";
-import { useState, useEffect, createContext, useContext, useCallback, useMemo, type ElementType } from "react";
+import { useTheme } from "next-themes";
+import { useState, useEffect, createContext, useContext, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface Profile {
   id: string;
@@ -47,347 +19,388 @@ interface Profile {
 interface SidebarContextType {
   open: boolean;
   setOpen: (open: boolean) => void;
+  collapsed: boolean;
 }
 
-const SidebarContext = createContext<SidebarContextType>({ open: false, setOpen: () => {} });
+const SidebarContext = createContext<SidebarContextType>({ open: false, setOpen: () => {}, collapsed: false });
 
 export function useSidebar() {
   return useContext(SidebarContext);
 }
 
-const PRIMARY_NAV = [
-  { href: "/vault", icon: LayoutDashboard, labelAr: "لوحتك", labelEn: "Dashboard" },
-  { href: "/vault/plans",     icon: CheckSquare, labelAr: "خططك",      labelEn: "Plans"     },
-  { href: "/vault/reminders", icon: Bell,        labelAr: "تذكيراتك",  labelEn: "Reminders" },
-  { href: "/vault/meetings", icon: Mic, labelAr: "اجتماعاتك", labelEn: "Meetings" },
-  { href: "/vault/analytics", icon: BarChart2, labelAr: "تحليلات", labelEn: "Analytics" },
+const NAV_ITEMS = [
+  { href: "/vault",            icon: "⊞", ar: "لوحتك",      en: "Dashboard" },
+  { href: "/vault/plans",      icon: "✓", ar: "خططك",       en: "Plans",      badge: null },
+  { href: "/vault/reminders",  icon: "🔔", ar: "تذكيراتك",  en: "Reminders"   },
+  { href: "/vault/meetings",   icon: "🎤", ar: "اجتماعاتك", en: "Meetings"    },
+  { href: "/vault/analytics",  icon: "📊", ar: "تحليلات",   en: "Analytics"   },
 ];
 
-const SECONDARY_NAV = [
-  { href: "/vault/goals", icon: Target, labelAr: "أهدافي", labelEn: "Goals" },
-  { href: "/vault/health", icon: Heart, labelAr: "الصحة", labelEn: "Health" },
-  { href: "/vault/habits", icon: Flame, labelAr: "عاداتي", labelEn: "Habits" },
-  { href: "/vault/focus", icon: Brain, labelAr: "التركيز", labelEn: "Focus" },
-  { href: "/vault/upload", icon: Brain, labelAr: "الذكريات", labelEn: "Memories" },
-  { href: "/vault/calendar", icon: Calendar, labelAr: "التقويم", labelEn: "Calendar" },
-  { href: "/vault/settings", icon: Settings, labelAr: "الإعدادات", labelEn: "Settings" },
+const SECONDARY_ITEMS = [
+  { href: "/vault/goals",    icon: "🎯", ar: "أهدافي",     en: "Goals"    },
+  { href: "/vault/health",   icon: "❤️", ar: "الصحة",     en: "Health"   },
+  { href: "/vault/habits",   icon: "🔥", ar: "عاداتي",    en: "Habits"   },
+  { href: "/vault/focus",    icon: "🧠", ar: "التركيز",   en: "Focus"    },
+  { href: "/vault/upload",   icon: "📂", ar: "الذكريات",  en: "Memories" },
+  { href: "/vault/calendar", icon: "📅", ar: "التقويم",   en: "Calendar" },
 ];
 
 function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
-
   useEffect(() => {
     let mounted = true;
     const supabase = createClient();
-
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user || !mounted) return;
-
-      supabase
-        .from("profiles")
-        .select("id, full_name, avatar_url, plan_tier")
-        .eq("id", user.id)
-        .single()
-        .then(({ data }) => {
-          if (mounted && data) setProfile(data as Profile);
-        });
+      supabase.from("profiles").select("id, full_name, avatar_url, plan_tier")
+        .eq("id", user.id).single()
+        .then(({ data }) => { if (mounted && data) setProfile(data as Profile); });
     });
-
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
-
   return profile;
 }
 
 function useSignOut() {
   return useCallback(async () => {
-    try {
-      await createClient().auth.signOut();
-    } finally {
-      window.location.href = "/auth";
-    }
+    try { await createClient().auth.signOut(); }
+    finally { window.location.href = "/auth"; }
   }, []);
 }
 
-function Avatar({ profile }: { profile: Profile | null }) {
-  const initial = profile?.full_name?.[0]?.toUpperCase() ?? "U";
-
+// ── Logo ─────────────────────────────────────────────────────────────────────
+function Logo({ compact = false }: { compact?: boolean }) {
+  const size = compact ? 32 : 34;
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full power-gradient text-sm font-bold text-white">
-      {profile?.avatar_url ? (
-        <img
-          src={profile.avatar_url}
-          alt={profile?.full_name ?? "User"}
-          className="h-full w-full object-cover"
-        />
-      ) : (
-        initial
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{
+        width: size, height: size, borderRadius: Math.round(size * 0.3), flexShrink: 0,
+        background: "linear-gradient(135deg,#FBBF24 0%,#D97706 50%,#92400E 100%)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: Math.round(size * 0.47), fontWeight: 900, color: "#fff",
+        boxShadow: "0 4px 16px rgba(217,119,6,.35)",
+        fontFamily: "var(--font-tajawal),sans-serif",
+      }}>ذ</div>
+      {!compact && (
+        <div>
+          <div style={{ fontSize: ".92rem", fontWeight: 900, color: "var(--tx)", lineHeight: 1, letterSpacing: "-.01em", fontFamily: "var(--font-tajawal),sans-serif" }}>ذكرني</div>
+          <div style={{ fontSize: ".58rem", fontWeight: 700, color: "var(--tx3)", letterSpacing: ".14em", textTransform: "uppercase", fontFamily: "var(--font-inter),sans-serif" }}>Thakirni</div>
+        </div>
       )}
     </div>
   );
 }
 
-function DrawerLink({
-  href,
-  label,
-  icon: Icon,
-  active,
-  onClose,
-}: {
-  href: string;
-  label: string;
-  icon: ElementType;
-  active: boolean;
-  onClose: () => void;
-}) {
+// ── Theme/Lang buttons ────────────────────────────────────────────────────────
+function ThemeBtn() {
+  const { resolvedTheme, setTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   return (
-    <Link
-      href={href}
-      onClick={onClose}
-      className={cn(
-        "flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all",
-        active
-          ? "border-amber-300/50 bg-amber-500/10 text-amber-700 dark:border-amber-700/40 dark:bg-amber-500/12 dark:text-amber-300"
-          : "border-border/70 bg-white/70 text-muted-foreground hover:border-amber-300/40 hover:bg-white hover:text-foreground dark:bg-white/[0.03] dark:hover:bg-white/[0.05]"
-      )}
+    <button className="icon-btn" onClick={() => setTheme(isDark ? "light" : "dark")} title={isDark ? "وضع النهار" : "وضع الليل"}>
+      {isDark ? "☀️" : "🌙"}
+    </button>
+  );
+}
+function LangBtn() {
+  const { language, setLanguage } = useLanguage();
+  const isArabic = language === "ar";
+  return (
+    <button className="icon-btn" onClick={() => setLanguage(isArabic ? "en" : "ar")}
+      style={{ fontSize: ".72rem", fontWeight: 800, fontFamily: isArabic ? "var(--font-inter),sans-serif" : "var(--font-tajawal),sans-serif" }}>
+      {isArabic ? "EN" : "ع"}
+    </button>
+  );
+}
+
+// ── Avatar ────────────────────────────────────────────────────────────────────
+function Avatar({ profile }: { profile: Profile | null }) {
+  const initial = profile?.full_name?.[0]?.toUpperCase() ?? "U";
+  return (
+    <div style={{ width: 32, height: 32, borderRadius: 99, background: "var(--grad)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: ".8rem", fontWeight: 900, color: "#fff", flexShrink: 0, overflow: "hidden" }}>
+      {profile?.avatar_url
+        ? <img src={profile.avatar_url} alt={profile.full_name ?? "User"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        : initial}
+    </div>
+  );
+}
+
+// ── Sidebar Nav Item ─────────────────────────────────────────────────────────
+function NavItem({ href, icon, label, active, collapsed }: { href: string; icon: string; label: string; active: boolean; collapsed: boolean }) {
+  return (
+    <Link href={href}
+      style={{
+        width: "100%", display: "flex", alignItems: "center",
+        gap: collapsed ? 0 : 10, padding: collapsed ? "11px" : "10px 11px",
+        justifyContent: collapsed ? "center" : "flex-start",
+        borderRadius: 10, marginBottom: 3, textDecoration: "none",
+        fontFamily: "var(--font-tajawal),sans-serif", fontSize: ".88rem", fontWeight: 700,
+        background: active ? "rgba(245,158,11,.1)" : "transparent",
+        color: active ? "var(--amb)" : "var(--tx2)",
+        position: "relative", transition: "background .15s ease, color .15s ease",
+      }}
+      onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(128,96,32,.06)"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--tx)"; } }}
+      onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLAnchorElement).style.background = "transparent"; (e.currentTarget as HTMLAnchorElement).style.color = "var(--tx2)"; } }}
     >
-      <Icon className="h-4 w-4 shrink-0" />
-      <span>{label}</span>
+      {active && <div style={{ position: "absolute", insetInlineEnd: 0, top: "20%", height: "60%", width: 3, background: "var(--grad)", borderRadius: "0 2px 2px 0" }} />}
+      <span style={{ flexShrink: 0, opacity: active ? 1 : 0.75, fontSize: 18 }}>{icon}</span>
+      {!collapsed && <span style={{ flex: 1, textAlign: "inherit" }}>{label}</span>}
     </Link>
   );
 }
 
-function DrawerNav({ onClose }: { onClose: () => void }) {
-  const { t, isArabic } = useLanguage();
+// ── Desktop Sidebar ───────────────────────────────────────────────────────────
+function DesktopSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCollapsed: (v: boolean) => void }) {
   const pathname = usePathname();
   const profile = useProfile();
   const handleSignOut = useSignOut();
+  const { isArabic, t } = useLanguage();
+
+  const tier = (profile?.plan_tier ?? "free").toUpperCase();
 
   return (
-    <div className="flex h-full flex-col bg-background px-4 pb-4 pt-4">
-      <div className="shell-panel-strong mb-4 p-4">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/" onClick={onClose}>
-            <BrandLogo variant="full" iconSize={34} />
-          </Link>
-          <div className="flex items-center gap-1.5 nav-shell px-1.5 py-1.5">
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
+    <nav
+      className={`ds-sidebar${collapsed ? " coll" : ""}`}
+      style={{ fontFamily: isArabic ? "var(--font-tajawal),sans-serif" : "var(--font-inter),sans-serif" }}
+    >
+      {/* Logo + collapse */}
+      <div style={{ padding: "18px 12px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--bd)", flexShrink: 0, minHeight: 64 }}>
+        <div style={{ overflow: "hidden", whiteSpace: "nowrap", flex: 1 }}>
+          {collapsed
+            ? <div style={{ display: "flex", justifyContent: "center", width: "100%" }}><Logo compact /></div>
+            : <Link href="/"><Logo /></Link>}
         </div>
-
-        <div className="mt-4 rounded-[1.4rem] border border-border/80 bg-white/75 p-4 dark:bg-white/[0.04]">
-          <div className="flex items-center gap-3">
-            <Avatar profile={profile} />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-foreground">
-                {profile?.full_name ?? t("المستخدم", "User")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("فولت شخصي ذكي", "Personal AI vault")}
-              </p>
-            </div>
-          </div>
-        </div>
+        {!collapsed && (
+          <button onClick={() => setCollapsed(true)} style={{ flexShrink: 0, marginInlineStart: 4, width: 28, height: 28, background: "var(--s2)", borderRadius: 99, border: "1px solid var(--bd)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--tx2)" }}>
+            ›
+          </button>
+        )}
+        {collapsed && (
+          <button onClick={() => setCollapsed(false)} style={{ position: "absolute", bottom: 80, insetInlineStart: 0, insetInlineEnd: 0, margin: "auto", width: 28, height: 28, background: "var(--s2)", borderRadius: 99, border: "1px solid var(--bd)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--tx2)" }}>
+            ‹
+          </button>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-5">
-        <div>
-          <p className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-amber-300">
-            {t("الرئيسية", "Core")}
-          </p>
-          <div className="space-y-2">
-            {PRIMARY_NAV.map((item) => {
-              const active = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
-              return (
-                <DrawerLink
-                  key={item.href}
-                  href={item.href}
-                  icon={item.icon}
-                  label={isArabic ? item.labelAr : item.labelEn}
-                  active={active}
-                  onClose={onClose}
-                />
-              );
-            })}
+      {/* Nav */}
+      <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "10px 8px" }}>
+        {!collapsed && (
+          <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase", color: "rgba(245,158,11,.45)", marginBottom: 8, padding: "0 8px" }}>
+            {t("الرئيسية", "Main")}
           </div>
-        </div>
+        )}
+        {NAV_ITEMS.map(item => {
+          const active = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
+          return (
+            <NavItem key={item.href} href={item.href} icon={item.icon}
+              label={isArabic ? item.ar : item.en} active={active} collapsed={collapsed} />
+          );
+        })}
 
-        <div>
-          <p className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.22em] text-amber-700 dark:text-amber-300">
+        {!collapsed && (
+          <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase", color: "rgba(245,158,11,.45)", margin: "12px 0 8px", padding: "0 8px" }}>
             {t("المزيد", "More")}
-          </p>
-          <div className="space-y-2">
-            {SECONDARY_NAV.map((item) => {
-              const active = pathname.startsWith(item.href);
-              return (
-                <DrawerLink
-                  key={item.href}
-                  href={item.href}
-                  icon={item.icon}
-                  label={isArabic ? item.labelAr : item.labelEn}
-                  active={active}
-                  onClose={onClose}
-                />
-              );
-            })}
           </div>
+        )}
+        {!collapsed && SECONDARY_ITEMS.map(item => {
+          const active = pathname.startsWith(item.href);
+          return (
+            <NavItem key={item.href} href={item.href} icon={item.icon}
+              label={isArabic ? item.ar : item.en} active={active} collapsed={collapsed} />
+          );
+        })}
+
+        <div style={{ height: 1, background: "var(--bd)", margin: "10px 6px" }} />
+
+        {/* Settings */}
+        <NavItem href="/vault/settings" icon="⚙️"
+          label={t("الإعدادات", "Settings")}
+          active={pathname.startsWith("/vault/settings")} collapsed={collapsed} />
+
+        {/* Upgrade nudge (free tier) */}
+        {!collapsed && tier === "FREE" && (
+          <Link href="/vault/settings/billing" style={{ display: "block", margin: "10px 4px 0", padding: "10px 12px", background: "linear-gradient(135deg,rgba(251,191,36,.1) 0%,rgba(146,64,14,.06) 100%)", border: "1px solid var(--bd-a)", borderRadius: 10, textDecoration: "none" }}>
+            <div style={{ fontSize: ".75rem", fontWeight: 800, color: "var(--amb)", marginBottom: 2 }}>✨ {t("ارتقِ للبرو", "Upgrade to Pro")}</div>
+            <div style={{ fontSize: ".68rem", color: "var(--tx2)" }}>{t("رسائل غير محدودة", "Unlimited messages")}</div>
+          </Link>
+        )}
+      </div>
+
+      {/* Bottom: theme/lang + user */}
+      <div style={{ padding: "10px 10px 14px", borderTop: "1px solid var(--bd)", flexShrink: 0 }}>
+        {!collapsed && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 10, justifyContent: "flex-end" }}>
+            <ThemeBtn /><LangBtn />
+          </div>
+        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px", borderRadius: 10, cursor: "pointer" }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "rgba(128,96,32,.06)"}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "transparent"}
+        >
+          <Avatar profile={profile} />
+          {!collapsed && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--tx)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile?.full_name ?? t("المستخدم", "User")}</div>
+              <div style={{ fontSize: ".68rem", color: "var(--tx3)" }}>{tier === "PRO" ? "Pro ✦" : tier === "TEAMS" ? "Teams ✦" : t("خطة مجانية", "Free plan")}</div>
+            </div>
+          )}
+          {!collapsed && (
+            <button onClick={handleSignOut} style={{ color: "var(--tx3)", background: "none", border: "none", cursor: "pointer", fontSize: 16 }} title={t("تسجيل الخروج", "Sign out")}>⏻</button>
+          )}
+        </div>
+        {collapsed && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center", marginTop: 8 }}>
+            <ThemeBtn /><LangBtn />
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+// ── Mobile Drawer Nav ────────────────────────────────────────────────────────
+function DrawerNavContent({ onClose }: { onClose: () => void }) {
+  const pathname = usePathname();
+  const profile = useProfile();
+  const handleSignOut = useSignOut();
+  const { isArabic, t } = useLanguage();
+
+  return (
+    <div style={{ display: "flex", height: "100%", flexDirection: "column", background: "var(--bg)", padding: "16px", color: "var(--tx)", fontFamily: isArabic ? "var(--font-tajawal),sans-serif" : "var(--font-inter),sans-serif" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, padding: "0 4px" }}>
+        <Link href="/" onClick={onClose}><Logo /></Link>
+        <div style={{ display: "flex", gap: 6 }}><ThemeBtn /><LangBtn /></div>
+      </div>
+
+      {/* User */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: "var(--s1)", border: "1px solid var(--bd)", borderRadius: 12, marginBottom: 20 }}>
+        <Avatar profile={profile} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: ".85rem", fontWeight: 700, color: "var(--tx)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{profile?.full_name ?? t("المستخدم", "User")}</div>
+          <div style={{ fontSize: ".7rem", color: "var(--tx3)" }}>{t("فولت شخصي ذكي", "Personal AI vault")}</div>
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 border-t border-border/70 pt-4">
-        <Link
-          href="/vault/settings"
-          onClick={onClose}
-          className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
-        >
-          <Settings className="h-4 w-4" />
-          {t("الإعدادات", "Settings")}
+      {/* Nav */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        <div style={{ fontSize: ".6rem", fontWeight: 800, letterSpacing: ".18em", textTransform: "uppercase", color: "rgba(245,158,11,.5)", marginBottom: 8, padding: "0 8px" }}>
+          {t("الرئيسية", "Core")}
+        </div>
+        {NAV_ITEMS.map(item => {
+          const active = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
+          return (
+            <Link key={item.href} href={item.href} onClick={onClose}
+              style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "11px 14px",
+                borderRadius: 10, marginBottom: 4, textDecoration: "none",
+                fontWeight: 700, fontSize: ".9rem",
+                background: active ? "rgba(245,158,11,.1)" : "transparent",
+                color: active ? "var(--amb)" : "var(--tx2)",
+                border: active ? "1px solid var(--bd-a)" : "1px solid transparent",
+              }}>
+              <span>{item.icon}</span>
+              <span>{isArabic ? item.ar : item.en}</span>
+            </Link>
+          );
+        })}
+        <div style={{ height: 1, background: "var(--bd)", margin: "8px 0" }} />
+        {SECONDARY_ITEMS.map(item => {
+          const active = pathname.startsWith(item.href);
+          return (
+            <Link key={item.href} href={item.href} onClick={onClose}
+              style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                borderRadius: 10, marginBottom: 3, textDecoration: "none",
+                fontWeight: 600, fontSize: ".88rem",
+                background: active ? "rgba(245,158,11,.08)" : "transparent",
+                color: active ? "var(--amb)" : "var(--tx2)",
+              }}>
+              <span>{item.icon}</span>
+              <span>{isArabic ? item.ar : item.en}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Bottom */}
+      <div style={{ borderTop: "1px solid var(--bd)", paddingTop: 12, marginTop: 8 }}>
+        <Link href="/vault/settings" onClick={onClose}
+          style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, color: "var(--tx2)", textDecoration: "none", fontSize: ".88rem", fontWeight: 600 }}>
+          ⚙️ {t("الإعدادات", "Settings")}
         </Link>
-        <button
-          onClick={handleSignOut}
-          className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/10"
-        >
-          <LogOut className="h-4 w-4" />
-          {t("تسجيل الخروج", "Sign Out")}
+        <button onClick={handleSignOut}
+          style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 14px", borderRadius: 10, color: "var(--red)", fontSize: ".88rem", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+          ⏻ {t("تسجيل الخروج", "Sign Out")}
         </button>
       </div>
     </div>
   );
 }
 
-export function VaultSidebar() {
-  const [open, setOpen] = useState(false);
-  const { isArabic, t } = useLanguage();
+// ── Mobile Bottom Nav ─────────────────────────────────────────────────────────
+function MobileBottomNavBar() {
   const pathname = usePathname();
-  const profile = useProfile();
-  const handleSignOut = useSignOut();
-  const contextValue = useMemo(() => ({ open, setOpen }), [open]);
+  const { isArabic, t } = useLanguage();
+  const { setOpen } = useSidebar();
+
+  const items = [
+    { href: "/vault",           icon: "⊞", ar: "الرئيسية", en: "Home"     },
+    { href: "/vault/plans",     icon: "✓", ar: "الخطط",    en: "Plans"    },
+    { href: "/vault/reminders", icon: "🔔", ar: "تذكيرات", en: "Alerts"   },
+    { href: "/vault/habits",    icon: "🔥", ar: "العادات", en: "Habits"   },
+    { href: "/vault/settings",  icon: "⚙️", ar: "إعدادات", en: "Settings" },
+  ];
+
+  return (
+    <div className="ds-mob-nav">
+      {items.map(item => {
+        const active = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
+        return (
+          <Link key={item.href} href={item.href}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "6px 12px", color: active ? "var(--amb)" : "var(--tx3)", textDecoration: "none", position: "relative" }}>
+            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            <span style={{ fontSize: ".58rem", fontWeight: 700, fontFamily: isArabic ? "var(--font-tajawal),sans-serif" : "var(--font-inter),sans-serif" }}>{isArabic ? item.ar : item.en}</span>
+            {active && <div style={{ position: "absolute", bottom: 2, width: 18, height: 2, borderRadius: 1, background: "var(--amb)" }} />}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main VaultSidebar export ──────────────────────────────────────────────────
+export function VaultSidebar({ children }: { children?: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const { isArabic } = useLanguage();
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 1100px)");
+    setCollapsed(mq.matches);
+    const fn = (e: MediaQueryListEvent) => setCollapsed(e.matches);
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+
+  const contextValue = useMemo(() => ({ open, setOpen, collapsed }), [open, collapsed]);
 
   return (
     <SidebarContext.Provider value={contextValue}>
-      <header className="fixed inset-x-0 top-0 z-40 h-16 px-3 pt-2 sm:px-5">
-        <div className="mx-auto flex h-full max-w-7xl items-start">
-          <div className="shell-panel flex h-12 w-full items-center gap-3 px-3 sm:px-4">
-            <Link href="/" className="flex shrink-0 items-center">
-              <BrandLogo variant="auto" iconSize={32} />
-            </Link>
-
-            <nav className="hidden flex-1 justify-center md:flex" aria-label="Primary navigation">
-              <div className="nav-shell flex items-center gap-0.5 p-1">
-                {PRIMARY_NAV.map((item) => {
-                  const active = item.href === "/vault" ? pathname === item.href : pathname.startsWith(item.href);
-                  const Icon = item.icon;
-
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={cn(
-                        "flex items-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold transition-all",
-                        active
-                          ? "bg-amber-500/12 text-amber-700 dark:bg-amber-500/14 dark:text-amber-300"
-                          : "text-muted-foreground hover:bg-white/75 hover:text-foreground dark:hover:bg-white/[0.05]"
-                      )}
-                    >
-                      <Icon className={cn("h-4 w-4 shrink-0", active && "stroke-[2.4]")} />
-                      <span>{isArabic ? item.labelAr : item.labelEn}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </nav>
-
-            <div className="ms-auto flex items-center gap-1.5">
-              <div className="hidden items-center gap-1.5 nav-shell px-1.5 py-1.5 md:flex">
-                <LanguageToggle />
-                <ThemeToggle />
-              </div>
-
-              {(() => {
-                const tier = (profile?.plan_tier ?? "free").toUpperCase()
-                const isFree = tier === "FREE" || !profile
-                const label = tier === "PRO" ? "Pro" : tier === "TEAMS" ? "Teams" : null
-                if (isFree) {
-                  return (
-                    <Link
-                      href="/vault/settings/billing"
-                      className="hidden items-center gap-2 rounded-full border border-amber-300/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-700 transition-colors hover:bg-amber-500/14 dark:border-amber-700/30 dark:text-amber-300 lg:inline-flex"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      {t("ترقية الخطة", "Upgrade")}
-                    </Link>
-                  )
-                }
-                return (
-                  <span className={`hidden lg:inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-wide border ${
-                    tier === "TEAMS"
-                      ? "bg-violet-500/10 border-violet-500/25 text-violet-600 dark:text-violet-300"
-                      : "bg-blue-500/10 border-blue-500/25 text-blue-600 dark:text-blue-300"
-                  }`}>
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {label}
-                  </span>
-                )
-              })()}
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="hidden items-center gap-1.5 rounded-full nav-shell px-2 py-1.5 md:flex">
-                    <Avatar profile={profile} />
-                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
-                    {profile?.full_name ?? t("المستخدم", "User")}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/vault/settings">
-                      <Settings className="me-2 h-4 w-4" />
-                      {t("الإعدادات", "Settings")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/vault/settings">
-                      <Sparkles className="me-2 h-4 w-4" />
-                      {t("ترقية الخطة", "Upgrade")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                  >
-                    <LogOut className="me-2 h-4 w-4" />
-                    {t("تسجيل الخروج", "Sign Out")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 rounded-full nav-shell md:hidden"
-                onClick={() => setOpen(true)}
-                aria-label={t("فتح القائمة", "Open menu")}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <DesktopSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <MobileBottomNavBar />
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side={isArabic ? "right" : "left"} className="w-80 max-w-[90vw] p-0 bg-background">
+        <SheetContent side={isArabic ? "right" : "left"} className="w-80 max-w-[90vw] p-0" style={{ background: "var(--bg)" }}>
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-          <DrawerNav onClose={() => setOpen(false)} />
+          <DrawerNavContent onClose={() => setOpen(false)} />
         </SheetContent>
       </Sheet>
+
+      {children && (
+        <div className={`ds-main${collapsed ? " coll" : ""}`}>
+          {children}
+        </div>
+      )}
     </SidebarContext.Provider>
   );
 }
@@ -395,16 +408,12 @@ export function VaultSidebar() {
 export function MobileMenuButton() {
   const { setOpen } = useSidebar();
   const { t } = useLanguage();
-
   return (
-    <Button
-      variant="outline"
-      size="icon"
-      className="md:hidden rounded-full border-border bg-background/80 shadow-ambient backdrop-blur-xl"
+    <button
       onClick={() => setOpen(true)}
       aria-label={t("فتح القائمة", "Open menu")}
-    >
-      <Menu className="w-5 h-5" />
-    </Button>
+      style={{ width: 40, height: 40, borderRadius: 99, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--s1)", border: "1px solid var(--bd)", cursor: "pointer", color: "var(--tx)" }}>
+      ☰
+    </button>
   );
 }

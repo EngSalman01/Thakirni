@@ -5,7 +5,6 @@ import { CommandPalette } from "@/components/thakirni/command-palette"
 import { UserIdentify } from "@/components/user-identify"
 import { ToastNotifier } from "@/components/thakirni/toast-notifier"
 import { ConsentModal } from "@/components/compliance/consent-modal"
-import { MobileBottomNav } from "@/components/thakirni/mobile-bottom-nav"
 import { PageTransition } from "@/components/thakirni/page-transition"
 import { VaultSidebar } from "@/components/thakirni/vault-sidebar"
 
@@ -27,14 +26,14 @@ export default function VaultLayout({
     <>
       <ThemeSync />
       <UserIdentify />
-      <VaultSidebar />
+      <VaultSidebar>
+        <PageTransition>{children}</PageTransition>
+      </VaultSidebar>
       <CommandPalette />
       <ConsentModal />
       <Suspense>
         <ToastNotifier />
       </Suspense>
-      <PageTransition className="pb-20 md:pb-0">{children}</PageTransition>
-      <MobileBottomNav />
     </>
   )
 }
