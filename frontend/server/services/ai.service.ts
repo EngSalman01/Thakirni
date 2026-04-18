@@ -1,23 +1,38 @@
 /**
  * AI Service — all AI-related business logic.
  * Used by API routes only. Never imported by client components.
+ *
+ * Uses Gemini REST API directly to avoid @ai-sdk/google convertToBase64 bug
+ * in @ai-sdk/provider-utils v2.
  */
 import "server-only";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { generateText } from "ai";
 
-// ── Models ────────────────────────────────────────────────────────────────────
+// ── Gemini REST helper ────────────────────────────────────────────────────────
 
-const _google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? "" });
-
-/** Primary model — smart, fast, multilingual. */
-export function getAiModel() {
-  return _google("gemini-2.5-flash-lite");
-}
-
-/** Fast model — for quick classification/extraction tasks. */
-export function getFastModel() {
-  return _google("gemini-2.5-flash-lite");
+async function geminiText(
+  prompt: string,
+  options?: { system?: string; maxOutputTokens?: number; temperature?: number }
+): Promise<string> {
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ?? ""
+  const body: Record<string, unknown> = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      maxOutputTokens: options?.maxOutputTokens ?? 400,
+      ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+    },
+  }
+  if (options?.system) body.system_instruction = { parts: [{ text: options.system }] }
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+  )
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "")
+    throw new Error(`Gemini failed (${res.status}): ${errText}`)
+  }
+  interface GRes { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+  const data = await res.json() as GRes
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? ""
 }
 
 // ── Hijri Date ────────────────────────────────────────────────────────────────
@@ -142,14 +157,7 @@ export async function summarizeText(
     language === "ar"
       ? `لخّص النص التالي بإيجاز واحتفظ بالنقاط الرئيسية:\n\n${text}`
       : `Summarize the following text concisely, keeping the key points:\n\n${text}`;
-
-  const { text: summary } = await generateText({
-    model:     getFastModel(),
-    prompt,
-    maxOutputTokens: 400,
-  });
-
-  return summary;
+  return geminiText(prompt, { maxOutputTokens: 400 });
 }
 
 // ── Generate Daily Briefing ───────────────────────────────────────────────────
@@ -186,14 +194,7 @@ export async function generateDailyBriefing(input: DailyBriefingInput): Promise<
       ? `أنت مساعد ذكي. اكتب ملخصاً يومياً قصيراً وودياً للمستخدم ${userName}. قل "${greetingAr[timeOfDay]}" ثم اذكر أهم ما في يومه بأسلوب طبيعي. التاريخ: ${date}. المهام:\n${plansSummary}`
       : `You are a friendly AI assistant. Write a short, warm daily briefing for ${userName}. Date: ${date}. Today's schedule:\n${plansSummary}`;
 
-  const { text } = await generateText({
-    model:       getFastModel(),
-    prompt,
-    maxOutputTokens:   250,
-    temperature: 0.7,
-  });
-
-  return text;
+  return geminiText(prompt, { maxOutputTokens: 250, temperature: 0.7 });
 }
 
 // ── Extract Personal Facts from Text ─────────────────────────────────────────
@@ -208,13 +209,11 @@ export interface ExtractedFact {
  * Returns an empty array if no facts are found.
  */
 export async function extractFacts(userMessage: string): Promise<ExtractedFact[]> {
-  const { text } = await generateText({
-    model: getFastModel(),
+  const text = await geminiText(userMessage, {
     system: `Extract personal facts from the user message and return them as JSON array.
 Each fact: { "fact": "...", "category": "work|family|health|finance|preference|location|education|contact|general" }
 Return [] if no personal facts. Only return the JSON array, nothing else.`,
-    prompt:     userMessage,
-    maxOutputTokens:  300,
+    maxOutputTokens: 300,
     temperature: 0,
   });
 
@@ -244,12 +243,10 @@ export type MessageIntent =
  * Used to pre-warm the right tools or skip unnecessary ones.
  */
 export async function classifyIntent(message: string): Promise<MessageIntent> {
-  const { text } = await generateText({
-    model: getFastModel(),
+  const text = await geminiText(message, {
     system: `Classify the user message into one of these intents. Return only the intent string.
 Intents: create_plan, list_plans, save_memory, search, daily_briefing, question, chitchat, other`,
-    prompt:     message,
-    maxOutputTokens:  10,
+    maxOutputTokens: 10,
     temperature: 0,
   });
 

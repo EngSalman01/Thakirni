@@ -6,7 +6,7 @@ import { getHijriDate, formatTodayBlock, formatFactsBlock } from "@/server/servi
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 import { trackEvent } from "@/lib/analytics"
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
 

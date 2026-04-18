@@ -9,7 +9,7 @@ const PLAN_MAP: Record<string, string> = { free: "FREE", pro: "PRO", teams: "TEA
 
 export async function POST(request: NextRequest) {
   const { user: adminUser, error } = await requireAdmin();
-  if (error) return error;
+  if (error || !adminUser) return error ?? NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const [body, parseErr] = await parseBody<Record<string, unknown>>(request, 512);
   if (parseErr) return parseErr;
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   await logAuditEvent(
-    adminUser!.id,
+    adminUser.id,
     "admin_action",
     `Admin changed plan for user ${userId} to ${PLAN_MAP[plan]}`,
     { targetUserId: userId, newPlan: PLAN_MAP[plan] }

@@ -53,25 +53,22 @@ export async function POST(req: NextRequest) {
       },
     }
 
-    if (email) {
-      (txBody as any).customer = { email }
-    }
+    if (email) txBody.customer = { email }
+    if (discountCode) txBody.discountCode = discountCode
 
-    if (discountCode) {
-      (txBody as any).discountCode = discountCode
-    }
-
-    const transaction = await (paddle.transactions as any).create(txBody)
-    const checkoutUrl = (transaction as any)?.checkout?.url
+    type PaddleTx = { checkout?: { url?: string }; id?: string }
+    const transaction = await (paddle.transactions as { create: (b: unknown) => Promise<PaddleTx> }).create(txBody)
+    const checkoutUrl = transaction?.checkout?.url
 
     if (!checkoutUrl) {
       console.error("[checkout-url] No checkout URL in response:", JSON.stringify(transaction).slice(0, 400))
       return NextResponse.json({ error: "Paddle did not return a checkout URL" }, { status: 500 })
     }
 
-    return NextResponse.json({ url: checkoutUrl, transactionId: (transaction as any)?.id })
-  } catch (err: any) {
-    console.error("[checkout-url] Paddle error:", err?.message || err)
-    return NextResponse.json({ error: err?.message || "Paddle checkout failed" }, { status: 500 })
+    return NextResponse.json({ url: checkoutUrl, transactionId: transaction?.id })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Paddle checkout failed"
+    console.error("[checkout-url] Paddle error:", msg)
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

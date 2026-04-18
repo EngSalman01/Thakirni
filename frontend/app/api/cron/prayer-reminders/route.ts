@@ -131,7 +131,7 @@ export async function GET(req: NextRequest) {
   for (const sub of subs) {
     const cityKey = (sub.city as string).toLowerCase().trim()
     if (!byCity.has(cityKey)) byCity.set(cityKey, [])
-    byCity.get(cityKey)!.push(sub)
+    byCity.get(cityKey)?.push(sub)
   }
 
   // Fetch prayer times per unique city and send

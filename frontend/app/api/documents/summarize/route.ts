@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server"
 import { requireAuth, checkPlanFeature } from "@/lib/api-auth"
-import { getAiModel } from "@/lib/services/ai.service"
-import { generateText } from "ai"
+import { geminiText } from "@/lib/services/ai.service"
 import { enforceUsage } from "@/lib/usage/enforce"
 import { incrementUsage } from "@/lib/usage/increment"
 
@@ -51,7 +50,7 @@ export async function POST(req: NextRequest) {
     : `You are an expert document analyst. Analyze this document:\n\n${truncated}\n\nGenerate a comprehensive summary. Return ONLY JSON:\n{\n  "summary": "2-4 paragraph summary",\n  "keyPoints": ["Key point 1", ...],\n  "mainTopics": ["Topic 1", ...],\n  "sentiment": "positive|negative|neutral",\n  "readingTime": ${Math.ceil(wordCount / 200)}\n}`
 
   try {
-    const { text } = await generateText({ model: getAiModel(), prompt })
+    const text = await geminiText(prompt, { maxOutputTokens: 2000 })
     const match = text.match(/\{[\s\S]*\}/)
     const result = match ? JSON.parse(match[0]) : { summary: text, keyPoints: [], mainTopics: [], sentiment: "neutral", readingTime: Math.ceil(wordCount / 200) }
 
