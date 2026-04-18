@@ -865,6 +865,7 @@ store_fact
 get_my_facts
 set_reminder → استدع مرة واحدة فقط لكل تذكير، يدعم repeat_interval_minutes للتذكيرات المتكررة
 cancel_reminder → لحذف تذكير أو وقفه بكلمة مفتاحية — لا تحتاج UUID
+get_prayer_times → أوقات الصلاة اليوم مع الوقت المتبقي لكل صلاة — استخدمها دائماً عند أي سؤال عن الصلاة
 get_timeline
 search_memories
 get_my_facts
@@ -1230,6 +1231,86 @@ RULE:
                         .in("id", ids)
                     if (delErr) return { success: false, message: delErr.message }
                     return { success: true, message: `Cancelled ${ids.length} reminder(s) matching "${keyword}".` }
+                },
+            }),
+
+            get_prayer_times: tool({
+                description: "Get today's prayer times for the user's city, including minutes remaining until each prayer. Use this whenever the user asks about prayer times, how long until a prayer, or when a specific prayer is (e.g. 'كم باقي على العشاء', 'متى المغرب', 'when is Asr').",
+                inputSchema: z.object({}),
+                execute: async () => {
+                    const COORDS: Record<string, { lat: string; lon: string }> = {
+                        riyadh:      { lat: "24.6877", lon: "46.7219" },
+                        dammam:      { lat: "26.4207", lon: "50.0888" },
+                        khobar:      { lat: "26.2172", lon: "50.1971" },
+                        "al khobar": { lat: "26.2172", lon: "50.1971" },
+                        jeddah:      { lat: "21.5433", lon: "39.1728" },
+                        mecca:       { lat: "21.3891", lon: "39.8579" },
+                        makkah:      { lat: "21.3891", lon: "39.8579" },
+                        medina:      { lat: "24.5247", lon: "39.5692" },
+                        madinah:     { lat: "24.5247", lon: "39.5692" },
+                        taif:        { lat: "21.2854", lon: "40.4152" },
+                        abha:        { lat: "18.2164", lon: "42.5053" },
+                        tabuk:       { lat: "28.3835", lon: "36.5662" },
+                        buraidah:    { lat: "26.3260", lon: "43.9750" },
+                        hail:        { lat: "27.5114", lon: "41.7208" },
+                        najran:      { lat: "17.4924", lon: "44.1277" },
+                    }
+
+                    // Get user's city from prayer_subscriptions (fallback: Riyadh)
+                    const { data: sub } = await supabase
+                        .from("prayer_subscriptions")
+                        .select("city")
+                        .eq("user_id", userId)
+                        .single()
+
+                    const cityRaw = ((sub?.city as string | null) ?? "Riyadh")
+                    const cityKey = cityRaw.toLowerCase().trim()
+                    const coords = COORDS[cityKey] ?? COORDS.riyadh
+
+                    // Fetch from AlAdhan (method=4: Umm Al-Qura)
+                    interface AlAdhanRes { data: { timings: Record<string, string> } }
+                    const adhanRes = await fetch(
+                        `https://api.aladhan.com/v1/timings/${currentDate}?latitude=${coords.lat}&longitude=${coords.lon}&method=4`
+                    )
+                    if (!adhanRes.ok) return { success: false, message: "Failed to fetch prayer times" }
+                    const adhanData = await adhanRes.json() as AlAdhanRes
+                    const timings = adhanData.data?.timings
+                    if (!timings) return { success: false, message: "No timings in response" }
+
+                    const PRAYERS = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] as const
+                    const PRAYER_AR: Record<string, string> = {
+                        Fajr: "الفجر", Dhuhr: "الظهر", Asr: "العصر", Maghrib: "المغرب", Isha: "العشاء",
+                    }
+
+                    // Current Riyadh time in minutes-since-midnight
+                    const [nowH, nowM] = currentTime.split(":").map(Number)
+                    const nowMinutes = nowH * 60 + nowM
+
+                    const prayers = PRAYERS.map(p => {
+                        const time = timings[p]?.slice(0, 5) ?? "00:00"
+                        const [ph, pm] = time.split(":").map(Number)
+                        const pMinutes = ph * 60 + pm
+                        const passed = pMinutes < nowMinutes
+                        let remaining = pMinutes - nowMinutes
+                        if (remaining < 0) remaining += 24 * 60 // next occurrence
+                        const hours = Math.floor(remaining / 60)
+                        const mins = remaining % 60
+                        const timeRemaining = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`
+                        return { name: p, nameAr: PRAYER_AR[p], time, passed, minutesRemaining: remaining, timeRemaining }
+                    })
+
+                    const nextPrayer = prayers.find(p => !p.passed) ?? prayers[0]
+
+                    return {
+                        success: true,
+                        city: cityRaw,
+                        currentTime,
+                        prayers,
+                        nextPrayer: nextPrayer.name,
+                        nextPrayerAr: nextPrayer.nameAr,
+                        nextPrayerTime: nextPrayer.time,
+                        nextPrayerInMinutes: nextPrayer.minutesRemaining,
+                    }
                 },
             }),
 

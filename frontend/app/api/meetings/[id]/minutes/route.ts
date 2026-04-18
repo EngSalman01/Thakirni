@@ -25,6 +25,28 @@ export async function POST(
     return Response.json({ error: "Meeting not found" }, { status: 404 })
   }
 
+  // Guard: require at least one meaningful content field before calling AI
+  function hasContent(val: unknown): boolean {
+    if (typeof val === "string" && val.length > 10) return true
+    if (Array.isArray(val)) return val.length > 0
+    if (typeof val === "string") {
+      try { const p = JSON.parse(val); return Array.isArray(p) && p.length > 0 } catch { /* empty */ }
+    }
+    return false
+  }
+  const hasUsableContent =
+    hasContent(meeting.summary) ||
+    hasContent(meeting.transcript) ||
+    hasContent(meeting.key_points) ||
+    hasContent(meeting.action_items)
+
+  if (!hasUsableContent) {
+    return Response.json(
+      { error: "This meeting has no recorded content. Please re-process the audio before generating minutes." },
+      { status: 422 }
+    )
+  }
+
   // Resolve plan tier for model selection (parallel with request body parse)
   const [{ language: reqLang }, planProfile] = await Promise.all([
     req.json().catch(() => ({})) as Promise<{ language?: string }>,
