@@ -59,6 +59,7 @@ async function uploadToGeminiFileApi(
 
   const body = Buffer.concat([
     Buffer.from(metaPart),
+    Buffer.from(dataPart),
     buffer,
     Buffer.from(closing),
   ])
