@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server"
 import { requireAuth } from "@/lib/api-auth"
-import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
-export const maxDuration = 60
+export const maxDuration = 120
 
 export async function POST(
   req: NextRequest,
@@ -10,9 +9,6 @@ export async function POST(
 ) {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
-
-  const rl = await limiters.api(auth.userId)
-  if (!rl.success) return rateLimitResponse(rl.reset)
 
   const { id } = await params
 
