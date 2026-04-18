@@ -17,14 +17,35 @@ export async function GET(req: NextRequest) {
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
 
-  const { data: logs } = await auth.supabase
-    .from("habit_logs")
-    .select("habit_id, completed_at")
-    .eq("user_id", auth.userId)
-    .eq("log_date", today)
+  // Fetch last 7 days logs for weekly dot tracker
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+  const weekStart = sevenDaysAgo.toISOString().split("T")[0]
 
-  const completedToday = new Set((logs ?? []).map((l) => l.habit_id))
-  const habitsWithStatus = (habits ?? []).map((h) => ({ ...h, completed_today: completedToday.has(h.id) }))
+  const { data: weekLogs } = await auth.supabase
+    .from("habit_logs")
+    .select("habit_id, log_date")
+    .eq("user_id", auth.userId)
+    .gte("log_date", weekStart)
+    .lte("log_date", today)
+
+  // Build a set of "habitId:date" strings for O(1) lookup
+  const weekSet = new Set((weekLogs ?? []).map((l) => `${l.habit_id}:${l.log_date}`))
+
+  // Generate the last 7 dates (today and 6 days before)
+  const last7Dates: string[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    last7Dates.push(d.toISOString().split("T")[0])
+  }
+
+  const completedToday = new Set((weekLogs ?? []).filter(l => l.log_date === today).map((l) => l.habit_id))
+  const habitsWithStatus = (habits ?? []).map((h) => ({
+    ...h,
+    completed_today: completedToday.has(h.id),
+    week_done: last7Dates.map((d) => weekSet.has(`${h.id}:${d}`)),
+  }))
 
   return Response.json({ habits: habitsWithStatus, date: today })
 }

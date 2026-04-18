@@ -85,7 +85,8 @@ function EditModal({ reminder, onSave, onClose }: {
       onClick={onClose}>
       <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }} transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md shell-panel rounded-2xl p-6 flex flex-col gap-4"
+        className="w-full max-w-md card rounded-2xl p-6 flex flex-col gap-4"
+        style={{ background: "var(--s1)", color: "var(--tx)" }}
         onClick={e => e.stopPropagation()}>
 
         <div className="flex items-center justify-between">
@@ -147,6 +148,7 @@ export default function RemindersPage() {
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [editingReminder, setEditingReminder] = useState<Reminder | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -198,48 +200,67 @@ export default function RemindersPage() {
   const upcoming = reminders.filter(r => !r.is_sent && !isPast(new Date(r.remind_at)))
   const sent     = reminders.filter(r => r.is_sent || isPast(new Date(r.remind_at)))
 
-  const ReminderCard = ({ r }: { r: Reminder }) => {
+  const ReminderCard = ({ r, last = false }: { r: Reminder; last?: boolean }) => {
     const isUpcoming = !r.is_sent && !isPast(new Date(r.remind_at))
+    const dotColor = r.channel === "whatsapp" ? "#10B981" : r.repeat_interval_minutes ? "#3B82F6" : "#F59E0B"
     return (
-      <motion.div layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        className="shell-panel rounded-2xl p-4 flex items-start gap-4">
-        <div className={`mt-0.5 w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${r.is_sent ? "bg-muted" : "bg-amber-100 dark:bg-amber-950/50"}`}>
-          <Bell className={`w-4 h-4 ${r.is_sent ? "text-muted-foreground" : "text-amber-600 dark:text-amber-400"}`} />
-        </div>
+        style={{
+          display: "flex", alignItems: "center", gap: 14,
+          padding: "14px 20px",
+          borderBottom: last ? "none" : "1px solid var(--bd)",
+        }}
+      >
+        {/* Priority dot */}
+        <div style={{ width: 9, height: 9, borderRadius: "50%", background: dotColor, flexShrink: 0 }} />
 
-        <div className="flex-1 min-w-0">
-          <p className={`font-semibold text-sm truncate ${r.is_sent ? "text-muted-foreground line-through" : "text-foreground"}`}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontWeight: 700, fontSize: ".9rem",
+            color: r.is_sent ? "var(--tx3)" : "var(--tx)",
+            textDecoration: r.is_sent ? "line-through" : "none",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+          }}>
             {r.title}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="w-3 h-3" />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 3, flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: ".75rem", color: "var(--tx2)" }}>
+              <Clock style={{ width: 11, height: 11 }} />
               {format(new Date(r.remind_at), "PPp", { locale: isArabic ? arSA : enUS })}
             </span>
             {r.repeat_interval_minutes && (
-              <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
-                <Repeat className="w-3 h-3" />
+              <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: ".75rem", color: "var(--amb)", fontWeight: 600 }}>
+                <Repeat style={{ width: 11, height: 11 }} />
                 {formatInterval(r.repeat_interval_minutes, isArabic)}
               </span>
             )}
             {r.channel === "whatsapp" && (
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">WhatsApp</span>
+              <span style={{ fontSize: ".72rem", color: "#10B981", fontWeight: 700 }}>WhatsApp</span>
             )}
           </div>
         </div>
 
+        {/* Actions */}
         {isUpcoming && (
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <button onClick={() => setEditingReminder(r)}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors">
-              <Pencil className="w-3.5 h-3.5" />
+          <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+            <button
+              onClick={() => setEditingReminder(r)}
+              style={{ width: 30, height: 30, border: "none", background: "none", cursor: "pointer", color: "var(--tx3)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6 }}
+            >
+              <Pencil style={{ width: 14, height: 14 }} />
             </button>
-            <button onClick={() => handleDelete(r.id)} disabled={deletingId === r.id}
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-40">
+            <button
+              onClick={() => handleDelete(r.id)}
+              disabled={deletingId === r.id}
+              style={{ width: 30, height: 30, border: "none", background: "none", cursor: "pointer", color: "var(--red)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, opacity: deletingId === r.id ? .4 : 1 }}
+            >
               {deletingId === r.id
-                ? <span className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                : <Trash2 className="w-3.5 h-3.5" />}
+                ? <span style={{ width: 12, height: 12, border: "2px solid currentColor", borderTopColor: "transparent", borderRadius: "50%", display: "inline-block" }} className="animate-spin" />
+                : <Trash2 style={{ width: 14, height: 14 }} />}
             </button>
           </div>
         )}
@@ -247,57 +268,121 @@ export default function RemindersPage() {
     )
   }
 
+  const allFiltered = reminders.filter(r => !searchQuery || r.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  const upcomingFiltered = allFiltered.filter(r => !r.is_sent && !isPast(new Date(r.remind_at)))
+  const sentFiltered = allFiltered.filter(r => r.is_sent || isPast(new Date(r.remind_at)))
+
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", color: "var(--tx)" }}>
       <main>
         <section className="page-wrap" style={{ maxWidth: 900 }}>
 
           <div className="page-head fu">
             <div>
+              <p className="eyebrow">{t("التذكيرات", "Reminders")}</p>
               <h1 className="page-h1">{t("تذكيراتك", "Your Reminders")}</h1>
-              <p className="page-sub">{t("ما راح تنسى شيء مهم بعد اليوم", "All reminders added via WhatsApp or the web")}</p>
+              <p className="page-sub">{t("ما راح تنسى شيء مهم بعد اليوم", "Never miss anything important again")}</p>
             </div>
-            <button onClick={load}
-              className="w-10 h-10 rounded-xl shell-panel flex items-center justify-center text-muted-foreground hover:text-amber-600 transition-colors">
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            <button
+              onClick={load}
+              style={{
+                width: 40, height: 40, borderRadius: 10,
+                border: "1px solid var(--bd)", background: "var(--s2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", color: "var(--tx2)", flexShrink: 0,
+              }}
+            >
+              <RefreshCw style={{ width: 16, height: 16 }} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
 
+          {/* Search */}
+          <div className="fu1" style={{ position: "relative", marginBottom: 20 }}>
+            <input
+              className="inp"
+              placeholder={t("ابحث في التذكيرات...", "Search reminders...")}
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{ paddingInlineStart: 40 }}
+            />
+            <Bell style={{ width: 16, height: 16, color: "var(--tx3)", position: "absolute", insetInlineStart: 14, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+          </div>
+
+          {/* Filter tabs */}
+          <div className="fu2" style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+            {[
+              { key: "all",      label: t("الكل", "All"),           count: reminders.length },
+              { key: "upcoming", label: t("قادمة", "Upcoming"),     count: upcoming.length },
+              { key: "sent",     label: t("تم الإرسال", "Sent"),    count: sent.length },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                style={{
+                  padding: "6px 14px", borderRadius: 99, fontSize: ".8rem", fontWeight: 700,
+                  border: "1px solid",
+                  borderColor: tab.key === "all" ? "var(--amb)" : "var(--bd)",
+                  background: tab.key === "all" ? "rgba(245,158,11,.12)" : "var(--s2)",
+                  color: tab.key === "all" ? "var(--amb)" : "var(--tx2)",
+                  cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 5,
+                }}
+              >
+                {tab.label}
+                <span style={{
+                  background: tab.key === "all" ? "var(--amb)" : "var(--s3)",
+                  color: tab.key === "all" ? "#000" : "var(--tx2)",
+                  borderRadius: 99, padding: "1px 6px", fontSize: ".68rem", fontWeight: 800,
+                }}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+
           {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="shell-panel rounded-2xl p-4 h-16 animate-pulse bg-muted/40" />
+            <div className="card" style={{ overflow: "hidden" }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ padding: "16px 20px", borderBottom: "1px solid var(--bd)", display: "flex", gap: 14 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 9, background: "var(--s3)" }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ height: 14, background: "var(--s3)", borderRadius: 4, marginBottom: 8, width: "60%" }} />
+                    <div style={{ height: 11, background: "var(--s3)", borderRadius: 4, width: "40%" }} />
+                  </div>
+                </div>
               ))}
             </div>
-          ) : reminders.length === 0 ? (
-            <div className="shell-panel rounded-2xl p-12 text-center">
-              <Bell className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-              <p className="text-muted-foreground text-sm">
-                {t("ما عندك تذكيرات بعد — قول لذكرني على واتساب ويضيف لك", "No reminders yet — tell Thakirni on WhatsApp to add one")}
+          ) : allFiltered.length === 0 ? (
+            <div className="card" style={{ padding: "60px 20px", textAlign: "center" }}>
+              <Bell style={{ width: 48, height: 48, color: "var(--tx3)", margin: "0 auto 16px", opacity: .3 }} />
+              <p style={{ color: "var(--tx2)", fontSize: ".9rem" }}>
+                {t("ما عندك تذكيرات بعد", "No reminders yet")}
               </p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {upcoming.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {upcomingFiltered.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-3">
-                    {t("قادمة", "Upcoming")} · {upcoming.length}
+                  <p style={{ fontSize: ".72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--amb)", marginBottom: 10 }}>
+                    {t("قادمة", "Upcoming")} · {upcomingFiltered.length}
                   </p>
-                  <AnimatePresence mode="popLayout">
-                    <div className="space-y-2">
-                      {upcoming.map(r => <ReminderCard key={r.id} r={r} />)}
-                    </div>
-                  </AnimatePresence>
+                  <div className="card" style={{ overflow: "hidden" }}>
+                    <AnimatePresence mode="popLayout">
+                      {upcomingFiltered.map((r, i) => (
+                        <ReminderCard key={r.id} r={r} last={i === upcomingFiltered.length - 1} />
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </div>
               )}
-
-              {sent.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
-                    {t("تم الإرسال", "Sent")} · {sent.length}
+              {sentFiltered.length > 0 && (
+                <div style={{ opacity: .6 }}>
+                  <p style={{ fontSize: ".72rem", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".12em", color: "var(--tx3)", marginBottom: 10 }}>
+                    {t("تم الإرسال", "Sent")} · {sentFiltered.length}
                   </p>
-                  <div className="space-y-2 opacity-60">
-                    {sent.slice(0, 10).map(r => <ReminderCard key={r.id} r={r} />)}
+                  <div className="card" style={{ overflow: "hidden" }}>
+                    {sentFiltered.slice(0, 10).map((r, i) => (
+                      <ReminderCard key={r.id} r={r} last={i === Math.min(sentFiltered.length - 1, 9)} />
+                    ))}
                   </div>
                 </div>
               )}
