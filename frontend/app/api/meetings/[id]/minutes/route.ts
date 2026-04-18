@@ -1,12 +1,8 @@
 import { NextRequest } from "next/server"
 import { requireAuth } from "@/lib/api-auth"
-import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { generateText } from "ai"
 import { limiters, rateLimitResponse } from "@/lib/rate-limit"
 
 export const maxDuration = 60
-
-const google = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY })
 
 export async function POST(
   req: NextRequest,
@@ -146,12 +142,29 @@ Use formal professional language. Do not fabricate information not present in th
 `
 
   try {
-    const { text } = await generateText({
-      model: google("gemini-2.5-flash"),
-      system: systemPrompt,
-      prompt: userPrompt,
-      maxOutputTokens: 2000,
-    })
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    if (!apiKey) throw new Error("GOOGLE_GENERATIVE_AI_API_KEY not set")
+
+    const body = {
+      system_instruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ parts: [{ text: userPrompt }] }],
+      generationConfig: { maxOutputTokens: 2000 },
+    }
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+    )
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "")
+      throw new Error(`Gemini generateContent failed (${res.status}): ${errText}`)
+    }
+
+    interface GeminiRes { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> }
+    const data = await res.json() as GeminiRes
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!text) throw new Error("Gemini returned empty response")
 
     return Response.json({
       minutes: text,
@@ -166,6 +179,7 @@ Use formal professional language. Do not fabricate information not present in th
     })
   } catch (err) {
     console.error("[meetings/minutes] generation error:", err)
-    return Response.json({ error: "Failed to generate minutes" }, { status: 500 })
+    const msg = err instanceof Error ? err.message : "Failed to generate minutes"
+    return Response.json({ error: msg }, { status: 500 })
   }
 }
