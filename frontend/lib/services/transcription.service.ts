@@ -117,6 +117,7 @@ async function deleteGeminiFile(uri: string): Promise<void> {
  * Call Gemini generateContent REST endpoint directly.
  * Bypasses @ai-sdk/google to avoid version incompatibilities with the
  * convertToBase64 helper that is missing in @ai-sdk/provider-utils v2.
+ * Retries up to 4 times on 503/429 with exponential backoff.
  */
 async function callGeminiWithFileUri(
   prompt: string,
@@ -136,33 +137,48 @@ async function callGeminiWithFileUri(
     generationConfig: { maxOutputTokens },
   }
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+  const RETRYABLE = new Set([429, 503])
+  let lastError: Error = new Error("Gemini request failed")
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) {
+      const delay = Math.min(4000 * 2 ** (attempt - 1), 30000) // 4s, 8s, 16s
+      console.log(`[transcription] Gemini retry ${attempt} after ${delay}ms`)
+      await new Promise(r => setTimeout(r, delay))
     }
-  )
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "")
-    throw new Error(`Gemini generateContent failed (${res.status}): ${errText}`)
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      }
+    )
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "")
+      lastError = new Error(`Gemini generateContent failed (${res.status}): ${errText}`)
+      if (RETRYABLE.has(res.status)) continue
+      throw lastError
+    }
+
+    interface GeminiContentResponse {
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> }
+      }>
+      error?: { message: string }
+    }
+
+    const data = await res.json() as GeminiContentResponse
+    if (data.error) throw new Error(`Gemini API error: ${data.error.message}`)
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!text) throw new Error("Gemini returned empty response")
+    return text
   }
 
-  interface GeminiContentResponse {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> }
-    }>
-    error?: { message: string }
-  }
-
-  const data = await res.json() as GeminiContentResponse
-  if (data.error) throw new Error(`Gemini API error: ${data.error.message}`)
-
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-  if (!text) throw new Error("Gemini returned empty response")
-  return text
+  throw lastError
 }
 
 // ── Main processing function ───────────────────────────────────────────────────
