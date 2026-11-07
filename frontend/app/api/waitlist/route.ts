@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('[v0] Waitlist insert error:', {
+      console.error('[waitlist] insert error:', {
         message: error.message,
         code: error.code,
         details: error.details,

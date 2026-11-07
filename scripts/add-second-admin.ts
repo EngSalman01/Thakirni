@@ -23,7 +23,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 async function createSecondAdminUser() {
   try {
-    console.log(`[v0] Creating second admin user: ${ADMIN_EMAIL}`);
+    console.log(`Creating second admin user: ${ADMIN_EMAIL}`);
 
     // Create the user in Supabase Auth
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
@@ -37,11 +37,11 @@ async function createSecondAdminUser() {
     });
 
     if (authError) {
-      console.error('[v0] Auth error:', authError);
+      console.error('Auth error:', authError);
       throw authError;
     }
 
-    console.log('[v0] User created in Auth:', authUser.user?.id);
+    console.log('User created in Auth:', authUser.user?.id);
 
     // Create admin profile in the database
     if (authUser.user) {
@@ -58,11 +58,11 @@ async function createSecondAdminUser() {
         .select();
 
       if (profileError && !profileError.message.includes('duplicate')) {
-        console.error('[v0] Profile error:', profileError);
+        console.error('Profile error:', profileError);
         // Continue anyway - user is created
       }
 
-      console.log('[v0] Admin profile created:', profile);
+      console.log('Admin profile created:', profile);
 
       console.log('\n✓ Second admin user created successfully!');
       console.log(`Email: ${ADMIN_EMAIL}`);
@@ -70,7 +70,7 @@ async function createSecondAdminUser() {
       console.log('Role: Admin (Full Access to All Subscriptions)');
     }
   } catch (error) {
-    console.error('[v0] Error creating admin user:', error);
+    console.error('Error creating admin user:', error);
     process.exit(1);
   }
 }

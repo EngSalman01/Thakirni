@@ -112,7 +112,7 @@ export async function GET(req: NextRequest) {
           message = `How was your day ${firstName}? 👀\n\nDid you get everything done?\n• Reply \"done\" or \"still going\" 👌`
         }
       } else if (pendingCount === 0) {
-        // All tasks done! 🔥
+        // Everything is done for today
         if (isArabic) {
           message = [
             `${firstName} 🔥`,
