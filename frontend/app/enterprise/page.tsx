@@ -12,6 +12,9 @@ import {
   Globe, Clock, Award, TrendingUp, HeartHandshake,
 } from "lucide-react"
 
+// Sales WhatsApp number in international format, digits only (e.g. 9665XXXXXXXX)
+const SALES_WHATSAPP = process.env.NEXT_PUBLIC_SALES_WHATSAPP
+
 const TEAM_SIZES = [
   { value: "1-10",   ar: "١–١٠ موظفين",    en: "1–10 employees" },
   { value: "11-50",  ar: "١١–٥٠ موظفاً",   en: "11–50 employees" },
@@ -495,18 +498,20 @@ export default function EnterprisePage() {
       {/* Contact alternatives */}
       <section className="pb-20 max-w-3xl mx-auto px-4 sm:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <a href="https://wa.me/[phone removed]" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-4 p-5 glass-card rounded-2xl hover:shadow-md transition-all group">
-            <div className="w-10 h-10 rounded-xl bg-[#25d366]/10 flex items-center justify-center">
-              <Phone className="w-5 h-5 text-[#25d366]" />
-            </div>
-            <div>
-              <div className="font-semibold text-slate-800 text-sm group-hover:text-amber-600 dark:text-amber-400 transition-colors">
-                {t("واتساب مباشر", "WhatsApp Direct")}
+          {SALES_WHATSAPP && (
+            <a href={`https://wa.me/${SALES_WHATSAPP}`} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-4 p-5 glass-card rounded-2xl hover:shadow-md transition-all group">
+              <div className="w-10 h-10 rounded-xl bg-[#25d366]/10 flex items-center justify-center">
+                <Phone className="w-5 h-5 text-[#25d366]" />
               </div>
-              <div className="text-xs text-slate-500">[phone removed]</div>
-            </div>
-          </a>
+              <div>
+                <div className="font-semibold text-slate-800 text-sm group-hover:text-amber-600 dark:text-amber-400 transition-colors">
+                  {t("واتساب مباشر", "WhatsApp Direct")}
+                </div>
+                <div className="text-xs text-slate-500">+{SALES_WHATSAPP}</div>
+              </div>
+            </a>
+          )}
           <a href="mailto:enterprise@thakirni.com"
             className="flex items-center gap-4 p-5 glass-card rounded-2xl hover:shadow-md transition-all group">
             <div className="w-10 h-10 rounded-xl bg-amber-600/10 flex items-center justify-center">
