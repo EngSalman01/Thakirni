@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://nzetbvkkxairfglmougn.supabase.co/storage/v1/object/public/Public/logo-full.png" alt="Thakirni Logo" width="100" />
+<img src="icon-96.svg" alt="Thakirni logo" width="96" />
 
 # ذكرني · Thakirni
 
@@ -8,7 +8,6 @@
 
 **Chat on the web or directly on WhatsApp. Never forget anything again.**
 
-[![Live](https://img.shields.io/badge/Live-thakirni.com-10b981?style=for-the-badge&logoColor=white)](https://thakirni.com)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ecf8e?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-f55036?style=for-the-badge)](https://groq.com)
@@ -248,7 +247,7 @@ git push origin main
 # Vercel auto-deploys on every push
 ```
 
-**Production URL:** [thakirni.com](https://thakirni.com)
+**Status:** the production deployment is currently paused. A walkthrough of the app is available on request.
 
 ---
 
@@ -272,15 +271,7 @@ git push origin main
 
 ## 🤝 Contributing
 
-This is a private commercial project. Contributions are not open at this time.
-
----
-
-## 📄 Legal
-
-- [Terms of Service](https://thakirni.com/terms)
-- [Privacy Policy](https://thakirni.com/privacy)
-- [Refund Policy](https://thakirni.com/refund)
+This is a personal commercial project. Contributions are not open at this time.
 
 ---
 
