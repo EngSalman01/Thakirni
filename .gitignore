@@ -53,3 +53,6 @@ Thumbs.db
 **/docs/superpowers/
 scripts/
 supabase/
+# Local build logs
+build_log.txt
+*.log

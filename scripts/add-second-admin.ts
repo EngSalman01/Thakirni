@@ -1,5 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Credentials come from the environment — never hardcode them.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD before running this script');
+}
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -16,12 +23,12 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 async function createSecondAdminUser() {
   try {
-    console.log('[v0] Creating second admin user: eng.salman01@outlook.com');
+    console.log(`[v0] Creating second admin user: ${ADMIN_EMAIL}`);
 
     // Create the user in Supabase Auth
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email: 'eng.salman01@outlook.com',
-      password: '[redacted]',
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
       email_confirm: true,
       user_metadata: {
         role: 'admin',
@@ -58,8 +65,7 @@ async function createSecondAdminUser() {
       console.log('[v0] Admin profile created:', profile);
 
       console.log('\n✓ Second admin user created successfully!');
-      console.log('Email: eng.salman01@outlook.com');
-      console.log('Password: [redacted]');
+      console.log(`Email: ${ADMIN_EMAIL}`);
       console.log('User ID: ' + authUser.user.id);
       console.log('Role: Admin (Full Access to All Subscriptions)');
     }

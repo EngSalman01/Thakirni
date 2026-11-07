@@ -1,10 +1,17 @@
 import fetch from 'node-fetch';
 
+// Credentials come from the environment — never hardcode them.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+  throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD before running this script');
+}
+
 const API_URL = process.env.API_URL || 'http://localhost:3000';
 
 async function createAdminUser() {
   try {
-    console.log('[v0] Creating admin user: admin@example.com');
+    console.log(`[v0] Creating admin user: ${ADMIN_EMAIL}`);
     
     const response = await fetch(`${API_URL}/api/admin/create-user`, {
       method: 'POST',
@@ -12,8 +19,8 @@ async function createAdminUser() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'admin@example.com',
-        password: '[redacted]',
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
         isAdmin: true,
       }),
     });

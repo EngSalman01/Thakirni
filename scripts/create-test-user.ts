@@ -1,5 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+// Password comes from the environment — never hardcode it.
+const TEST_USER_PASSWORD = process.env.TEST_USER_PASSWORD;
+if (!TEST_USER_PASSWORD) {
+  throw new Error("Set TEST_USER_PASSWORD before running this script");
+}
+
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -16,7 +22,7 @@ async function createTestUser() {
 
     const { data, error } = await supabase.auth.admin.createUser({
       email: "test_reviewer@thakirni.com",
-      password: "[redacted]",
+      password: TEST_USER_PASSWORD,
       email_confirm: true,
       user_metadata: {
         full_name: "Test Reviewer",
@@ -34,7 +40,6 @@ async function createTestUser() {
     console.log("[v0] Email:", data.user?.email);
     console.log("\n=== TEST USER CREDENTIALS ===");
     console.log("Email: test_reviewer@thakirni.com");
-    console.log("Password: [redacted]");
     console.log("=============================\n");
 
     process.exit(0);
